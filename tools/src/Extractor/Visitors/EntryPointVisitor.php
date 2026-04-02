@@ -32,14 +32,18 @@ class EntryPointVisitor extends NodeVisitorAbstract
 
     /** IR-06: Security-sensitive filter hooks that need capture */
     private const SECURITY_SENSITIVE_FILTERS = [
-        'upload_mimes'                 => ['type' => 'filter_upload',     'auth' => 'editor'],
+        // upload_mimes: any role with upload_files capability (Contributor+) can trigger.
+        // wp-context: file upload = x3 multiplier; Contributor-level upload is prime attack surface.
+        'upload_mimes'                 => ['type' => 'filter_upload',     'auth' => 'contributor'],
         'wp_handle_upload_prefilter'   => ['type' => 'filter_upload',     'auth' => 'contributor'],
         'wp_handle_sideload_prefilter' => ['type' => 'filter_upload',     'auth' => 'admin'],
         'user_has_cap'                 => ['type' => 'filter_capability', 'auth' => 'none'],
         'authenticate'                 => ['type' => 'filter_auth',       'auth' => 'none'],
         'the_content'                  => ['type' => 'filter_output',     'auth' => 'contributor'],
         'comment_text'                 => ['type' => 'filter_output',     'auth' => 'none'],
-        'wp_mail'                      => ['type' => 'filter_mail',       'auth' => 'unknown'],
+        // wp_mail: auth depends on caller context; use subscriber as conservative minimum.
+        // "unknown" hides exploitability — subscriber is the correct floor per wp-context.
+        'wp_mail'                      => ['type' => 'filter_mail',       'auth' => 'subscriber'],
     ];
 
     private const AUTH_LEVELS = [

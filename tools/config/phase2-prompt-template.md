@@ -20,7 +20,11 @@ Task:
 5. Keep only meaningful findings (Patchstack-oriented impact).
 6. Unresolved Hooks: check `ir.unresolved_hooks[]` for dynamic hook registrations.
    - For each entry, inspect the surrounding source code at `file:line` to determine the hook name value at runtime.
-   - If the hook resolves to a known security-relevant hook (e.g. `wp_ajax_nopriv_*`, REST route, `upload_mimes`), attempt to trace its callback.
+   - Pay special attention to `hook_arg_type=concatenation`: common dangerous patterns include
+     `'wp_ajax_nopriv_' . $action` (unauthenticated AJAX), `'wp_ajax_' . $action` (subscriber AJAX),
+     and REST namespace concatenation (`$namespace . '/route'`). These are the highest-value targets
+     per wp-context (REST API = single most critically exploited surface; wp_ajax_nopriv = zero auth).
+   - If the hook resolves to a security-relevant hook, attempt to trace its callback for missing nonce/cap checks.
    - If the hook name cannot be determined statically, note it in `negative_findings` with reason `dynamic_hook_unresolved`.
 
 Output format (strict):
