@@ -6,6 +6,7 @@ namespace WPAudit\Extractor;
 use PhpParser\ParserFactory;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
+use PhpParser\NodeVisitor\ParentConnectingVisitor;
 use WPAudit\Extractor\Visitors\EntryPointVisitor;
 use WPAudit\Extractor\Visitors\GuardVisitor;
 use WPAudit\Extractor\Visitors\SourceSinkVisitor;
@@ -116,8 +117,11 @@ class IRBuilder
             }
 
             // Run GuardVisitor on callback body ONLY
+            // ParentConnectingVisitor must run first so GuardVisitor::determineEffectiveness()
+            // can access $node->getAttribute('parent') for IR-04 effectiveness checks.
             $guardVisitor = new GuardVisitor($cbFile, $ep['id']);
             $gt = new NodeTraverser();
+            $gt->addVisitor(new ParentConnectingVisitor());
             $gt->addVisitor($guardVisitor);
             $gt->traverse($callbackBody);
             $allGuards = array_merge($allGuards, $guardVisitor->getGuards());
