@@ -1,0 +1,65 @@
+# Phase 2 Deep Analysis - `{PLUGIN_SLUG}`
+
+Inputs:
+- Phase 1 IR: `reports/phase1/{PLUGIN_SLUG}-ir.json`
+- Semgrep: `reports/phase1/{PLUGIN_SLUG}-semgrep.json` (if exists)
+- Psalm SARIF: `reports/phase1/{PLUGIN_SLUG}-psalm.sarif` (if exists, corroboration signal)
+- Source code: `plugins/{PLUGIN_SLUG}/`
+
+Task:
+1. Read IR map first, then verify directly in source code.
+2. Prioritize high-value targets:
+   - unauth/subscriber entry points
+   - SQL/file/redirect/include/deserialization sinks
+   - anomalies high/critical
+3. Validate every candidate using source->sink trace with exact file:line.
+4. Refute-first:
+   - check nonce/capability guards
+   - check sanitizer/prepare correctness
+   - check realistic exploitability
+5. Keep only meaningful findings (Patchstack-oriented impact).
+6. Unresolved Hooks: check `ir.unresolved_hooks[]` for dynamic hook registrations.
+   - For each entry, inspect the surrounding source code at `file:line` to determine the hook name value at runtime.
+   - If the hook resolves to a known security-relevant hook (e.g. `wp_ajax_nopriv_*`, REST route, `upload_mimes`), attempt to trace its callback.
+   - If the hook name cannot be determined statically, note it in `negative_findings` with reason `dynamic_hook_unresolved`.
+
+Output format (strict):
+- Write JSON to: `{OUTPUT_PATH}`
+- Include top-level fields:
+  - plugin_slug
+  - analysis_summary
+  - overall_risk
+  - total_findings_analyzed
+  - true_positives
+  - false_positives
+  - needs_review
+  - findings[]
+  - negative_findings[]
+  - out_of_scope[]
+
+Finding requirements:
+- Each TP/REVIEW must include:
+  - finding_id
+  - verdict (TP|FP|REVIEW)
+  - vuln_type
+  - cwe_id
+  - severity
+  - auth_required
+  - confidence
+  - entry_point_id
+  - source_function
+  - sink_function
+  - source_file_path + source_line_number
+  - sink_file_path + sink_line_number
+  - file_path + line_number (alias of sink path/line)
+  - reasoning (hypothesis, trace, defenses, refutation, conclusion)
+  - poc_description
+  - cvss_vector (or null)
+  - remediation
+  - patchstack_eligible
+- For stored/second-order flows: include storage_key when identifiable.
+- All `source_file_path`, `sink_file_path`, and `file_path` values must be relative to the plugin root. Never prefix them with `plugins/{PLUGIN_SLUG}/`.
+
+Important:
+- Do not invent constants, nonces, routes, capability strings, option/meta keys.
+- If evidence is insufficient, mark as REVIEW (not TP).
