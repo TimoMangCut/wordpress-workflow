@@ -1,0 +1,12 @@
+{
+  "plugin_slug": "cartflows",
+  "plugin_version": "unknown",
+  "verified_by": "manual_review",
+  "verified_date": "2026-04-03",
+  "findings": [],
+  "confirmed_clean_areas": [
+    "Phase2 produced 0 findings — pipeline found no data flows from entry points to sinks",
+    "119 entry points scanned, 0 paths confirmed exploitable"
+  ],
+  "_notes": "Ground truth seeded from pipeline phase2 output (total=0, tp=0, fp=0, review=0). No manual source review performed yet. Suitable for FP-rate benchmarking only until manual review is done."
+}

@@ -1,0 +1,32 @@
+{
+  "plugin_slug": "backwpup",
+  "plugin_version": "unknown",
+  "verified_by": "pipeline_seeded",
+  "verified_date": "2026-04-03",
+  "findings": [
+    {
+      "vuln_type": "unknown",
+      "entry_point_type": "rest_route",
+      "hook_name": "ep_rest___cloudsaveandtest",
+      "sink_file": "inc/class-destination-s3.php",
+      "sink_line_approx": 551,
+      "severity": "unknown",
+      "description": "Pipeline TP verdict: data flow from REST route to sink function backwpup_destination_s3::job_run_archive. Phase3 UNCERTAIN — path_reachable check failed (source/sink not matched in IR), code_evidence missing. Needs manual verification.",
+      "_ground_truth_confidence": "LOW — pipeline_seeded only, not manually verified",
+      "_expected_pipeline_verdict": "TP or REVIEW"
+    },
+    {
+      "vuln_type": "unknown",
+      "entry_point_type": "rest_route",
+      "hook_name": "ep_rest_backwpup_v1__process_bulk_actions",
+      "sink_file": "inc/class-destination-folder.php",
+      "sink_line_approx": 75,
+      "severity": "unknown",
+      "description": "Pipeline TP verdict: data flow from REST route to sink function backwpup_destination_folder::file_delete. Phase3 UNCERTAIN — path_reachable check failed, code_evidence missing. Needs manual verification.",
+      "_ground_truth_confidence": "LOW — pipeline_seeded only, not manually verified",
+      "_expected_pipeline_verdict": "TP or REVIEW"
+    }
+  ],
+  "confirmed_clean_areas": [],
+  "_notes": "Ground truth seeded from pipeline phase2 output (tp=2). Both findings are UNCERTAIN in phase3 due to IR gaps (path_reachability_weak, code_evidence_missing). This file serves as a minimum-viable benchmark seed — update findings[] with manual verification before using Quality Score as a reliable metric."
+}
