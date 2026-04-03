@@ -732,7 +732,7 @@ private function detectCustomGuard(Node\Expr $callExpr): bool {
 ### Session 8 — IR-05, IR-10
 
 ```
-Status: [ ] PENDING
+Status: [x] COMPLETED — 2026-04-03
 Files sẽ đọc: EntryPointVisitor.php (5.5K), SymbolTable.php (2K)
 Est. context: ~28K tokens
 Dependencies: Session 6 PASS

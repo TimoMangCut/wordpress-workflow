@@ -1,0 +1,61 @@
+{
+  "session": 8,
+  "date": "2026-04-03",
+  "status": "COMPLETED",
+  "gaps_addressed": ["IR-05", "IR-10"],
+  "files_modified": [
+    {
+      "file": "tools/src/Extractor/Visitors/EntryPointVisitor.php",
+      "functions_changed": [
+        "parseRouteConfig",
+        "resolvePermissionCallback (unchanged — kept)",
+        "resolvePermissionCallbackAst (new)",
+        "inferRestAuth",
+        "analyzePermissionCallbackBody (new)",
+        "walkStmtsForAuth (new)",
+        "classifyAuthCondition (new)",
+        "classifyAuthFuncCall (new)",
+        "strongerAuthLevel (new)"
+      ],
+      "lines_affected": "409-620",
+      "behavior_before": "inferRestAuth() only handled 3 literal string cases: null→'none', '__return_true'→'none', 'is_user_logged_in'→'subscriber'. Closure permission_callbacks resolved to 'unknown'.",
+      "behavior_after": "parseRouteConfig() now stores permission_callback_ast (AST node) in addition to the string sentinel. inferRestAuth() detects Closure/ArrowFunction AST node and calls analyzePermissionCallbackBody(). That method scans for current_user_can('manage_options'|'administrator') → 'admin', current_user_can('edit_posts'|'publish_posts') → 'author', current_user_can(any other cap) or is_user_logged_in() → 'subscriber', unconditional return true → 'none', else → 'unknown'."
+    },
+    {
+      "file": "tools/src/Extractor/SymbolTable.php",
+      "functions_changed": [
+        "build (added resolveTraitUses() post-pass call)",
+        "resolveTraitUses (new private method)",
+        "collectDeclarations (visitor extended with Trait_, TraitUse, traitMethods handling)"
+      ],
+      "lines_affected": "14-197",
+      "behavior_before": "collectDeclarations() ignored Node\\Stmt\\Trait_ and Node\\Stmt\\TraitUse. findMethod('ClassName', 'traitMethod') returned null when method was defined in a trait.",
+      "behavior_after": "Visitor collects Trait_ methods into visitor->traitMethods[]. After each file, trait methods are merged into SymbolTable->traitMethods[] global registry. TraitUse inside a class stores trait names in class['trait_uses'] and aliasing info in class['trait_aliases']. After ALL files processed, resolveTraitUses() does a post-pass: merges trait methods into each class's method table (own methods take precedence). Cross-file trait→class resolution works correctly. findMethod() is unchanged and now returns trait methods transparently."
+    }
+  ],
+  "downstream_updated": [],
+  "deviations_from_spec": [
+    {
+      "spec_step": "IR-10 — leaveNode immediate merge",
+      "actual": "Deferred trait-into-class merging to a post-processing resolveTraitUses() pass in build(). Reason: if trait declared in file A and class uses it in file B, the per-file visitor's leaveNode would not have the trait methods available. Post-pass uses the global $this->traitMethods registry that accumulates across all files.",
+      "risk": "NONE — behavior is equivalent for same-file traits (still works), and correct for cross-file traits (now works). Source_ref (gap-analysis-final.md:775-778) does not specify whether same-file or cross-file resolution is required."
+    },
+    {
+      "spec_step": "IR-10 alias resolution — IMPLEMENTATION-PLAN.md:795-806",
+      "actual": "For aliases with unknown source trait (Alias adaptation without trait qualifier), fall back to first trait in trait_uses list at collection time. Edge case: if alias source is ambiguous and trait declared after class, alias may not resolve. Risk is LOW — WP plugins almost never use ambiguous trait aliasing.",
+      "risk": "LOW"
+    }
+  ],
+  "test_command": "python3 benchmark/compare.py --all",
+  "test_result": "PASS: backwpup QS=1.0 DR=1.0 TP=2 FP=0 FN=0; cartflows QS=N/A DR=N/A TP=0 FP=0 FN=0; pretty-link QS=N/A DR=N/A TP=0 FP=0 FN=0. Aggregate QS=1.0 DR=1.0. No regression vs baseline.",
+  "discovered_issues": [
+    {
+      "id": "DISC-08-01",
+      "description": "phase3_gate.py _check_auth_consistency() has a separate auth_map that partially duplicates EntryPointVisitor AUTH_LEVELS. If new EP types are added to EntryPointVisitor, phase3_gate must be updated manually. No strict contract between the two.",
+      "severity": "LOW",
+      "action": "Note for future session — not urgent, not in current scope."
+    }
+  ],
+  "next_session": "session_9",
+  "notes": "Both IR-05 and IR-10 implemented. Permission callback closure analysis is read-only and partial (no full call chain tracing). Trait resolution is cross-file aware via global registry + post-pass. Benchmark PASS."
+}

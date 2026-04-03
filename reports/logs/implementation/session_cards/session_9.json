@@ -1,0 +1,71 @@
+{
+  "session": 9,
+  "title": "Wave 2 — P2-05: Phase2 schema validation + G-01: Gate guard is_effective three-state + G-02: Reasoning quality scoring",
+  "status": "PENDING",
+  "created_by_session": 8,
+  "wave": "Wave 2",
+  "dependencies": [
+    {"session": 3, "reason": "IR-07 (is_effective: null for custom guards) must be done — G-01 fix depends on is_effective being null (not boolean) for unknown guards. Session 3 is COMPLETED."}
+  ],
+  "gaps": ["P2-05", "G-01", "G-02"],
+  "critical_notes": [
+    "G-01: _check_guard_consistency() currently uses truthy check `g['is_effective']` — this treats is_effective=null as falsy (same as False). After IR-07 fix (Session 3), custom guards have is_effective=null. Must distinguish: True (confirmed effective), None (unknown), False (confirmed ineffective). Python: check `g.get('is_effective') is True`, NOT `g.get('is_effective')` or `bool(g.get('is_effective'))`. False and None are both falsy — different semantics.",
+    "G-02: _assess_reasoning_quality() currently gives +0.10 bonus for 'however'/'but' keywords — gameable. Replace with cross-reference scoring: file:line mentions, sink_file match, refutation patterns. See IMPLEMENTATION-PLAN.md:878-908 for exact new scoring formula.",
+    "P2-05: phase2_postprocess.py has no schema validation — malformed phase2 output can silently propagate. Add soft validation (warning, no pipeline block) using jsonschema. The FINDING_SCHEMA must exactly match the fields in session_cards spec (not IMPLEMENTATION-PLAN pseudocode) if they differ.",
+    "E4 applies to G-01: Python `is None` check — NEVER `not value` for three-state logic."
+  ],
+  "files_to_read": [
+    {
+      "file": "tools/bin/phase2_postprocess.py",
+      "line_range": "full",
+      "reason": "P2-05 target — need to see full file to add schema validation (422 lines)"
+    },
+    {
+      "file": "tools/bin/phase3_gate.py",
+      "line_range": "721-760",
+      "reason": "G-01 target — _check_guard_consistency() current implementation"
+    },
+    {
+      "file": "tools/bin/phase3_gate.py",
+      "line_range": "933-980",
+      "reason": "G-02 target — _assess_reasoning_quality() current implementation"
+    }
+  ],
+  "spec": {
+    "P2-05": {
+      "source_ref": "gap-analysis-final.md:975-990",
+      "file": "tools/bin/phase2_postprocess.py",
+      "change": "Add soft schema validation after phase2 JSON is loaded. Use jsonschema.validate() with FINDING_SCHEMA. Print [WARN] to stderr on ValidationError — do NOT raise, do NOT block pipeline. FINDING_SCHEMA must include: required=['finding_id','verdict'], properties: verdict enum ['TP','FP','REVIEW'], severity enum ['critical','high','medium','low','informational'], confidence number 0-1, sink_line_number ['integer','null'], source_line_number ['integer','null'].",
+      "note": "NẾUN spec ở đây mâu thuẫn với source_ref → source_ref thắng. IMPLEMENTATION-PLAN.md:819-843 has pseudocode."
+    },
+    "G-01": {
+      "source_ref": "gap-analysis-final.md:991-1006",
+      "file": "tools/bin/phase3_gate.py",
+      "change": "In _check_guard_consistency(): replace truthy check `any(g['is_effective'] for g in guards)` with three-state logic. effective_guards = [g for g in guards if g.get('is_effective') is True]. unknown_guards = [g for g in guards if g.get('is_effective') is None]. broken_guards = [g for g in guards if g.get('is_effective') is False]. Scoring: effective_guards→0.9, unknown_guards→0.6 ('potential custom guard, effectiveness unknown'), broken_guards→0.2, none→0.1. See IMPLEMENTATION-PLAN.md:845-872.",
+      "note": "NẾUN spec ở đây mâu thuẫn với source_ref → source_ref thắng. E4: use `is True` / `is None` / `is False` — NEVER `not value` or `bool(value)`."
+    },
+    "G-02": {
+      "source_ref": "gap-analysis-final.md:1007-1025",
+      "file": "tools/bin/phase3_gate.py",
+      "change": "In _assess_reasoning_quality(): remove keyword bonus for 'however'/'but'. New scoring: base 0.0; +0.3 if len(reasoning)>200; +0.2 if len(reasoning)>500; +0.2 if file:line pattern found in reasoning; +0.15 if sink_file basename appears in reasoning (when file:line match exists); +up to 0.15 for refutation patterns (see IMPLEMENTATION-PLAN.md:900-904). Cap at 1.0.",
+      "note": "NẾUN spec ở đây mâu thuẫn với source_ref → source_ref thắng. See IMPLEMENTATION-PLAN.md:874-908 for full new implementation."
+    }
+  },
+  "downstream_required": [
+    "After G-01: verify benchmark still passes — three-state guard scoring may affect existing finding scores. Run python3 benchmark/compare.py --all and confirm QS=1.0 FP=0.",
+    "After G-02: same benchmark check — reasoning quality change must not regress."
+  ],
+  "test_command": "python3 benchmark/compare.py --all",
+  "test_cases": [
+    "G-01: EP with is_effective=True guard → score 0.9 (confirmed effective)",
+    "G-01: EP with is_effective=None guard → score 0.6 (potential custom guard, neutral)",
+    "G-01: EP with is_effective=False guard → score 0.2 (broken guard)",
+    "G-01: EP with no guards → score 0.1",
+    "G-02: Reasoning with 600 chars + file:line + sink_file ref + 2 refutation patterns → score ~0.95",
+    "G-02: 'however'/'but' keywords alone in short reasoning → score 0.0 (no longer credited)",
+    "P2-05: Malformed phase2 JSON (missing verdict field) → [WARN] printed to stderr, pipeline continues",
+    "Benchmark QS=1.0 FP=0 after all three changes"
+  ],
+  "commit_message": "Session 9: P2-05 phase2 schema validation + G-01 three-state guard scoring + G-02 reasoning quality refactor",
+  "next_session_preview": "Session 10 — A-02 (threat context keyword matching), L-01, L-02 (LLM prompt improvements)"
+}
