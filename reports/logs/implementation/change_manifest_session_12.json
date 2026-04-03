@@ -1,0 +1,48 @@
+{
+  "session": 12,
+  "date": "2026-04-04",
+  "status": "COMPLETED",
+  "gaps_addressed": ["IR-02"],
+  "files_modified": [
+    {
+      "file": "tools/src/Extractor/IRBuilder.php",
+      "functions_changed": [
+        "build (Phase 3 loop extended with resolveCallChain() call)",
+        "resolveCallChain (new private method)",
+        "extractMethodCalls (new private method)"
+      ],
+      "lines_affected": "137-295",
+      "behavior_before": "Phase 3 ran SourceSinkVisitor only on the direct callback body. Sinks in methods called via $this->method() were invisible — IR had source but no sink for delegated patterns.",
+      "behavior_after": "After SSV traversal of callback body, resolveCallChain() is called when callback has a class context. For each $this->method() call found: looks up method via SymbolTable::findMethod(), parses its body, runs SSV with inherited entry_point_id, recurses up to depth=2 with cycle detection via $visited[]."
+    }
+  ],
+  "new_files_created": [
+    {
+      "file": "plugins/call-chain-test/call-chain-test.php",
+      "description": "Minimal test fixture for IR-02. Contains depth-1 pattern (callback → save_to_db → $wpdb->query) and depth-2 pattern (callback → process → run_query → $wpdb->query). Gitignored — not committed to repo."
+    }
+  ],
+  "downstream_updated": [],
+  "deviations_from_spec": [
+    {
+      "spec_step": "IR-02 pseudocode calls $this->getAst($methodInfo['file']) — IMPLEMENTATION-PLAN.md:1046",
+      "actual": "No getAst() method exists in IRBuilder. Adapted to pass $astCache by reference into resolveCallChain() and load/cache files inline (same pattern used in Phase 3 main loop). Functionally equivalent.",
+      "risk": "NONE"
+    },
+    {
+      "spec_step": "IR-02 pseudocode calls $this->extractMethodCalls($methodBody) without defining it — IMPLEMENTATION-PLAN.md:1058",
+      "actual": "Implemented extractMethodCalls() as a new private method using an anonymous NodeVisitorAbstract that collects all MethodCall nodes at any depth. Matches pseudocode intent.",
+      "risk": "NONE"
+    },
+    {
+      "spec_step": "resolveCallChain() signature in session card uses $callExprNodes as 'array $callExprNodes' (statement/expression mix)",
+      "actual": "Method only processes Node\\Expr\\MethodCall instances — non-MethodCall nodes are skipped. extractMethodCalls() pre-filters to MethodCall nodes, so input is already typed correctly at call site.",
+      "risk": "NONE"
+    }
+  ],
+  "test_command": "php tools/bin/extract.php plugins/call-chain-test/ && python3 benchmark/compare.py --all",
+  "test_result": "PASS: call-chain-test Sinks=2 (SQL) with correct entry_point_id at depth-1 and depth-2. Anomalies=4 (rule_04 x2, rule_08 x2). backwpup QS=1.0 DR=1.0 TP=2 FP=0 FN=0 — no regression.",
+  "discovered_issues": [],
+  "next_session": "session_13",
+  "notes": "IR-02 fully implemented. resolveCallChain() only resolves $this->method() calls (Variable name === 'this'). Calls via $variable->method() where $variable is NOT $this are not resolved — this is acceptable scope for depth=2 fix. Static calls ($ClassName::method()) also not resolved — out of scope for IR-02."
+}
