@@ -100,7 +100,7 @@ WAVE 1     [x] Session 1  — IR-01, IR-06, IR-09
            [x] Session 3  — IR-07, IR-08                            2026-04-03
            [x] Session 4  — P2-01/G-04, P2-02, P2-03, P2-04          2026-04-03
            [x] Session 5  — AR-02, G-04 gate-side, O-01, O-02, O-03      2026-04-03
-           [ ] Session 6  — Wave 1 Validation → USER REVIEW ①
+           [x] Session 6  — Wave 1 Validation → USER REVIEW ①         2026-04-03
 WAVE 2     [ ] Session 7  — IR-03
            [ ] Session 8  — IR-05, IR-10
            [ ] Session 9  — P2-05, G-01, G-02

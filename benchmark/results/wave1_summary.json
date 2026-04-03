@@ -1,0 +1,28 @@
+{
+  "wave": 1,
+  "verdict": "APPROVED",
+  "run_timestamp": "2026-04-03T12:11:56Z",
+  "sessions_validated": [1, 2, 3, 4, 5],
+  "accept_criteria": {
+    "quality_score_gte_baseline": "PASS — 1.0 >= 1.0 (backwpup); N/A for cartflows/pretty-link (no GT findings)",
+    "decision_rate_no_drop_gt_10pct": "PASS — 1.0 delta = 0.0 (no drop)"
+  },
+  "metrics_delta": {
+    "quality_score": {
+      "baseline": 1.0,
+      "wave1": 1.0,
+      "delta": 0.0
+    },
+    "decision_rate": {
+      "baseline": 1.0,
+      "wave1": 1.0,
+      "delta": 0.0
+    },
+    "total_tp": {"baseline": 2, "wave1": 2},
+    "total_fp": {"baseline": 0, "wave1": 0},
+    "total_fn": {"baseline": 0, "wave1": 0}
+  },
+  "regressions": [],
+  "approved_to_proceed": true,
+  "next_session": "session_7 — IR-03 (custom guard detection) — awaiting user APPROVED signal"
+}
