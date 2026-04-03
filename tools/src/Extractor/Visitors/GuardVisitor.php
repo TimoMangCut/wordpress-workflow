@@ -53,6 +53,21 @@ class GuardVisitor extends NodeVisitorAbstract
             }
         }
 
+        // IR-03: detect custom guard methods/static calls via structural heuristic
+        if ($node instanceof Node\Expr\MethodCall || $node instanceof Node\Expr\StaticCall) {
+            if ($this->detectCustomGuard($node)) {
+                $this->guards[] = [
+                    'entry_point_id' => $this->entryPointId,
+                    'type' => 'custom_guard',
+                    'function_called' => $this->resolveCallDescription($node),
+                    'file' => $this->currentFile,
+                    'line' => $node->getStartLine(),
+                    'is_effective' => null,
+                    'notes' => 'custom guard heuristic: method/static call in if-condition with wp_die/exit/return in body',
+                ];
+            }
+        }
+
         if (!($node instanceof Node\Expr\FuncCall)) return null;
 
         $funcName = $this->resolveFuncName($node);
@@ -203,6 +218,114 @@ class GuardVisitor extends NodeVisitorAbstract
     {
         if ($arg->value instanceof Node\Scalar\String_) return $arg->value->value;
         return null;
+    }
+
+    /**
+     * IR-03: Structural detection of custom guard method/static calls.
+     *
+     * Returns true ONLY when ALL of the following hold:
+     *   1. The call is the direct condition of an if/elseif statement (or negated with !)
+     *   2. The if-body contains at least one hard exit: wp_die(), wp_send_json_error(),
+     *      exit(), die(), or a bare return statement
+     *
+     * Naming is NEVER used as a signal — this prevents FPs from data-validation methods
+     * that happen to contain 'verify', 'check', 'validate' in their name.
+     *
+     * @param Node\Expr\MethodCall|Node\Expr\StaticCall $callNode
+     */
+    private function detectCustomGuard(Node\Expr $callNode): bool
+    {
+        $parent = $callNode->getAttribute('parent');
+        if ($parent === null) return false;
+
+        // Find the If_ node that directly contains this call as its condition
+        $ifNode = null;
+
+        // Direct: if ($this->checkSomething()) { ... }
+        if ($parent instanceof Node\Stmt\If_ || $parent instanceof Node\Stmt\ElseIf_) {
+            $ifNode = $parent;
+        }
+
+        // Negated: if (!$this->checkSomething()) { ... }
+        if ($parent instanceof Node\Expr\BooleanNot) {
+            $grandparent = $parent->getAttribute('parent');
+            if ($grandparent instanceof Node\Stmt\If_ || $grandparent instanceof Node\Stmt\ElseIf_) {
+                $ifNode = $grandparent;
+            }
+        }
+
+        if ($ifNode === null) return false;
+
+        // The call must be the condition of the if (not nested deep inside it)
+        // $ifNode->cond is the condition expression
+        $cond = $ifNode->cond;
+        $callIsCondition = ($cond === $callNode) ||
+            ($cond instanceof Node\Expr\BooleanNot && $cond->expr === $callNode);
+
+        if (!$callIsCondition) return false;
+
+        return $this->ifBodyHasExitOrReturn($ifNode->stmts ?? []);
+    }
+
+    /**
+     * Check whether a list of statements contains a hard-exit pattern:
+     * wp_die(), wp_send_json_error(), exit(), die(), or bare return.
+     * Checks only the top-level statements of the block (not nested ifs).
+     *
+     * @param Node\Stmt[] $stmts
+     */
+    private function ifBodyHasExitOrReturn(array $stmts): bool
+    {
+        foreach ($stmts as $stmt) {
+            // return statement
+            if ($stmt instanceof Node\Stmt\Return_) return true;
+
+            // exit() / die() as a statement
+            if ($stmt instanceof Node\Stmt\Expression &&
+                $stmt->expr instanceof Node\Expr\Exit_) {
+                return true;
+            }
+
+            // Function call statement: wp_die(), wp_send_json_error()
+            if ($stmt instanceof Node\Stmt\Expression &&
+                $stmt->expr instanceof Node\Expr\FuncCall) {
+                $funcName = $this->resolveFuncName($stmt->expr);
+                if (in_array($funcName, ['wp_die', 'wp_send_json_error', 'exit', 'die'], true)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Build a human-readable description of a method or static call for the guard record.
+     *
+     * @param Node\Expr\MethodCall|Node\Expr\StaticCall $callNode
+     */
+    private function resolveCallDescription(Node\Expr $callNode): string
+    {
+        $method = ($callNode->name instanceof Node\Identifier)
+            ? $callNode->name->toString()
+            : '?';
+
+        if ($callNode instanceof Node\Expr\StaticCall) {
+            $class = ($callNode->class instanceof Node\Name)
+                ? $callNode->class->toString()
+                : '?';
+            return "{$class}::{$method}()";
+        }
+
+        // MethodCall
+        if ($callNode instanceof Node\Expr\MethodCall) {
+            $varName = ($callNode->var instanceof Node\Expr\Variable &&
+                        is_string($callNode->var->name))
+                ? '$' . $callNode->var->name
+                : '?';
+            return "{$varName}->{$method}()";
+        }
+
+        return "{$method}()";
     }
 
     public function getGuards(): array { return $this->guards; }
