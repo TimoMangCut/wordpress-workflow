@@ -66,6 +66,28 @@ class SourceSinkVisitor extends NodeVisitorAbstract
         'add_option' => 'option_update', 'add_post_meta' => 'meta_update',
     ];
 
+    /** IR-07: Storage reads → go into SOURCES array (gate builds storage_reads_by_key from sources) */
+    private const STORAGE_READ_MAP = [
+        'get_option'       => ['source_type' => 'option_read', 'key_arg_index' => 0],
+        'get_site_option'  => ['source_type' => 'option_read', 'key_arg_index' => 0],
+        'get_post_meta'    => ['source_type' => 'meta_read',   'key_arg_index' => 1],
+        'get_user_meta'    => ['source_type' => 'meta_read',   'key_arg_index' => 1],
+        'get_term_meta'    => ['source_type' => 'meta_read',   'key_arg_index' => 1],
+        'get_comment_meta' => ['source_type' => 'meta_read',   'key_arg_index' => 1],
+    ];
+
+    /** IR-07: Key argument index for storage write functions */
+    private const STORAGE_WRITE_KEY_ARG = [
+        'update_option'      => 0,
+        'add_option'         => 0,
+        'update_site_option' => 0,
+        'update_post_meta'   => 1,
+        'update_user_meta'   => 1,
+        'add_post_meta'      => 1,
+        'update_term_meta'   => 1,
+        'update_comment_meta' => 1,
+    ];
+
     /** Known sanitizer functions */
     private const SANITIZERS = [
         // SQL
@@ -115,8 +137,9 @@ class SourceSinkVisitor extends NodeVisitorAbstract
             $this->detectMethodSink($node);
         }
 
-        // Detect function call sinks
+        // Detect function call sinks + IR-07 storage reads
         if ($node instanceof Node\Expr\FuncCall) {
+            $this->detectStorageRead($node);
             $this->detectFuncSink($node);
         }
 
@@ -235,13 +258,40 @@ class SourceSinkVisitor extends NodeVisitorAbstract
         }
     }
 
+    /** IR-07: Detect storage read calls → add to sources[] (NOT sinks) */
+    private function detectStorageRead(Node\Expr\FuncCall $node): void
+    {
+        $funcName = ($node->name instanceof Node\Name) ? $node->name->toString() : null;
+        if ($funcName === null) return;
+
+        if (!isset(self::STORAGE_READ_MAP[$funcName])) return;
+
+        $def = self::STORAGE_READ_MAP[$funcName];
+        $keyArgIndex = $def['key_arg_index'];
+        $key = null;
+
+        if (isset($node->args[$keyArgIndex]) && $node->args[$keyArgIndex]->value instanceof Node\Scalar\String_) {
+            $key = $node->args[$keyArgIndex]->value->value;
+        }
+
+        $this->addSource($def['source_type'], $funcName . '()', $key, $node->getStartLine());
+    }
+
     private function detectFuncSink(Node\Expr\FuncCall $node): void
     {
         $funcName = ($node->name instanceof Node\Name) ? $node->name->toString() : null;
         if ($funcName === null) return;
 
         if (isset(self::SINK_MAP[$funcName])) {
-            $this->addSink(self::SINK_MAP[$funcName], $funcName, $node->getStartLine(), null);
+            // IR-07: extract key argument for storage write sinks
+            $key = null;
+            if (isset(self::STORAGE_WRITE_KEY_ARG[$funcName])) {
+                $keyArgIndex = self::STORAGE_WRITE_KEY_ARG[$funcName];
+                if (isset($node->args[$keyArgIndex]) && $node->args[$keyArgIndex]->value instanceof Node\Scalar\String_) {
+                    $key = $node->args[$keyArgIndex]->value->value;
+                }
+            }
+            $this->addSink(self::SINK_MAP[$funcName], $funcName, $node->getStartLine(), null, $key);
         }
     }
 
@@ -254,9 +304,9 @@ class SourceSinkVisitor extends NodeVisitorAbstract
         }
 
         // Pattern 2: Variable — $sql = $wpdb->prepare(...); $wpdb->get_results($sql);
-        // Check if prepare() was called within 10 lines before this sink
+        // IR-08: Check if prepare() was called within 30 lines before this sink (was 10)
         foreach ($this->prepareLines as $prepareLine) {
-            if ($prepareLine < $sinkLine && ($sinkLine - $prepareLine) <= 10) {
+            if ($prepareLine < $sinkLine && ($sinkLine - $prepareLine) <= 30) {
                 return true;
             }
         }
@@ -277,7 +327,7 @@ class SourceSinkVisitor extends NodeVisitorAbstract
         ];
     }
 
-    private function addSink(string $category, string $functionCalled, int $line, ?bool $usesPrepare): void
+    private function addSink(string $category, string $functionCalled, int $line, ?bool $usesPrepare, ?string $key = null): void
     {
         $this->sinks[] = [
             'id' => 'sink_' . (++$this->sinkCounter),
@@ -285,6 +335,7 @@ class SourceSinkVisitor extends NodeVisitorAbstract
             'category' => $category,
             'function_called' => $functionCalled,
             'uses_prepared_statement' => $usesPrepare,
+            'key' => $key,
             'file' => $this->currentFile,
             'line' => $line,
         ];
