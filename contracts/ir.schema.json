@@ -1,0 +1,8 @@
+{
+  "_comment": "TODO (Session 15): expand to full JSON Schema draft-07. Currently a stub listing required top-level fields only.",
+  "required_fields": ["metadata", "entry_points", "guards", "sources", "sinks", "unresolved_hooks", "anomalies"],
+  "entry_points_item_required": ["id", "type", "hook", "auth_level", "file", "line", "callback"],
+  "guards_item_required": ["entry_point_id", "type", "function_called", "file", "line", "is_effective"],
+  "sources_item_required": ["entry_point_id", "type", "file", "line"],
+  "sinks_item_required": ["entry_point_id", "category", "file", "line"]
+}

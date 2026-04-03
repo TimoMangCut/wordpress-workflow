@@ -1,0 +1,4 @@
+{
+  "_comment": "TODO (Session 15): expand to full JSON Schema draft-07. Currently a stub listing required threat-context fields only.",
+  "required_fields": ["plugin_slug", "matched_categories", "priority_vulns", "method"]
+}

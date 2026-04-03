@@ -351,6 +351,8 @@ class IRBuilder
             private ?string $class;
             private int $lineStart;
             private int $lineEnd;
+            /** Short class name of the Class_ node currently being traversed, or null if at file level. */
+            private ?string $currentClass = null;
 
             public function __construct(?string $type, ?string $name, ?string $class, int $lineStart, int $lineEnd)
             {
@@ -365,6 +367,14 @@ class IRBuilder
             {
                 if ($this->body !== null) return null; // Already found
 
+                // Track which class we are currently traversing so method matches
+                // can be scoped correctly (prevents wrong-class-same-name false match).
+                if ($node instanceof \PhpParser\Node\Stmt\Class_) {
+                    // Use the short name (after NameResolver the full name is on namespacedName,
+                    // but we need to match against SymbolTable which stores the short name).
+                    $this->currentClass = $node->name ? $node->name->toString() : null;
+                }
+
                 // Match by type
                 if ($this->type === 'function' && $node instanceof \PhpParser\Node\Stmt\Function_) {
                     if ($node->name->toString() === $this->name ||
@@ -376,8 +386,19 @@ class IRBuilder
 
                 if (($this->type === 'method' || $this->type === 'static_method')
                     && $node instanceof \PhpParser\Node\Stmt\ClassMethod) {
-                    if ($node->name->toString() === $this->name ||
-                        $node->getStartLine() === $this->lineStart) {
+                    // When a target class is known, require that the method belongs to that class.
+                    // This prevents resolveCallChain() from matching a same-named method in a
+                    // different class that happens to appear earlier in the same file (P1 bug fix).
+                    $classMatches = ($this->class === null)
+                        || ($this->currentClass !== null && $this->currentClass === $this->class)
+                        // SymbolTable stores fully-qualified names after NameResolver; also accept
+                        // a suffix match so "NS\\ClassName" matches target class "ClassName".
+                        || ($this->currentClass !== null && str_ends_with($this->class, $this->currentClass));
+
+                    if ($classMatches && (
+                        $node->name->toString() === $this->name ||
+                        $node->getStartLine() === $this->lineStart
+                    )) {
                         $this->body = $node->stmts ?? [];
                         return \PhpParser\NodeVisitor::DONT_TRAVERSE_CHILDREN;
                     }
@@ -408,6 +429,14 @@ class IRBuilder
                     }
                 }
 
+                return null;
+            }
+
+            public function leaveNode(\PhpParser\Node $node)
+            {
+                if ($node instanceof \PhpParser\Node\Stmt\Class_) {
+                    $this->currentClass = null;
+                }
                 return null;
             }
         };

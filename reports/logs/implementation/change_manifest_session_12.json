@@ -9,17 +9,34 @@
       "functions_changed": [
         "build (Phase 3 loop extended with resolveCallChain() call)",
         "resolveCallChain (new private method)",
-        "extractMethodCalls (new private method)"
+        "extractMethodCalls (new private method)",
+        "extractCallbackBody (anonymous visitor: added currentClass tracking + class-aware method match — P1 fix)"
       ],
-      "lines_affected": "137-295",
+      "lines_affected": "137-430",
       "behavior_before": "Phase 3 ran SourceSinkVisitor only on the direct callback body. Sinks in methods called via $this->method() were invisible — IR had source but no sink for delegated patterns.",
-      "behavior_after": "After SSV traversal of callback body, resolveCallChain() is called when callback has a class context. For each $this->method() call found: looks up method via SymbolTable::findMethod(), parses its body, runs SSV with inherited entry_point_id, recurses up to depth=2 with cycle detection via $visited[]."
+      "behavior_after": "After SSV traversal of callback body, resolveCallChain() is called when callback has a class context. For each $this->method() call found: looks up method via SymbolTable::findMethod(), parses its body, runs SSV with inherited entry_point_id, recurses up to depth=2 with cycle detection via $visited[]. extractCallbackBody() now tracks current Class_ context during traversal and requires class name match when resolving methods — prevents wrong-class-same-name false match in multi-class files."
     }
   ],
   "new_files_created": [
     {
       "file": "plugins/call-chain-test/call-chain-test.php",
-      "description": "Minimal test fixture for IR-02. Contains depth-1 pattern (callback → save_to_db → $wpdb->query) and depth-2 pattern (callback → process → run_query → $wpdb->query). Gitignored — not committed to repo."
+      "description": "Minimal test fixture for IR-02 happy path. Contains depth-1 pattern (callback → save_to_db → $wpdb->query) and depth-2 pattern (callback → process → run_query → $wpdb->query). Gitignored — not committed to repo."
+    },
+    {
+      "file": "plugins/multi-class-test/multi-class-test.php",
+      "description": "Repro fixture for P1 bug (multi-class same-name helper). FirstClass::helper() echoes; SecondClass::helper() executes $wpdb->query(). Entry point in SecondClass. Gitignored — not committed to repo."
+    },
+    {
+      "file": "contracts/ir.schema.json",
+      "description": "Stub contract for IR JSON required fields. Full JSON Schema deferred to Session 15 per IMPLEMENTATION-PLAN.md:176-178."
+    },
+    {
+      "file": "contracts/finding.schema.json",
+      "description": "Stub contract for finding required fields. Full JSON Schema deferred to Session 15."
+    },
+    {
+      "file": "contracts/threat-context.schema.json",
+      "description": "Stub contract for threat-context required fields. Full JSON Schema deferred to Session 15."
     }
   ],
   "downstream_updated": [],
@@ -38,11 +55,29 @@
       "spec_step": "resolveCallChain() signature in session card uses $callExprNodes as 'array $callExprNodes' (statement/expression mix)",
       "actual": "Method only processes Node\\Expr\\MethodCall instances — non-MethodCall nodes are skipped. extractMethodCalls() pre-filters to MethodCall nodes, so input is already typed correctly at call site.",
       "risk": "NONE"
+    },
+    {
+      "spec_step": "CONTRACT MINIMUM — IMPLEMENTATION-PLAN.md:157-160: contracts/ stubs must exist before Session 12",
+      "actual": "contracts/ directory was NOT created in original Session 12 commit (e18b2f8). Created in post-review fix commit alongside P1 bug fix. Per plan: 'Session 15 giữ nguyên nhưng contracts/ phải được tạo trước khi Session 15 bắt đầu' — now satisfied.",
+      "risk": "LOW — stubs are present before Session 13 begins. No Session 13 code depends on contracts/."
     }
   ],
-  "test_command": "php tools/bin/extract.php plugins/call-chain-test/ && python3 benchmark/compare.py --all",
-  "test_result": "PASS: call-chain-test Sinks=2 (SQL) with correct entry_point_id at depth-1 and depth-2. Anomalies=4 (rule_04 x2, rule_08 x2). backwpup QS=1.0 DR=1.0 TP=2 FP=0 FN=0 — no regression.",
-  "discovered_issues": [],
+  "post_review_fix": {
+    "issue": "P1 — extractCallbackBody() matched ClassMethod by name only, ignoring class context. In a file with multiple classes sharing a helper name, resolveCallChain() could resolve the wrong class body.",
+    "fix_commit": "see git log",
+    "fix_description": "Added currentClass tracking in anonymous visitor (enterNode tracks Class_ node name; leaveNode resets to null). Method match now requires classMatches=true when $this->class is set, using short name and suffix match to handle namespaced classes.",
+    "verified_by": "plugins/multi-class-test: SQL sink correctly attached to SecondClass entry point (not file-level). FirstClass echo sink correctly file-level. Anomaly rule_04 fires. Happy-path call-chain-test unchanged. backwpup QS=1.0 FP=0."
+  },
+  "test_command": "php tools/bin/extract.php plugins/call-chain-test/ --json && php tools/bin/extract.php plugins/multi-class-test/ --json && python3 benchmark/compare.py --all",
+  "test_result": "PASS: call-chain-test SQL sinks at depth-1 and depth-2 correct. multi-class-test SQL sink ep=SecondClass entry point (not file-level), echo sink file-level — P1 fix verified. backwpup QS=1.0 DR=1.0 TP=2 FP=0 FN=0.",
+  "discovered_issues": [
+    {
+      "id": "SSV-DUPE-01",
+      "description": "SourceSinkVisitor emits duplicate source entries for $_POST['key'] expressions: once via ArrayDimFetch→detectSuperglobalAccess(), once via Variable check (lines 128-131). Pre-existing before Session 12. No benchmark impact (phase3_gate does not count source frequency). Logged for future fix — not in Session 12 or 13 scope.",
+      "severity": "low",
+      "introduced_by": "pre-Session-12"
+    }
+  ],
   "next_session": "session_13",
-  "notes": "IR-02 fully implemented. resolveCallChain() only resolves $this->method() calls (Variable name === 'this'). Calls via $variable->method() where $variable is NOT $this are not resolved — this is acceptable scope for depth=2 fix. Static calls ($ClassName::method()) also not resolved — out of scope for IR-02."
+  "notes": "IR-02 implemented with P1 class-awareness fix applied post-review. resolveCallChain() only resolves $this->method() calls (Variable name === 'this'). $variable->method() where variable is not $this, and static calls, are out of scope for depth=2 fix. contracts/ stubs created per IMPLEMENTATION-PLAN pre-Session-12 checklist."
 }

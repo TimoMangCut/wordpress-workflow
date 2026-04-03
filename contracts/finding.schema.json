@@ -1,0 +1,6 @@
+{
+  "_comment": "TODO (Session 15): expand to full JSON Schema draft-07. Currently a stub listing required finding fields only.",
+  "required_fields": ["finding_id", "verdict", "severity", "sink_file_path", "sink_line_number", "entry_point_id"],
+  "verdict_enum": ["CONFIRMED", "UNCERTAIN", "RISK_NOTE", "REJECTED"],
+  "severity_enum": ["critical", "high", "medium", "low", "info"]
+}
