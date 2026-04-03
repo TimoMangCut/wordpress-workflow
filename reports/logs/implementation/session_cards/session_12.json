@@ -1,0 +1,56 @@
+{
+  "session": 12,
+  "title": "IR-02: Cross-function call chain resolution (HARDEST)",
+  "status": "PENDING",
+  "created_by_session": 11,
+  "wave": "Wave 3",
+  "dependencies": [
+    {"session": 11, "reason": "Wave 2 validation must be APPROVED before Wave 3 begins."},
+    {"session": 8, "reason": "IR-10 (trait resolution) must be COMPLETED — call chain requires findMethod() to resolve trait-defined methods."}
+  ],
+  "gaps": ["IR-02"],
+  "critical_notes": [
+    "HARDEST session. IR-02 is the most complex fix in the plan.",
+    "If estimated context exceeds 60K tokens mid-session → split into sub-sessions 12a and 12b.",
+    "Implement resolveCallChain() in IRBuilder.php: depth limit=2, cycle detection via visited[], SymbolTable::findMethod() for resolution.",
+    "Run SourceSinkVisitor on resolved method bodies — inherit entry_point_id from parent callback.",
+    "Test pattern: callback → $this->helper() → $wpdb->query($input). BEFORE fix: no SQL sink. AFTER fix: SQL sink with correct entry_point_id.",
+    "IR-10 trait resolution (Session 8) is a hard prerequisite — resolveCallChain relies on findMethod() working for trait-defined methods.",
+    "No benchmark test plugin currently covers this pattern — may need to create a minimal test fixture."
+  ],
+  "files_to_read": [
+    {
+      "file": "tools/src/Extractor/IRBuilder.php",
+      "line_range": "full",
+      "reason": "Primary change target — implement resolveCallChain() and integrate into Phase 3 callback body loop"
+    },
+    {
+      "file": "tools/src/Extractor/SymbolTable.php",
+      "line_range": "full",
+      "reason": "Understand findMethod() signature and return format — resolveCallChain depends on this"
+    },
+    {
+      "file": "tools/src/Extractor/Visitors/SourceSinkVisitor.php",
+      "line_range": "full",
+      "reason": "Understand constructor/collect interface — resolveCallChain must instantiate and run SSV on method bodies"
+    }
+  ],
+  "spec": {
+    "IR-02": {
+      "source_ref": "gap-analysis-final.md:355-428",
+      "file": "tools/src/Extractor/IRBuilder.php",
+      "change": "Implement resolveCallChain(array $callExprNodes, SymbolTable $symbols, string $currentClass, string $entryPointId, int $depth=0, int $maxDepth=2, array &$visited=[]): array. For each MethodCall node in callback body: lookup via findMethod(), extract body, run SourceSinkVisitor with inherited entry_point_id, recurse up to depth=2. Integrate into Phase 3 loop after SourceSinkVisitor traversal of callback body.",
+      "note": "NẾUN spec ở đây mâu thuẫn với source_ref → source_ref thắng. Implementation-PLAN.md:964-1033 has the full pseudocode — consult it if spec here is ambiguous."
+    }
+  },
+  "downstream_required": [],
+  "test_command": "php tools/bin/extract.php plugins/<call-chain-test-plugin>/",
+  "test_cases": [
+    "Plugin with pattern: callback → $this->helper() → $wpdb->query($input). BEFORE: no SQL sink in IR. AFTER: SQL sink with correct entry_point_id.",
+    "No regression: backwpup phase3 output unchanged (existing TP=2, FP=0)",
+    "Cycle detection: infinite recursion loop does not occur on deeply nested or circular call chains",
+    "Depth limit: resolveCallChain stops at depth=2 and does not recurse further"
+  ],
+  "commit_message": "Session 12: IR-02 cross-function call chain resolution (depth=2)",
+  "next_session_preview": "Session 13 — A-01: Coverage gap report. Files: IRBuilder.php, EntryPointVisitor.php. Est. context ~30K."
+}
