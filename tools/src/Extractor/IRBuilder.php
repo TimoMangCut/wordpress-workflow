@@ -369,10 +369,12 @@ class IRBuilder
 
                 // Track which class we are currently traversing so method matches
                 // can be scoped correctly (prevents wrong-class-same-name false match).
+                // Use namespacedName when available — same pattern as SymbolTable and
+                // EntryPointVisitor — so the key is always a FQCN (e.g. "A\\Worker").
                 if ($node instanceof \PhpParser\Node\Stmt\Class_) {
-                    // Use the short name (after NameResolver the full name is on namespacedName,
-                    // but we need to match against SymbolTable which stores the short name).
-                    $this->currentClass = $node->name ? $node->name->toString() : null;
+                    $this->currentClass = isset($node->namespacedName)
+                        ? $node->namespacedName->toString()
+                        : ($node->name !== null ? $node->name->toString() : null);
                 }
 
                 // Match by type
@@ -387,13 +389,11 @@ class IRBuilder
                 if (($this->type === 'method' || $this->type === 'static_method')
                     && $node instanceof \PhpParser\Node\Stmt\ClassMethod) {
                     // When a target class is known, require that the method belongs to that class.
-                    // This prevents resolveCallChain() from matching a same-named method in a
-                    // different class that happens to appear earlier in the same file (P1 bug fix).
+                    // Both $this->class (from resolveCallChain) and $this->currentClass (tracked above)
+                    // are fully-qualified names produced by the same namespacedName pattern used in
+                    // SymbolTable and EntryPointVisitor. Exact equality is the correct check.
                     $classMatches = ($this->class === null)
-                        || ($this->currentClass !== null && $this->currentClass === $this->class)
-                        // SymbolTable stores fully-qualified names after NameResolver; also accept
-                        // a suffix match so "NS\\ClassName" matches target class "ClassName".
-                        || ($this->currentClass !== null && str_ends_with($this->class, $this->currentClass));
+                        || ($this->currentClass !== null && $this->currentClass === $this->class);
 
                     if ($classMatches && (
                         $node->name->toString() === $this->name ||
