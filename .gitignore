@@ -11,3 +11,6 @@
 # macOS artifacts
 .DS_Store
 **/.DS_Store
+
+# External tool config (machine-local, not part of pipeline)
+/.codex/

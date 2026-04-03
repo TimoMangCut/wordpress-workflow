@@ -1,7 +1,8 @@
 {
   "session": 8,
+  "_status_note": "Session cards are planning queue only — status here is NOT canonical. See git log + change_manifest_session_8.json for ground truth.",
   "title": "Wave 2 — IR-05: REST permission_callback closure analysis + IR-10: Trait resolution in SymbolTable",
-  "status": "PENDING",
+  "status": "COMPLETED",
   "created_by_session": 7,
   "wave": "Wave 2",
   "dependencies": [

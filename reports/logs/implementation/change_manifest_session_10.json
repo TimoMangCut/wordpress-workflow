@@ -3,6 +3,11 @@
   "date": "2026-04-04",
   "status": "COMPLETED",
   "gaps_addressed": ["A-02", "L-01", "L-02"],
+  "wiring_status": {
+    "A-02": "IMPLEMENTED_NOT_WIRED — generate_threat_context.py runs standalone. Not called by scan-all.sh, run-single-plugin.sh, or any pipeline orchestrator. threat-context output NOT read by phase2-prompt-template.md or phase3_gate.py. Wiring is pending — must be addressed in pre-Session-12 stabilization or explicitly scheduled.",
+    "L-01": "NO_OP — already wired correctly.",
+    "L-02": "WIRED — timing log added to all 5 exit paths in phase3_llm_review.py errlog."
+  },
   "files_modified": [
     {
       "file": "tools/bin/phase3_llm_review.py",

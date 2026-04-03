@@ -1,7 +1,8 @@
 {
   "session": 11,
+  "_status_note": "Session cards are planning queue only — status here is NOT canonical. See git log + change_manifest_session_11.json for ground truth.",
   "title": "Wave 2 Validation — benchmark/results/wave2_results.json",
-  "status": "PENDING",
+  "status": "COMPLETED",
   "created_by_session": 10,
   "wave": "Wave 2",
   "dependencies": [

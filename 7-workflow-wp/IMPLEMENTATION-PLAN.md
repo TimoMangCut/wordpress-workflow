@@ -1,8 +1,8 @@
 # IMPLEMENTATION-PLAN.md — WordPress Audit Pipeline Upgrade
 
-> **Trạng thái:** 🟡 PLANNING — chưa bắt đầu implementation
-> **Last updated:** 2026-04-03
-> **Model thực hiện:** Claude (tôi — mỗi session mới bắt đầu bằng cách đọc file này)
+> **Trạng thái:** 🟡 WAVE 3 IN PROGRESS — Wave 1 ✅ Wave 2 ✅ Wave 3 pending
+> **Last updated:** 2026-04-04
+> **Nguồn sự thật canonical:** `git log` + `change_manifest_session_N.json` + file này. Session cards = planning queue only, status trong đó KHÔNG canonical.
 > **Nguồn tham chiếu:**
 > - `gap-analysis-final.md` — 31 gaps với code evidence
 > - `multi-agent-plan.md` — kiến trúc multi-agent
@@ -15,10 +15,12 @@
 ### 0.1. Nguyên tắc bất biến
 
 1. **Code fixes TRƯỚC multi-agent.** Wave 1 → validate → Wave 2 → validate → Wave 3 → validate → multi-agent. Không shortcut.
-2. **Mỗi session = 1 git commit.** Bắt đầu session = `git status` clean. Kết thúc session = commit + test pass + change_manifest.json generated.
+2. **Mỗi session = 1 git commit.** Bắt đầu session = `git status` sạch (chỉ untracked files là acceptable, modified/staged thì KHÔNG). Kết thúc session = commit + test pass + change_manifest.json generated.
 3. **Test PHẢI pass trước khi sang session tiếp theo.** Không có "fix sau". Nếu test fail → investigate trong session hiện tại.
 4. **Downstream propagation trong cùng session.** Nếu fix IR thêm field mới → prompt template đọc field đó → update cùng session, không defer.
 5. **Không bao giờ để silent failure.** Mọi fix phải có path để verify bằng test command cụ thể.
+6. **Nguồn sự thật canonical là `git log` + `change_manifest_session_N.json` + file này.** Session cards là planning queue; trạng thái trong session_cards KHÔNG canonical và KHÔNG được dùng để kiểm tra tiến độ.
+7. **"Implemented but not wired" ≠ "Done".** Feature chỉ được coi là hoàn tất khi downstream đọc được output của nó. Mỗi wrap-up phải trả lời: (a) feature đã wired chưa? (b) downstream đã đọc field mới chưa? (c) plan/manifest/git có cùng kể một câu chuyện không?
 
 ### 0.2. Context budget
 
@@ -102,9 +104,9 @@ WAVE 1     [x] Session 1  — IR-01, IR-06, IR-09
            [x] Session 5  — AR-02, G-04 gate-side, O-01, O-02, O-03      2026-04-03
            [x] Session 6  — Wave 1 Validation → USER REVIEW ①         2026-04-03
 WAVE 2     [x] Session 7  — IR-03                                   2026-04-03
-           [ ] Session 8  — IR-05, IR-10
+           [x] Session 8  — IR-05, IR-10                           2026-04-03
            [x] Session 9  — P2-05, G-01, G-02   ← 2026-04-03
-           [x] Session 10 — A-02, L-01, L-02   ← 2026-04-04
+           [x] Session 10 — A-02 (impl, not wired), L-01 (no-op), L-02   ← 2026-04-04
            [x] Session 11 — Wave 2 Validation → USER REVIEW ②   ← 2026-04-04
 WAVE 3     [ ] Session 12 — IR-02 (call chain depth=2) ← HARDEST
            [ ] Session 13 — A-01 (coverage gap report)
@@ -129,9 +131,47 @@ Session 2 (IR-04) PHẢI xong trước Session 5 (AR-02)
 Session 8 (IR-10) PHẢI xong trước Session 12 (IR-02)
 Session 6 (Wave 1 validate) PHẢI xong trước Session 7
 Session 11 (Wave 2 validate) PHẢI xong trước Session 12
+[PRE-12 STABILIZATION] PHẢI xong trước Session 12 — xem Section 1.1 bên dưới
 Session 14 (Wave 3 validate) PHẢI xong trước Session 15
 Sessions 15-19 PHẢI xong trước Session 20
 Session 22 CẦN benchmark sẵn từ Session 0
+```
+
+### 1.1. Pre-Session-12 Stabilization Checklist
+
+Chạy checklist này trước khi bắt đầu Session 12. Nếu bất kỳ item nào fail → fix trước, không bỏ qua.
+
+```
+SYNC STATE
+[ ] git status sạch (không có modified files, chỉ untracked là OK)
+[ ] IMPLEMENTATION-PLAN.md session markers đồng bộ với git log
+[ ] change_manifest_session_N.json tồn tại cho mọi session đã chạy (1–11)
+
+WIRING AUDIT (A-02)
+[ ] generate_threat_context.py được gọi trong scan-all.sh hoặc run-single-plugin.sh
+    → Nếu chưa: đánh dấu A-02 là "implemented, not wired" trong IMPLEMENTATION-PLAN
+    → Wire hoặc ghi rõ wiring là scope của session nào
+[ ] phase2-prompt-template.md có section đọc threat-context output
+    → Nếu chưa: tương tự — flag, không giả vờ A-02 đã "done"
+
+CONTRACT MINIMUM (thay vì dời toàn bộ Session 15)
+[ ] Tạo contracts/ir.schema.json — tối thiểu: required fields của IR JSON (entry_points, guards, sources, sinks, unresolved_hooks, metadata)
+[ ] Tạo contracts/finding.schema.json — tối thiểu: required fields (finding_id, verdict, severity, sink_file_path, sink_line_number, entry_point_id)
+[ ] Tạo contracts/threat-context.schema.json — tối thiểu: plugin_slug, matched_categories, priority_vulns, method
+[ ] Verify phase2_postprocess.py FINDING_SCHEMA (P2-05) align với contracts/finding.schema.json
+
+SCRIPT CANONICAL CHECK
+[ ] tools/updated-scripts/ đã có LEGACY.md (đánh dấu không dùng)
+[ ] Mọi pipeline step dùng tools/bin/ không phải tools/updated-scripts/
+
+ARTIFACT FRESHNESS
+[ ] reports/backwpup-threat-context.json được regenerate từ current generate_threat_context.py
+[ ] benchmark/results/wave2_summary.json verdict = APPROVED
+
+Nếu không kịp hoàn thành contract minimum trước Session 12:
+→ Tạo contracts/ directory với stub files và TODO comment
+→ Ghi rõ trong Session 12 change_manifest rằng contracts chưa có
+→ Session 15 giữ nguyên nhưng contracts/ phải được tạo trước khi Session 15 bắt đầu
 ```
 
 ---
