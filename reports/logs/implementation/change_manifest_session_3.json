@@ -1,0 +1,29 @@
+{
+  "session": 3,
+  "date": "2026-04-03",
+  "status": "COMPLETED",
+  "gaps_addressed": ["IR-07", "IR-08"],
+  "files_modified": [
+    {
+      "file": "tools/src/Extractor/Visitors/SourceSinkVisitor.php",
+      "functions_changed": [
+        "detectStorageRead (new)",
+        "detectFuncSink",
+        "checkPrepareUsage",
+        "addSink"
+      ],
+      "lines_affected": "69-354",
+      "behavior_before": "Storage read functions (get_option etc.) were not detected at all. Storage write sinks had no 'key' field. prepare() proximity window was 10 lines.",
+      "behavior_after": "IR-07_reads: STORAGE_READ_MAP constant + detectStorageRead() adds option_read/meta_read entries to sources[] with key field for literal args. IR-07_writes: STORAGE_WRITE_KEY_ARG map + detectFuncSink() extracts key arg for storage write sinks. addSink() signature extended with optional ?string $key = null. IR-08: prepare() proximity window raised from 10 → 30 lines."
+    }
+  ],
+  "downstream_updated": [],
+  "deviations_from_spec": [
+    "STORAGE_WRITE_KEY_ARG includes update_term_meta and update_comment_meta which are not in SINK_MAP. These entries are currently dead (key extraction never fires for them). Kept for forward compatibility when those functions are added to SINK_MAP. No behavioral impact."
+  ],
+  "test_command": "php tools/bin/extract.php plugins/pretty-link/ --json --quiet",
+  "test_result": "PASS: 114 storage read sources (74 with non-null key), 65 storage write sinks (57 with non-null key), 31 matched keys across read+write (gate can now reach 1.0), IR-08 window confirmed <= 30 (not 10)",
+  "discovered_issues": [],
+  "next_session": "session_4",
+  "notes": "All 4 test cases from session card passed. Only PHP source committed — regenerated IR JSON not staged."
+}
