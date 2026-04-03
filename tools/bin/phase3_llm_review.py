@@ -494,6 +494,8 @@ def main() -> int:
         resolved_template = normalize_prompt_for_provider(resolved_template, args.provider)
 
         with err_path.open("w", encoding="utf-8", newline="\n") as err_file:
+            _run_start = time.time()
+            err_file.write(f"[TIMING] start={_run_start:.3f} provider={args.provider} slug={args.slug}\n")
             try:
                 if args.provider == "claude":
                     system_prompt_path = Path(temp_dir) / "system-prompt.txt"
@@ -542,12 +544,27 @@ def main() -> int:
                             elif t == "message_stop":
                                 print(flush=True)
                         if timed_out:
+                            _run_end = time.time()
+                            _elapsed = _run_end - _run_start
+                            err_file.write(
+                                f"[TIMING] end={_run_end:.3f} elapsed={_elapsed:.1f}s exit=timeout\n"
+                            )
                             result = subprocess.CompletedProcess(cmd, 124)
                         else:
                             proc.wait()
+                            _run_end = time.time()
+                            _elapsed = _run_end - _run_start
+                            err_file.write(
+                                f"[TIMING] end={_run_end:.3f} elapsed={_elapsed:.1f}s exit=normal rc={proc.returncode}\n"
+                            )
                             result = subprocess.CompletedProcess(cmd, proc.returncode)
                     except Exception as exc:
                         err_file.write(f"[ERROR] Popen failed: {exc}\n")
+                        _run_end = time.time()
+                        _elapsed = _run_end - _run_start
+                        err_file.write(
+                            f"[TIMING] end={_run_end:.3f} elapsed={_elapsed:.1f}s exit=exception\n"
+                        )
                         result = subprocess.CompletedProcess(cmd, 1)
                 else:
                     prompt = f"{system_prompt}\n\n{resolved_template}"
@@ -566,8 +583,18 @@ def main() -> int:
                         stderr=err_file,
                         timeout=timeout_seconds if timeout_seconds > 0 else None,
                     )
+                    _run_end = time.time()
+                    _elapsed = _run_end - _run_start
+                    err_file.write(
+                        f"[TIMING] end={_run_end:.3f} elapsed={_elapsed:.1f}s exit=normal rc={result.returncode}\n"
+                    )
             except subprocess.TimeoutExpired:
                 err_file.write(f"[ERROR] provider timed out after {timeout_seconds}s\n")
+                _run_end = time.time()
+                _elapsed = _run_end - _run_start
+                err_file.write(
+                    f"[TIMING] end={_run_end:.3f} elapsed={_elapsed:.1f}s exit=timeout\n"
+                )
                 result = subprocess.CompletedProcess(cmd, 124)
 
     if result.returncode != 0:

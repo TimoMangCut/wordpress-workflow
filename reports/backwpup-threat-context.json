@@ -1,0 +1,362 @@
+{
+  "plugin_slug": "backwpup",
+  "profiles_source": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/tools/data/threat-profiles.json",
+  "matched_categories": [
+    "payment",
+    "user_management",
+    "file_management",
+    "api_integration"
+  ],
+  "priority_vulns": [
+    "sqli_in_order_processing",
+    "auth_bypass_checkout",
+    "price_manipulation",
+    "unprotected_webhook",
+    "order_status_idor",
+    "privilege_escalation",
+    "auth_bypass",
+    "account_takeover",
+    "insecure_password_reset",
+    "idor_user_data",
+    "arbitrary_file_upload",
+    "path_traversal",
+    "local_file_inclusion",
+    "remote_file_inclusion",
+    "file_deletion",
+    "ssrf",
+    "exposed_api_credentials",
+    "unvalidated_webhook",
+    "broken_object_level_auth",
+    "insecure_direct_object_reference"
+  ],
+  "categories": {
+    "payment": {
+      "matched": true,
+      "matched_keywords": [
+        "billing",
+        "cart",
+        "checkout",
+        "invoice",
+        "order",
+        "payment",
+        "stripe",
+        "subscription",
+        "transaction",
+        "woocommerce"
+      ],
+      "evidence": [
+        {
+          "file": "assets/js/backwpup-admin.js",
+          "keyword": "order",
+          "line": 1190
+        },
+        {
+          "file": "changelog.txt",
+          "keyword": "woocommerce",
+          "line": 615
+        },
+        {
+          "file": "inc/class-page-jobs.php",
+          "keyword": "stripe",
+          "line": 264
+        },
+        {
+          "file": "src/Admin/Beacon/Beacon.php",
+          "keyword": "payment",
+          "line": 62
+        },
+        {
+          "file": "src/Admin/Notices/LicenseNoticeFactory.php",
+          "keyword": "subscription",
+          "line": 147
+        },
+        {
+          "file": "vendor/aws/aws-sdk-php/src/RetryMiddlewareV2.php",
+          "keyword": "transaction",
+          "line": 30
+        },
+        {
+          "file": "vendor/aws/aws-sdk-php/src/Sdk.php",
+          "keyword": "billing",
+          "line": 99
+        },
+        {
+          "file": "vendor/guzzlehttp/psr7/src/MimeType.php",
+          "keyword": "cart",
+          "line": 110
+        },
+        {
+          "file": "vendor/microsoft/microsoft-graph/src/Model/Payload.php",
+          "keyword": "invoice",
+          "line": 690
+        },
+        {
+          "file": "vendor/microsoft/microsoft-graph/src/Model/PublicationFacet.php",
+          "keyword": "checkout",
+          "line": 61
+        }
+      ],
+      "priority_vulns": [
+        "sqli_in_order_processing",
+        "auth_bypass_checkout",
+        "price_manipulation",
+        "unprotected_webhook",
+        "order_status_idor"
+      ]
+    },
+    "user_management": {
+      "matched": true,
+      "matched_keywords": [
+        "account",
+        "authenticate",
+        "capability",
+        "login",
+        "logout",
+        "password",
+        "profile",
+        "register",
+        "role",
+        "session",
+        "signup",
+        "user_meta"
+      ],
+      "evidence": [
+        {
+          "file": "assets/js/backwpup-admin.js",
+          "keyword": "login",
+          "line": 719
+        },
+        {
+          "file": "assets/js/backwpup-admin.js",
+          "keyword": "password",
+          "line": 1449
+        },
+        {
+          "file": "assets/js/backwpup-admin.js",
+          "keyword": "role",
+          "line": 2594
+        },
+        {
+          "file": "assets/js/backwpup-admin.js",
+          "keyword": "authenticate",
+          "line": 165
+        },
+        {
+          "file": "backwpup.php",
+          "keyword": "register",
+          "line": 70
+        },
+        {
+          "file": "changelog.txt",
+          "keyword": "capability",
+          "line": 705
+        },
+        {
+          "file": "changelog.txt",
+          "keyword": "session",
+          "line": 536
+        },
+        {
+          "file": "inc/class-admin.php",
+          "keyword": "profile",
+          "line": 994
+        },
+        {
+          "file": "inc/class-destination-dropbox-api.php",
+          "keyword": "account",
+          "line": 390
+        },
+        {
+          "file": "inc/class-message-box.php",
+          "keyword": "user_meta",
+          "line": 60
+        },
+        {
+          "file": "vendor/aws/aws-sdk-php/src/SSO/SSOClient.php",
+          "keyword": "logout",
+          "line": 14
+        },
+        {
+          "file": "vendor/microsoft/microsoft-graph/src/Model/AuthenticationFlowsPolicy.php",
+          "keyword": "signup",
+          "line": 86
+        }
+      ],
+      "priority_vulns": [
+        "privilege_escalation",
+        "auth_bypass",
+        "account_takeover",
+        "insecure_password_reset",
+        "idor_user_data"
+      ]
+    },
+    "file_management": {
+      "matched": true,
+      "matched_keywords": [
+        "attachment",
+        "basename",
+        "download",
+        "file",
+        "fopen",
+        "fwrite",
+        "media",
+        "move_uploaded_file",
+        "pathinfo",
+        "unzip",
+        "upload"
+      ],
+      "evidence": [
+        {
+          "file": "assets/js/backup-downloader.js",
+          "keyword": "file",
+          "line": 172
+        },
+        {
+          "file": "assets/js/backup-downloader.js",
+          "keyword": "download",
+          "line": 5
+        },
+        {
+          "file": "assets/js/backwpup-admin.js",
+          "keyword": "upload",
+          "line": 625
+        },
+        {
+          "file": "assets/js/backwpup-job.js",
+          "keyword": "media",
+          "line": 84
+        },
+        {
+          "file": "components/containers/modal.php",
+          "keyword": "pathinfo",
+          "line": 13
+        },
+        {
+          "file": "inc/BackWPup.php",
+          "keyword": "basename",
+          "line": 82
+        },
+        {
+          "file": "inc/class-create-archive.php",
+          "keyword": "fopen",
+          "line": 114
+        },
+        {
+          "file": "inc/class-create-archive.php",
+          "keyword": "fwrite",
+          "line": 255
+        },
+        {
+          "file": "inc/class-destination-email.php",
+          "keyword": "attachment",
+          "line": 244
+        },
+        {
+          "file": "vendor/guzzlehttp/psr7/src/UploadedFile.php",
+          "keyword": "move_uploaded_file",
+          "line": 175
+        },
+        {
+          "file": "vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php",
+          "keyword": "unzip",
+          "line": 3871
+        }
+      ],
+      "priority_vulns": [
+        "arbitrary_file_upload",
+        "path_traversal",
+        "local_file_inclusion",
+        "remote_file_inclusion",
+        "file_deletion"
+      ]
+    },
+    "api_integration": {
+      "matched": true,
+      "matched_keywords": [
+        "api_key",
+        "bearer",
+        "callback",
+        "curl",
+        "endpoint",
+        "http_request",
+        "oauth",
+        "rest_api",
+        "token",
+        "webhook",
+        "wp_remote_get",
+        "wp_remote_post"
+      ],
+      "evidence": [
+        {
+          "file": "assets/js/admin-chatbot.js",
+          "keyword": "endpoint",
+          "line": 3
+        },
+        {
+          "file": "assets/js/backwpup-admin.js",
+          "keyword": "api_key",
+          "line": 290
+        },
+        {
+          "file": "assets/js/backwpup-admin.js",
+          "keyword": "callback",
+          "line": 21
+        },
+        {
+          "file": "changelog.txt",
+          "keyword": "oauth",
+          "line": 384
+        },
+        {
+          "file": "changelog.txt",
+          "keyword": "token",
+          "line": 17
+        },
+        {
+          "file": "changelog.txt",
+          "keyword": "curl",
+          "line": 85
+        },
+        {
+          "file": "inc/class-destination-rsc-downloader.php",
+          "keyword": "wp_remote_get",
+          "line": 76
+        },
+        {
+          "file": "inc/class-job.php",
+          "keyword": "wp_remote_post",
+          "line": 1887
+        },
+        {
+          "file": "src/Admin/Chatbot/API/ChatbotRestSubscriber.php",
+          "keyword": "rest_api",
+          "line": 34
+        },
+        {
+          "file": "src/Infrastructure/Http/Client/WpHttpClient.php",
+          "keyword": "http_request",
+          "line": 122
+        },
+        {
+          "file": "src/Infrastructure/Http/Message/Decorator/AuthorizationRequest.php",
+          "keyword": "bearer",
+          "line": 61
+        },
+        {
+          "file": "vendor/composer/installed.json",
+          "keyword": "webhook",
+          "line": 1179
+        }
+      ],
+      "priority_vulns": [
+        "ssrf",
+        "exposed_api_credentials",
+        "unvalidated_webhook",
+        "broken_object_level_auth",
+        "insecure_direct_object_reference"
+      ]
+    }
+  },
+  "generator": "generate_threat_context.py",
+  "method": "deterministic_keyword_matching"
+}

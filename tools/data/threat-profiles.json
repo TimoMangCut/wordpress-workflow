@@ -1,0 +1,18 @@
+{
+  "payment": {
+    "keywords": ["stripe", "paypal", "woocommerce", "payment", "checkout", "order", "cart", "billing", "invoice", "transaction", "refund", "subscription"],
+    "priority_vulns": ["sqli_in_order_processing", "auth_bypass_checkout", "price_manipulation", "unprotected_webhook", "order_status_idor"]
+  },
+  "user_management": {
+    "keywords": ["register", "login", "logout", "password", "role", "capability", "user_meta", "wp_users", "profile", "account", "signup", "authenticate", "session"],
+    "priority_vulns": ["privilege_escalation", "auth_bypass", "account_takeover", "insecure_password_reset", "idor_user_data"]
+  },
+  "file_management": {
+    "keywords": ["upload", "file", "attachment", "media", "download", "unzip", "fopen", "fwrite", "move_uploaded_file", "wp_handle_upload", "pathinfo", "basename"],
+    "priority_vulns": ["arbitrary_file_upload", "path_traversal", "local_file_inclusion", "remote_file_inclusion", "file_deletion"]
+  },
+  "api_integration": {
+    "keywords": ["api_key", "api_secret", "webhook", "oauth", "token", "bearer", "curl", "wp_remote_get", "wp_remote_post", "http_request", "rest_api", "endpoint", "callback"],
+    "priority_vulns": ["ssrf", "exposed_api_credentials", "unvalidated_webhook", "broken_object_level_auth", "insecure_direct_object_reference"]
+  }
+}
