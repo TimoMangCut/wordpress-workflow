@@ -21,8 +21,15 @@ import argparse
 import json
 import os
 import re
+import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+
+try:
+    import jsonschema
+    _JSONSCHEMA_AVAILABLE = True
+except ImportError:
+    _JSONSCHEMA_AVAILABLE = False
 
 from report_paths import build_report_layout
 
@@ -190,6 +197,32 @@ _AUTH_NORMALIZE = {
 }
 _VALID_AUTH = {"none", "subscriber", "contributor", "author", "editor", "admin", "system", "unknown"}
 
+# P2-05: Schema for soft validation of Phase 2 findings
+FINDING_SCHEMA = {
+    "type": "object",
+    "required": ["finding_id", "verdict"],
+    "properties": {
+        "verdict":            {"enum": ["TP", "FP", "REVIEW"]},
+        "severity":           {"enum": ["critical", "high", "medium", "low", "informational"]},
+        "confidence":         {"type": "number", "minimum": 0, "maximum": 1},
+        "sink_line_number":   {"type": ["integer", "null"]},
+        "source_line_number": {"type": ["integer", "null"]},
+    },
+}
+
+
+def validate_findings_schema(findings: List[dict]) -> None:
+    """P2-05: Soft schema validation — print [WARN] to stderr, never block pipeline."""
+    if not _JSONSCHEMA_AVAILABLE:
+        print("[WARN] jsonschema not installed — schema validation skipped", file=sys.stderr)
+        return
+    for finding in findings:
+        try:
+            jsonschema.validate(finding, FINDING_SCHEMA)
+        except jsonschema.ValidationError as e:
+            fid = finding.get("finding_id", "<no id>")
+            print(f"[WARN] Schema issue in {fid}: {e.message}", file=sys.stderr)
+
 
 def normalize_auth(value: Any) -> str:
     """P2-03: Normalize auth_required to a canonical gate-comparable value."""
@@ -257,6 +290,9 @@ def main() -> int:
 
     findings = data.get("findings", []) or []
     downgraded = 0
+
+    # P2-05: Soft schema validation — warn on stderr, never block pipeline
+    validate_findings_schema(findings)
 
     for f in findings:
         issues: List[str] = []

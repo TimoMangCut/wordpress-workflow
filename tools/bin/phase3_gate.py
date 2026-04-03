@@ -734,8 +734,22 @@ class SemanticValidator:
         claims_no_nonce = ("no nonce" in reasoning) or ("missing nonce" in reasoning)
         claims_no_cap = ("no capability" in reasoning) or ("missing capability" in reasoning)
 
-        has_effective_nonce = any(g.get("type") == "nonce_check" and g.get("is_effective") for g in guards)
-        has_effective_cap = any(g.get("type") == "capability_check" and g.get("is_effective") for g in guards)
+        # G-01: Three-state guard classification — is True / is None / is False (E4)
+        # NEVER use truthy check: None and False are both falsy but have different semantics.
+        nonce_guards = [g for g in guards if g.get("type") == "nonce_check"]
+        cap_guards   = [g for g in guards if g.get("type") == "capability_check"]
+
+        def _classify(guard_list):
+            effective = [g for g in guard_list if g.get("is_effective") is True]
+            unknown   = [g for g in guard_list if g.get("is_effective") is None]
+            broken    = [g for g in guard_list if g.get("is_effective") is False]
+            return effective, unknown, broken
+
+        nonce_eff, nonce_unk, nonce_brk = _classify(nonce_guards)
+        cap_eff,   cap_unk,   cap_brk   = _classify(cap_guards)
+
+        has_effective_nonce = bool(nonce_eff)
+        has_effective_cap   = bool(cap_eff)
 
         if claims_no_nonce and has_effective_nonce:
             return 0.0, "contradiction: finding claims no nonce, IR has effective nonce guard"
@@ -746,8 +760,19 @@ class SemanticValidator:
         if (not claims_no_nonce and not claims_no_cap) and (has_effective_nonce or has_effective_cap):
             return 0.9, "IR indicates guards present; finding does not claim missing guards"
 
-        # Unknown/neutral (IR may miss custom guards)
-        return 0.7, "no direct guard contradiction detected"
+        # Three-state scoring for remaining cases
+        all_effective = nonce_eff + cap_eff
+        all_unknown   = nonce_unk + cap_unk
+        all_broken    = nonce_brk + cap_brk
+
+        if all_effective:
+            return 0.9, "confirmed effective guard"
+        if all_unknown:
+            funcs = [g.get("function_called", "?") for g in all_unknown]
+            return 0.6, f"potential custom guard detected (is_effective=null): {funcs}"
+        if all_broken:
+            return 0.2, "guard detected but confirmed ineffective"
+        return 0.1, "no guard detected"
 
     def _check_sanitizer_claim(self, finding: dict) -> Tuple[Optional[float], str]:
         """Sanitizer correctness is hard to prove deterministically.
@@ -942,10 +967,47 @@ class SemanticValidator:
         elif len(reasoning) >= 110:
             score += 0.12
 
-        # REQUIRED: file:line references
-        if re.search(r"[\w/.-]+\.php[:\s]+(?:line\s*)?\d+", reasoning):
-            score += 0.25
+        # G-02: Cross-reference file:line against finding's claimed locations
+        # Source_ref: gap-analysis-final.md:1021-1086
+        # Replace keyword bonus (+0.10 for "however"/"but") — gameable.
+        # Replace simple file:line presence check (+0.25/-0.15) with location matching.
+        refs = re.findall(r"([\w/.-]+\.php)[:\s]+(?:line\s*)?(\d+)", reasoning)
+        if refs:
+            verdict = finding.get("verdict", "")
+            if verdict == "FP":
+                # FP findings: cross-reference against fp_evidence location (not sink)
+                fp_ev = finding.get("fp_evidence") or {}
+                check_file = _norm_path(fp_ev.get("file", ""))
+                check_line = safe_int(fp_ev.get("line", 0))
+                if not check_file:
+                    pass  # FP without fp_evidence → skip cross-ref, no bonus no penalty
+                else:
+                    matched = any(
+                        paths_match(_norm_path(rf), check_file) and abs(int(rl) - check_line) <= 10
+                        for rf, rl in refs
+                    )
+                    score += 0.25 if matched else -0.10
+            else:
+                # TP/REVIEW: cross-reference against sink AND source locations
+                sink_file   = _norm_path(finding.get("sink_file_path", ""))
+                sink_line   = safe_int(finding.get("sink_line_number", 0))
+                source_file = _norm_path(finding.get("source_file_path", ""))
+                source_line = safe_int(finding.get("source_line_number", 0))
+
+                matched = False
+                for ref_file, ref_line_str in refs:
+                    ref_file_norm = _norm_path(ref_file)
+                    ref_line = int(ref_line_str)
+                    if paths_match(ref_file_norm, sink_file) and abs(ref_line - sink_line) <= 10:
+                        matched = True
+                        break
+                    if source_file and paths_match(ref_file_norm, source_file) and abs(ref_line - source_line) <= 10:
+                        matched = True
+                        break
+
+                score += 0.25 if matched else -0.10
         else:
+            # No file:line references at all
             score -= 0.15
 
         # entry_point_id binding (exact)
@@ -965,9 +1027,7 @@ class SemanticValidator:
         if any(w in rlow for w in ["nonce", "capability", "current_user_can", "permission_callback", "sanitize", "escape", "prepare"]):
             score += 0.12
 
-        # Refute-first signals
-        if any(w in rlow for w in ["however", "but", "although", "despite", "refute", "disprove", "protected by", "safe because"]):
-            score += 0.10
+        # G-02: "however"/"but" keyword bonus removed — gameable (source_ref: gap-analysis-final.md:1007-1025)
 
         # Penalize short generic templates
         generic = ["attacker could", "this is vulnerable because", "no sanitization is applied", "attacker can exploit"]
