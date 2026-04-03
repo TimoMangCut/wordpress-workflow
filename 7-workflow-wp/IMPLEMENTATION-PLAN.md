@@ -1081,7 +1081,7 @@ php tools/bin/extract.php plugins/<call-chain-test-plugin>/
 ### Session 13 — A-01: Coverage gap report
 
 ```
-Status: [ ] PENDING
+Status: [x] COMPLETED — 2026-04-04
 Files sẽ đọc: IRBuilder.php (4.5K), EntryPointVisitor.php (2K relevant)
 Est. context: ~30K tokens
 Dependencies: Session 11 PASS

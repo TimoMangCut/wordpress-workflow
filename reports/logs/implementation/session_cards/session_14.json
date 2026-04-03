@@ -1,0 +1,55 @@
+{
+  "session": 14,
+  "title": "Wave 3 Validation",
+  "status": "PENDING",
+  "created_by_session": 13,
+  "wave": "Wave 3",
+  "dependencies": [
+    {"session": 13, "reason": "A-01 must be COMPLETED — Wave 3 contains IR-02 + A-01 + A-03. A-03 is out of scope for this wave validate (not yet implemented). Wave 3 validate covers IR-02 + A-01 only."}
+  ],
+  "gaps": ["IR-02", "A-01"],
+  "critical_notes": [
+    "This is a VALIDATE session — do NOT write source code.",
+    "Read benchmark results and change manifests only. No IRBuilder.php reads.",
+    "Wave 3 = IR-02 (Session 12) + A-01 (Session 13). A-03 is deferred.",
+    "Create benchmark/results/wave3_results.json by running python3 benchmark/compare.py --all",
+    "Output wave3_summary.json with verdict APPROVED|REGRESSION, metrics_delta, regressions[].",
+    "Verify: backwpup QS=1.0 DR=1.0 TP=2 FP=0 FN=0 holds after both IR-02 and A-01.",
+    "Verify: coverage_gaps field present in backwpup IR with >0 entries.",
+    "Verify: call-chain-test SQL sinks still correct (if fixture still present)."
+  ],
+  "files_to_read": [
+    {
+      "file": "benchmark/results/baseline.json",
+      "line_range": "full",
+      "reason": "Baseline metrics to compare against"
+    },
+    {
+      "file": "reports/logs/implementation/change_manifest_session_12.json",
+      "line_range": "full",
+      "reason": "IR-02 test_result and gaps_addressed"
+    },
+    {
+      "file": "reports/logs/implementation/change_manifest_session_13.json",
+      "line_range": "full",
+      "reason": "A-01 test_result and gaps_addressed"
+    }
+  ],
+  "spec": {
+    "VALIDATE-WAVE3": {
+      "source_ref": "gap-analysis-final.md:1337-1340",
+      "file": "benchmark/results/wave3_summary.json",
+      "change": "Run python3 benchmark/compare.py --all, capture output as wave3_results.json. Then compare against baseline.json. Output wave3_summary.json with fields: wave, verdict, metrics_delta, sessions_covered, regressions[], approved_to_proceed.",
+      "note": "NẾUN spec ở đây mâu thuẫn với source_ref → source_ref thắng"
+    }
+  },
+  "downstream_required": [],
+  "test_command": "python3 benchmark/compare.py --all",
+  "test_cases": [
+    "backwpup QS=1.0 DR=1.0 TP=2 FP=0 FN=0 — no regression vs baseline",
+    "coverage_gaps field present in backwpup IR (cat reports/phase1/backwpup-ir.json | python3 -c 'import json,sys; ir=json.load(sys.stdin); print(len(ir.get(\"coverage_gaps\",[])))') > 0",
+    "wave3_summary.json verdict = APPROVED"
+  ],
+  "commit_message": "Session 14: Wave 3 validation — IR-02 + A-01 APPROVED",
+  "next_session_preview": "Session 15 — Schema contracts. Files: contracts/*.json (stubs already exist from Session 12). Full JSON Schema for IR, finding, threat-context. Est. context ~20K."
+}
