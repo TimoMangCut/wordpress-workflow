@@ -1,13 +1,18 @@
 {
   "session": 13,
   "title": "A-01: Coverage gap report in IR",
-  "status": "PENDING",
+  "status": "COMPLETED",
   "created_by_session": 12,
   "wave": "Wave 3",
   "dependencies": [
-    {"session": 12, "reason": "IR-02 call chain resolution must be COMPLETED — A-01 adds coverage_gaps field to IR output which depends on Phase 4 file-level scan already in place."}
+    {
+      "session": 12,
+      "reason": "IR-02 call chain resolution must be COMPLETED — A-01 adds coverage_gaps field to IR output which depends on Phase 4 file-level scan already in place."
+    }
   ],
-  "gaps": ["A-01"],
+  "gaps": [
+    "A-01"
+  ],
   "critical_notes": [
     "Add 'coverage_gaps' field to IR output in build() — populated during Phase 4 file-level scan.",
     "A file is a coverage gap if: it has security signals (wp_verify_nonce, check_ajax_referer, current_user_can, wp_die, $wpdb, sanitize_) BUT no entry points discovered in that file.",
