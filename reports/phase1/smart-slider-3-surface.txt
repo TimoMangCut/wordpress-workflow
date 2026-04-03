@@ -1,0 +1,93 @@
+=== SURFACE MAP: smart-slider-3 ===
+Generated: 2026-04-02T22:24:25+07:00
+
+--- ENTRY POINTS ---
+[REST routes]
+[AJAX handlers]
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Platform/WordPress/Integration/Elementor/Elementor.php:43:        add_action('wp_ajax_elementor_ajax', array(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Platform/WordPress/Integration/Elementor/Elementor.php:48:        add_action('wp_ajax_elementor_render_widget', array(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Platform/WordPress/Integration/NimbleBuilder/NimbleBuilder.php:14:            add_action('wp_ajax_sek_get_content', array(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Platform/WordPress/Integration/Divi/V31lt/DiviV31lt.php:26:        add_action('wp_ajax_et_fb_retrieve_builder_data', array(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Platform/WordPress/Integration/ThemifyBuilder/ThemifyBuilder.php:24:        add_action('wp_ajax_tb_render_element_shortcode', array(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Platform/WordPress/Integration/ThemifyBuilder/ThemifyBuilder.php:31:        add_action('wp_ajax_tb_load_module_partial', array(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Platform/WordPress/Integration/ThemifyBuilder/ThemifyBuilder.php:38:        add_action('wp_ajax_tb_render_element', array(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Platform/WordPress/Admin/AdminHelper.php:35:        add_action('wp_ajax_smart-slider3', array(
+[Admin POST]
+[Shortcodes + Blocks]
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Platform/WordPress/Integration/Fusion/FusionElementSmartSlider3.php:20:        add_shortcode('fusion_smartslider3', array(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Platform/WordPress/Integration/VisualComposer1/VisualComposer1.php:9:use function vc_add_shortcode_param;
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Platform/WordPress/Integration/VisualComposer1/VisualComposer1.php:76:        vc_add_shortcode_param('smartslider', array(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Platform/WordPress/Integration/Gutenberg/Gutenberg.php:42:        register_block_type('nextend/smartslider3', array(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Platform/WordPress/Shortcode/Shortcode.php:418:        add_shortcode('smartslider3', array(
+
+--- SECURITY GUARDS ---
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/Framework/Form/WordPress/PlatformForm.php:22:        return wp_verify_nonce(Request::$REQUEST->getVar('nextend_nonce'), 'nextend_security');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/Framework/Browse/ControllerAjaxBrowse.php:145:        if (!current_user_can('upload_files')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/Framework/Acl/WordPress/WordPressAcl.php:6:use function current_user_can;
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/Framework/Acl/WordPress/WordPressAcl.php:11:        return current_user_can($action) && current_user_can('unfiltered_html');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Platform/WordPress/Admin/AdminHelper.php:71:        if (current_user_can('smartslider_edit') && intval(Settings::get('wp-adminbar', 1))) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Platform/WordPress/Admin/AdminHelper.php:116:        if (!current_user_can('unfiltered_html')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Platform/WordPress/Admin/AdminHelper.php:273:        if ($file === NEXTEND_SMARTSLIDER_3_BASENAME && current_user_can('manage_options')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Platform/WordPress/HelperTinyMCE.php:30:        if ((!current_user_can('edit_posts') && !current_user_can('edit_pages'))) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Platform/WordPress/HelperInstall.php:36:        } else if (Request::$REQUEST->getInt('repairss3') && current_user_can('manage_options') && check_admin_referer('repairss3')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Platform/WordPress/WordPressFrontend.php:24:            if (current_user_can('smartslider') || current_user_can('edit_posts') || current_user_can('edit_pages')) {
+
+--- SINKS ---
+[SQL]
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/Framework/Database/WordPress/WordPressConnector.php:64:        return $this->checkError($this->db->get_row($this->_querySQL($query, $attributes), ARRAY_A));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/Framework/Database/WordPress/WordPressConnector.php:68:        $result = $this->checkError($this->db->get_results($this->_querySQL($query, $attributes), $type == 'assoc' ? ARRAY_A : OBJECT_K));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/Framework/Database/WordPress/WordPressConnectorTable.php:27:        return self::$connector->checkError(self::$db->get_row($query, ARRAY_A));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/Framework/Database/WordPress/WordPressConnectorTable.php:32:        return self::$connector->checkError(self::$db->get_row($this->_findByAttributesSQL($attributes, $fields, $order), ARRAY_A));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/Framework/Database/WordPress/WordPressConnectorTable.php:38:        return self::$connector->checkError(self::$db->get_results($this->_findByAttributesSQL(array(), false, $order), ARRAY_A));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/Framework/Database/WordPress/WordPressConnectorTable.php:43:        return self::$connector->checkError(self::$db->get_results($this->_findByAttributesSQL($attributes, $fields, $order), ARRAY_A));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/Framework/Settings.php:30:            if ($wpdb->get_var("SHOW TABLES LIKE '" . $wpdb->prefix . "nextend2_section_storage'") != $wpdb->prefix . 'nextend2_section_storage') {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Platform/WordPress/Widget/WidgetSmartSlider3.php:63:            $instance['slider'] = $wpdb->get_var('SELECT id FROM ' . $wpdb->prefix . 'nextend2_smartslider3_sliders WHERE slider_status = \'published\' LIMIT 0,1');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Platform/WordPress/Widget/WidgetSmartSlider3.php:142:                        $value = $wpdb->get_var('SELECT id FROM ' . $wpdb->prefix . 'nextend2_smartslider3_sliders WHERE slider_status = \'published\' LIMIT 0,1');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Platform/WordPress/Admin/AdminHelper.php:237:        $sliders = $wpdb->get_results($query, ARRAY_A);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Platform/WordPress/HelperInstall.php:72:            $wpdb->query('DROP TABLE IF EXISTS ' . $prefix . 'nextend2_image_storage, ' . $prefix . 'nextend2_section_storage;');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Platform/WordPress/HelperInstall.php:73:            $wpdb->query('DROP TABLE IF EXISTS ' . $prefix . 'nextend2_smartslider3_generators, ' . $prefix . 'nextend2_smartslider3_sliders,	' . $prefix . 'nextend2_smartslider3_slides, ' . $prefix . 'nextend2_smartslider3_sliders_xref;');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Generator/WordPress/Posts/Elements/PostsMetaKeys.php:25:        $meta_keys = $wpdb->get_results($query, ARRAY_A);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Generator/WordPress/Posts/Elements/PostsCustomFields.php:28:        $meta_keys = $wpdb->get_col($wpdb->prepare($query, $this->postType));
+[File ops]
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/Framework/Misc/Zip/Reader/Custom.php:32:        $this->fileHandle = fopen($this->file, 'rb');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/Framework/Form/Element/MarginPadding.php:27:        $html        .= '<div class="n2_field_margin_padding__pre_label"><i class="ssi_16 ssi_16--unlink"></i></div>';
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/Framework/Form/Element/Gap.php:27:        $html        .= '<div class="n2_field_margin_padding__pre_label"><i class="ssi_16 ssi_16--unlink"></i></div>';
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/Framework/Cache/Storage/Filesystem.php:55:            @unlink($this->paths[$scope] . '/' . $group . '/' . $key);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/Framework/Cache/CacheImage.php:115:        if (ini_get('allow_url_fopen')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/Framework/Asset/Css/Less/LessCompiler.php:133:        $root   = $parser->parse(file_get_contents($realPath));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/Framework/Asset/Css/Less/LessCompiler.php:1874:        $out = $this->compile(file_get_contents($fname), $fname);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/Framework/Asset/Css/Less/LessCompiler.php:1879:            return file_put_contents($outFname, $out);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/Framework/Filesystem/AbstractPlatformFilesystem.php:207:        if (!is_dir($dir) || is_link($dir)) return unlink($dir);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/Framework/Filesystem/AbstractPlatformFilesystem.php:256:        return file_put_contents($path, $buffer);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/Framework/Filesystem/AbstractPlatformFilesystem.php:265:        return file_get_contents($path);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/Framework/Filesystem/AbstractPlatformFilesystem.php:346:        $fp = @fopen($temp_filename, 'x');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/Framework/Image/ImageEdit.php:503:        $fp = fopen($path, 'r');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/Framework/Image/ImageEdit.php:559:            if (!$extension || (strtolower($extension) === 'webp' && !function_exists('imagecreatefromwebp')) || !ini_get('allow_url_fopen')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/Framework/FastImageSize/FastImageSize.php:190:            $this->data = @file_get_contents($filename, false, null, $offset, $length);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/Framework/Browse/BulletProof/BulletProof.php:249:        if (file_exists($fileToDelete) && !unlink($fileToDelete)) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/Framework/Application/AbstractApplicationType.php:156:        return file_get_contents(self::getAssetsPath() . '/images/logo.svg');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/BackupSlider/ExportSlider.php:82:                    $zip->addFile(file_get_contents($fileName), 'sliders/' . $k . '.ss3');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/BackupSlider/ExportSlider.php:83:                    unlink($fileName);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/BackupSlider/ExportSlider.php:184:                    $zip->addFile(file_get_contents($file), 'images/' . $fileName);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/BackupSlider/ExportSlider.php:302:                $this->files[$path] = file_get_contents($file);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/BackupSlider/ExportSlider.php:404:                $this->files['images/' . $fileName] = file_get_contents($path);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/BackupSlider/ExportSlider.php:515:        return $this->addCSSFileWithContent($file, file_get_contents($file));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/BackupSlider/ExportSlider.php:575:            $this->files['css/assets/' . $fileName] = file_get_contents($path);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/BackupSlider/ImportSlider.php:54:            file_put_contents($tmp, $filePathOrData);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/BackupSlider/ImportSlider.php:59:            @unlink($tmp);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Platform/WordPress/Integration/Divi/V31ge/includes/modules/SmartSlider3/SmartSlider3.php:43:                echo esc_js(file_get_contents($path));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Platform/WordPress/Integration/BeaverBuilder/SmartSlider3.php:27:        return file_get_contents(dirname(__FILE__) . '/icon.svg');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Platform/WordPress/Shortcode/Shortcode.php:260:            $script = file_get_contents($path);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Slider/SliderType/AbstractSliderTypeCss.php:72:                $css = file_get_contents($cssPath);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Application/Admin/Slider/ControllerSlider.php:220:                case 'unlink':
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Application/Admin/Sliders/ControllerAjaxSliders.php:104:                    case 'unlink':
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Application/Admin/Sliders/ControllerAjaxSliders.php:304:                        @unlink($file);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Application/Admin/Sliders/ControllerSliders.php:79:                $zip->addFile(file_get_contents($file), basename($file));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Application/Admin/Sliders/ControllerSliders.php:80:                unlink($file);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Application/Admin/Help/ControllerHelp.php:37:        $out       = fopen($errorFile, "w");
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Application/Admin/Help/ControllerHelp.php:66:        $log[] = htmlspecialchars(file_get_contents($errorFile));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Application/Admin/Help/ControllerHelp.php:67:        unlink($errorFile);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Application/Model/ModelSliders.php:563:            return 'unlink';
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/smart-slider-3/Nextend/SmartSlider3/Application/Model/ModelSliders.php:660:            return 'unlink';
+
+--- REST JSON (magic quote bypass) ---

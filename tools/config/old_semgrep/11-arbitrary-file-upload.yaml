@@ -1,0 +1,74 @@
+rules:
+  # =============================================================================
+  # ARBITRARY FILE UPLOAD - WordPress
+  # CWE-434: Unrestricted Upload of File with Dangerous Type
+  # =============================================================================
+
+  - id: wp-arbitrary-file-upload
+    mode: taint
+    languages: [php]
+    severity: ERROR
+    message: >-
+      Arbitrary File Upload: User-controlled file written to server without proper
+      type validation. Can lead to RCE via PHP shell upload.
+    metadata:
+      cwe: ["CWE-434"]
+      owasp: ["A04:2021 - Insecure Design"]
+      category: security
+      technology: [wordpress]
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+
+    pattern-sources:
+      - pattern: $_FILES
+      - pattern: $_FILES[...]
+      - pattern: $request->get_file_params()
+      - pattern: $request->get_file_params()[...]
+
+    pattern-sinks:
+      # PHP native
+      - pattern: move_uploaded_file($TMP, $PATH)
+      - pattern: file_put_contents($PATH, ...)
+      - pattern: fwrite($HANDLE, ...)
+      - pattern: copy($SRC, $DEST)
+      - pattern: rename($OLD, $NEW)
+      # WordPress filesystem
+      - pattern: $wp_filesystem->put_contents(...)
+      - pattern: $wp_filesystem->move(...)
+      - pattern: $wp_filesystem->copy(...)
+      # Archive extraction (Zip Slip)
+      - pattern: $ZIP->extractTo(...)
+      - pattern: unzip_file(...)
+
+    pattern-sanitizers:
+      # Proper file type validation
+      - pattern: wp_check_filetype_and_ext(...)
+      - pattern: wp_check_filetype(...)
+      - pattern: wp_handle_upload(...)
+      - pattern: wp_handle_sideload(...)
+      # Path sanitization
+      - pattern: sanitize_file_name(...)
+      - pattern: basename(...)
+      # Type validation
+      - pattern: in_array(..., $WHITELIST, true)
+      - pattern: in_array(..., $WHITELIST, ...)
+      - pattern: absint(...)
+      - pattern: intval(...)
+      - pattern: (int)$X
+
+  - id: wp-upload-test-type-false
+    languages: [php]
+    severity: WARNING
+    message: >-
+      Insecure Upload: wp_handle_upload() with test_type=false disables ALL filetype
+      checking. Attacker can upload PHP files for remote code execution.
+    patterns:
+      - pattern: wp_handle_upload(..., array(..., 'test_type' => false, ...), ...)
+      - pattern: wp_handle_sideload(..., array(..., 'test_type' => false, ...), ...)
+    metadata:
+      cwe: ["CWE-434"]
+      category: security
+      technology: [wordpress]
+      confidence: HIGH
+      impact: HIGH

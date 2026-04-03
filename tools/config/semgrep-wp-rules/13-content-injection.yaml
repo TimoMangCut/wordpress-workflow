@@ -1,0 +1,91 @@
+rules:
+  # =============================================================================
+  # CONTENT INJECTION - WordPress (v5 - Full REST API Sources)
+  # CWE-74: Improper Neutralization of Special Elements in Output
+  # =============================================================================
+
+  - id: wp-content-injection-do-shortcode
+    mode: taint
+    languages: [php]
+    severity: WARNING
+    message: >-
+      Content/Shortcode Injection: User input concatenated into do_shortcode() string.
+      Attacker can inject arbitrary shortcode tags like [contact-form-7].
+      Validate input or strip shortcode brackets.
+    metadata:
+      cwe: ["CWE-74"]
+      owasp: ["A03:2021 - Injection"]
+      category: security
+      technology: [wordpress]
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: MEDIUM
+
+    pattern-sources:
+      - pattern: $_GET[...]
+      - pattern: $_POST[...]
+      - pattern: $_REQUEST[...]
+      - pattern: $atts[...]
+      # REST API
+      - pattern: $request->get_param(...)
+      - pattern: $request->get_params()
+      - pattern: $request->get_json_params()
+      - pattern: $request->get_body_params()
+      - pattern: $request[...]
+
+    pattern-sinks:
+      - pattern: do_shortcode(...)
+
+    pattern-sanitizers:
+      - pattern: wp_kses(...)
+      - pattern: wp_kses_post(...)
+      - pattern: wp_strip_all_tags(...)
+      - pattern: sanitize_text_field(...)
+      - pattern: strip_shortcodes(...)
+      - pattern: esc_html(...)
+      - pattern: esc_attr(...)
+      - pattern: absint(...)
+      - pattern: intval(...)
+      - pattern: (int)$X
+
+  - id: wp-content-injection-insert-post
+    mode: taint
+    languages: [php]
+    severity: WARNING
+    message: >-
+      Content Injection: User input flows into wp_insert_post/wp_update_post
+      without content sanitization. Can create/modify posts with arbitrary content.
+    metadata:
+      cwe: ["CWE-74"]
+      owasp: ["A01:2021 - Broken Access Control"]
+      category: security
+      technology: [wordpress]
+      confidence: LOW
+      likelihood: MEDIUM
+      impact: MEDIUM
+
+    pattern-sources:
+      - pattern: $_GET[...]
+      - pattern: $_POST[...]
+      - pattern: $_REQUEST[...]
+      - pattern: file_get_contents("php://input")
+      # REST API
+      - pattern: $request->get_param(...)
+      - pattern: $request->get_params()
+      - pattern: $request->get_json_params()
+      - pattern: $request->get_body()
+      - pattern: $request->get_body_params()
+      - pattern: $request[...]
+
+    pattern-sinks:
+      - pattern: wp_insert_post(...)
+      - pattern: wp_update_post(...)
+
+    pattern-sanitizers:
+      - pattern: wp_kses(...)
+      - pattern: wp_kses_post(...)
+      - pattern: sanitize_text_field(...)
+      - pattern: current_user_can(...)
+      - pattern: absint(...)
+      - pattern: intval(...)
+      - pattern: (int)$X

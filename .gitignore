@@ -1,0 +1,13 @@
+# Runtime environments (rebuild locally)
+/tmmc/
+/tools/vendor/
+
+# Generated databases (rebuild from Phase 1)
+/data/audit.db
+
+# Plugin source code (sync separately)
+/plugins/
+
+# macOS artifacts
+.DS_Store
+**/.DS_Store

@@ -1,0 +1,96 @@
+{
+  "session": 4,
+  "title": "P2-01/G-04 (FP evidence) + P2-02 (dismissed signals) + P2-03 (auth normalize) + P2-04 (quick triage)",
+  "status": "PENDING",
+  "wave": "Wave 1",
+  "dependencies": [
+    {"session": 1, "reason": "P2-04 dùng unresolved_hooks từ IR-01 fix"}
+  ],
+  "gaps": ["P2-01", "G-04", "P2-02", "P2-03", "P2-04"],
+  "critical_notes": [
+    "P2-01 + G-04: hai enforcement points cho cùng issue — fix cả hai trong session này",
+    "P2-02: phase2_postprocess.py hiện KHÔNG load semgrep.json — cần thêm --semgrep-report arg VÀ update run-phase2.sh call",
+    "P2-04: chỉ thêm unresolved_count check vào điều kiện escalate — không đổi logic khác"
+  ],
+  "files_to_read": [
+    {
+      "file": "tools/config/phase2-prompt-template.md",
+      "line_range": "full",
+      "reason": "61 lines — cần full để thêm FP evidence requirement đúng vị trí"
+    },
+    {
+      "file": "tools/bin/phase2_postprocess.py",
+      "line_range": "full",
+      "reason": "345 lines — cần full để thêm dismissed_signals, auth normalize, schema validation"
+    },
+    {
+      "file": "tools/bin/run-phase2.sh",
+      "line_range": "330-380",
+      "reason": "Quick triage logic (P2-04) + postprocess call (P2-02 downstream)"
+    },
+    {
+      "file": "tools/bin/phase3_gate.py",
+      "line_range": "335-365",
+      "reason": "FP handling block (G-04) — nhánh verdict == 'FP' bắt đầu dòng 342 (đã verify)"
+    }
+  ],
+  "spec": {
+    "P2-01_prompt": {
+      "source_ref": "gap-analysis-final.md:856-904",
+      "file": "tools/config/phase2-prompt-template.md",
+      "change": "Thêm required fields cho FP verdict: fp_reason (string) và fp_evidence (object: defense, file, line)",
+      "allowed_defense_types": [
+        "no_user_input_reachable", "sanitized_before_sink",
+        "hardcoded_value", "internal_call_only",
+        "capability_required_enforced", "nonce_enforced",
+        "dead_code", "other"
+      ]
+    },
+    "G-04_gate": {
+      "source_ref": "gap-analysis-final.md:856-904",
+      "file": "tools/bin/phase3_gate.py",
+      "target": "nhánh verdict == 'FP' trong _validate_finding()",
+      "change": "Thêm check fp_reason present + file_exists check trên fp_evidence.file",
+      "behavior": "issues[] populated nếu fp_reason missing hoặc fp_evidence.file không tồn tại. Không thay đổi validation_status."
+    },
+    "P2-02": {
+      "source_ref": "gap-analysis-final.md:907-925",
+      "file": "tools/bin/phase2_postprocess.py",
+      "change_1": "Thêm --semgrep-report CLI argument",
+      "change_2": "Implement find_dismissed_signals(phase2_data, semgrep_data): list",
+      "change_3": "Output: phase2_data['dismissed_signals'] = list of {file, line, rule}",
+      "downstream_run_phase2": "Update postprocess call trong run-phase2.sh để pass --semgrep-report"
+    },
+    "P2-03": {
+      "source_ref": "gap-analysis-final.md:928-942",
+      "file": "tools/bin/phase2_postprocess.py",
+      "change": "Thêm AUTH_NORMALIZE dict + normalize_auth() function, apply trong postprocess loop",
+      "key_mappings": {
+        "unauthenticated": "none", "anonymous": "none", "public": "none",
+        "any logged-in user": "subscriber", "logged_in": "subscriber",
+        "administrator": "admin", "administrators": "admin",
+        "super admin": "system", "network admin": "system"
+      }
+    },
+    "P2-04": {
+      "source_ref": "gap-analysis-final.md:944-972",
+      "file": "tools/bin/run-phase2.sh",
+      "target_lines_approx": "340-360",
+      "change": "Thêm unresolved_count check vào quick-triage escalation condition",
+      "code": "unresolved_count=$(python3 -c \"import json,sys; d=json.load(open('${ir_file}')); print(len(d.get('unresolved_hooks',[])))\" 2>/dev/null || echo 0)"
+    }
+  },
+  "downstream_required": [
+    "tools/bin/run-phase2.sh — update postprocess call để pass --semgrep-report (P2-02 downstream)"
+  ],
+  "test_command": "Run phase2 postprocess với test input có FP findings và semgrep output",
+  "test_cases": [
+    "FP finding với fp_reason + fp_evidence → gate issues[] empty",
+    "FP finding không có fp_reason → gate issues[] có warning",
+    "auth_required='administrator' trong phase2 output → normalized thành 'admin'",
+    "Plugin với dynamic hooks (unresolved_count > 0) → không bị skip sang quick-only mode",
+    "Semgrep hit không có matching finding → xuất hiện trong dismissed_signals"
+  ],
+  "commit_message": "Session 4: P2-01/G-04 FP evidence + P2-02 dismissed signals + P2-03 auth normalize + P2-04 quick triage",
+  "next_session_preview": "Session 5 — AR-02 (per-sink severity) + O-01/02/03 (output quality)"
+}

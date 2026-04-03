@@ -1,0 +1,59 @@
+rules:
+  # =============================================================================
+  # COMMAND INJECTION - WordPress/PHP (v5 - Full REST API Sources)
+  # CWE-78: OS Command Injection
+  # =============================================================================
+
+  - id: wp-command-injection
+    mode: taint
+    languages: [php]
+    severity: WARNING
+    message: >-
+      OS Command Injection: User input in shell command execution.
+      Use escapeshellarg() for arguments, escapeshellcmd() for commands.
+    metadata:
+      cwe: ["CWE-78"]
+      owasp: ["A03:2021 - Injection"]
+      category: security
+      technology: [wordpress]
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      references:
+        - https://owasp.org/www-community/attacks/Command_Injection
+
+    pattern-sources:
+      - pattern: $_GET
+      - pattern: $_POST
+      - pattern: $_REQUEST
+      - pattern: $_COOKIE
+      - pattern: $_GET[...]
+      - pattern: $_POST[...]
+      - pattern: $_REQUEST[...]
+      - pattern: $_COOKIE[...]
+      - pattern: file_get_contents("php://input")
+      # REST API (ALL data UNSLASHED)
+      - pattern: $request->get_param(...)
+      - pattern: $request->get_params()
+      - pattern: $request->get_json_params()
+      - pattern: $request->get_body()
+      - pattern: $request->get_body_params()
+      - pattern: $request->get_query_params()
+      - pattern: $request[...]
+
+    pattern-sinks:
+      - pattern: exec($CMD, ...)
+      - pattern: shell_exec($CMD)
+      - pattern: system($CMD, ...)
+      - pattern: passthru($CMD, ...)
+      - pattern: popen($CMD, ...)
+      - pattern: proc_open($CMD, ...)
+
+    pattern-sanitizers:
+      - pattern: escapeshellarg(...)
+      - pattern: escapeshellcmd(...)
+      - pattern: absint(...)
+      - pattern: intval(...)
+      - pattern: (int)$X
+      - pattern: is_numeric(...)
+      - pattern: sanitize_key(...)

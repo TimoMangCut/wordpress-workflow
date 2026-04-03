@@ -1,0 +1,188 @@
+rules:
+  # =============================================================================
+  # MISCELLANEOUS SECURITY PATTERNS - WordPress
+  # Non-taint pattern matching rules
+  # =============================================================================
+
+  # --- TYPE JUGGLING ---
+
+  - id: wp-type-juggling-loose-comparison
+    languages: [php]
+    severity: WARNING
+    message: >-
+      Type Juggling: Loose comparison (==) used with hash/token/password value.
+      Use === (strict) or hash_equals() for timing-safe comparison.
+    patterns:
+      - pattern-either:
+          - pattern: $HASH == $INPUT
+          - pattern: $INPUT == $HASH
+          - pattern: $TOKEN == $INPUT
+          - pattern: $INPUT == $TOKEN
+    metadata:
+      cwe: ["CWE-1025"]
+      category: security
+      technology: [wordpress]
+      confidence: LOW
+      impact: HIGH
+
+  - id: wp-type-juggling-in-array-no-strict
+    languages: [php]
+    severity: INFO
+    message: >-
+      Type Juggling: in_array() without strict=true uses loose comparison.
+      Pass true as third argument: in_array($val, $arr, true).
+    patterns:
+      - pattern: in_array($VAL, $ARR)
+    fix: in_array($VAL, $ARR, true)
+    metadata:
+      cwe: ["CWE-1025"]
+      category: security
+      technology: [wordpress]
+
+  # --- BROKEN ACCESS CONTROL PATTERNS ---
+
+  - id: wp-bac-is-admin-as-auth
+    languages: [php]
+    severity: WARNING
+    message: >-
+      Broken Access Control: is_admin() checks if page is in /wp-admin/, NOT if 
+      user is administrator. Any Subscriber can access /wp-admin/admin-ajax.php.
+      Use current_user_can() instead.
+    patterns:
+      - pattern: |
+          if (is_admin()) { ... }
+    metadata:
+      cwe: ["CWE-862"]
+      category: security
+      technology: [wordpress]
+      confidence: LOW
+      impact: HIGH
+
+  - id: wp-bac-rest-return-true
+    languages: [php]
+    severity: WARNING
+    message: >-
+      Broken Access Control: REST route with __return_true permission callback 
+      is publicly accessible. Use current_user_can() in permission_callback.
+    patterns:
+      - pattern-either:
+          - pattern: |
+              register_rest_route($NS, $ROUTE, array(..., 'permission_callback' => '__return_true', ...))
+          - pattern: |
+              register_rest_route($NS, $ROUTE, array(..., 'permission_callback' => function() { return true; }, ...))
+    metadata:
+      cwe: ["CWE-862"]
+      category: security
+      technology: [wordpress]
+      confidence: HIGH
+      impact: HIGH
+
+  # --- SENSITIVE DATA EXPOSURE ---
+
+  - id: wp-sensitive-phpinfo
+    languages: [php]
+    severity: WARNING
+    message: >-
+      Sensitive Data Exposure: phpinfo() call found. Exposes PHP configuration,
+      environment variables, loaded modules, and server paths.
+    pattern: phpinfo()
+    metadata:
+      cwe: ["CWE-200"]
+      category: security
+      technology: [wordpress]
+      confidence: HIGH
+      impact: MEDIUM
+
+  - id: wp-sensitive-debug-log
+    languages: [php]
+    severity: INFO
+    message: >-
+      Sensitive Data Exposure: error_log() with potentially sensitive data.
+      Debug logs at /wp-content/debug.log are publicly accessible by default.
+    patterns:
+      - pattern-either:
+          - pattern: error_log($MSG, ...)
+    metadata:
+      cwe: ["CWE-532"]
+      category: security
+      technology: [wordpress]
+      confidence: LOW
+      impact: LOW
+
+  # --- INSECURE UPLOAD PATTERN ---
+
+  - id: wp-upload-test-form-false
+    languages: [php]
+    severity: WARNING
+    message: >-
+      Insecure Upload: wp_handle_upload() with test_form=false skips form 
+      verification. Combined with test_type=false, all checks are disabled.
+    patterns:
+      - pattern-either:
+          - pattern: wp_handle_upload(..., array(..., 'test_form' => false, ...), ...)
+          - pattern: wp_handle_sideload(..., array(..., 'test_form' => false, ...), ...)
+    metadata:
+      cwe: ["CWE-434"]
+      category: security
+      technology: [wordpress]
+      confidence: MEDIUM
+      impact: MEDIUM
+
+  # --- INSECURE NONCE PATTERN ---
+
+  - id: wp-nonce-check-ajax-referer-no-die
+    languages: [php]
+    severity: WARNING
+    message: >-
+      Insecure Nonce Check: check_ajax_referer() with $stop=false does NOT halt
+      on invalid nonce. Code continues executing. Check return value explicitly.
+    patterns:
+      - pattern: check_ajax_referer($ACTION, $QUERY, false)
+    metadata:
+      cwe: ["CWE-352"]
+      category: security
+      technology: [wordpress]
+      confidence: HIGH
+      impact: MEDIUM
+
+  # --- REDIRECT WITHOUT EXIT ---
+
+  - id: wp-redirect-no-exit
+    languages: [php]
+    severity: INFO
+    message: >-
+      Redirect without exit: wp_redirect()/wp_safe_redirect() does NOT stop execution.
+      Code after redirect continues running. Add exit; or die; after redirect.
+    pattern-either:
+      - patterns:
+          - pattern: |
+              wp_redirect(...);
+              $NEXT;
+          - pattern-not: |
+              wp_redirect(...);
+              exit;
+          - pattern-not: |
+              wp_redirect(...);
+              die;
+          - pattern-not: |
+              wp_redirect(...);
+              die();
+      - patterns:
+          - pattern: |
+              wp_safe_redirect(...);
+              $NEXT;
+          - pattern-not: |
+              wp_safe_redirect(...);
+              exit;
+          - pattern-not: |
+              wp_safe_redirect(...);
+              die;
+          - pattern-not: |
+              wp_safe_redirect(...);
+              die();
+    metadata:
+      cwe: ["CWE-698"]
+      category: security
+      technology: [wordpress]
+      confidence: MEDIUM
+      impact: MEDIUM

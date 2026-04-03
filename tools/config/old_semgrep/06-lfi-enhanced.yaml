@@ -1,0 +1,111 @@
+rules:
+  # =================================================================================
+  # LFI ENHANCED - Path Traversal via json_decode and file operations
+  # CWE-22: Path Traversal, CWE-98: LFI
+  # Detects: json_decode user input -> file operations
+  # =================================================================================
+
+  - id: wp-lfi-json-decode-file-read
+    mode: taint
+    languages: [php]
+    severity: ERROR
+    message: >-
+      Local File Inclusion via JSON input: User-controlled JSON data flows into file 
+      read operation without path validation. Attacker can read arbitrary files 
+      (wp-config.php, /etc/passwd). Use basename() and validate against whitelist.
+    metadata:
+      cwe: ["CWE-98", "CWE-22"]
+      owasp: ["A01:2021 - Broken Access Control", "A03:2021 - Injection"]
+      category: security
+      technology: [wordpress]
+      confidence: HIGH
+      likelihood: MEDIUM
+      impact: HIGH
+      references:
+        - https://owasp.org/www-community/attacks/Path_Traversal
+        - https://cwe.mitre.org/data/definitions/98.html
+
+    pattern-sources:
+      - pattern: $_GET
+      - pattern: $_POST
+      - pattern: $_REQUEST
+      - pattern: $_COOKIE
+      - pattern: $_GET[...]
+      - pattern: $_POST[...]
+      - pattern: $_REQUEST[...]
+      - pattern: $_COOKIE[...]
+      - pattern: filter_input(...)
+      - pattern: $atts
+      - pattern: $atts[...]
+
+    pattern-propagators:
+      - pattern: json_decode($SRC, ...)
+        from: $SRC
+        to: return
+
+    pattern-sinks:
+      - pattern: file_get_contents($PATH, ...)
+      - pattern: file($PATH, ...)
+      - pattern: fopen($PATH, ...)
+      - pattern: readfile($PATH)
+      - pattern: $wp_filesystem->get_contents($PATH)
+      - pattern: $wp_filesystem->exists($PATH)
+      - pattern: file_exists($PATH)
+      - pattern: include $PATH
+      - pattern: include($PATH)
+      - pattern: include_once $PATH
+      - pattern: include_once($PATH)
+      - pattern: require $PATH
+      - pattern: require($PATH)
+      - pattern: require_once $PATH
+      - pattern: require_once($PATH)
+
+    pattern-sanitizers:
+      - pattern: basename(...)
+      - pattern: realpath(...)
+      - pattern: sanitize_file_name(...)
+      - pattern: wp_normalize_path(...)
+      - pattern: absint(...)
+      - pattern: intval(...)
+      - pattern: (int)$X
+      - pattern: in_array(..., $WHITELIST, ...)
+
+  - id: wp-lfi-template-injection
+    mode: taint
+    languages: [php]
+    severity: ERROR
+    message: >-
+      Template Injection: User input controls template file path. Can lead to 
+      arbitrary file read or code execution. Validate template names against whitelist.
+    metadata:
+      cwe: ["CWE-98", "CWE-22"]
+      owasp: ["A03:2021 - Injection"]
+      category: security
+      technology: [wordpress]
+      confidence: HIGH
+      likelihood: MEDIUM
+      impact: HIGH
+
+    pattern-sources:
+      - pattern: $_GET[...]
+      - pattern: $_POST[...]
+      - pattern: $_REQUEST[...]
+      - pattern: filter_input(...)
+      - pattern: $atts['template']
+      - pattern: $atts["template"]
+
+    pattern-propagators:
+      - pattern: json_decode($SRC, ...)
+        from: $SRC
+        to: return
+
+    pattern-sinks:
+      - pattern: $TEMPLATER->get_template_by_name($TEMPLATE, ...)
+      - pattern: locate_template($TEMPLATE, ...)
+      - pattern: get_template_part($TEMPLATE, ...)
+      - pattern: load_template($TEMPLATE, ...)
+
+    pattern-sanitizers:
+      - pattern: basename(...)
+      - pattern: sanitize_file_name(...)
+      - pattern: in_array(..., $WHITELIST, ...)

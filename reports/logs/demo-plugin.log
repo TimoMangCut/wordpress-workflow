@@ -1,0 +1,9 @@
+==== PHASE 1: demo-plugin ====
+--- [1/4] Surface Map --- SKIPPED
+--- [2/4] Semgrep --- MISSING
+--- [3/4] Psalm Taint ---
+  SKIPPED: scan-psalm.sh not found or psalm not installed
+--- [4/4] IR Extract + Rules ---
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/tools/bin/scan-all.sh: line 51: php: command not found
+  [!] extract failed
+==== DONE: demo-plugin ====

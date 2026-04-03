@@ -1,0 +1,23 @@
+{
+    "sanitizers": [
+        {"name": "esc_html",           "language": "php", "prevent": "xss"},
+        {"name": "esc_attr",           "language": "php", "prevent": "xss"},
+        {"name": "esc_url",            "language": "php", "prevent": "xss"},
+        {"name": "esc_js",             "language": "php", "prevent": "xss"},
+        {"name": "esc_textarea",       "language": "php", "prevent": "xss"},
+        {"name": "wp_kses",            "language": "php", "prevent": "xss"},
+        {"name": "wp_kses_post",       "language": "php", "prevent": "xss"},
+        {"name": "sanitize_text_field","language": "php", "prevent": "xss"},
+        {"name": "sanitize_email",     "language": "php", "prevent": "xss"},
+        {"name": "sanitize_file_name", "language": "php", "prevent": "xss"},
+        {"name": "sanitize_title",     "language": "php", "prevent": "xss"},
+        {"name": "absint",             "language": "php", "prevent": "sql"},
+        {"name": "intval",             "language": "php", "prevent": "sql"},
+        {"name": "prepare",            "language": "php", "prevent": "sql", "instanceof": "wpdb"},
+        {"name": "esc_sql",            "language": "php", "prevent": "sql"},
+        {"name": "validate_file",      "language": "php", "prevent": "file_read"},
+        {"name": "wp_safe_redirect",   "language": "php", "prevent": "redirect"},
+        {"name": "wp_verify_nonce",    "language": "php", "prevent": "csrf"},
+        {"name": "check_ajax_referer", "language": "php", "prevent": "csrf"}
+    ]
+}

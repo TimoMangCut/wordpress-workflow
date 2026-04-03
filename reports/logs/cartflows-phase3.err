@@ -1,0 +1,4224 @@
+Reading additional input from stdin...
+OpenAI Codex v0.118.0 (research preview)
+--------
+workdir: /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+model: gpt-5.4
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR, /Users/timomangcut/.codex/memories]
+reasoning effort: xhigh
+reasoning summaries: none
+session id: 019d4a9c-92da-7773-9d75-b40ca70b0ccf
+--------
+user
+# System Prompt - Phase 3 LLM Skeptic Review (Project Local)
+
+Ban la skeptic reviewer cho WordPress security audit.
+Truoc khi phan tich, LUON load skill `$application-security`.
+
+Vai tro Phase 3b:
+- KHONG duoc tu confirm vulnerability.
+- Nhiem vu chinh: tim counter-evidence, kiem tra lai file:line, de xuat dynamic verification.
+- Gate deterministic (Phase 3a) la authoritative; LLM chi bo sung goc nhin phan bien.
+
+Nguyen tac:
+- Chi review finding co status PLAUSIBLE/UNCERTAIN tu gate.
+- Khong sua finding CONFIRMED/REJECTED khi chua co bang chung bo sung ro rang.
+- Moi nhan dinh counter-evidence phai co file:line that tu source code.
+- Neu de xuat correction thi correction phai testable (entry_point_id co trong IR, path co ton tai, line hop le).
+
+Yeu cau output:
+- JSON: `reports/phase3/<slug>-phase3-review.json`
+- Markdown: `reports/phase3/<index>-<slug>.llm.md`
+- Nhan manh phan "missing evidence" va "dynamic test plan".
+- Bat buoc hien thi ro tren moi finding:
+  - Type bug (vuln_type)
+  - Minimum role/capability
+  - Status transition theo format `UNCERTAIN -> downgrade|keep|upgrade` (hoac `PLAUSIBLE -> ...`)
+
+Taxonomy type bug (bat buoc dung nhan):
+- `Broken Access Control` phai la `Broken Access Control`.
+- `Privilege Escalation` phai la `Privilege Escalation`.
+- `Arbitrary Option Update` phai la `Arbitrary Option Update`.
+- Neu gap label cu `Broken Access Control to Change Option` thi CHUAN HOA thanh `Broken Access Control`.
+- Tuyet doi khong duoc tron lan `Broken Access Control` voi `Privilege Escalation`.
+- Voi `Arbitrary Option Update`, phai neu ro option key/value impact (key nao, value nao, co doi duoc key:value tuy y hay chi key gioi han).
+
+
+# Phase 3b LLM Skeptic Review — `cartflows`
+
+Load skill `$application-security` first.
+
+## Role
+You are a SKEPTIC REVIEWER, not a confirmer. Your job is to find reasons
+findings might be WRONG, demand missing evidence, and propose dynamic tests.
+You CANNOT confirm findings — only Phase 3a deterministic gate can do that.
+
+## Inputs
+- Phase 2 JSON: `reports/phase2/cartflows-phase2.json`
+- Phase 1 IR JSON: `reports/phase1/cartflows-ir.json`
+- Phase 3a gate JSON: `reports/phase3/cartflows-phase3.json` (read validation_status per finding)
+- Semgrep JSON (optional): `reports/phase1/cartflows-semgrep.json`
+- Psalm SARIF (optional): `reports/phase1/cartflows-psalm.sarif`
+- Plugin source: `plugins/cartflows`
+
+## CRITICAL CONSTRAINT
+You are ONLY reviewing findings that Phase 3a marked as PLAUSIBLE or UNCERTAIN.
+Do NOT review CONFIRMED or REJECTED findings.
+
+## What You Must Do For Each Finding
+1. **Search for counter-evidence**: guards/sanitizers/checks the IR may have missed
+2. **Verify code evidence**: does the claimed function exist at the claimed line?
+   - If Phase 3a gate lists issues like missing/mismatched file/line, your FIRST JOB is to locate the correct lines.
+3. **Assess exploitability honestly**: if attacker succeeds, what MEASURABLY changes?
+4. **Propose dynamic tests**: exact HTTP requests to verify the finding
+5. **Recommend verdict change**: downgrade, keep, or (rarely) upgrade
+
+## Output — MUST be JSON first
+
+Write structured JSON to: `reports/phase3/cartflows-phase3-review.codex.json`
+
+```json
+{{
+  "plugin_slug": "cartflows",
+  "reviews": [
+    {{
+      "finding_id": "...",
+      "original_status": "PLAUSIBLE|UNCERTAIN",
+      "verdict_change": "downgrade|keep|upgrade",
+      "suggested_field_corrections": {{
+        "entry_point_id": "... (if Phase 2 used wrong/empty id)",
+        "source_file_path": "...",
+        "source_line_number": 0,
+        "sink_file_path": "...",
+        "sink_line_number": 0,
+        "storage_key": "... (for stored/second-order)"
+      }},
+      "reason": "1-2 sentences explaining why",
+      "counter_evidence": [
+        {{"type": "guard|sanitizer|unreachable", "file": "...", "line": 123, "detail": "..."}}
+      ],
+      "missing_evidence": ["what is needed to confirm/deny"],
+      "dynamic_test_plan": [
+        "Step 1: create subscriber user",
+        "Step 2: send POST to /wp-admin/admin-ajax.php?action=...",
+        "Step 3: observe response / database change"
+      ]
+    }}
+  ]
+}}
+```
+
+Then ALSO write human-readable Markdown report to: `reports/phase3/1-cartflows.codex.llm.md`
+
+Required Markdown sections:
+1. Plugin Overview
+2. Validation Summary (counts: reviewed, downgraded, kept, upgraded)
+3. Detailed Reviews (per finding: MUST use this exact field order and labels)
+   - Finding ID: `<id>`
+   - Type: `<vuln_type from phase2>`
+   - Minimum Role/Capability: `<auth_required from phase2>`
+   - Status Transition: `<original_status> -> <downgrade|keep|upgrade>`
+   - Description: exactly 2 sentences, concise and human-readable
+   - Highest Impact: one clear sentence on maximum measurable impact
+   - PoC: setup -> activate plugin -> attack -> verify impact
+   - Counter-evidence + dynamic test plan
+4. Negative Findings (why flagged areas are actually safe)
+5. Overall Assessment
+
+## Type Taxonomy (MANDATORY)
+- In each finding, `Type` must be one exact label. Do not merge labels and do not invent hybrid labels.
+- Keep these labels exact:
+  - `Broken Access Control` stays `Broken Access Control`.
+  - `Privilege Escalation` stays `Privilege Escalation`.
+  - `Arbitrary Option Update` stays `Arbitrary Option Update`.
+- Legacy normalization:
+  - If source text says `Broken Access Control to Change Option`, output `Type: Broken Access Control`.
+- For `Arbitrary Option Update`, you MUST explicitly describe option key/value impact:
+  - which option key is writable
+  - what value can be set
+  - whether attacker can modify arbitrary key:value or only bounded keys
+- Absolutely do NOT confuse `Broken Access Control` with `Privilege Escalation`.
+
+## Rules
+- Do NOT invent constants, nonce names, capability names, or route paths — look them up
+- Do NOT claim "confirmed" — you can only say "evidence supports" or "evidence insufficient"
+- Every counter-evidence claim MUST include file:line from actual source code
+- If you find a guard/sanitizer the IR missed, include it as counter_evidence with type "guard" or "sanitizer"
+- If you can correct Phase 2 mistakes (wrong entry_point_id or wrong file:line), populate suggested_field_corrections.
+- In Markdown "Detailed Reviews", if any finding misses Type, Role, or Status Transition, the report is invalid.
+
+codex
+Su dung skill `application-security` cho review Phase 3b. Toi se doc `AGENTS.md`, cac tai lieu trong `docs/`, workflow cua skill, va cac JSON dau vao de xac dinh chi nhung finding co `PLAUSIBLE` hoac `UNCERTAIN` moi duoc review.
+exec
+/bin/zsh -lc "sed -n '1,220p' AGENTS.md" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+# AGENTS.md - WordPress Audit Workspace
+
+> This file contains project-local routing for this workspace.
+> Reusable AppSec identity and workflow belong in the home configuration and skills.
+> Project docs in `./docs` are shared with both Codex and Claude and should be treated as ground truth.
+
+## Read First
+
+- `docs/wp-context.md`
+- `docs/bug-bounty-rules-summary.md`
+
+If project docs conflict with generic assumptions, project docs win.
+
+## Workspace Purpose
+
+- This workspace is used for WordPress security review and audit work.
+- The main subjects are plugins and adjacent WordPress components inside this repository.
+- Reviews may be full-source audits or targeted component reviews.
+
+## Local Review Focus
+
+Prioritize:
+
+- unauthenticated entry points
+- AJAX and REST routes
+- nonce and capability enforcement
+- privilege escalation and authorization gaps
+- file upload, download, delete, and path construction
+- SQL, option/meta updates, and deserialization paths
+- SSRF, RCE, arbitrary write, arbitrary delete, and account takeover impact
+
+## Local Rules
+
+- Ground all exploitability judgments in WordPress behavior and the docs in this repo.
+- Separate exploitability from reportability; bounty rules may narrow what is actionable.
+- When reviewing a plugin or component, identify the relevant trust boundary before rating severity.
+- Note secure areas reviewed so coverage is visible.
+
+## Output Expectations
+
+- Use exactly one of `CONFIRMED`, `UNCERTAIN`, `RISK_NOTE`, or `REJECTED` for each issue.
+- Every mature conclusion must include code references and at least one refutation attempt.
+- If context is missing and cannot be inferred safely, state assumptions explicitly.
+
+## Keep This File Local
+
+This file should stay focused on project-specific context.
+Do not duplicate the global identity, reusable AppSec workflow, or long generic methodology here.
+
+exec
+/bin/zsh -lc "sed -n '1,220p' /Users/timomangcut/.codex/skills/application-security/references/review-workflow.md" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "sed -n '1,220p' docs/wp-context.md" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+# Application Security Review Workflow
+
+This file contains the reusable reasoning workflow for AppSec review.
+Project-local facts belong in the project's own `AGENTS.md` and `docs/*`.
+
+## 1. Context First
+
+Before analyzing code, establish:
+
+### Application Context
+
+- What does the application or plugin do?
+- Who uses it?
+- What data is sensitive?
+- How is it deployed?
+- What authentication and authorization model is in use?
+
+### Review Context
+
+- Is this a diff review or a full-source review?
+- What is the change or component trying to accomplish?
+- What trust boundaries does it cross?
+- Are there scope, deadline, or bounty-rule constraints?
+
+If context is missing and cannot be inferred safely, ask.
+If asking is not possible, state assumptions explicitly before proceeding.
+
+## 2. Triage By Risk Surface
+
+### Deep Trace
+
+Use line-by-line tracing for:
+- authentication and authorization
+- session and token handling
+- file upload, download, and path construction
+- database access and raw queries
+- input parsing and deserialization
+- public endpoints and trust-boundary crossings
+- crypto and sensitive data handling
+
+### Standard Review
+
+Use standard review for:
+- business logic that stays inside one trust zone
+- logging, metrics, and caching
+- transformations and formatting
+
+### Light Scan
+
+Use a quick pass for:
+- docs
+- tests, unless security-critical behavior is involved
+- styling and presentation-only changes
+
+When scope is ambiguous, choose the higher-risk category.
+
+## 3. Tool Discipline
+
+Search is good for:
+- entry points
+- sinks
+- usages
+- definitions
+- constants
+
+Reasoning is good for:
+- intent
+- data flow
+- trust assumptions
+- exploitability
+- logic flaws
+
+Rules:
+- Search hits are signals, not conclusions.
+- Read surrounding code before promoting a signal.
+- Do not guess framework behavior; verify it from code or primary docs.
+
+## 4. Finding Lifecycle
+
+### Stage 1: SIGNAL
+
+Document what was noticed and where.
+
+### Stage 2: HYPOTHESIS
+
+Turn the signal into a testable claim:
+
+- "[Actor] at [privilege level] can [action] via [entry point] because [assumption violation], resulting in [impact]."
+
+### Stage 3: CONTEXT
+
+Understand:
+- what the code is trying to do
+- why it may be designed this way
+- what trust boundaries matter
+- what defenses exist nearby
+
+### Stage 4: REFUTE
+
+Actively try to prove the hypothesis wrong.
+
+Examples:
+- a higher-layer capability check already blocks it
+- type casting or validation neutralizes the input
+- the entry point is not reachable by the claimed actor
+- framework protections make the sink safe
+- real deployment conditions make exploitation impractical
+
+Document each attempt:
+
+`REFUTATION ATTEMPT: ...`
+`RESULT: refuted / not refuted, with code references and reason`
+
+### Stage 5: IMPACT
+
+Answer:
+- what concretely changes if exploited
+- whose data or permissions are affected
+- what operations become possible
+- whether this matters in the actual deployment model
+
+If "so what?" stays weak or theoretical, downgrade.
+
+### Stage 6: VERDICT
+
+Assign exactly one:
+
+- `CONFIRMED`
+- `UNCERTAIN`
+- `RISK_NOTE`
+- `REJECTED`
+
+Rules:
+- `CONFIRMED` requires strong evidence
+- `UNCERTAIN` requires `why_uncertain` and `resolution_path`
+- `REJECTED` should include a reopening condition
+
+## 5. Reporting Requirements
+
+For each mature finding, include:
+- state
+- severity
+- violation
+- location
+- trace
+- defenses analyzed
+- refutation attempts
+- impact
+- conditions
+- severity reasoning
+
+If no confirmed findings exist, produce a review summary and note secure areas reviewed.
+
+## 6. Quality Gate
+
+Before calling something `CONFIRMED`, check:
+
+- Is every step grounded in code references?
+- Did it survive at least one refutation attempt?
+- Is impact concrete in this application context?
+- Are exploitation conditions stated honestly?
+- Is severity justified against one level lower?
+- Are assumptions explicit?
+
+If any answer is no, the finding is not ready.
+
+exec
+/bin/zsh -lc "sed -n '1,220p' docs/bug-bounty-rules-summary.md" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+# Tóm tắt Bug Bounty Rules - Patchstack & Wordfence
+
+> Tài liệu này được viết lại theo bố cục gần giống file mẫu đính kèm, nhưng đã rút gọn để tập trung vào **quy tắc cốt lõi**, đặc biệt là **in-scope / out-of-scope**, điều kiện hợp lệ của report, tính duy nhất, và các lý do thường bị từ chối.
+>
+> Nguồn tham chiếu:
+> - Patchstack: https://patchstack.com/articles/bug-bounty-guidelines-rules/
+> - Wordfence: https://www.wordfence.com/threat-intel/bug-bounty-program/#scope
+
+---
+
+## Table of Contents
+- Introduction
+- Patchstack
+  - Reporting Protocol
+  - Scope
+  - Uniqueness Requirement
+  - Quality Assurance
+  - Rejection Criteria
+  - Disclosure / CVE
+- Wordfence
+  - Program Overview
+  - In-Scope Assets
+  - Out-of-Scope Assets
+  - Explicitly In-Scope Vulnerabilities
+  - Explicitly Out-of-Scope Vulnerabilities
+  - Submission Rules & Key Notes
+- Quick Comparison
+
+---
+
+# Introduction
+
+Tài liệu này tổng hợp hai chương trình bug bounty trong hệ sinh thái WordPress:
+
+1. **Patchstack Bug Bounty Program**
+2. **Wordfence Intelligence Bug Bounty Program**
+
+Mục tiêu của bản tóm tắt là giúp nhanh chóng xác định:
+- Report nào có khả năng **được chấp nhận**
+- Thành phần nào **in scope / out of scope**
+- Điều kiện nào khiến report **không đủ bounty** hoặc chỉ được **CVE / disclosure**
+- Những yêu cầu tối thiểu để report được xem là **valid**
+
+---
+
+# Patchstack
+
+## Reporting Protocol
+
+### Kênh gửi report
+- Chỉ chấp nhận report qua form chính thức: `https://patchstack.com/database/report`
+- Không chấp nhận qua email hoặc kênh khác.
+
+### Tài khoản & tư cách tham gia
+- Tài khoản researcher được tạo sau khi có ít nhất một report hợp lệ và in-scope.
+- Mỗi researcher chỉ được dùng **một account**.
+- Cá nhân và công ty đều có thể tham gia, nhưng **không hỗ trợ team submissions**.
+
+---
+
+## Scope
+
+### In scope
+Patchstack chấp nhận các thành phần trong hệ sinh thái WordPress, bao gồm:
+- **WordPress core**
+- **WordPress plugins**
+- **WordPress themes**
+
+Cả **free** và **premium** đều có thể được chấp nhận.
+- Với sản phẩm premium, cần cung cấp **bản archive gốc, không chỉnh sửa** để xác minh.
+- Nếu theme phụ thuộc plugin cụ thể, cần cung cấp cả plugin phụ thuộc đó.
+
+Một report chỉ được coi là hợp lệ nếu có **security impact rõ ràng và đo lường được**.
+
+### Out of scope / không được chấp nhận
+Các trường hợp sau thường bị loại:
+
+#### 1) Severity / CVSS quá thấp
+- Vulnerability có **CVSS v3.1 < 6.5** không được chấp nhận trực tiếp theo rules hiện tại.
+
+#### 2) Active installs quá thấp
+- Component có **< 1,000 active installs** nhìn chung là out of scope.
+- Ngoại lệ: có thể được xem xét nếu:
+  - có **CVSS >= 8.5**,
+  - yêu cầu quyền không vượt quá **Unauthenticated / Subscriber / Customer**,
+  - và component có **ít nhất 100 active installs**.
+
+#### 3) Quyền khai thác quá cao
+- Chỉ ưu tiên lỗ hổng khai thác được bởi:
+  - **Unauthenticated**
+  - **Subscriber / Customer**
+- **Contributor** chỉ được chấp nhận nếu severity đủ cao.
+- Các lỗ hổng yêu cầu **Admin / quyền cao hơn** là out of scope.
+- Với **custom roles**, chỉ chấp nhận nếu capability tương đương gần với Subscriber/Customer; nếu mạnh hơn thì không chấp nhận.
+
+#### 4) Các loại issue thường không được chấp nhận
+- **CSV Injection**
+- **IP spoofing** (trừ khi trực tiếp phá vỡ một cơ chế bảo vệ phụ thuộc vào IP)
+- **Race condition** có tác động không rõ ràng hoặc severity thấp
+- **CAPTCHA / Turing test bypass**
+- **Arbitrary user registration** nếu không dẫn đến tạo được **admin account**
+- **Authenticated shortcode preview issues** ở mức Contributor trở lên, trừ khi lộ dữ liệu nhạy cảm có tác động rõ ràng
+- **CSRF / Broken Access Control** chỉ dùng để dismiss notice mà không có security impact thực tế
+- **IP bypass** cho các thao tác không quan trọng như likes/views/counters
+
+#### 5) Thành phần không đủ điều kiện
+- Phiên bản cuối cùng phát hành đã quá **3 năm**
+- Lỗ hổng **không còn tồn tại ở phiên bản mới nhất**
+- Component **không public**
+- Component là hàng **custom / modified / private**, không được phân phối công khai qua:
+  - WordPress.org
+  - website chính thức của vendor
+  - GitHub
+  - CodeCanyon / ThemeForest
+  - hoặc nguồn public tương đương
+
+---
+
+## Uniqueness Requirement
+
+- Report phải là **mới**, **unique**, chưa từng được public hoặc báo trước đó.
+- Nếu nhiều người báo cùng một issue, **người gửi valid report đầu tiên** sẽ được tính.
+- Nếu issue đã được báo trực tiếp cho vendor trước đó, Patchstack chỉ chấp nhận nếu:
+  - vendor xác nhận issue,
+  - và vendor có ý định vá.
+- Với sản phẩm của **Automattic**, phải report qua **HackerOne của Automattic** trước.
+- Incomplete patch đã public thường **không được xem là issue mới**, trừ khi tạo ra attack vector mới.
+
+---
+
+## Quality Assurance
+
+Một report Patchstack cần có tối thiểu:
+- PoC dạng text, từng bước rõ ràng
+- Các bước từ lúc cài plugin/theme cho đến khi exploit thành công
+- Raw HTTP request cần thiết
+- Payload chính xác đã dùng
+- Video screenshot là điểm cộng
+
+### Rủi ro khi gửi report kém chất lượng
+- Report không đầy đủ, không tái hiện được, hoặc sai sẽ bị reject.
+- Gửi lặp lại false positive / AI-generated false positive có thể dẫn tới:
+  - cooldown,
+  - bị khóa dashboard tạm thời,
+  - hoặc khóa vĩnh viễn.
+
+---
+
+## Rejection Criteria
+
+Các lý do reject phổ biến:
+- Thông tin không đầy đủ hoặc không chính xác
+- Claim không phải vulnerability hợp lệ
+- Dùng role không chuẩn / role đã chỉnh sửa
+- Plugin/theme đã đóng hoặc không truy cập được
+- Component không được phân phối công khai qua nguồn đáng tin cậy
+- Developer/vendor gửi issue cho chính sản phẩm của họ: có thể dùng cho disclosure nhưng **không đủ điều kiện bounty**
+
+---
+
+## Disclosure / CVE
+
+- Patchstack là **CNA**, nên issue hợp lệ có thể được cấp **CVE**.
+- Việc cấp CVE có thể bị trì hoãn để tránh trùng với CNA khác.
+- Tất cả valid in-scope reports sẽ được đưa vào **Patchstack Vulnerability Database**.
+- Researcher không được public vulnerability cho bên thứ ba trước khi Patchstack công bố chính thức.
+
+---
+
+# Wordfence
+
+## Program Overview
+
+Wordfence tập trung vào bug bounty cho **WordPress plugins và themes**. Chương trình phân scope khá mạnh dựa trên:
+- loại vulnerability,
+- mức quyền yêu cầu,
+- active installs,
+- và **researcher tier**.
+
+Wordfence cũng có thể cấp **CVE** cho cả một số report out of scope, nhưng **không phải report nào cũng đủ điều kiện nhận bounty**.
+
+---
+
+## In-Scope Assets
+
+### Nhóm 1: High Threat Vulnerabilities
+Tất cả plugin/theme WordPress (free và premium), trừ các asset bị liệt kê out of scope, sẽ in scope nếu có:
+- **>= 25 active installs**
+- khai thác được bởi **unauthenticated** hoặc **low-level authenticated** (Subscriber/Customer)
+- thuộc một trong các loại sau:
+  - Arbitrary PHP File Upload or Read
+  - Arbitrary PHP File Deletion
+  - Arbitrary Options Update
+  - Remote Code Execution
+  - Authentication Bypass to Admin
+  - Privilege Escalation to Admin
+
+Ghi chú:
+- Nếu plugin/theme có từ **25 đến 999 installs**, nó phải có trên **WordPress.org Plugin Repository** mới được tính in scope.
+
+### Nhóm 2: Common and Dangerous Vulnerabilities
+Tất cả plugin/theme WordPress (free và premium), trừ asset out of scope, sẽ in scope nếu có:
+- **>= 500 active installs**
+- khai thác được bởi **unauthenticated** hoặc **Subscriber/Customer**
+- thuộc một trong các loại:
+  - **Stored XSS**
+  - **SQL Injection**
+
+Ghi chú:
+- Với mốc **500 đến 999 installs**, component phải có trên **WordPress.org Plugin Repository**.
+- **Premium plugin/theme** bị loại khỏi nhóm này nếu **< 1,000 installs**.
+
+### Nhóm 3: All Other Vulnerabilities
+Các vulnerability khác có thể in scope, nhưng phụ thuộc vào **researcher tier**:
+- **Standard Researchers**: component cần **>= 50,000 installs**
+- **Resourceful Researchers**: component cần **>= 10,000 installs**
+- **1337 Researchers**: component cần **>= 500 installs**
+
+---
+
+
+ succeeded in 0ms:
+# WordPress plugin security audit knowledge base
+
+**This is a comprehensive, technically precise reference for auditing WordPress 6.x plugins**, synthesizing real CVE data from 2023–2025, official WordPress developer documentation, and research from Wordfence, Patchstack, and WPScan. The WordPress plugin ecosystem saw **7,966 new vulnerabilities in 2024 alone** (a 34% increase over 2023), with XSS accounting for 47.7% of all findings, broken access control at 14.2%, and CSRF at 11.4%. REST API and AJAX endpoints are the most critically exploited attack surfaces. What follows is every detail a professional security auditor needs.
+
+---
+
+## 1. Exhaustive plugin attack surface catalog
+
+### AJAX handlers (wp_ajax_*, wp_ajax_nopriv_*)
+
+WordPress routes all AJAX through `wp-admin/admin-ajax.php`. Plugins register handlers via `add_action('wp_ajax_{action}', 'callback')` for authenticated users, and `add_action('wp_ajax_nopriv_{action}', 'callback')` for unauthenticated users. **WordPress provides zero built-in authorization for AJAX handlers** — no automatic nonce check, no capability check. The plugin developer must implement both `wp_verify_nonce()` and `current_user_can()`.
+
+The `nopriv` variant is especially dangerous: it makes the endpoint accessible to anyone on the internet without authentication. Many plugins register `nopriv` variants unnecessarily, exposing admin-level functionality. The WPForms vulnerability CVE-2024-11205 (CVSS 8.5) exemplifies this: the `wpforms_is_admin_ajax()` function verified the nonce but never checked user capabilities, allowing **subscriber-level users to issue Stripe refunds and cancel subscriptions**. Similarly, Essential Addons for Elementor (CVE-2023-32243, CVSS 9.8) exposed password reset functionality via an AJAX handler that never validated the reset key.
+
+**Required security controls for every AJAX handler:**
+- `check_ajax_referer('action_name', 'security')` or `wp_verify_nonce()` for CSRF protection
+- `current_user_can('required_capability')` for authorization
+- Sanitization of all `$_POST`/`$_GET` parameters
+- `wp_send_json_success()`/`wp_send_json_error()` for safe responses
+
+### REST API routes (register_rest_route)
+
+The REST API is the **single most critically exploited attack surface** in WordPress plugins during 2023–2025. The most impactful CVEs of this period — Really Simple Security (CVE-2024-10924, CVSS 9.8), WooCommerce Payments (CVE-2023-28121, CVSS 9.8), LiteSpeed Cache (CVE-2024-28000, CVSS 9.8), and AIOSEO (CVE-2021-25036, CVSS 9.9) — all exploited REST API endpoints with broken permission callbacks.
+
+Routes are registered via `register_rest_route('namespace/v1', '/path', $args)`. Since **WordPress 5.5**, omitting `permission_callback` triggers a `_doing_it_wrong` notice, but the endpoint still functions as public. The notice is informational only. Using `'permission_callback' => '__return_true'` explicitly makes endpoints public — this was found in production plugins like Download Monitor.
+
+Permission callbacks execute after authentication is resolved. For cookie-based auth, the `wp_rest` nonce must be passed via `X-WP-Nonce` header or `_wpnonce` parameter — without it, the current user is set to ID 0 (unauthenticated), even if the user has valid cookies. Application Passwords authenticate via HTTP Basic Auth before permission callbacks run.
+
+**REST API namespace discovery** at `/wp-json/` exposes all registered namespaces, and `/wp-json/namespace/v1` lists all routes with their methods and argument schemas. This provides attackers a complete map of available endpoints.
+
+### Shortcodes
+
+Shortcodes (`add_shortcode('name', 'callback')`) are parsed from post content and executed server-side. Their primary attack surface is **attribute injection**: shortcode attributes are passed as an array to the callback without any automatic sanitization. The `shortcode_atts()` function provides default merging but no security filtering. Contributors can embed shortcodes in post content, making contributor-level Stored XSS the dominant vulnerability pattern.
+
+Common vulnerability: `extract(shortcode_atts(['style' => ''], $atts))` followed by `echo '<div style="' . $style . '">'` — the `$style` attribute reaches HTML output unescaped. Every shortcode attribute must be escaped with the context-appropriate function (`esc_attr()`, `esc_html()`, `esc_url()`).
+
+### Gutenberg blocks (detailed in Section 7)
+
+The block editor introduces multiple attack surfaces: `render_callback` functions that output unescaped attributes, **block comment delimiter JSON** that bypasses wp_kses filtering, the `/wp/v2/block-renderer/` REST endpoint accessible to contributors, and `ServerSideRender` which can trigger server-side execution of block rendering with attacker-controlled attributes.
+
+### Admin pages and menus
+
+`admin_menu`, `admin_init`, `admin_post_*`, and `admin_post_nopriv_*` hooks create admin-side attack surfaces. **Critical misconception**: `is_admin()` checks whether the request targets wp-admin, not whether the user is an administrator. All authenticated AJAX requests go through `admin-ajax.php` in wp-admin, so `is_admin()` returns `true` for any logged-in user making AJAX calls. Always use `current_user_can()` instead.
+
+`admin_init` fires on every admin page load — including `admin-ajax.php` and `admin-post.php` — making it a particularly broad attack surface if permission checks are absent. `admin_post_nopriv_*` actions are accessible to unauthenticated users, identical in risk to `wp_ajax_nopriv_*`.
+
+### XML-RPC, WP-CLI, and Cron
+
+**XML-RPC** (`xmlrpc.php`) exposes methods for remote content management and pingbacks. Plugins extend it via `xmlrpc_methods` filter. The pingback feature was exploited for **blind SSRF via DNS rebinding** (CVE-2022-3590). XML-RPC authentication uses username/password per request (no session), enabling brute-force attacks. Best practice is to disable it entirely unless required.
+
+**WP-CLI commands** registered by plugins execute with the filesystem permissions of the CLI user (typically root or www-data), which may exceed WordPress capabilities. Commands should still validate input and use WordPress API functions rather than direct database/file operations.
+
+**Cron jobs** (`wp_schedule_event`) execute via `wp-cron.php`, triggered by site visits. WP-Cron requests are internal HTTP requests that may bypass authentication. If a cron callback performs privileged operations without validation, it could be exploited. LiteSpeed Cache's crawler simulation feature (CVE-2024-28000) demonstrates how cron/crawler functions can create critical attack surfaces.
+
+### Elementor and WooCommerce attack surfaces
+
+**Elementor** adds an extensive secondary attack surface: widget controls, template import/export, AJAX handlers for the editor, and custom CSS/JS fields. CVE-2023-48777 (CVSS 8.8) exploited the template import AJAX handler for arbitrary file upload → RCE, and CVE-2023-3124 (CVSS 8.8) exploited `update_page_option` AJAX handler for subscriber-level arbitrary options update.
+
+**WooCommerce** payment gateway integrations create critical surfaces: order status manipulation, price/quantity modification via checkout hooks, and payment callback endpoints. CVE-2023-28121 (CVSS 9.8) demonstrated that trusting a custom HTTP header (`X-WCPAY-PLATFORM-CHECKOUT-USER`) for authentication enabled unauthenticated admin access.
+
+### Multisite-specific attack surfaces
+
+In multisite, Site Admins have a restricted capability set compared to Super Admins. They lack `install_plugins`, `edit_plugins`, `edit_themes`, `unfiltered_html`, and all `manage_network_*` capabilities. Vulnerabilities that are "by design" for single-site admins become legitimate security issues in multisite because Site Admins should not be able to affect other sites or escalate to Super Admin. Cross-site data access and network-wide option modification are key multisite attack vectors.
+
+### Additional entry points
+
+- **Webhook/callback endpoints**: Payment gateways (Stripe, PayPal) require publicly accessible callback URLs. These must validate signatures/tokens from the payment provider, not just check for expected parameters.
+- **oEmbed providers**: Custom oEmbed endpoints registered via `wp_oembed_add_provider()` can introduce SSRF if they fetch user-controlled URLs server-side.
+- **Custom rewrite rules**: `add_rewrite_rule()` and `template_redirect` hook can create custom URL endpoints. Missing auth checks make these exploitable.
+- **wp_mail**: Email header injection via unsanitized `To`, `From`, `CC`, `BCC` headers. Carriage returns (`\r\n`) in header values inject additional headers.
+- **Filesystem API**: `WP_Filesystem` and direct PHP file functions. Path traversal via `../` sequences targets `wp-config.php`, `.htaccess`, and `wp-content/debug.log`.
+- **Transient API**: `set_transient()`/`get_transient()` stores data in `wp_options` (or object cache). Transients with user-controlled keys can be overwritten. If transient data is used unsanitized in output or queries, it becomes a stored attack vector.
+- **Object cache**: `wp_cache_set()`/`wp_cache_get()` data can be poisoned if cache keys are predictable and the caching backend (Redis, Memcached) is accessible.
+- **wp_options autoload**: Options with `autoload=yes` load on every page request. Plugins storing large serialized data with autoload enabled create performance issues; storing user-controlled serialized data creates object injection risks.
+- **Custom database tables**: Direct `$wpdb->query()` calls on custom tables bypass WordPress's built-in sanitization. Every variable in SQL must use `$wpdb->prepare()`.
+- **Import/Export**: File upload (ZIP, XML, CSV) combined with parsing creates surfaces for XXE, Zip Slip, CSV injection, and path traversal.
+- **Bulk action handlers**: `admin_action_*` hooks for bulk operations often lack per-item capability checks, enabling mass manipulation.
+
+---
+
+## 2. WordPress 6.x security mechanisms reference
+
+### Nonce system behavior and edge cases
+
+WordPress nonces are **HMAC hashes, not true one-time tokens**. They are generated from `$tick | $action | $user_id | $session_token` using `wp_hash()`. The default lifetime is **24 hours** (configurable via `nonce_life` filter), split into two 12-hour ticks. `wp_verify_nonce()` returns **1** for current tick (0–12h old), **2** for previous tick (12–24h old), or **false** for expired/invalid.
+
+**Critical limitations:**
+- **Not one-time-use**: The same nonce is generated for the same user+action during an entire tick period. This means nonces do not prevent replay attacks.
+- **Guest users (ID 0) all receive identical nonces** — providing zero CSRF protection for unauthenticated forms. The `nonce_user_logged_out` filter can mitigate this.
+- **Nonces verify intent, not authorization**. A valid nonce only proves the request originated from a page WordPress generated for that user. Any logged-in user can obtain valid nonces for any action. **Always pair `wp_verify_nonce()` with `current_user_can()`**.
+
+**Core nonce functions:**
+- `wp_create_nonce($action)` — Returns ~10-char alphanumeric hash
+- `wp_verify_nonce($nonce, $action)` — Returns 1, 2, or false; does NOT terminate execution
+- `check_admin_referer($action, $query_arg)` — Verifies nonce AND HTTP referer; calls `wp_die()` on failure
+- `check_ajax_referer($action, $query_arg, $stop)` — Checks nonce only (not referer); inspects `_wpnonce`, `_ajax_nonce` params and `X-WP-Nonce` header
+
+### REST API permission_callback enforcement (WP 5.5+)
+
+Since WordPress 5.5, `register_rest_route()` issues a `_doing_it_wrong` notice when `permission_callback` is omitted. **The endpoint still functions as public** — the notice is informational only. WordPress cannot distinguish intentional public endpoints from accidental omissions. Using `'permission_callback' => '__return_true'` explicitly documents public intent.
+
+Permission callbacks run **after** authentication is resolved. For cookie-based auth, the `wp_rest` nonce must be present, or the user is treated as unauthenticated (ID 0). Permission callbacks should use `current_user_can()`, not manual nonce verification — the REST API handles the `wp_rest` nonce automatically via `rest_cookie_check_errors()`.
+
+### $wpdb->prepare() in WordPress 6.x
+
+**Placeholders**: `%s` (string, auto-quoted), `%d` (integer), `%f` (float), **`%i` (identifier, backtick-quoted — added in WP 6.2)**. The `%i` placeholder allows safe table/column name parameterization: `$wpdb->prepare('SELECT * FROM %i WHERE %i = %s', $table, $column, $value)` produces `` SELECT * FROM `table` WHERE `column` = 'value' ``.
+
+**Validation rules**: placeholder count must match argument count; positional placeholders (`%1$s`) are supported but do not auto-quote; `%%` produces literal `%`; for LIKE: `'%' . $wpdb->esc_like($search) . '%'` inside `prepare()`; IN clauses require dynamic placeholder construction; **named placeholders are NOT supported**.
+
+### WordPress 6.x security changes
+
+- **WP 6.2** (March 2023): `%i` identifier placeholder in `$wpdb->prepare()`
+- **WP 6.4.3** (January 2024): POP chain vulnerability fix (potential RCE via WP_HTML_TOKEN deserialization)
+- **WP 6.5** (March 2024): Block Bindings API with `edit_block_binding` capability; Interactivity API
+- **WP 6.8** (April 2025): **Major password hashing overhaul** — phpass replaced by **bcrypt with SHA-384 pre-hashing** (prefix `$wp$2y$`). Application passwords and security keys use **BLAKE2b via Sodium**. Old `$P$` hashes remain valid and auto-rehash on login. Optional Argon2 support via `wp_hash_password_algorithm` filter.
+
+### wp_safe_redirect vs wp_redirect
+
+`wp_redirect($location)` sets the Location header with **no host validation** — vulnerable to open redirect with user-supplied URLs. `wp_safe_redirect($location)` validates the target host against an allowlist via `wp_validate_redirect()` (default: current site host only; extensible via `allowed_redirect_hosts` filter). If the host is not allowed, it falls back to `admin_url()`. **Neither function calls `exit`** — the developer must follow with `exit;` or `die;`.
+
+### REST API authentication methods
+
+- **Cookie + Nonce (built-in)**: Default for same-origin requests. Nonce action: `wp_rest`. Pass via `X-WP-Nonce` header or `_wpnonce` parameter. No valid nonce = user set to 0.
+- **Application Passwords (WP 5.6+, built-in)**: HTTP Basic Auth (`Authorization: Basic base64(username:app_password)`). HTTPS required by default. 24-character passwords (~142 bits entropy), stored hashed (BLAKE2b in WP 6.8). Cannot be used for wp-login.php. Individually revocable.
+- **OAuth (plugin-required)**: OAuth 1.0a or 2.0. Best for third-party integrations.
+- **JWT (plugin-required)**: Stateless token-based. Not native to WordPress.
+
+---
+
+## 3. Complete WordPress security functions reference
+
+### Sanitization functions
+
+| Function | Behavior | Use case | Does NOT protect against |
+|----------|----------|----------|-------------------------|
+| `sanitize_text_field($str)` | Strips tags, removes line breaks/tabs/extra whitespace, strips octets | Single-line text input | SQL injection |
+| `sanitize_textarea_field($str)` | Same as above but preserves line breaks | Multi-line text | SQL injection |
+| `sanitize_email($email)` | Strips disallowed chars; does NOT validate format (use `is_email()`) | Email addresses | Invalid emails |
+| `sanitize_file_name($filename)` | Removes special chars, replaces whitespace with dashes | File uploads | Path traversal (add `validate_file()`) |
+| `sanitize_html_class($class)` | Keeps only A-Za-z0-9_- | CSS class names | — |
+| `sanitize_key($key)` | Lowercases, keeps only a-z0-9_- | Option/meta keys | — |
+| `sanitize_mime_type($mime)` | Keeps only a-zA-Z0-9._+-/ | MIME type strings | Fake MIME types |
+| `sanitize_sql_orderby($orderby)` | Validates ORDER BY pattern; returns false if invalid | SQL ORDER BY | Complex injection patterns |
+| `sanitize_title($title)` | Generates URL slug; strips tags, converts accents | URL slugs | NOT for display |
+| `sanitize_url($url)` | Strips invalid chars, removes dangerous protocols | URL storage | Open redirects |
+| `sanitize_user($username, $strict)` | Strips tags; strict: a-zA-Z0-9 _.@- only | Usernames | — |
+| `absint($value)` | `abs(intval($value))` | Non-negative integers | Range validation |
+| `wp_kses($content, $allowed_html)` | HTML filter keeping only specified tags/attributes | Rich HTML input | — |
+| `wp_kses_post($data)` | wp_kses with 'post' context (extensive allowed tags) | Post content | XSS in allowed attributes |
+| `wp_filter_nohtml_kses($data)` | Strips ALL HTML | Plain text only | — |
+
+### Escaping functions
+
+| Function | Context | Behavior |
+|----------|---------|----------|
+| `esc_html($text)` | Text inside HTML elements | Converts `& < > " '` to HTML entities |
+| `esc_attr($text)` | HTML attribute values | Same entity conversion; does NOT double-encode |
+| `esc_url($url)` | `href`/`src` attributes | Validates URL, strips dangerous protocols (javascript:, data:), encodes entities |
+| `esc_url_raw($url)` | Database storage, API calls | Same as `esc_url` without entity encoding |
+| `esc_js($text)` | Inline JS string literals | Escapes `' " & < >`, adds slashes |
+| `esc_textarea($text)` | Inside `<textarea>` tags | `htmlspecialchars` with double-encoding |
+| `esc_sql($data)` | **DEPRECATED** — use `$wpdb->prepare()` | `mysqli_real_escape_string` wrapper; does NOT add quotes |
+| `esc_xml($text)` | XML content | Escapes for XML context |
+| `wp_json_encode($data)` | JavaScript data embedding | `json_encode` with `JSON_HEX_TAG\|JSON_HEX_AMP\|JSON_HEX_APOS\|JSON_HEX_QUOT` — safe for `<script>` blocks |
+| `tag_escape($tag_name)` | HTML tag names | Lowercases, strips non-alphanumeric chars except `_:` |
+
+### Database security ($wpdb methods)
+
+`$wpdb->prepare()` is the primary SQL injection defense. `$wpdb->insert()`, `$wpdb->update()`, `$wpdb->delete()`, and `$wpdb->replace()` use `prepare()` internally and are safe when used correctly. `$wpdb->query()`, `$wpdb->get_var()`, `$wpdb->get_row()`, `$wpdb->get_col()`, and `$wpdb->get_results()` require explicit `prepare()` for any variable data. `$wpdb->esc_like($text)` escapes `%` and `_` for LIKE queries — must be used inside `prepare()`.
+
+### File upload security
+
+- `wp_check_filetype($filename, $mimes)` — Extension-based only; does NOT examine file contents
+- `wp_check_filetype_and_ext($file, $filename, $mimes)` — Checks actual file content via `finfo`/`getimagesize` plus extension
+- `wp_handle_upload($file, $overrides)` — Complete upload handler: validates MIME type, moves to uploads dir, returns result array
+- `validate_file($file, $allowed_files)` — Returns 0 (valid), 1 (contains `..`), 2 (contains `:/` or starts with `/`), 3 (not in allowed list) — **critical for preventing directory traversal**
+
+### Cryptographic functions
+
+- `wp_hash_password($password)` — As of WP 6.8: **bcrypt with SHA-384 pre-hashing** (prefix `$wp$2y$`). Previously phpass (MD5-based). Password length limit: 4096 chars.
+- `wp_check_password($password, $hash, $user_id)` — Verifies password against hash; auto-rehashes old `$P$` format to bcrypt on verification
+- `wp_generate_password($length, $special_chars, $extra_special_chars)` — Uses `wp_rand()` (cryptographically secure via `random_int()`)
+- `wp_hash($data, $scheme)` — HMAC-MD5 using salts from wp-config.php
+- `wp_rand($min, $max)` — CSPRNG wrapper using `random_int()` (PHP 7+)
+- `wp_generate_uuid4()` — RFC 4122 UUID v4 using `random_bytes()`
+
+---
+
+## 4. Real CVEs and vulnerability patterns in major plugins (2023–2025)
+
+### The most dangerous vulnerabilities of this period
+
+**CVE-2024-10924 — Really Simple Security authentication bypass (CVSS 9.8)**. Affected 4 million installations. The `check_login_and_get_user()` function in the 2FA REST API returned a valid user object even on error conditions. Unauthenticated attackers could log in as any user, including admin, by sending crafted REST API requests with a `user_id` and invalid nonce. Wordfence called this "the most dangerous vulnerability they've seen in 12 years." WordPress.org forced an automatic security update.
+
+**CVE-2023-28121 — WooCommerce Payments authentication bypass (CVSS 9.8)**. The `determine_current_user_for_platform_checkout()` function hooked into WordPress's `determine_current_user` filter and returned the user ID from the `X-WCPAY-PLATFORM-CHECKOUT-USER` HTTP header **without any validation**. Adding `X-WCPAY-PLATFORM-CHECKOUT-USER: 1` to any request authenticated as user ID 1 (admin). Wordfence detected **1.3 million attacks against 157,000 sites** on July 16, 2023.
+
+**CVE-2024-28000 — LiteSpeed Cache privilege escalation (CVSS 9.8)**. The crawler simulation feature used `mt_rand()` seeded with microsecond time to generate security hashes — producing only ~1 million possible values. An unauthenticated AJAX endpoint (`async_litespeed`) had no capability or nonce checks, allowing anyone to trigger hash generation. The hash could then be brute-forced within hours to create admin accounts via the REST API.
+
+**CVE-2023-32243 — Essential Addons for Elementor privilege escalation (CVSS 9.8)**. The password reset function in the Login/Register Form widget never validated the `rp_key` (reset key). It directly changed the user's password without calling `check_password_reset_key()`. The nonce was obtainable from the frontend page source. Wordfence blocked 6,900+ exploit attempts within days; Sucuri observed mass infection campaigns.
+
+**CVE-2023-48777 — Elementor arbitrary file upload to RCE (CVSS 8.8)**. The template import AJAX handler allowed contributor-level users to upload files via base64-encoded `fileData`. A path traversal in the filename parameter (`/../../../../shell.php`) placed PHP webshells in web-accessible directories.
+
+### Recurring vulnerability patterns
+
+**Pattern 1: Missing/broken authorization on AJAX handlers** — The single most dangerous recurring pattern. Functions hooked to `wp_ajax_*` that check nonces but not capabilities. Affects WPForms, LiteSpeed Cache, Elementor Pro, and hundreds of smaller plugins.
+
+**Pattern 2: XSS via insufficient output escaping** — 47.7% of all vulnerabilities in 2024. Most commonly Stored XSS at contributor+ level via shortcode attributes, widget settings, custom field values, and block attributes. Direct concatenation of user input into HTML output without `esc_attr()`, `esc_html()`, or `wp_kses()`.
+
+**Pattern 3: Authentication bypass via REST API** — Improper `permission_callback` implementations, custom authentication hooks trusting user-supplied headers, error handling that falls through to success states, and case-sensitivity mismatches in route matching.
+
+**Pattern 4: Weak/predictable security tokens** — Using `mt_rand()` with predictable seeds, empty API key hash comparisons (CleanTalk CVE-2024-10781), and non-constant-time string comparison for tokens.
+
+**Pattern 5: PHP Object Injection** — Growing trend. UpdraftPlus (CVE-2024-10957), GiveWP (CVE-2024-9634), SEOPress (CVE-2024-5488). Using `unserialize()` or `maybe_unserialize()` on user-controlled data, combinable with POP chains in bundled libraries for RCE.
+
+### Vulnerability statistics
+
+| Metric | 2023 | 2024 | H1 2025 |
+|--------|------|------|---------|
+| Total new vulnerabilities | ~5,943 | 7,966 | ~6,700 |
+| XSS percentage | ~45% | 47.7% | — |
+
+codex
+Toi dang trich cac finding duoc phep review tu Phase 3a va doi chieu voi Phase 2/IR de xem finding nao co sai `file:line`, `entry_point_id`, hoac mo ta impact qua muc. Sau do toi se trace truc tiep trong `plugins/cartflows` de tim counter-evidence va lap ke hoach dynamic test.
+  ✓ Load project context and review workflow, then extract cartflows findings with Phase 3a status PLAUSIBLE or UNCERTAIN
+  → Trace each eligible finding in plugin source to verify file:line, entry point, guards, and measurable impact
+  • Write skeptical review outputs to phase3 JSON and Markdown with corrections, missing evidence, and dynamic tests
+exec
+/bin/zsh -lc "jq '{plugin_slug, findings: [.findings[] | {finding_id, vuln_type, auth_required, entry_point_id, source_file_path, source_line_number, sink_file_path, sink_line_number, status, title, short_description, storage_key}]}' reports/phase2/cartflows-phase2.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "jq '{plugin_slug, findings: [.findings[] | {finding_id, validation_status, issues, source_file_path, source_line_number, sink_file_path, sink_line_number, entry_point_id}]}' reports/phase3/cartflows-phase3.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+{
+  "plugin_slug": "cartflows",
+  "findings": []
+}
+
+ exited 5 in 0ms:
+jq: error (at reports/phase3/cartflows-phase3.json:22): Cannot iterate over null (null)
+
+exec
+/bin/zsh -lc "jq '{plugin_slug, entry_points: [.entry_points[] | {id, type, hook, callback, file, line, auth, capability}]}' reports/phase1/cartflows-ir.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+{
+  "plugin_slug": null,
+  "entry_points": [
+    {
+      "id": "ep_cron_unknown",
+      "type": "cron",
+      "hook": null,
+      "callback": {
+        "type": "unresolved"
+      },
+      "file": "classes/importer/batch-process/helpers/class-wp-background-process.php",
+      "line": 477,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "load_cf_textdomain",
+        "class": "Cartflows_Loader",
+        "file": "classes/class-cartflows-loader.php",
+        "line_start": 562,
+        "line_end": 606
+      },
+      "file": "classes/class-cartflows-loader.php",
+      "line": 128,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "deactivation_survey_data_handler",
+        "class": "Cartflows_Loader",
+        "file": "classes/class-cartflows-loader.php",
+        "line_start": 379,
+        "line_end": 408
+      },
+      "file": "classes/class-cartflows-loader.php",
+      "line": 130,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_wp_loaded_wp_loaded",
+      "type": "wp_loaded",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "initialize",
+        "class": "Cartflows_Loader",
+        "file": "classes/class-cartflows-loader.php",
+        "line_start": 417,
+        "line_end": 419
+      },
+      "file": "classes/class-cartflows-loader.php",
+      "line": 246,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "flush_rules_after_save_permalinks",
+        "class": "Cartflows_Admin",
+        "file": "classes/class-cartflows-admin.php",
+        "line_start": 215,
+        "line_end": 223
+      },
+      "file": "classes/class-cartflows-admin.php",
+      "line": 64,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "run_scheduled_docs_job",
+        "class": "Cartflows_Admin",
+        "file": "classes/class-cartflows-admin.php",
+        "line_start": 100,
+        "line_end": 104
+      },
+      "file": "classes/class-cartflows-admin.php",
+      "line": 70,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_admin_post_admin_post_cartflows_rollback",
+      "type": "admin_post",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "post_cartflows_rollback",
+        "class": "Cartflows_Admin",
+        "file": "classes/class-cartflows-admin.php",
+        "line_start": 359,
+        "line_end": 400
+      },
+      "file": "classes/class-cartflows-admin.php",
+      "line": 72,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "add_admin_cache_restrict_const",
+        "class": "Cartflows_Admin",
+        "file": "classes/class-cartflows-admin.php",
+        "line_start": 341,
+        "line_end": 346
+      },
+      "file": "classes/class-cartflows-admin.php",
+      "line": 90,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "init_wc_logger",
+        "class": "Cartflows_Logger",
+        "file": "classes/class-cartflows-logger.php",
+        "line_start": 61,
+        "line_end": 65
+      },
+      "file": "classes/class-cartflows-logger.php",
+      "line": 50,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "schedule_deletion_of_old_logs",
+        "class": "Cartflows_Logger",
+        "file": "classes/class-cartflows-logger.php",
+        "line_start": 156,
+        "line_end": 174
+      },
+      "file": "classes/class-cartflows-logger.php",
+      "line": 52,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "init",
+        "class": "Cartflows_Update",
+        "file": "classes/class-cartflows-update.php",
+        "line_start": 52,
+        "line_end": 177
+      },
+      "file": "classes/class-cartflows-update.php",
+      "line": 43,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_cartflows_ignore_gutenberg_notice",
+      "type": "ajax_priv",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "ignore_gb_notice",
+        "class": "Cartflows_Admin_Notices",
+        "file": "classes/class-cartflows-admin-notices.php",
+        "line_start": 362,
+        "line_end": 371
+      },
+      "file": "classes/class-cartflows-admin-notices.php",
+      "line": 81,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_cartflows_disable_weekly_report_email_notice",
+      "type": "ajax_priv",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "disable_weekly_report_email_notice",
+        "class": "Cartflows_Admin_Notices",
+        "file": "classes/class-cartflows-admin-notices.php",
+        "line_start": 119,
+        "line_end": 128
+      },
+      "file": "classes/class-cartflows-admin-notices.php",
+      "line": 82,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_cartflows_snooze_script_migration",
+      "type": "ajax_priv",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "snooze_script_migration_notice",
+        "class": "Cartflows_Admin_Notices",
+        "file": "classes/class-cartflows-admin-notices.php",
+        "line_start": 177,
+        "line_end": 202
+      },
+      "file": "classes/class-cartflows-admin-notices.php",
+      "line": 83,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_cartflows_dismiss_script_migration_complete_notice",
+      "type": "ajax_priv",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "dismiss_script_migration_complete_notice",
+        "class": "Cartflows_Admin_Notices",
+        "file": "classes/class-cartflows-admin-notices.php",
+        "line_start": 418,
+        "line_end": 429
+      },
+      "file": "classes/class-cartflows-admin-notices.php",
+      "line": 84,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "debug_data_setting_actions",
+        "class": "Cartflows_Frontend",
+        "file": "classes/class-cartflows-frontend.php",
+        "line_start": 381,
+        "line_end": 384
+      },
+      "file": "classes/class-cartflows-frontend.php",
+      "line": 42,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "setup_optin_checkout_filter",
+        "class": "Cartflows_Frontend",
+        "file": "classes/class-cartflows-frontend.php",
+        "line_start": 852,
+        "line_end": 859
+      },
+      "file": "classes/class-cartflows-frontend.php",
+      "line": 43,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "disable_rediraction",
+        "class": "Cartflows_BB_Compatibility",
+        "file": "compatibilities/plugins/class-cartflows-bb-compatibility.php",
+        "line_start": 55,
+        "line_end": 57
+      },
+      "file": "compatibilities/plugins/class-cartflows-bb-compatibility.php",
+      "line": 45,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "register_wc_hooks",
+        "class": "Elementor\\Modules\\PageTemplates\\Cartflows_Elementor_Compatibility",
+        "file": "compatibilities/plugins/class-cartflows-elementor-compatibility.php",
+        "line_start": 122,
+        "line_end": 124
+      },
+      "file": "compatibilities/plugins/class-cartflows-elementor-compatibility.php",
+      "line": 53,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_cartflows_save_tutor_course_template",
+      "type": "ajax_priv",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "ajax_save_course_template",
+        "class": "Cartflows_Tutor_Compatibility",
+        "file": "compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php",
+        "line_start": 198,
+        "line_end": 236
+      },
+      "file": "compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php",
+      "line": 58,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_template_redirect_template_redirect",
+      "type": "template_redirect",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "override_course_template",
+        "class": "Cartflows_Tutor_Compatibility",
+        "file": "compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php",
+        "line_start": 313,
+        "line_end": 348
+      },
+      "file": "compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php",
+      "line": 60,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_template_redirect_template_redirect",
+      "type": "template_redirect",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "cartflows_override_course_template",
+        "class": "Cartflows_Learndash_Compatibility",
+        "file": "compatibilities/plugins/class-cartflows-learndash-compatibility.php",
+        "line_start": 257,
+        "line_end": 281
+      },
+      "file": "compatibilities/plugins/class-cartflows-learndash-compatibility.php",
+      "line": 47,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_cartflows_get_suretriggers_data",
+      "type": "ajax_priv",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "get_suretriggers_data",
+        "class": "Cartflows_SureTriggers_Compatibility",
+        "file": "compatibilities/plugins/class-cartflows-suretriggers-compatibility.php",
+        "line_start": 115,
+        "line_end": 133
+      },
+      "file": "compatibilities/plugins/class-cartflows-suretriggers-compatibility.php",
+      "line": 51,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "load_cartflows_theme_support",
+        "class": "Cartflows_Compatibility",
+        "file": "compatibilities/class-cartflows-compatibility.php",
+        "line_start": 65,
+        "line_end": 74
+      },
+      "file": "compatibilities/class-cartflows-compatibility.php",
+      "line": 45,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "setup_wizard",
+        "class": "CartflowsAdmin\\Wizard\\Inc\\WizardCore",
+        "file": "wizard/inc/wizard-core.php",
+        "line_start": 201,
+        "line_end": 215
+      },
+      "file": "wizard/inc/wizard-core.php",
+      "line": 50,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "hide_notices",
+        "class": "CartflowsAdmin\\Wizard\\Inc\\WizardCore",
+        "file": "wizard/inc/wizard-core.php",
+        "line_start": 126,
+        "line_end": 138
+      },
+      "file": "wizard/inc/wizard-core.php",
+      "line": 51,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "load_scripts",
+        "class": "CartflowsAdmin\\Wizard\\Inc\\WizardCore",
+        "file": "wizard/inc/wizard-core.php",
+        "line_start": 111,
+        "line_end": 114
+      },
+      "file": "wizard/inc/wizard-core.php",
+      "line": 57,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "redirect_to_onboarding",
+        "class": "CartflowsAdmin\\Wizard\\Inc\\WizardCore",
+        "file": "wizard/inc/wizard-core.php",
+        "line_start": 71,
+        "line_end": 84
+      },
+      "file": "wizard/inc/wizard-core.php",
+      "line": 60,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "prepare_ajax_errors",
+        "class": "CartflowsAdmin\\Wizard\\Ajax\\AjaxErrors",
+        "file": "wizard/ajax/ajax-errors.php",
+        "line_start": 66,
+        "line_end": 72
+      },
+      "file": "wizard/ajax/ajax-errors.php",
+      "line": 58,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "settings_admin_scripts",
+        "class": "CartflowsAdmin\\AdminCore\\Inc\\AdminMenu",
+        "file": "admin-core/inc/admin-menu.php",
+        "line_start": 219,
+        "line_end": 229
+      },
+      "file": "admin-core/inc/admin-menu.php",
+      "line": 82,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "add_capabilities_to_admin",
+        "class": "CartflowsAdmin\\AdminCore\\Inc\\AdminMenu",
+        "file": "admin-core/inc/admin-menu.php",
+        "line_start": 339,
+        "line_end": 351
+      },
+      "file": "admin-core/inc/admin-menu.php",
+      "line": 83,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_cartflows_fetch_whats_new_data",
+      "type": "ajax_priv",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "fetch_whats_new_data",
+        "class": "CartflowsAdmin\\AdminCore\\Inc\\AdminMenu",
+        "file": "admin-core/inc/admin-menu.php",
+        "line_start": 1184,
+        "line_end": 1201
+      },
+      "file": "admin-core/inc/admin-menu.php",
+      "line": 96,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_rest___0",
+      "type": "rest_route",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "get_home_page_settings",
+        "class": "CartflowsAdmin\\AdminCore\\Api\\HomePage",
+        "file": "admin-core/api/home-page.php",
+        "line_start": 103,
+        "line_end": 119
+      },
+      "file": "admin-core/api/home-page.php",
+      "line": 69,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_rest___0",
+      "type": "rest_route",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "get_setup_details",
+        "class": "CartflowsAdmin\\AdminCore\\Api\\HomePage",
+        "file": "admin-core/api/home-page.php",
+        "line_start": 127,
+        "line_end": 168
+      },
+      "file": "admin-core/api/home-page.php",
+      "line": 83,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_rest___0",
+      "type": "rest_route",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "get_item",
+        "class": "CartflowsAdmin\\AdminCore\\Api\\StepData",
+        "file": "admin-core/api/step-data.php",
+        "line_start": 89,
+        "line_end": 138
+      },
+      "file": "admin-core/api/step-data.php",
+      "line": 63,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_rest___0",
+      "type": "rest_route",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "get_common_settings",
+        "class": "CartflowsAdmin\\AdminCore\\Api\\CommonSettings",
+        "file": "admin-core/api/common-settings.php",
+        "line_start": 107,
+        "line_end": 118
+      },
+      "file": "admin-core/api/common-settings.php",
+      "line": 87,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_rest___0",
+      "type": "rest_route",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "get_webhooks",
+        "class": "CartflowsAdmin\\AdminCore\\Api\\Webhooks",
+        "file": "admin-core/api/webhooks.php",
+        "line_start": 144,
+        "line_end": 155
+      },
+      "file": "admin-core/api/webhooks.php",
+      "line": 59,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_rest___1",
+      "type": "rest_route",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "create_webhook",
+        "class": "CartflowsAdmin\\AdminCore\\Api\\Webhooks",
+        "file": "admin-core/api/webhooks.php",
+        "line_start": 163,
+        "line_end": 190
+      },
+      "file": "admin-core/api/webhooks.php",
+      "line": 59,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_rest___0",
+      "type": "rest_route",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "update_webhook",
+        "class": "CartflowsAdmin\\AdminCore\\Api\\Webhooks",
+        "file": "admin-core/api/webhooks.php",
+        "line_start": 198,
+        "line_end": 236
+      },
+      "file": "admin-core/api/webhooks.php",
+      "line": 77,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_rest___1",
+      "type": "rest_route",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "delete_webhook",
+        "class": "CartflowsAdmin\\AdminCore\\Api\\Webhooks",
+        "file": "admin-core/api/webhooks.php",
+        "line_start": 244,
+        "line_end": 266
+      },
+      "file": "admin-core/api/webhooks.php",
+      "line": 77,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_rest___0",
+      "type": "rest_route",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "test_webhook",
+        "class": "CartflowsAdmin\\AdminCore\\Api\\Webhooks",
+        "file": "admin-core/api/webhooks.php",
+        "line_start": 274,
+        "line_end": 287
+      },
+      "file": "admin-core/api/webhooks.php",
+      "line": 95,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_rest___0",
+      "type": "rest_route",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "get_events",
+        "class": "CartflowsAdmin\\AdminCore\\Api\\Webhooks",
+        "file": "admin-core/api/webhooks.php",
+        "line_start": 295,
+        "line_end": 305
+      },
+      "file": "admin-core/api/webhooks.php",
+      "line": 108,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_rest___0",
+      "type": "rest_route",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "get_item",
+        "class": "CartflowsAdmin\\AdminCore\\Api\\Product\\ProductData",
+        "file": "admin-core/api/product/product-data.php",
+        "line_start": 88,
+        "line_end": 110
+      },
+      "file": "admin-core/api/product/product-data.php",
+      "line": 62,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_rest___0",
+      "type": "rest_route",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "get_items",
+        "class": "CartflowsAdmin\\AdminCore\\Api\\Flows",
+        "file": "admin-core/api/flows.php",
+        "line_start": 83,
+        "line_end": 289
+      },
+      "file": "admin-core/api/flows.php",
+      "line": 62,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_rest___0",
+      "type": "rest_route",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "get_item",
+        "class": "CartflowsAdmin\\AdminCore\\Api\\FlowData",
+        "file": "admin-core/api/flow-data.php",
+        "line_start": 100,
+        "line_end": 133
+      },
+      "file": "admin-core/api/flow-data.php",
+      "line": 64,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_rest___0",
+      "type": "rest_route",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "get_learn_sections",
+        "class": "CartflowsAdmin\\AdminCore\\Api\\Learn",
+        "file": "admin-core/api/learn.php",
+        "line_start": 82,
+        "line_end": 318
+      },
+      "file": "admin-core/api/learn.php",
+      "line": 61,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_rest_api_init_rest_api_init",
+      "type": "rest_api_init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "register_routes",
+        "class": "CartflowsAdmin\\AdminCore\\Api\\ApiInit",
+        "file": "admin-core/api/api-init.php",
+        "line_start": 77,
+        "line_end": 93
+      },
+      "file": "admin-core/api/api-init.php",
+      "line": 71,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_cartflows_install_plugin",
+      "type": "ajax_priv",
+      "hook": null,
+      "callback": {
+        "type": "function",
+        "name": "wp_ajax_install_plugin",
+        "class": null,
+        "file": null,
+        "line_start": null,
+        "line_end": null
+      },
+      "file": "admin-core/ajax/importer.php",
+      "line": 81,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "prepare_ajax_errors",
+        "class": "CartflowsAdmin\\AdminCore\\Ajax\\AjaxErrors",
+        "file": "admin-core/ajax/ajax-errors.php",
+        "line_start": 65,
+        "line_end": 72
+      },
+      "file": "admin-core/ajax/ajax-errors.php",
+      "line": 57,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "setup",
+        "class": "Cartflows_Pointer",
+        "file": "libraries/cartflows-pointer/class-cartflows-pointer.php",
+        "line_start": 74,
+        "line_end": 90
+      },
+      "file": "libraries/cartflows-pointer/class-cartflows-pointer.php",
+      "line": 66,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_cartflows_pointer_should_show",
+      "type": "ajax_priv",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "ajax_should_show",
+        "class": "Cartflows_Pointer",
+        "file": "libraries/cartflows-pointer/class-cartflows-pointer.php",
+        "line_start": 233,
+        "line_end": 254
+      },
+      "file": "libraries/cartflows-pointer/class-cartflows-pointer.php",
+      "line": 140,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_cartflows_pointer_dismiss",
+      "type": "ajax_priv",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "ajax_dismiss",
+        "class": "Cartflows_Pointer",
+        "file": "libraries/cartflows-pointer/class-cartflows-pointer.php",
+        "line_start": 261,
+        "line_end": 274
+      },
+      "file": "libraries/cartflows-pointer/class-cartflows-pointer.php",
+      "line": 141,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_cartflows_pointer_accept",
+      "type": "ajax_priv",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "ajax_accept",
+        "class": "Cartflows_Pointer",
+        "file": "libraries/cartflows-pointer/class-cartflows-pointer.php",
+        "line_start": 281,
+        "line_end": 294
+      },
+      "file": "libraries/cartflows-pointer/class-cartflows-pointer.php",
+      "line": 142,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "handle_optin_optout",
+        "class": "BSF_Analytics",
+        "file": "libraries/bsf-analytics/class-bsf-analytics.php",
+        "line_start": 312,
+        "line_end": 347
+      },
+      "file": "libraries/bsf-analytics/class-bsf-analytics.php",
+      "line": 58,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "option_notice",
+        "class": "BSF_Analytics",
+        "file": "libraries/bsf-analytics/class-bsf-analytics.php",
+        "line_start": 209,
+        "line_end": 305
+      },
+      "file": "libraries/bsf-analytics/class-bsf-analytics.php",
+      "line": 59,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "maybe_track_analytics",
+        "class": "BSF_Analytics",
+        "file": "libraries/bsf-analytics/class-bsf-analytics.php",
+        "line_start": 572,
+        "line_end": 585
+      },
+      "file": "libraries/bsf-analytics/class-bsf-analytics.php",
+      "line": 60,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "register_usage_tracking_setting",
+        "class": "BSF_Analytics",
+        "file": "libraries/bsf-analytics/class-bsf-analytics.php",
+        "line_start": 432,
+        "line_end": 476
+      },
+      "file": "libraries/bsf-analytics/class-bsf-analytics.php",
+      "line": 64,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_uds_plugin_deactivate_feedback",
+      "type": "ajax_priv",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "send_plugin_deactivate_feedback",
+        "class": "Deactivation_Survey_Feedback",
+        "file": "libraries/bsf-analytics/modules/deactivation-survey/classes/class-deactivation-survey-feedback.php",
+        "line_start": 227,
+        "line_end": 276
+      },
+      "file": "libraries/bsf-analytics/modules/deactivation-survey/classes/class-deactivation-survey-feedback.php",
+      "line": 54,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "load_analytics",
+        "class": "BSF_Analytics_Loader",
+        "file": "libraries/bsf-analytics/class-bsf-analytics-loader.php",
+        "line_start": 86,
+        "line_end": 117
+      },
+      "file": "libraries/bsf-analytics/class-bsf-analytics-loader.php",
+      "line": 68,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_wp_loaded_wp_loaded",
+      "type": "wp_loaded",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "load_files",
+        "class": "NPS_Survey\\NPS_Survey_Plugin_Loader",
+        "file": "libraries/nps-survey/nps-survey-plugin-loader.php",
+        "line_start": 91,
+        "line_end": 93
+      },
+      "file": "libraries/nps-survey/nps-survey-plugin-loader.php",
+      "line": 36,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_rest_api_init_rest_api_init",
+      "type": "rest_api_init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "register_route",
+        "class": "Nps_Survey",
+        "file": "libraries/nps-survey/classes/nps-survey-script.php",
+        "line_start": 180,
+        "line_end": 207
+      },
+      "file": "libraries/nps-survey/classes/nps-survey-script.php",
+      "line": 34,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_rest___rating__0",
+      "type": "rest_route",
+      "hook": null,
+      "callback": {
+        "type": "unresolved",
+        "name": null,
+        "class": null,
+        "file": null,
+        "line_start": null,
+        "line_end": null
+      },
+      "file": "libraries/nps-survey/classes/nps-survey-script.php",
+      "line": 182,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_rest___dismiss_nps_survey__0",
+      "type": "rest_route",
+      "hook": null,
+      "callback": {
+        "type": "unresolved",
+        "name": null,
+        "class": null,
+        "file": null,
+        "line_start": null,
+        "line_end": null
+      },
+      "file": "libraries/nps-survey/classes/nps-survey-script.php",
+      "line": 195,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_astra_notice_dismiss",
+      "type": "ajax_priv",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "dismiss_notice",
+        "class": "Astra_Notices",
+        "file": "libraries/astra-notices/class-astra-notices.php",
+        "line_start": 118,
+        "line_end": 166
+      },
+      "file": "libraries/astra-notices/class-astra-notices.php",
+      "line": 72,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_cron_unknown",
+      "type": "cron",
+      "hook": null,
+      "callback": {
+        "type": "unresolved"
+      },
+      "file": "libraries/action-scheduler/classes/ActionScheduler_QueueRunner.php",
+      "line": 66,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "init",
+        "class": "Cartflows_Update",
+        "file": "classes/class-cartflows-update.php",
+        "line_start": 52,
+        "line_end": 177
+      },
+      "file": "libraries/action-scheduler/classes/abstracts/ActionScheduler.php",
+      "line": 152,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "init",
+        "class": "Cartflows_Update",
+        "file": "classes/class-cartflows-update.php",
+        "line_start": 52,
+        "line_end": 177
+      },
+      "file": "libraries/action-scheduler/classes/abstracts/ActionScheduler.php",
+      "line": 153,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "init",
+        "class": "Cartflows_Update",
+        "file": "classes/class-cartflows-update.php",
+        "line_start": 52,
+        "line_end": 177
+      },
+      "file": "libraries/action-scheduler/classes/abstracts/ActionScheduler.php",
+      "line": 154,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "init",
+        "class": "Cartflows_Update",
+        "file": "classes/class-cartflows-update.php",
+        "line_start": 52,
+        "line_end": 177
+      },
+      "file": "libraries/action-scheduler/classes/abstracts/ActionScheduler.php",
+      "line": 155,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "closure",
+        "name": null,
+        "class": null,
+        "file": "libraries/action-scheduler/classes/abstracts/ActionScheduler.php",
+        "line_start": 166,
+        "line_end": 175
+      },
+      "file": "libraries/action-scheduler/classes/abstracts/ActionScheduler.php",
+      "line": 157,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "maybe_hook_migration",
+        "class": "Action_Scheduler\\Migration\\Controller",
+        "file": "libraries/action-scheduler/classes/migration/Controller.php",
+        "line_start": 184,
+        "line_end": 190
+      },
+      "file": "libraries/action-scheduler/classes/migration/Controller.php",
+      "line": 171,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_wp_loaded_wp_loaded",
+      "type": "wp_loaded",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "schedule_migration",
+        "class": "Action_Scheduler\\Migration\\Controller",
+        "file": "libraries/action-scheduler/classes/migration/Controller.php",
+        "line_start": 96,
+        "line_end": 120
+      },
+      "file": "libraries/action-scheduler/classes/migration/Controller.php",
+      "line": 172,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "load",
+        "class": "Cartflows_Nps_Survey",
+        "file": "libraries/class-cartflows-nps-survey.php",
+        "line_start": 93,
+        "line_end": 99
+      },
+      "file": "libraries/class-cartflows-nps-survey.php",
+      "line": 50,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "register_elements",
+        "class": "Cartflows_Bricks_Elements_Loader",
+        "file": "modules/bricks/class-cartflows-bricks-elements-loader.php",
+        "line_start": 73,
+        "line_end": 90
+      },
+      "file": "modules/bricks/class-cartflows-bricks-elements-loader.php",
+      "line": 42,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_template_redirect_template_redirect",
+      "type": "template_redirect",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "handle_step_visited",
+        "class": "Cartflows_Webhook_Events",
+        "file": "modules/webhook/classes/class-cartflows-webhook-events.php",
+        "line_start": 85,
+        "line_end": 119
+      },
+      "file": "modules/webhook/classes/class-cartflows-webhook-events.php",
+      "line": 53,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_template_redirect_template_redirect",
+      "type": "template_redirect",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "template_redirect",
+        "class": "Cartflows_Landing_Markup",
+        "file": "modules/landing/classes/class-cartflows-landing-markup.php",
+        "line_start": 129,
+        "line_end": 148
+      },
+      "file": "modules/landing/classes/class-cartflows-landing-markup.php",
+      "line": 43,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_wcf_json_search_flows",
+      "type": "ajax_priv",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "json_search_flows",
+        "class": "Cartflows_Wd_Flow_Product_Meta",
+        "file": "modules/woo-dynamic-flow/classes/class-cartflows-wd-flow-product-meta.php",
+        "line_start": 83,
+        "line_end": 123
+      },
+      "file": "modules/woo-dynamic-flow/classes/class-cartflows-wd-flow-product-meta.php",
+      "line": 43,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_shortcode_cartflows_product_title",
+      "type": "shortcode",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "product_title",
+        "class": "Cartflows_Wd_Flow_Shortcodes",
+        "file": "modules/woo-dynamic-flow/classes/class-cartflows-wd-flow-shortcodes.php",
+        "line_start": 81,
+        "line_end": 99
+      },
+      "file": "modules/woo-dynamic-flow/classes/class-cartflows-wd-flow-shortcodes.php",
+      "line": 52,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_shortcode_cartflows_product_add_to_cart",
+      "type": "shortcode",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "add_to_cart",
+        "class": "Cartflows_Wd_Flow_Shortcodes",
+        "file": "modules/woo-dynamic-flow/classes/class-cartflows-wd-flow-shortcodes.php",
+        "line_start": 106,
+        "line_end": 192
+      },
+      "file": "modules/woo-dynamic-flow/classes/class-cartflows-wd-flow-shortcodes.php",
+      "line": 53,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_shortcode_cartflows_order_details",
+      "type": "shortcode",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "cartflows_order_details_shortcode_markup",
+        "class": "Cartflows_Thankyou_Markup",
+        "file": "modules/thankyou/classes/class-cartflows-thankyou-markup.php",
+        "line_start": 213,
+        "line_end": 340
+      },
+      "file": "modules/thankyou/classes/class-cartflows-thankyou-markup.php",
+      "line": 43,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_template_redirect_template_redirect",
+      "type": "template_redirect",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "redirect_tq_page_to_custom_url",
+        "class": "Cartflows_Thankyou_Markup",
+        "file": "modules/thankyou/classes/class-cartflows-thankyou-markup.php",
+        "line_start": 191,
+        "line_end": 206
+      },
+      "file": "modules/thankyou/classes/class-cartflows-thankyou-markup.php",
+      "line": 53,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "register_blocks",
+        "class": "WCFB_Optin_Form",
+        "file": "modules/gutenberg/dist/blocks/optin-form/class-wcfb-optin-form.php",
+        "line_start": 51,
+        "line_end": 400
+      },
+      "file": "modules/gutenberg/dist/blocks/optin-form/class-wcfb-optin-form.php",
+      "line": 43,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_block_wcfb_optin_form",
+      "type": "block",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "render_html",
+        "class": "WCFB_Optin_Form",
+        "file": "modules/gutenberg/dist/blocks/optin-form/class-wcfb-optin-form.php",
+        "line_start": 420,
+        "line_end": 490
+      },
+      "file": "modules/gutenberg/dist/blocks/optin-form/class-wcfb-optin-form.php",
+      "line": 389,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "register_blocks",
+        "class": "WCFB_Order_Detail_Form",
+        "file": "modules/gutenberg/dist/blocks/order-detail-form/class-wcfb-order-detail-form.php",
+        "line_start": 60,
+        "line_end": 874
+      },
+      "file": "modules/gutenberg/dist/blocks/order-detail-form/class-wcfb-order-detail-form.php",
+      "line": 52,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_block_wcfb_order_detail_form",
+      "type": "block",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "render_html",
+        "class": "WCFB_Order_Detail_Form",
+        "file": "modules/gutenberg/dist/blocks/order-detail-form/class-wcfb-order-detail-form.php",
+        "line_start": 884,
+        "line_end": 918
+      },
+      "file": "modules/gutenberg/dist/blocks/order-detail-form/class-wcfb-order-detail-form.php",
+      "line": 67,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "register_blocks",
+        "class": "WCFB_Checkout_Form",
+        "file": "modules/gutenberg/dist/blocks/checkout-form/class-wcfb-checkout-form.php",
+        "line_start": 50,
+        "line_end": 810
+      },
+      "file": "modules/gutenberg/dist/blocks/checkout-form/class-wcfb-checkout-form.php",
+      "line": 42,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_block_wcfb_checkout_form",
+      "type": "block",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "render_html",
+        "class": "WCFB_Checkout_Form",
+        "file": "modules/gutenberg/dist/blocks/checkout-form/class-wcfb-checkout-form.php",
+        "line_start": 819,
+        "line_end": 887
+      },
+      "file": "modules/gutenberg/dist/blocks/checkout-form/class-wcfb-checkout-form.php",
+      "line": 799,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "prepare_block_list",
+        "class": "Cartflows_Gb_Helper",
+        "file": "modules/gutenberg/classes/class-cartflows-gb-helper.php",
+        "line_start": 112,
+        "line_end": 114
+      },
+      "file": "modules/gutenberg/classes/class-cartflows-gb-helper.php",
+      "line": 103,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "gutenberg_editor_compatibility",
+        "class": "Cartflows_Gutenberg_Editor",
+        "file": "modules/gutenberg/classes/class-cartflows-gutenberg-editor.php",
+        "line_start": 153,
+        "line_end": 190
+      },
+      "file": "modules/gutenberg/classes/class-cartflows-gutenberg-editor.php",
+      "line": 43,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "add_gcp_colors_to_block_default_color_pallet",
+        "class": "Cartflows_Gutenberg_Editor",
+        "file": "modules/gutenberg/classes/class-cartflows-gutenberg-editor.php",
+        "line_start": 57,
+        "line_end": 88
+      },
+      "file": "modules/gutenberg/classes/class-cartflows-gutenberg-editor.php",
+      "line": 47,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_wpcf_order_detail_form_shortcode",
+      "type": "ajax_priv",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "order_detail_form_shortcode",
+        "class": "Cartflows_Init_Blocks",
+        "file": "modules/gutenberg/classes/class-cartflows-init-blocks.php",
+        "line_start": 141,
+        "line_end": 190
+      },
+      "file": "modules/gutenberg/classes/class-cartflows-init-blocks.php",
+      "line": 64,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_wpcf_order_checkout_form_shortcode",
+      "type": "ajax_priv",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "order_checkout_form_shortcode",
+        "class": "Cartflows_Init_Blocks",
+        "file": "modules/gutenberg/classes/class-cartflows-init-blocks.php",
+        "line_start": 197,
+        "line_end": 299
+      },
+      "file": "modules/gutenberg/classes/class-cartflows-init-blocks.php",
+      "line": 65,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_wpcf_optin_form_shortcode",
+      "type": "ajax_priv",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "optin_form_shortcode",
+        "class": "Cartflows_Init_Blocks",
+        "file": "modules/gutenberg/classes/class-cartflows-init-blocks.php",
+        "line_start": 306,
+        "line_end": 371
+      },
+      "file": "modules/gutenberg/classes/class-cartflows-init-blocks.php",
+      "line": 66,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_block_wcfb_next_step_button",
+      "type": "block",
+      "hook": null,
+      "callback": {
+        "type": "unresolved"
+      },
+      "file": "modules/gutenberg/classes/class-cartflows-init-blocks.php",
+      "line": 512,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_wcf_woo_apply_coupon",
+      "type": "ajax_priv",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "apply_coupon",
+        "class": "Cartflows_Checkout_Ajax",
+        "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "line_start": 106,
+        "line_end": 137
+      },
+      "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "line": 45,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_ajax_nopriv_wp_ajax_nopriv_wcf_woo_apply_coupon",
+      "type": "ajax_nopriv",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "apply_coupon",
+        "class": "Cartflows_Checkout_Ajax",
+        "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "line_start": 106,
+        "line_end": 137
+      },
+      "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "line": 46,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_wcf_woo_remove_coupon",
+      "type": "ajax_priv",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "remove_coupon",
+        "class": "Cartflows_Checkout_Ajax",
+        "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "line_start": 142,
+        "line_end": 154
+      },
+      "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "line": 48,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_ajax_nopriv_wp_ajax_nopriv_wcf_woo_remove_coupon",
+      "type": "ajax_nopriv",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "remove_coupon",
+        "class": "Cartflows_Checkout_Ajax",
+        "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "line_start": 142,
+        "line_end": 154
+      },
+      "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "line": 49,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_wcf_woo_remove_cart_product",
+      "type": "ajax_priv",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "wcf_woo_remove_cart_product",
+        "class": "Cartflows_Checkout_Ajax",
+        "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "line_start": 159,
+        "line_end": 199
+      },
+      "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "line": 51,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_ajax_nopriv_wp_ajax_nopriv_wcf_woo_remove_cart_product",
+      "type": "ajax_nopriv",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "wcf_woo_remove_cart_product",
+        "class": "Cartflows_Checkout_Ajax",
+        "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "line_start": 159,
+        "line_end": 199
+      },
+      "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "line": 52,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_ajax_nopriv_wp_ajax_nopriv_wcf_check_email_exists",
+      "type": "ajax_nopriv",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "check_email_exists",
+        "class": "Cartflows_Checkout_Ajax",
+        "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "line_start": 205,
+        "line_end": 220
+      },
+      "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "line": 54,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_ajax_nopriv_wp_ajax_nopriv_wcf_woocommerce_login",
+      "type": "ajax_nopriv",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "woocommerce_user_login",
+        "class": "Cartflows_Checkout_Ajax",
+        "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "line_start": 256,
+        "line_end": 285
+      },
+      "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "line": 55,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_wcf_upload_checkout_file",
+      "type": "ajax_priv",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "upload_checkout_file",
+        "class": "Cartflows_Checkout_Ajax",
+        "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "line_start": 293,
+        "line_end": 346
+      },
+      "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "line": 57,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file",
+      "type": "ajax_nopriv",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "upload_checkout_file",
+        "class": "Cartflows_Checkout_Ajax",
+        "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "line_start": 293,
+        "line_end": 346
+      },
+      "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "line": 58,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_shortcode_cartflows_checkout",
+      "type": "shortcode",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "checkout_shortcode_markup",
+        "class": "Cartflows_Checkout_Markup",
+        "file": "modules/checkout/classes/class-cartflows-checkout-markup.php",
+        "line_start": 473,
+        "line_end": 541
+      },
+      "file": "modules/checkout/classes/class-cartflows-checkout-markup.php",
+      "line": 55,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "update_woo_actions_ajax",
+        "class": "Cartflows_Checkout_Markup",
+        "file": "modules/checkout/classes/class-cartflows-checkout-markup.php",
+        "line_start": 209,
+        "line_end": 215
+      },
+      "file": "modules/checkout/classes/class-cartflows-checkout-markup.php",
+      "line": 79,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_template_redirect_template_redirect",
+      "type": "template_redirect",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "global_checkout_template_redirect",
+        "class": "Cartflows_Global_Checkout",
+        "file": "modules/checkout/classes/class-cartflows-global-checkout.php",
+        "line_start": 127,
+        "line_end": 158
+      },
+      "file": "modules/checkout/classes/class-cartflows-global-checkout.php",
+      "line": 45,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "register_modules",
+        "class": "Cartflows_BB_Modules_Loader",
+        "file": "modules/beaver-builder/class-cartflows-bb-modules-loader.php",
+        "line_start": 104,
+        "line_end": 110
+      },
+      "file": "modules/beaver-builder/class-cartflows-bb-modules-loader.php",
+      "line": 42,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_shortcode_cartflows_optin",
+      "type": "shortcode",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "optin_shortcode_markup",
+        "class": "Cartflows_Optin_Markup",
+        "file": "modules/optin/classes/class-cartflows-optin-markup.php",
+        "line_start": 225,
+        "line_end": 284
+      },
+      "file": "modules/optin/classes/class-cartflows-optin-markup.php",
+      "line": 47,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "remove_woo_actions",
+        "class": "Cartflows_Optin_Markup",
+        "file": "modules/optin/classes/class-cartflows-optin-markup.php",
+        "line_start": 120,
+        "line_end": 145
+      },
+      "file": "modules/optin/classes/class-cartflows-optin-markup.php",
+      "line": 69,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "schedule_weekly_report_email",
+        "class": "Cartflows_Admin_Report_Emails",
+        "file": "modules/email-report/class-cartflows-admin-report-emails.php",
+        "line_start": 54,
+        "line_end": 73
+      },
+      "file": "modules/email-report/class-cartflows-admin-report-emails.php",
+      "line": 44,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "unsubscribe_cartflows_weekly_emails",
+        "class": "Cartflows_Admin_Report_Emails",
+        "file": "modules/email-report/class-cartflows-admin-report-emails.php",
+        "line_start": 115,
+        "line_end": 150
+      },
+      "file": "modules/email-report/class-cartflows-admin-report-emails.php",
+      "line": 48,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "flow_post_type",
+        "class": "Cartflows_Flow_Post_Type",
+        "file": "modules/flow/classes/class-cartflows-flow-post-type.php",
+        "line_start": 100,
+        "line_end": 162
+      },
+      "file": "modules/flow/classes/class-cartflows-flow-post-type.php",
+      "line": 42,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_template_redirect_template_redirect",
+      "type": "template_redirect",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "redirect_to_step",
+        "class": "Cartflows_Flow_Post_Type",
+        "file": "modules/flow/classes/class-cartflows-flow-post-type.php",
+        "line_start": 280,
+        "line_end": 291
+      },
+      "file": "modules/flow/classes/class-cartflows-flow-post-type.php",
+      "line": 55,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "rewrite_step_rule",
+        "class": "Cartflows_Permalink",
+        "file": "modules/flow/classes/class-cartflows-permalink.php",
+        "line_start": 109,
+        "line_end": 148
+      },
+      "file": "modules/flow/classes/class-cartflows-permalink.php",
+      "line": 43,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "step_post_type",
+        "class": "Cartflows_Step_Post_Type",
+        "file": "modules/flow/classes/class-cartflows-step-post-type.php",
+        "line_start": 168,
+        "line_end": 295
+      },
+      "file": "modules/flow/classes/class-cartflows-step-post-type.php",
+      "line": 49,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "add_wp_templates_support",
+        "class": "Cartflows_Step_Post_Type",
+        "file": "modules/flow/classes/class-cartflows-step-post-type.php",
+        "line_start": 305,
+        "line_end": 307
+      },
+      "file": "modules/flow/classes/class-cartflows-step-post-type.php",
+      "line": 50,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_template_redirect_template_redirect",
+      "type": "template_redirect",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "query_fix",
+        "class": "Cartflows_Step_Post_Type",
+        "file": "modules/flow/classes/class-cartflows-step-post-type.php",
+        "line_start": 344,
+        "line_end": 370
+      },
+      "file": "modules/flow/classes/class-cartflows-step-post-type.php",
+      "line": 56,
+      "auth": null,
+      "capability": null
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook": null,
+      "callback": {
+        "type": "method",
+        "name": "disallowed_admin_all_steps_view",
+        "class": "Cartflows_Step_Post_Type",
+        "file": "modules/flow/classes/class-cartflows-step-post-type.php",
+        "line_start": 511,
+        "line_end": 525
+      },
+      "file": "modules/flow/classes/class-cartflows-step-post-type.php",
+      "line": 58,
+      "auth": null,
+      "capability": null
+    }
+  ]
+}
+
+exec
+/bin/zsh -lc "sed -n '1,240p' reports/phase3/cartflows-phase3.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "sed -n '1,240p' reports/phase2/cartflows-phase2.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+{
+  "plugin_slug": "cartflows",
+  "phase1_summary": {
+    "entry_points": 119,
+    "anomalies": 41,
+    "sources": 844,
+    "sinks": 3397
+  },
+  "phase2_summary": {
+    "total": 0,
+    "tp": 0,
+    "fp": 0,
+    "review": 0
+  },
+  "phase3_summary": {
+    "confirmed": 0,
+    "plausible": 0,
+    "uncertain": 0,
+    "likely_hallucination": 0
+  },
+  "validated_findings": [],
+  "actionable_findings": []
+}
+ succeeded in 0ms:
+{
+  "plugin_slug": "cartflows",
+  "analysis_summary": {
+    "phase": "phase2",
+    "plugin_version": "2.2.4",
+    "ir_entry_points_reviewed": 119,
+    "phase1_anomalies_reviewed": 41,
+    "focus": [
+      "Validated the public checkout AJAX surfaces called out by Phase 1, especially coupon/cart mutation, email/login UX, and checkout file upload.",
+      "Re-traced the higher-value admin mutation surfaces: REST endpoints under `admin-core/api`, role-manager capability assignment, rollback/importer flows, Tutor LMS compatibility AJAX, and SureTriggers/Woo Dynamic Flow AJAX.",
+      "Collapsed Semgrep's `check_ajax_referer(..., false)` signals by checking whether invalid-nonce branches terminate before reaching a state-changing sink."
+    ],
+    "result": "No Patchstack-eligible true positive or evidence-backed REVIEW finding was confirmed in CartFlows 2.2.4 after direct source validation.",
+    "key_observation": "The interesting public surfaces are limited to caller-owned WooCommerce checkout/session behavior or tightly constrained media uploads, while privileged admin/REST/ability paths are capability-gated and default to administrator-only access unless an administrator intentionally delegates CartFlows capabilities.",
+    "tooling_notes": [
+      "Phase 1 IR and 324 Semgrep results were treated as signal sources only and were revalidated against source.",
+      "The Psalm SARIF artifact existed only as `{\"status\":\"error\",\"exit_code\":1}` and provided no corroborating data."
+    ]
+  },
+  "overall_risk": "none",
+  "total_findings_analyzed": 0,
+  "true_positives": 0,
+  "false_positives": 0,
+  "needs_review": 0,
+  "findings": [],
+  "negative_findings": [
+    {
+      "finding_id": "NEG-001",
+      "state": "REJECTED",
+      "verdict": "FP",
+      "title": "Public checkout file upload is constrained to a hardcoded media allowlist and does not expose arbitrary upload or RCE",
+      "entry_point_ids": [
+        "ep_ajax_priv_wp_ajax_wcf_upload_checkout_file",
+        "ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file"
+      ],
+      "evidence": [
+        {
+          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+          "line_number": 57,
+          "note": "The upload handler is intentionally exposed on both `wp_ajax_` and `wp_ajax_nopriv_` for checkout visitors."
+        },
+        {
+          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-markup.php",
+          "line_number": 1776,
+          "note": "The file-upload nonce is localized into the public checkout page."
+        },
+        {
+          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+          "line_number": 295,
+          "note": "The handler rejects requests without a valid `wcf-file-upload` nonce."
+        },
+        {
+          "file_path": "plugins/cartflows/classes/class-cartflows-helper.php",
+          "line_number": 1933,
+          "note": "The master extension allowlist is fixed to media/document types: jpg, jpeg, png, gif, webp, ico, pdf, mp3, m4a, wav, mp4, m4v, mov."
+        },
+        {
+          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+          "line_number": 315,
+          "note": "Field-level restrictions are intersected with the master allowlist before acceptance."
+        },
+        {
+          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+          "line_number": 331,
+          "note": "The code validates extension and MIME using `wp_check_filetype_and_ext()`."
+        },
+        {
+          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+          "line_number": 423,
+          "note": "The stored filename is replaced with `wcf_<uuid>.<ext>` via `wp_unique_filename()`."
+        },
+        {
+          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+          "line_number": 425,
+          "note": "Upload storage goes through `wp_handle_upload()` into the normal WordPress uploads directory."
+        }
+      ],
+      "reasoning": {
+        "hypothesis": "Because the route is available to unauthenticated checkout visitors, it might permit arbitrary file upload, stored XSS via active content, or code execution.",
+        "trace": "The public checkout JavaScript sends `wcf_upload_checkout_file` requests with the localized nonce. `Cartflows_Checkout_Ajax::upload_checkout_file()` then normalizes the filename, derives the extension, intersects any field-specific restriction with `Cartflows_Helper::get_allowed_file_extensions()`, checks file size, validates the real type with `wp_check_filetype_and_ext()`, and finally stores the file through `wp_handle_upload()` using a generated UUID filename in the uploads directory.",
+        "defenses": "Nonce verification is enforced before any file handling. The hardcoded allowlist excludes PHP, HTML, SVG, JS, and other scriptable/executable extensions. The handler also validates MIME/extension agreement, constrains filenames to generated UUID-based names, and does not let the request control the destination path.",
+        "refutation": "I tried to identify a route from user input to an executable or scriptable extension and could not. The user-controlled `checkout_id` only influences stricter field-level restrictions fetched from post meta; it does not widen the master allowlist or change the storage path.",
+        "conclusion": "Rejected as a false positive for arbitrary file upload / RCE. The route is intentionally public for checkout UX, but the reachable sink is a constrained media upload under WordPress uploads semantics."
+      },
+      "reopen_if": "Show a bundled path that permits an executable or scriptable extension despite the master allowlist, or a path that moves the uploaded file outside the normal uploads directory."
+    },
+    {
+      "finding_id": "NEG-002",
+      "state": "REJECTED",
+      "verdict": "FP",
+      "title": "Public checkout AJAX surfaces stay inside the caller's checkout session; helper endpoints do not become a practical auth bypass",
+      "entry_point_ids": [
+        "ep_ajax_nopriv_wp_ajax_nopriv_wcf_woo_apply_coupon",
+        "ep_ajax_nopriv_wp_ajax_nopriv_wcf_woo_remove_coupon",
+        "ep_ajax_nopriv_wp_ajax_nopriv_wcf_woo_remove_cart_product",
+        "ep_ajax_nopriv_wp_ajax_nopriv_wcf_check_email_exists",
+        "ep_ajax_nopriv_wp_ajax_nopriv_wcf_woocommerce_login"
+      ],
+      "evidence": [
+        {
+          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+          "line_number": 45,
+          "note": "Coupon, cart, email-check, and login helpers are deliberately registered for public checkout visitors."
+        },
+        {
+          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+          "line_number": 123,
+          "note": "`apply_coupon()` reaches `WC()->cart->add_discount(...)` after nonce validation."
+        },
+        {
+          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+          "line_number": 171,
+          "note": "`wcf_woo_remove_cart_product()` reads the item from the current `WC()->cart` session and removes that cart item."
+        },
+        {
+          "file_path": "plugins/cartflows/assets/js/checkout-template.js",
+          "line_number": 628,
+          "note": "The public checkout UI intentionally calls `wcf_check_email_exists` to decide whether to show the login prompt."
+        },
+        {
+          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+          "line_number": 211,
+          "note": "`check_email_exists()` returns only `email_exists()` plus the checkout-login-reminder flag."
+        },
+        {
+          "file_path": "plugins/cartflows/assets/js/checkout-template.js",
+          "line_number": 724,
+          "note": "The public checkout login form intentionally posts to `wcf_woocommerce_login`."
+        },
+        {
+          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+          "line_number": 273,
+          "note": "`woocommerce_user_login()` delegates to normal WordPress `wp_signon()` authentication after nonce validation."
+        }
+      ],
+      "reasoning": {
+        "hypothesis": "The nopriv checkout AJAX routes might expose state-changing or authentication-impacting behavior beyond the current visitor's checkout context.",
+        "trace": "Coupon application and cart-item removal operate directly on `WC()->cart`, which is session-scoped to the current visitor. The email-check helper returns whether an email exists so the checkout can decide whether to show a login prompt. The login helper simply forwards the supplied credentials into `wp_signon()` and then reloads the page on success.",
+        "defenses": "The routes are intentionally public because checkout itself is public. Coupon/cart routes require their own checkout nonces and operate on the caller's current WooCommerce session, not on another user's stored order or account. The login route still uses normal WordPress authentication semantics through `wp_signon()`.",
+        "refutation": "I did not find any path that lets a visitor mutate another user's cart or account state. The email-existence response does disclose account existence on the checkout page, but from the plugin code alone that is a low-grade UX signal rather than a meaningful privilege boundary break, account takeover path, or Patchstack-eligible issue.",
+        "conclusion": "Rejected as a reportable security finding. These endpoints implement the intended guest-checkout flow rather than exposing a cross-user state change or authentication bypass."
+      },
+      "reopen_if": "Show a path from these public helpers to cross-user cart manipulation, credential bypass, or another concrete security impact beyond account-existence feedback."
+    },
+    {
+      "finding_id": "NEG-003",
+      "state": "REJECTED",
+      "verdict": "FP",
+      "title": "Tutor LMS course-template save AJAX is properly nonce- and object-capability-gated",
+      "entry_point_ids": [
+        "ep_ajax_priv_wp_ajax_cartflows_save_tutor_course_template"
+      ],
+      "evidence": [
+        {
+          "file_path": "plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php",
+          "line_number": 58,
+          "note": "The save action is registered only on the authenticated `wp_ajax_` hook."
+        },
+        {
+          "file_path": "plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php",
+          "line_number": 104,
+          "note": "The nonce is localized only on the Tutor course-builder admin page."
+        },
+        {
+          "file_path": "plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php",
+          "line_number": 200,
+          "note": "`ajax_save_course_template()` verifies the request nonce before any write."
+        },
+        {
+          "file_path": "plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php",
+          "line_number": 217,
+          "note": "The handler requires `current_user_can( 'edit_post', $course_id )` for the targeted course."
+        },
+        {
+          "file_path": "plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php",
+          "line_number": 228,
+          "note": "Only after both checks does it write the selected template to course meta."
+        }
+      ],
+      "reasoning": {
+        "hypothesis": "Phase 1 flagged a missing-capability condition on the Tutor LMS course-template AJAX write.",
+        "trace": "The authenticated AJAX callback verifies the Tutor-specific nonce, validates the supplied course ID, enforces `edit_post` on that exact course object, sanitizes and validates the template ID, and then stores the result with `update_post_meta()`.",
+        "defenses": "The nonce is minted only for the course-builder page, and the capability check is object-specific rather than a broad role check.",
+        "refutation": "I could not find a lower-privileged or unauthenticated branch that reaches the `update_post_meta()` sink without satisfying `current_user_can( 'edit_post', $course_id )`.",
+        "conclusion": "Rejected as a false positive. The suspected missing-capability path is refuted by the live nonce and object-capability checks."
+      },
+      "reopen_if": "Show a bundled path where a user who cannot edit the target Tutor course can still reach `update_post_meta()` for `Cartflows_Tutor_Compatibility::META_KEY`."
+    },
+    {
+      "finding_id": "NEG-004",
+      "state": "REJECTED",
+      "verdict": "FP",
+      "title": "Admin REST, AJAX, and ability surfaces are capability-gated; lower-role access is an intentional admin role-manager choice",
+      "evidence": [
+        {
+          "file_path": "plugins/cartflows/admin-core/inc/admin-menu.php",
+          "line_number": 339,
+          "note": "CartFlows adds its custom capabilities to the `administrator` role by default."
+        },
+        {
+          "file_path": "plugins/cartflows/admin-core/inc/global-settings.php",
+          "line_number": 29,
+          "note": "The role-manager UI explicitly exposes admin-controlled choices such as `No Access`, `Full Access`, and `Limited Access` for non-admin roles."
+        },
+        {
+          "file_path": "plugins/cartflows/admin-core/ajax/common-settings.php",
+          "line_number": 52,
+          "note": "Settings AJAX handlers are registered only when the current user already has `cartflows_manage_settings`."
+        },
+        {
+          "file_path": "plugins/cartflows/admin-core/ajax/common-settings.php",
+          "line_number": 101,
+          "note": "`save_global_settings()` still re-checks `cartflows_manage_settings` and its nonce before persisting anything."
+        },
+        {
+          "file_path": "plugins/cartflows/admin-core/ajax/common-settings.php",
+          "line_number": 370,
+          "note": "Role-manager writes constrain `access_key` to an allowlist before granting CartFlows capabilities."
+        },
+        {
+          "file_path": "plugins/cartflows/admin-core/api/flows.php",
+          "line_number": 69,
+          "note": "Flow REST routes use a permission callback rather than being public."
+        },
+        {
+          "file_path": "plugins/cartflows/admin-core/api/flows.php",
+          "line_number": 299,
+          "note": "The flow REST permission callback requires `cartflows_manage_flows_steps`."
+        },
+        {
+          "file_path": "plugins/cartflows/admin-core/api/common-settings.php",
+          "line_number": 129,
+          "note": "Common-settings REST access requires `cartflows_manage_settings`."
+        },
+        {
+          "file_path": "plugins/cartflows/admin-core/api/webhooks.php",
+          "line_number": 128,
+          "note": "Webhook REST access requires `cartflows_manage_settings`."
+        },
+        {
+
+codex
+Gate cua Phase 3a hien tai khong de lai finding nao o trang thai `PLAUSIBLE` hay `UNCERTAIN`; `validated_findings` va `actionable_findings` deu rong. Toi van kiem tra them plugin header va mot vai khu vuc da bi Phase 2 danh dau an toan de Markdown report co phan overview va negative findings co code reference that.
+exec
+/bin/zsh -lc "nl -ba plugins/cartflows/admin-core/ajax/common-settings.php | sed -n '90,160p'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "nl -ba plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php | sed -n '293,346p'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "nl -ba plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php | sed -n '198,236p'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+    90		}
+    91	
+    92		/**
+    93		 * Save settings.
+    94		 *
+    95		 * @return void
+    96		 */
+    97		public function save_global_settings() {
+    98	
+    99			$response_data = array( 'messsage' => $this->get_error_msg( 'permission' ) );
+   100	
+   101			if ( ! current_user_can( 'cartflows_manage_settings' ) ) {
+   102				wp_send_json_error( $response_data );
+   103			}
+   104	
+   105			if ( empty( $_POST ) ) {
+   106				$response_data = array( 'messsage' => __( 'No post data found!', 'cartflows' ) );
+   107				wp_send_json_error( $response_data );
+   108			}
+   109	
+   110			/**
+   111			 * Nonce verification
+   112			 */
+   113			if ( ! check_ajax_referer( 'cartflows_save_global_settings', 'security', false ) ) {
+   114				$response_data = array( 'messsage' => $this->get_error_msg( 'nonce' ) );
+   115				wp_send_json_error( $response_data );
+   116			}
+   117	
+   118	
+   119			$setting_tab = isset( $_POST['setting_tab'] ) ? sanitize_text_field( wp_unslash( $_POST['setting_tab'] ) ) : '';
+   120	
+   121			switch ( $setting_tab ) {
+   122	
+   123				case 'general':
+   124					$this->save_general_settings();
+   125					break;
+   126	
+   127				case 'permalink':
+   128					$this->save_permalink_settings();
+   129					break;
+   130	
+   131				case 'other':
+   132					$this->save_other_settings();
+   133					break;
+   134	
+   135				case 'user_role_manager':
+   136					$this->save_user_roles_management_settings();
+   137					break;
+   138	
+   139				case 'integrations':
+   140					$this->save_integration_settings();
+   141					break;
+   142	
+   143				case 'global_scripts':
+   144					$this->save_global_scripts_settings();
+   145					break;
+   146	
+   147				default:
+   148					$this->save_general_settings();
+   149	
+   150			}
+   151	
+   152			do_action( 'cartflows_admin_save_global_settings', $setting_tab, 'cartflows_save_global_settings' );
+   153	
+   154	
+   155	
+   156			$response_data = array(
+   157				'messsage' => __( 'Successfully saved data!', 'cartflows' ),
+   158			);
+   159			wp_send_json_success( $response_data );
+   160		}
+
+ succeeded in 0ms:
+   293		public function upload_checkout_file() {
+   294	
+   295			if ( ! check_ajax_referer( 'wcf-file-upload', 'security', false ) ) {
+   296				wp_send_json_error(
+   297					array( 'error' => __( 'Nonce validation failed.', 'cartflows' ) )
+   298				);
+   299			}
+   300	
+   301			if ( empty( $_FILES['wcf_checkout_file']['tmp_name'] ) ) {
+   302				wp_send_json_error(
+   303					array( 'error' => __( 'No file uploaded.', 'cartflows' ) )
+   304				);
+   305			}
+   306	
+   307			if ( ! function_exists( 'wp_handle_upload' ) ) {
+   308				require_once ABSPATH . 'wp-admin/includes/file.php';
+   309			}
+   310	
+   311			$file         = $_FILES['wcf_checkout_file']; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput, WordPress.Security.NonceVerification.Missing
+   312			$file['name'] = sanitize_file_name( $file['name'] );
+   313			$file['ext']  = strtolower( pathinfo( $file['name'], PATHINFO_EXTENSION ) );
+   314	
+   315			$master_allowed = Cartflows_Helper::get_allowed_file_extensions();
+   316	
+   317			$restrictions = $this->get_field_restrictions();
+   318	
+   319			$allowed_extensions = empty( $restrictions['extensions'] )
+   320				? $master_allowed
+   321				: array_values( array_intersect( $master_allowed, $restrictions['extensions'] ) );
+   322	
+   323			if ( ! in_array( $file['ext'], $allowed_extensions, true ) ) {
+   324				wp_send_json_error( array( 'error' => __( 'File type is not allowed.', 'cartflows' ) ) );
+   325			}
+   326	
+   327			if ( (int) $file['size'] > $restrictions['max_size'] ) {
+   328				wp_send_json_error( array( 'error' => __( 'File size exceeds the allowed limit.', 'cartflows' ) ) );
+   329			}
+   330	
+   331			$check = wp_check_filetype_and_ext( $file['tmp_name'], $file['name'], wp_get_mime_types() );
+   332	
+   333			if ( empty( $check['ext'] ) || $check['ext'] !== $file['ext'] ) {
+   334				wp_send_json_error( array( 'error' => __( 'Invalid or corrupted file.', 'cartflows' ) ) );
+   335			}
+   336	
+   337			$result = $this->move_uploaded_file( $file );
+   338	
+   339			wp_send_json_success(
+   340				array(
+   341					'success'  => true,
+   342					'url'      => esc_url_raw( $result['url'] ),
+   343					'filename' => sanitize_file_name( basename( $result['file'] ) ),
+   344				)
+   345			);
+   346		}
+
+ succeeded in 0ms:
+   198		public function ajax_save_course_template() {
+   199	
+   200			if (
+   201			empty( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), self::NONCE_NAME ) ) {
+   202				wp_send_json_error(
+   203					array( 'message' => 'Invalid nonce.' ),
+   204					403
+   205				);
+   206			}
+   207	
+   208			$course_id = isset( $_POST['course_id'] ) ? absint( $_POST['course_id'] ) : 0;
+   209	
+   210			if ( ! $course_id ) {
+   211				wp_send_json_error(
+   212					array( 'message' => 'Invalid course ID.' ),
+   213					400
+   214				);
+   215			}
+   216	
+   217			if ( ! current_user_can( 'edit_post', $course_id ) ) {
+   218				wp_send_json_error(
+   219					array( 'message' => 'Permission denied.' ),
+   220					403
+   221				);
+   222			}
+   223	
+   224			$template_raw = isset( $_POST['template_id'] ) ? sanitize_text_field( wp_unslash( $_POST['template_id'] ) ) : 'none';
+   225	
+   226			$template = $this->validate_template_id( $template_raw );
+   227	
+   228			update_post_meta( $course_id, self::META_KEY, $template );
+   229	
+   230			wp_send_json_success(
+   231				array(
+   232					'template' => $template,
+   233					'message'  => 'Template saved.',
+   234				)
+   235			);
+   236		}
+
+exec
+/bin/zsh -lc "rg --files plugins/cartflows | rg '("'^|/)(cartflows'"\\.php|readme\\.txt|readme\\.md|README\\.md)"'$'"'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+plugins/cartflows/readme.txt
+plugins/cartflows/modules/gutenberg/readme.txt
+plugins/cartflows/libraries/action-scheduler/readme.txt
+plugins/cartflows/cartflows.php
+
+exec
+/bin/zsh -lc "sed -n '1,120p' plugins/cartflows/cartflows.php" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+<?php
+/**
+ * Plugin Name: CartFlows
+ * Plugin URI: https://cartflows.com/
+ * Description: Create beautiful checkout pages & sales flows for WooCommerce.
+ * Version: 2.2.4
+ * Author: Brainstorm Force
+ * Author URI: https://www.brainstormforce.com
+ * Text Domain: cartflows
+ * WC requires at least: 3.0
+ * WC tested up to: 9.8.5
+ * Elementor tested up to: 3.28.4
+ * 
+ * @package CartFlows
+ */
+
+/**
+ * Set constants.
+ */
+define( 'CARTFLOWS_FILE', __FILE__ );
+
+/**
+ * Loader
+ */
+require_once 'classes/class-cartflows-loader.php';
+
+exec
+/bin/zsh -lc "sed -n '1,120p' plugins/cartflows/readme.txt" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+=== CartFlows – Funnel Builder & Checkout Plugin for WooCommerce ===
+Contributors: sujaypawar, wpcrafter
+Tags: woocommerce, sales funnels, upsell, order bump, lead generation
+Requires at least: 5.8
+Tested up to: 6.9
+Stable tag: 2.2.4
+Requires PHP: 7.2
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+
+#1 WordPress funnel builder & WooCommerce checkout plugin. Boost AOV with one-click upsells, order bumps & high-converting checkout pages.
+
+== Description ==
+
+### The #1 WordPress Funnel Builder & WooCommerce Checkout Plugin
+
+CartFlows is the #1 WordPress funnel builder and WooCommerce checkout plugin—trusted by over 200,000 stores worldwide. Since 2018, CartFlows has helped eCommerce sellers, course creators, agencies, and entrepreneurs turn their WooCommerce stores into high-converting revenue machines.
+
+Your WooCommerce checkout should do more than just work—it should **convert**. CartFlows replaces the clunky default WooCommerce checkout with a sleek, distraction-free, conversion-optimized experience that helps you sell more and maximize average order value (AOV) with every transaction.
+
+[Try the live demo of CartFlows](https://try.new/cartflows)
+
+### The Affordable ClickFunnels Alternative Built for WordPress
+
+Tired of paying $97–$297/month for SaaS funnel builders like ClickFunnels? CartFlows gives you all the same power—unlimited funnels, upsells, order bumps, A/B testing, and analytics—directly inside WordPress, at a fraction of the cost. No monthly SaaS fees. No lock-in. Full control over your data.
+
+### Why Your WooCommerce Store Needs CartFlows
+
+The default WooCommerce checkout is functional, but far from modern. It lacks the speed, personalization, and seamless experience today's customers expect. A clunky checkout loses sales every day, and nobody wants that.
+
+That's where CartFlows steps in. With CartFlows, you can:
+
+* Build a complete WordPress sales funnel without ever leaving your dashboard
+* Replace WooCommerce's default checkout with a modern, conversion-focused page
+* Add one-click upsells, downsells, and dynamic order bumps to every funnel
+* Create a one-page checkout, two-step checkout, or multi-step checkout flow
+* Import professionally designed funnel templates in one click and go live in minutes
+* Track funnel performance with built-in analytics and a revenue insights dashboard
+* Automate post-purchase workflows, follow-up emails, and lead nurturing
+
+[youtube https://www.youtube.com/watch?v=k96jHP9CaYA]
+
+[What's New](https://cartflows.com/whats-new/?utm_source=WordPress&utm_medium=Referral&utm_campaign=CF_description) | [Docs](https://cartflows.com/docs/?utm_source=WordPress&utm_medium=Referral&utm_campaign=CF_description) | [Video Tutorials](https://www.youtube.com/@CartFlows/) | [Get Help](https://cartflows.com/support/open-a-ticket/?utm_source=WordPress&utm_medium=Referral&utm_campaign=CF_description) | [Community](https://www.facebook.com/groups/cartflows)
+
+### What Makes CartFlows Unique?
+
+**Built for WooCommerce:** CartFlows is the ultimate checkout plugin and WordPress funnel builder—designed from the ground up to work seamlessly within your existing WooCommerce setup.
+
+**Seamless page builder integration:** Works with Elementor, Spectra, Bricks, Divi, Beaver Builder, Gutenberg, and more.
+
+**Effortless setup:** Pre-designed funnel templates and drag-and-drop editing mean you can build high-converting funnels without touching a line of code.
+
+**Revenue boosters:** One-click upsells, downsells, and order bumps help maximize your store's average order value (AOV) on every transaction.
+
+**Modern checkout styles:** Replace WooCommerce's default checkout with sleek, branded layouts—one-column, two-column, multi-step, or instant checkout—all optimized for conversions.
+
+**Affordable:** Get advanced funnel builder features without the hefty price tag of SaaS tools like ClickFunnels or Kajabi.
+
+### How It Works
+
+1. **Install CartFlows:** Activate the WordPress funnel builder from your WordPress dashboard.
+2. **Choose a template:** Pick a professionally designed sales funnel and checkout template.
+3. **Customize your funnel:** Use your favorite page builder to craft a seamless checkout experience.
+4. **Add dynamic offers:** Boost revenue with personalized upsells, downsells, and order bumps.
+5. **Optimize with insights:** Use CartFlows' analytics to refine your funnels and improve performance.
+
+### 💪 Powerful Features
+
+### CartFlows Free Features
+
+#### 1. Modern Checkout Styles
+
+Replace the boring default WooCommerce checkout with a clean, conversion-focused experience that keeps buyers moving forward.
+
+#### 2. Instant Layouts
+
+Skip the design work and launch a fully optimized sales funnel in minutes with professionally designed, ready-to-use layouts for every funnel step.
+
+#### 3. Multi-Page Builder Support
+
+No matter your favorite page builder—Spectra, Elementor, Bricks, or Beaver—CartFlows works seamlessly with them all. Build beautiful, high-converting funnels your way, without limits or friction.
+
+#### 4. Override Store Checkout
+
+Replace the default WooCommerce checkout with a streamlined, branded checkout experience. Whether it's a single-step, two-step, or multi-step checkout, CartFlows gives you complete control over the WooCommerce checkout page—without writing a single line of code.
+
+#### 5. Import Ready-Made Sales Funnels
+
+Why build from scratch? Import pre-made, conversion-optimized sales funnel templates with one click and start selling immediately. Every template is fully customizable using your page builder of choice.
+
+#### 6. Checkout Form Field Editor
+
+Customize your WooCommerce checkout form fields with ease. Add, remove, reorder, or create custom fields to match your business needs and create a frictionless checkout experience that converts.
+
+#### 7. Social Media Pixel Tracking
+
+Track customer actions across your entire funnel with built-in support for Google, Facebook, Pinterest, Snapchat, and TikTok pixels. Get deeper ad insights, retarget smarter, and turn more ad clicks into completed purchases.
+
+#### 8. Automations with OttoKit
+
+Connect CartFlows to OttoKit to automate post-purchase workflows—send thank you emails, tag customers, notify your team, and manage leads—all without leaving WordPress. Integrates with 1,000+ apps including Gmail, Slack, Mailchimp, and more.
+
+### CartFlows Pro Features
+
+#### 1. One-Click Upsells & Downsells
+
+Show customers a perfectly timed post-purchase upsell offer they can accept with a single click—no re-entering payment details. Increase your average order value on every transaction with dynamic upsell paths that respond to what customers already bought.
+
+#### 2. Dynamic Order Bumps
+
+Boost revenue with personalized order bumps placed right on the WooCommerce checkout page. Use smart rules to show the most relevant offer based on cart contents, total, or customer history. Features multiple modern order bump styles and custom placement options.
+
+#### 3. A/B Split Testing
+
+Test multiple versions of your checkout pages, upsell offers, order bumps, and headlines to find what converts best. Make data-driven decisions and continuously optimize every step of your WordPress sales funnel.
+
+#### 4. Advanced Funnel Analytics
+
+Track conversions, revenue per funnel step, average order value, and customer behavior from a unified analytics dashboard. Identify underperforming steps and make targeted improvements to maximize your store's revenue.
+
+
+exec
+/bin/zsh -lc "nl -ba plugins/cartflows/classes/class-cartflows-helper.php | sed -n '1928,1946p'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+  1928		/**
+  1929		 * Get the master allowlist of file extensions for checkout file uploads.
+  1930		 *
+  1931		 * @return array<string> Allowed file extensions.
+  1932		 */
+  1933		public static function get_allowed_file_extensions() {
+  1934			return array( 'jpg', 'jpeg', 'png', 'gif', 'webp', 'ico', 'pdf', 'mp3', 'm4a', 'wav', 'mp4', 'm4v', 'mov' );
+  1935		}
+  1936	
+  1937		/**
+  1938		 * Sanitize accepted file types input against the master allowlist.
+  1939		 *
+  1940		 * Strips any extensions not in the allowlist and returns a clean comma-separated string.
+  1941		 *
+  1942		 * @param string $raw_types Comma-separated file extensions from user input.
+  1943		 * @return string Sanitized comma-separated file extensions.
+  1944		 */
+  1945		public static function sanitize_accepted_file_types( $raw_types ) {
+  1946			if ( empty( $raw_types ) ) {
+
+exec
+/bin/zsh -lc "nl -ba reports/phase3/cartflows-phase3.json | sed -n '1,80p'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "nl -ba plugins/cartflows/admin-core/api/flows.php | sed -n '60,320p'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "nl -ba reports/phase2/cartflows-phase2.json | sed -n '1,80p'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+     1	{
+     2	  "plugin_slug": "cartflows",
+     3	  "phase1_summary": {
+     4	    "entry_points": 119,
+     5	    "anomalies": 41,
+     6	    "sources": 844,
+     7	    "sinks": 3397
+     8	  },
+     9	  "phase2_summary": {
+    10	    "total": 0,
+    11	    "tp": 0,
+    12	    "fp": 0,
+    13	    "review": 0
+    14	  },
+    15	  "phase3_summary": {
+    16	    "confirmed": 0,
+    17	    "plausible": 0,
+    18	    "uncertain": 0,
+    19	    "likely_hallucination": 0
+    20	  },
+    21	  "validated_findings": [],
+    22	  "actionable_findings": []
+    23	}
+ succeeded in 0ms:
+    60			$namespace = $this->get_api_namespace();
+    61	
+    62			register_rest_route(
+    63				$namespace,
+    64				$this->rest_base,
+    65				array(
+    66					array(
+    67						'methods'             => 'POST', // WP_REST_Server::READABLE.
+    68						'callback'            => array( $this, 'get_items' ),
+    69						'permission_callback' => array( $this, 'get_items_permissions_check' ),
+    70						'args'                => array(), // get_collection_params may use.
+    71					),
+    72					'schema' => array( $this, 'get_public_item_schema' ),
+    73				)
+    74			);
+    75		}
+    76	
+    77		/**
+    78		 * Get items
+    79		 *
+    80		 * @param  WP_REST_Request $request Full details about the request.
+    81		 * @return WP_REST_Response
+    82		 */
+    83		public function get_items( $request ) {
+    84	
+    85			$post_status = 'any';
+    86			$post_count  = 10;
+    87	
+    88			$args = array(
+    89				'post_type'   => CARTFLOWS_FLOW_POST_TYPE,
+    90				'post_status' => $post_status,
+    91				'orderby'     => 'ID',
+    92			);
+    93	
+    94			// checking if store checkout is available and removing it from the list of flows.
+    95			$store_checkout_id = intval( \Cartflows_Helper::get_global_setting( '_cartflows_store_checkout' ) );
+    96			if ( 0 !== $store_checkout_id ) {
+    97				$args['post__not_in'] = array( $store_checkout_id );
+    98			}
+    99	
+   100			if ( null !== $request->get_param( 'paged' ) ) {
+   101				$args['paged'] = absint( $request->get_param( 'paged' ) );
+   102			}
+   103	
+   104			$mode = $request->get_param( 'mode' );
+   105	
+   106			if ( null !== $mode ) {
+   107	
+   108				if ( 'sandbox' === $mode ) {
+   109					$args['meta_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+   110						array(
+   111							'key'   => 'wcf-testing',
+   112							'value' => 'yes',
+   113						),
+   114					);
+   115				} else {
+   116					$args['meta_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+   117						'relation' => 'OR',
+   118						array(
+   119							'key'   => 'wcf-testing',
+   120							'value' => 'no',
+   121						),
+   122						array(
+   123							'key'     => 'wcf-testing',
+   124							'compare' => 'NOT EXISTS',
+   125						),
+   126					);
+   127				}
+   128			}
+   129	
+   130			if ( 'any' === $post_status ) {
+   131	
+   132				if ( null !== $request->get_param( 's' ) ) {
+   133					$args['s'] = sanitize_text_field( $request->get_param( 's' ) );
+   134				}
+   135	
+   136	
+   137				if ( null !== $request->get_param( 'post_status' ) ) {
+   138	
+   139					$status = $request->get_param( 'post_status' );
+   140	
+   141					// Allowlist of valid post statuses for flows.
+   142					$allowed_statuses = array( 'active', 'inactive', 'publish', 'draft', 'pending' );
+   143	
+   144					if ( 'active' === $status ) {
+   145						$args['post_status'] = 'publish';
+   146					} elseif ( 'inactive' === $status ) {
+   147						$args['post_status'] = 'draft';
+   148					} elseif ( in_array( $status, $allowed_statuses, true ) ) {
+   149						$args['post_status'] = sanitize_text_field( $status );
+   150					}
+   151					// Invalid statuses are silently ignored, falling through to the default below.
+   152				}
+   153	
+   154				if ( ! isset( $args['post_status'] ) || null === $request->get_param( 'post_status' ) ) {
+   155					$args['post_status'] = 'publish';
+   156				}
+   157	
+   158				$start_date = $request->get_param( 'start_date' );
+   159				$end_date   = $request->get_param( 'end_date' );
+   160	
+   161				if ( ! empty( $start_date ) && ! empty( $end_date ) ) {
+   162					$args['date_query'] = array(
+   163						array(
+   164							'after'     => sanitize_text_field( $start_date ) . ' 00:00:00',
+   165							'before'    => sanitize_text_field( $end_date ) . ' 23:59:59',
+   166							'inclusive' => true,
+   167							'column'    => 'post_date',
+   168						),
+   169					);
+   170				}
+   171			}
+   172	
+   173			if ( ! empty( $post_count ) ) {
+   174				$args['posts_per_page'] = $post_count;
+   175			}
+   176	
+   177			$result = new \WP_Query( $args );
+   178	
+   179			$data = array(
+   180				'items'      => array(),
+   181				'pagination' => array(),
+   182			);
+   183	
+   184			if ( $result->have_posts() ) {
+   185				while ( $result->have_posts() ) {
+   186					$result->the_post();
+   187	
+   188					global $post;
+   189	
+   190					$post_data = (array) $post;
+   191	
+   192					// Modify the date Format just to display it.
+   193					$post_data['post_modified'] = date_format( date_create( $post_data['post_modified'] ), 'yy/m/d' );
+   194					$post_data['post_status']   = ucwords( $post_data['post_status'] );
+   195	
+   196					$view                        = get_permalink( $post->ID );
+   197					$edit                        = admin_url( 'admin.php?page=cartflows&path=flows&action=wcf-edit-flow&flow_id=' . $post->ID );
+   198					$delete                      = '#';
+   199					$clone                       = '#';
+   200					$export                      = '#';
+   201					$post_data['flow_test_mode'] = ( 'yes' === wcf()->options->get_flow_meta_value( $post->ID, 'wcf-testing' ) ) ? true : false;
+   202					$post_data['actions']        = array(
+   203						'view'      => array(
+   204							'action' => 'edit',
+   205							'class'  => '',
+   206							'attr'   => array( 'target' => '_blank' ),
+   207							'text'   => __( 'View', 'cartflows' ),
+   208							'link'   => $view,
+   209	
+   210						),
+   211						'edit'      => array(
+   212							'action' => 'edit',
+   213							'class'  => '',
+   214							'attr'   => array(),
+   215							'text'   => __( 'Edit', 'cartflows' ),
+   216							'link'   => $edit,
+   217	
+   218						),
+   219						'duplicate' => array(
+   220							'action' => 'clone',
+   221							'attr'   => array(),
+   222							'class'  => '',
+   223							'text'   => __( 'Duplicate', 'cartflows' ),
+   224							'link'   => $clone,
+   225						),
+   226						'export'    => array(
+   227							'action' => 'export',
+   228							'attr'   => array(),
+   229							'class'  => '',
+   230							'text'   => __( 'Export', 'cartflows' ),
+   231							'link'   => $export,
+   232						),
+   233						'delete'    => array(
+   234							'action' => 'delete',
+   235							'attr'   => array(),
+   236							'class'  => '',
+   237							'text'   => __( 'Delete', 'cartflows' ),
+   238							'link'   => $delete,
+   239						),
+   240					);
+   241	
+   242					// Fetch the revenue only for free version for the PRO it will be fetched and added by the filter later in the code.
+   243					if ( ! _is_cartflows_pro() && ! is_wcf_pro_plan() ) {
+   244						$post_data['revenue'] = $this->get_per_flow_revenue( $post->ID );
+   245					}
+   246	
+   247					$data['items'][] = $post_data;
+   248				}
+   249			}
+   250	
+   251			$data['found_posts'] = $result->found_posts;
+   252			$data['post_status'] = isset( $post_data['post_status'] ) ? $post_data['post_status'] : $args['post_status'];
+   253	
+   254			$data['active_flows_count'] = intval( wp_count_posts( CARTFLOWS_FLOW_POST_TYPE )->publish );
+   255			$data['trash_flows_count']  = intval( wp_count_posts( CARTFLOWS_FLOW_POST_TYPE )->trash );
+   256			$data['draft_flows_count']  = intval( wp_count_posts( CARTFLOWS_FLOW_POST_TYPE )->draft );
+   257	
+   258			$data['pagination'] = array(
+   259				'found_posts' => $result->found_posts,
+   260				'paged'       => $result->query['paged'],
+   261				'max_pages'   => $result->max_num_pages,
+   262			);
+   263	
+   264			// Reducing count of active_flows_count if store checkout is set.
+   265			if ( 0 !== $store_checkout_id ) {
+   266				$data['active_flows_count']--;
+   267			}
+   268	
+   269			wp_reset_postdata();
+   270	
+   271			$data['status'] = true;
+   272	
+   273			// Retrieve the revenue data from the PRO to display it on the flow listing page.
+   274			if ( _is_cartflows_pro() && is_wcf_pro_plan() ) {
+   275				$data = apply_filters( 'cartflows_admin_flows_page_data', $data );
+   276			}
+   277	
+   278			if ( ! $result->have_posts() ) {
+   279				$data['status'] = false;
+   280				$response       = new \WP_REST_Response( $data );
+   281				$response->set_status( 200 );
+   282				return $response;
+   283			}
+   284	
+   285			$response = new \WP_REST_Response( $data );
+   286			$response->set_status( 200 );
+   287	
+   288			return $response;
+   289		}
+   290	
+   291		/**
+   292		 * Check whether a given request has permission to read notes.
+   293		 *
+   294		 * @param  WP_REST_Request $request Full details about the request.
+   295		 * @return WP_Error|boolean
+   296		 */
+   297		public function get_items_permissions_check( $request ) {
+   298	
+   299			if ( ! current_user_can( 'cartflows_manage_flows_steps' ) ) {
+   300				return new \WP_Error( 'cartflows_rest_cannot_view', __( 'Sorry, you cannot list resources.', 'cartflows' ), array( 'status' => rest_authorization_required_code() ) );
+   301			}
+   302	
+   303			return true;
+   304		}
+   305	
+   306		/**
+   307		 * Get revenue of flow.
+   308		 *
+   309		 * @param int $flow_id flow id.
+   310		 * @return int
+   311		 */
+   312		public function get_per_flow_revenue( $flow_id ) {
+   313	
+   314			$gross_sale = 0;
+   315	
+   316			// Return if WooCommerce is not active.
+   317			if ( ! wcf()->is_woo_active ) {
+   318				return $gross_sale;
+   319			}
+   320	
+
+ succeeded in 0ms:
+     1	{
+     2	  "plugin_slug": "cartflows",
+     3	  "analysis_summary": {
+     4	    "phase": "phase2",
+     5	    "plugin_version": "2.2.4",
+     6	    "ir_entry_points_reviewed": 119,
+     7	    "phase1_anomalies_reviewed": 41,
+     8	    "focus": [
+     9	      "Validated the public checkout AJAX surfaces called out by Phase 1, especially coupon/cart mutation, email/login UX, and checkout file upload.",
+    10	      "Re-traced the higher-value admin mutation surfaces: REST endpoints under `admin-core/api`, role-manager capability assignment, rollback/importer flows, Tutor LMS compatibility AJAX, and SureTriggers/Woo Dynamic Flow AJAX.",
+    11	      "Collapsed Semgrep's `check_ajax_referer(..., false)` signals by checking whether invalid-nonce branches terminate before reaching a state-changing sink."
+    12	    ],
+    13	    "result": "No Patchstack-eligible true positive or evidence-backed REVIEW finding was confirmed in CartFlows 2.2.4 after direct source validation.",
+    14	    "key_observation": "The interesting public surfaces are limited to caller-owned WooCommerce checkout/session behavior or tightly constrained media uploads, while privileged admin/REST/ability paths are capability-gated and default to administrator-only access unless an administrator intentionally delegates CartFlows capabilities.",
+    15	    "tooling_notes": [
+    16	      "Phase 1 IR and 324 Semgrep results were treated as signal sources only and were revalidated against source.",
+    17	      "The Psalm SARIF artifact existed only as `{\"status\":\"error\",\"exit_code\":1}` and provided no corroborating data."
+    18	    ]
+    19	  },
+    20	  "overall_risk": "none",
+    21	  "total_findings_analyzed": 0,
+    22	  "true_positives": 0,
+    23	  "false_positives": 0,
+    24	  "needs_review": 0,
+    25	  "findings": [],
+    26	  "negative_findings": [
+    27	    {
+    28	      "finding_id": "NEG-001",
+    29	      "state": "REJECTED",
+    30	      "verdict": "FP",
+    31	      "title": "Public checkout file upload is constrained to a hardcoded media allowlist and does not expose arbitrary upload or RCE",
+    32	      "entry_point_ids": [
+    33	        "ep_ajax_priv_wp_ajax_wcf_upload_checkout_file",
+    34	        "ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file"
+    35	      ],
+    36	      "evidence": [
+    37	        {
+    38	          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+    39	          "line_number": 57,
+    40	          "note": "The upload handler is intentionally exposed on both `wp_ajax_` and `wp_ajax_nopriv_` for checkout visitors."
+    41	        },
+    42	        {
+    43	          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-markup.php",
+    44	          "line_number": 1776,
+    45	          "note": "The file-upload nonce is localized into the public checkout page."
+    46	        },
+    47	        {
+    48	          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+    49	          "line_number": 295,
+    50	          "note": "The handler rejects requests without a valid `wcf-file-upload` nonce."
+    51	        },
+    52	        {
+    53	          "file_path": "plugins/cartflows/classes/class-cartflows-helper.php",
+    54	          "line_number": 1933,
+    55	          "note": "The master extension allowlist is fixed to media/document types: jpg, jpeg, png, gif, webp, ico, pdf, mp3, m4a, wav, mp4, m4v, mov."
+    56	        },
+    57	        {
+    58	          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+    59	          "line_number": 315,
+    60	          "note": "Field-level restrictions are intersected with the master allowlist before acceptance."
+    61	        },
+    62	        {
+    63	          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+    64	          "line_number": 331,
+    65	          "note": "The code validates extension and MIME using `wp_check_filetype_and_ext()`."
+    66	        },
+    67	        {
+    68	          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+    69	          "line_number": 423,
+    70	          "note": "The stored filename is replaced with `wcf_<uuid>.<ext>` via `wp_unique_filename()`."
+    71	        },
+    72	        {
+    73	          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+    74	          "line_number": 425,
+    75	          "note": "Upload storage goes through `wp_handle_upload()` into the normal WordPress uploads directory."
+    76	        }
+    77	      ],
+    78	      "reasoning": {
+    79	        "hypothesis": "Because the route is available to unauthenticated checkout visitors, it might permit arbitrary file upload, stored XSS via active content, or code execution.",
+    80	        "trace": "The public checkout JavaScript sends `wcf_upload_checkout_file` requests with the localized nonce. `Cartflows_Checkout_Ajax::upload_checkout_file()` then normalizes the filename, derives the extension, intersects any field-specific restriction with `Cartflows_Helper::get_allowed_file_extensions()`, checks file size, validates the real type with `wp_check_filetype_and_ext()`, and finally stores the file through `wp_handle_upload()` using a generated UUID filename in the uploads directory.",
+
+codex
+Context da du de ket luan pham vi: Phase 3b cho `cartflows` la review rong, khong phai vi toi bo sot finding ma vi gate Phase 3a khong xuat finding `PLAUSIBLE`/`UNCERTAIN`. Toi dang soan artifact theo dung rule nay, dong thoi ghi ro dieu kien mo lai review neu co bang chung bo sung.
+exec
+/bin/zsh -lc "rg --files reports/phase3 | rg 'codex\\.llm\\.md"'$|phase3-review'"\\.codex\\.json"'$'"'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+reports/phase3/kubio-phase3-review.codex.json
+reports/phase3/4-hostinger-reach.codex.llm.md
+reports/phase3/3-pretty-link.codex.llm.md
+reports/phase3/2-kubio.codex.llm.md
+reports/phase3/hostinger-reach-phase3-review.codex.json
+reports/phase3/2-duplicator.codex.llm.md
+reports/phase3/duplicator-phase3-review.codex.json
+reports/phase3/pretty-link-phase3-review.codex.json
+
+exec
+/bin/zsh -lc 'ls -la reports/phase3' in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+total 496
+drwxrwxrwx@ 40 timomangcut  staff   1280 Apr  2 02:54 .
+drwxrwxrwx@  6 timomangcut  staff    192 Apr  2 00:26 ..
+-rw-r--r--   1 timomangcut  staff    832 Apr  2 02:54 1-cartflows.md
+-rw-r--r--   1 timomangcut  staff    859 Apr  2 01:06 1-facebook-for-woocommerce.md
+-rw-r--r--   1 timomangcut  staff   8685 Apr  2 02:27 2-duplicator.claude.llm.md
+-rw-r--r--   1 timomangcut  staff   4844 Apr  2 02:27 2-duplicator.codex.llm.md
+-rw-r--r--   1 timomangcut  staff    832 Apr  2 02:27 2-duplicator.md
+-rw-r--r--   1 timomangcut  staff  13281 Apr  2 01:14 2-kubio.claude.llm.md
+-rw-r--r--   1 timomangcut  staff   8341 Apr  2 01:14 2-kubio.codex.llm.md
+-rw-r--r--   1 timomangcut  staff   5487 Apr  2 01:15 2-kubio.md
+-rw-r--r--   1 timomangcut  staff   9162 Apr  2 01:57 3-pretty-link.claude.llm.md
+-rw-r--r--   1 timomangcut  staff   3029 Apr  2 01:57 3-pretty-link.codex.llm.md
+-rw-r--r--   1 timomangcut  staff    835 Apr  2 01:58 3-pretty-link.md
+-rw-r--r--   1 timomangcut  staff    842 Apr  2 01:06 3-redux-framework.md
+-rw-r--r--   1 timomangcut  staff  12313 Apr  2 02:24 4-hostinger-reach.claude.llm.md
+-rw-r--r--   1 timomangcut  staff   6288 Apr  2 02:26 4-hostinger-reach.codex.llm.md
+-rw-r--r--   1 timomangcut  staff   2847 Apr  2 02:26 4-hostinger-reach.md
+-rw-r--r--   1 timomangcut  staff    836 Apr  2 01:06 4-suretriggers.md
+-rw-r--r--   1 timomangcut  staff    832 Apr  2 01:06 5-svg-support.md
+-rw-r--r--   1 timomangcut  staff    402 Apr  2 02:54 cartflows-phase3.json
+-rw-r--r--   1 timomangcut  staff    552 Apr  2 02:26 duplicator-phase3-review.claude.json
+-rw-r--r--   1 timomangcut  staff     51 Apr  2 02:27 duplicator-phase3-review.codex.json
+-rw-r--r--   1 timomangcut  staff     51 Apr  2 02:27 duplicator-phase3-review.json
+-rw-r--r--   1 timomangcut  staff    401 Apr  2 02:24 duplicator-phase3.json
+-rw-r--r--   1 timomangcut  staff    415 Apr  2 01:06 facebook-for-woocommerce-phase3.json
+-rw-r--r--   1 timomangcut  staff   4522 Apr  2 02:22 hostinger-reach-phase3-review.claude.json
+-rw-r--r--   1 timomangcut  staff   5470 Apr  2 02:26 hostinger-reach-phase3-review.codex.json
+-rw-r--r--   1 timomangcut  staff   5470 Apr  2 02:26 hostinger-reach-phase3-review.json
+-rw-r--r--   1 timomangcut  staff   2969 Apr  2 02:20 hostinger-reach-phase3.json
+-rw-r--r--   1 timomangcut  staff   9198 Apr  2 01:13 kubio-phase3-review.claude.json
+-rw-r--r--   1 timomangcut  staff   7867 Apr  2 01:14 kubio-phase3-review.codex.json
+-rw-r--r--   1 timomangcut  staff   7867 Apr  2 01:15 kubio-phase3-review.json
+-rw-r--r--   1 timomangcut  staff   5681 Apr  2 01:06 kubio-phase3.json
+-rw-r--r--   1 timomangcut  staff   4264 Apr  2 01:56 pretty-link-phase3-review.claude.json
+-rw-r--r--   1 timomangcut  staff     52 Apr  2 01:57 pretty-link-phase3-review.codex.json
+-rw-r--r--   1 timomangcut  staff     52 Apr  2 01:58 pretty-link-phase3-review.json
+-rw-r--r--   1 timomangcut  staff    403 Apr  2 01:55 pretty-link-phase3.json
+-rw-r--r--   1 timomangcut  staff    407 Apr  2 01:06 redux-framework-phase3.json
+-rw-r--r--   1 timomangcut  staff    403 Apr  2 01:06 suretriggers-phase3.json
+-rw-r--r--   1 timomangcut  staff    401 Apr  2 01:06 svg-support-phase3.json
+
+exec
+/bin/zsh -lc "sed -n '1,220p' reports/phase3/3-pretty-link.codex.llm.md" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "sed -n '1,120p' reports/phase3/duplicator-phase3-review.codex.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+{
+  "plugin_slug": "duplicator",
+  "reviews": []
+}
+
+ succeeded in 0ms:
+# Plugin Overview
+
+Pretty Links 3.6.21 is a WordPress plugin for branded short links, click tracking, and PrettyPay Stripe payment links (`plugins/pretty-link/readme.txt:1-24`). This Phase 3b skeptic pass only reviews findings that Phase 3a left as `PLAUSIBLE` or `UNCERTAIN`, but the canonical Phase 2 artifact has `findings: []` and the Phase 3a gate leaves both `validated_findings` and `actionable_findings` empty (`reports/phase2/pretty-link-phase2.json:21-25`, `reports/phase3/pretty-link-phase3.json:15-22`).
+
+# Validation Summary
+
+- Reviewed: 0
+- Downgraded: 0
+- Kept: 0
+- Upgraded: 0
+
+# Detailed Reviews
+
+None. `reports/phase3/pretty-link-phase3.json:15-22` contains no `PLAUSIBLE` or `UNCERTAIN` findings, so there is no finding-level `Type`, `Minimum Role/Capability`, `Status Transition`, `missing evidence`, or `dynamic test plan` entry to add without inventing scope.
+
+# Negative Findings
+
+- `plugins/pretty-link/app/controllers/PrliAuthenticatorController.php:78`, `plugins/pretty-link/app/controllers/PrliAuthenticatorController.php:83`, `plugins/pretty-link/app/controllers/PrliAuthenticatorController.php:88`, `plugins/pretty-link/app/controllers/PrliAuthenticatorController.php:96`, and `plugins/pretty-link/app/controllers/PrliAuthenticatorController.php:109` show the Authenticator connect path only runs when `prli-connect=true`, requires a valid `prli-connect` nonce, requires `PrliUtils::is_authorized()`, calls the fixed `PRLI_AUTH_SERVICE_URL`, and writes fixed plugin-owned option keys.
+- `plugins/pretty-link/app/controllers/PrliStripeConnectController.php:99`, `plugins/pretty-link/app/controllers/PrliStripeConnectController.php:114`, `plugins/pretty-link/app/controllers/PrliStripeConnectController.php:139`, `plugins/pretty-link/app/controllers/PrliStripeConnectController.php:149`, `plugins/pretty-link/app/controllers/PrliStripeConnectController.php:168`, `plugins/pretty-link/app/controllers/PrliStripeConnectController.php:178`, and `plugins/pretty-link/app/controllers/PrliStripeConnectController.php:202` show the Stripe credential update and refresh flows are guarded by dedicated nonces plus `PrliUtils::is_authorized()`, use `PrliStripeConnect::get_method_id()` instead of a caller-controlled method selector, and only update fixed Stripe-related option keys.
+- `reports/phase2/pretty-link-phase2.json:13-18` already records the prior refutation result that the interesting web-facing surfaces in this plugin were either protected by user-bound nonces and authorization checks or depended on secret values that the shipped plugin does not expose to low-privileged attackers.
+
+# Overall Assessment
+
+The deterministic gate remains authoritative here: there are no Phase 3a findings for the skeptic reviewer to downgrade, keep, or upgrade. Missing evidence and dynamic verification are therefore not applicable at finding granularity, and the only reason to reopen Phase 3b would be a new canonical Phase 2 or Phase 3a artifact that introduces a concrete `PLAUSIBLE` or `UNCERTAIN` finding.
+
+exec
+/bin/zsh -lc "sed -n '1,120p' reports/phase3/pretty-link-phase3-review.codex.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+{
+  "plugin_slug": "pretty-link",
+  "reviews": []
+}
+
+codex
+Toi se ghi hai artifact moi: JSON review rong vi khong co finding hop le cho Phase 3b, va Markdown report giai thich ro ly do pham vi rong cung cac khu vuc am tinh da duoc Phase 2/Phase 3a ho tro bang code reference.
+apply patch
+patch: completed
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/1-cartflows.codex.llm.md
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/cartflows-phase3-review.codex.json
+diff --git a//Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/1-cartflows.codex.llm.md b//Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/1-cartflows.codex.llm.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..db87c8e014dabf89a4c93fc48e4bc62ed4a44963
+--- /dev/null
++++ b//Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/1-cartflows.codex.llm.md
+@@ -0,0 +1,24 @@
++# Plugin Overview
++
++CartFlows 2.2.4 is a WooCommerce funnel builder and checkout plugin that adds custom checkout flows, upsells, and related admin tooling (`plugins/cartflows/cartflows.php:3-10`, `plugins/cartflows/readme.txt:1-24`). This Phase 3b skeptic pass has no finding-level scope because the canonical Phase 2 artifact contains `findings: []` and the Phase 3a gate reports `plausible: 0`, `uncertain: 0`, with both `validated_findings` and `actionable_findings` empty (`reports/phase2/cartflows-phase2.json:13-25`, `reports/phase3/cartflows-phase3.json:15-22`).
++
++# Validation Summary
++
++- Reviewed: 0
++- Downgraded: 0
++- Kept: 0
++- Upgraded: 0
++
++# Detailed Reviews
++
++None. `reports/phase3/cartflows-phase3.json:15-22` contains no `PLAUSIBLE` or `UNCERTAIN` findings, so there is no finding-level `Type`, `Minimum Role/Capability`, `Status Transition`, `missing evidence`, or `dynamic test plan` entry to add without inventing scope.
++
++# Negative Findings
++
++- `plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php:295`, `plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php:315`, `plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php:331`, and `plugins/cartflows/classes/class-cartflows-helper.php:1933` show the public checkout upload path still enforces a nonce, intersects field restrictions with a fixed media allowlist, and validates MIME/extension agreement before any file is moved. Current code therefore does not support an evidence-backed `Arbitrary File Upload` style escalation claim from the guest checkout surface.
++- `plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php:200`, `plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php:217`, and `plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php:228` show the Tutor LMS template-save AJAX path verifies a nonce, enforces `current_user_can( 'edit_post', $course_id )`, and only then updates the fixed plugin meta key. That is counter-evidence against a low-privilege `Broken Access Control` or `Privilege Escalation` narrative on this path.
++- `plugins/cartflows/admin-core/ajax/common-settings.php:101`, `plugins/cartflows/admin-core/ajax/common-settings.php:113`, `plugins/cartflows/admin-core/api/flows.php:69`, and `plugins/cartflows/admin-core/api/flows.php:299` show the admin AJAX and REST mutation surfaces remain capability-gated and protected by explicit permission callbacks. This matches the Phase 2 conclusion that any lower-role access here would require administrator-delegated CartFlows capabilities rather than ambient exposure (`reports/phase2/cartflows-phase2.json:13-17`).
++
++# Overall Assessment
++
++The deterministic gate remains authoritative for `cartflows`: there are no Phase 3a findings for the skeptic reviewer to downgrade, keep, or upgrade. Missing evidence and dynamic verification are therefore not applicable at finding granularity, and Phase 3b should only be reopened if a later canonical artifact introduces a concrete `PLAUSIBLE` or `UNCERTAIN` finding or if new source evidence shows one of the cited guards is bypassable.
+diff --git a//Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/cartflows-phase3-review.codex.json b//Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/cartflows-phase3-review.codex.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..6fd392bf3d5cee7bed12471bc8d3b01683e306b0
+--- /dev/null
++++ b//Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/cartflows-phase3-review.codex.json
+@@ -0,0 +1,4 @@
++{
++  "plugin_slug": "cartflows",
++  "reviews": []
++}
+
+diff --git a//Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/1-cartflows.codex.llm.md b//Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/1-cartflows.codex.llm.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..db87c8e014dabf89a4c93fc48e4bc62ed4a44963
+--- /dev/null
++++ b//Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/1-cartflows.codex.llm.md
+@@ -0,0 +1,24 @@
++# Plugin Overview
++
++CartFlows 2.2.4 is a WooCommerce funnel builder and checkout plugin that adds custom checkout flows, upsells, and related admin tooling (`plugins/cartflows/cartflows.php:3-10`, `plugins/cartflows/readme.txt:1-24`). This Phase 3b skeptic pass has no finding-level scope because the canonical Phase 2 artifact contains `findings: []` and the Phase 3a gate reports `plausible: 0`, `uncertain: 0`, with both `validated_findings` and `actionable_findings` empty (`reports/phase2/cartflows-phase2.json:13-25`, `reports/phase3/cartflows-phase3.json:15-22`).
++
++# Validation Summary
++
++- Reviewed: 0
++- Downgraded: 0
++- Kept: 0
++- Upgraded: 0
++
++# Detailed Reviews
++
++None. `reports/phase3/cartflows-phase3.json:15-22` contains no `PLAUSIBLE` or `UNCERTAIN` findings, so there is no finding-level `Type`, `Minimum Role/Capability`, `Status Transition`, `missing evidence`, or `dynamic test plan` entry to add without inventing scope.
++
++# Negative Findings
++
++- `plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php:295`, `plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php:315`, `plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php:331`, and `plugins/cartflows/classes/class-cartflows-helper.php:1933` show the public checkout upload path still enforces a nonce, intersects field restrictions with a fixed media allowlist, and validates MIME/extension agreement before any file is moved. Current code therefore does not support an evidence-backed `Arbitrary File Upload` style escalation claim from the guest checkout surface.
++- `plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php:200`, `plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php:217`, and `plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php:228` show the Tutor LMS template-save AJAX path verifies a nonce, enforces `current_user_can( 'edit_post', $course_id )`, and only then updates the fixed plugin meta key. That is counter-evidence against a low-privilege `Broken Access Control` or `Privilege Escalation` narrative on this path.
++- `plugins/cartflows/admin-core/ajax/common-settings.php:101`, `plugins/cartflows/admin-core/ajax/common-settings.php:113`, `plugins/cartflows/admin-core/api/flows.php:69`, and `plugins/cartflows/admin-core/api/flows.php:299` show the admin AJAX and REST mutation surfaces remain capability-gated and protected by explicit permission callbacks. This matches the Phase 2 conclusion that any lower-role access here would require administrator-delegated CartFlows capabilities rather than ambient exposure (`reports/phase2/cartflows-phase2.json:13-17`).
++
++# Overall Assessment
++
++The deterministic gate remains authoritative for `cartflows`: there are no Phase 3a findings for the skeptic reviewer to downgrade, keep, or upgrade. Missing evidence and dynamic verification are therefore not applicable at finding granularity, and Phase 3b should only be reopened if a later canonical artifact introduces a concrete `PLAUSIBLE` or `UNCERTAIN` finding or if new source evidence shows one of the cited guards is bypassable.
+diff --git a//Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/cartflows-phase3-review.codex.json b//Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/cartflows-phase3-review.codex.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..6fd392bf3d5cee7bed12471bc8d3b01683e306b0
+--- /dev/null
++++ b//Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/cartflows-phase3-review.codex.json
+@@ -0,0 +1,4 @@
++{
++  "plugin_slug": "cartflows",
++  "reviews": []
++}
+
+codex
+Hai artifact da duoc tao. Toi dang verify JSON syntax va doc lai Markdown de chac rang no giu dung pham vi Phase 3b, khong invent finding, va van co phan negative findings voi code reference that.
+exec
+/bin/zsh -lc 'jq . reports/phase3/cartflows-phase3-review.codex.json' in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "sed -n '1,220p' reports/phase3/1-cartflows.codex.llm.md" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+{
+  "plugin_slug": "cartflows",
+  "reviews": []
+}
+
+ succeeded in 0ms:
+# Plugin Overview
+
+CartFlows 2.2.4 is a WooCommerce funnel builder and checkout plugin that adds custom checkout flows, upsells, and related admin tooling (`plugins/cartflows/cartflows.php:3-10`, `plugins/cartflows/readme.txt:1-24`). This Phase 3b skeptic pass has no finding-level scope because the canonical Phase 2 artifact contains `findings: []` and the Phase 3a gate reports `plausible: 0`, `uncertain: 0`, with both `validated_findings` and `actionable_findings` empty (`reports/phase2/cartflows-phase2.json:13-25`, `reports/phase3/cartflows-phase3.json:15-22`).
+
+# Validation Summary
+
+- Reviewed: 0
+- Downgraded: 0
+- Kept: 0
+- Upgraded: 0
+
+# Detailed Reviews
+
+None. `reports/phase3/cartflows-phase3.json:15-22` contains no `PLAUSIBLE` or `UNCERTAIN` findings, so there is no finding-level `Type`, `Minimum Role/Capability`, `Status Transition`, `missing evidence`, or `dynamic test plan` entry to add without inventing scope.
+
+# Negative Findings
+
+- `plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php:295`, `plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php:315`, `plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php:331`, and `plugins/cartflows/classes/class-cartflows-helper.php:1933` show the public checkout upload path still enforces a nonce, intersects field restrictions with a fixed media allowlist, and validates MIME/extension agreement before any file is moved. Current code therefore does not support an evidence-backed `Arbitrary File Upload` style escalation claim from the guest checkout surface.
+- `plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php:200`, `plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php:217`, and `plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php:228` show the Tutor LMS template-save AJAX path verifies a nonce, enforces `current_user_can( 'edit_post', $course_id )`, and only then updates the fixed plugin meta key. That is counter-evidence against a low-privilege `Broken Access Control` or `Privilege Escalation` narrative on this path.
+- `plugins/cartflows/admin-core/ajax/common-settings.php:101`, `plugins/cartflows/admin-core/ajax/common-settings.php:113`, `plugins/cartflows/admin-core/api/flows.php:69`, and `plugins/cartflows/admin-core/api/flows.php:299` show the admin AJAX and REST mutation surfaces remain capability-gated and protected by explicit permission callbacks. This matches the Phase 2 conclusion that any lower-role access here would require administrator-delegated CartFlows capabilities rather than ambient exposure (`reports/phase2/cartflows-phase2.json:13-17`).
+
+# Overall Assessment
+
+The deterministic gate remains authoritative for `cartflows`: there are no Phase 3a findings for the skeptic reviewer to downgrade, keep, or upgrade. Missing evidence and dynamic verification are therefore not applicable at finding granularity, and Phase 3b should only be reopened if a later canonical artifact introduces a concrete `PLAUSIBLE` or `UNCERTAIN` finding or if new source evidence shows one of the cited guards is bypassable.
+
+diff --git a//Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/1-cartflows.codex.llm.md b//Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/1-cartflows.codex.llm.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..db87c8e014dabf89a4c93fc48e4bc62ed4a44963
+--- /dev/null
++++ b//Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/1-cartflows.codex.llm.md
+@@ -0,0 +1,24 @@
++# Plugin Overview
++
++CartFlows 2.2.4 is a WooCommerce funnel builder and checkout plugin that adds custom checkout flows, upsells, and related admin tooling (`plugins/cartflows/cartflows.php:3-10`, `plugins/cartflows/readme.txt:1-24`). This Phase 3b skeptic pass has no finding-level scope because the canonical Phase 2 artifact contains `findings: []` and the Phase 3a gate reports `plausible: 0`, `uncertain: 0`, with both `validated_findings` and `actionable_findings` empty (`reports/phase2/cartflows-phase2.json:13-25`, `reports/phase3/cartflows-phase3.json:15-22`).
++
++# Validation Summary
++
++- Reviewed: 0
++- Downgraded: 0
++- Kept: 0
++- Upgraded: 0
++
++# Detailed Reviews
++
++None. `reports/phase3/cartflows-phase3.json:15-22` contains no `PLAUSIBLE` or `UNCERTAIN` findings, so there is no finding-level `Type`, `Minimum Role/Capability`, `Status Transition`, `missing evidence`, or `dynamic test plan` entry to add without inventing scope.
++
++# Negative Findings
++
++- `plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php:295`, `plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php:315`, `plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php:331`, and `plugins/cartflows/classes/class-cartflows-helper.php:1933` show the public checkout upload path still enforces a nonce, intersects field restrictions with a fixed media allowlist, and validates MIME/extension agreement before any file is moved. Current code therefore does not support an evidence-backed `Arbitrary File Upload` style escalation claim from the guest checkout surface.
++- `plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php:200`, `plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php:217`, and `plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php:228` show the Tutor LMS template-save AJAX path verifies a nonce, enforces `current_user_can( 'edit_post', $course_id )`, and only then updates the fixed plugin meta key. That is counter-evidence against a low-privilege `Broken Access Control` or `Privilege Escalation` narrative on this path.
++- `plugins/cartflows/admin-core/ajax/common-settings.php:101`, `plugins/cartflows/admin-core/ajax/common-settings.php:113`, `plugins/cartflows/admin-core/api/flows.php:69`, and `plugins/cartflows/admin-core/api/flows.php:299` show the admin AJAX and REST mutation surfaces remain capability-gated and protected by explicit permission callbacks. This matches the Phase 2 conclusion that any lower-role access here would require administrator-delegated CartFlows capabilities rather than ambient exposure (`reports/phase2/cartflows-phase2.json:13-17`).
++
++# Overall Assessment
++
++The deterministic gate remains authoritative for `cartflows`: there are no Phase 3a findings for the skeptic reviewer to downgrade, keep, or upgrade. Missing evidence and dynamic verification are therefore not applicable at finding granularity, and Phase 3b should only be reopened if a later canonical artifact introduces a concrete `PLAUSIBLE` or `UNCERTAIN` finding or if new source evidence shows one of the cited guards is bypassable.
+diff --git a//Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/cartflows-phase3-review.codex.json b//Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/cartflows-phase3-review.codex.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..6fd392bf3d5cee7bed12471bc8d3b01683e306b0
+--- /dev/null
++++ b//Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/cartflows-phase3-review.codex.json
+@@ -0,0 +1,4 @@
++{
++  "plugin_slug": "cartflows",
++  "reviews": []
++}
+
+  ✓ Load project context and review workflow, then extract cartflows findings with Phase 3a status PLAUSIBLE or UNCERTAIN
+  ✓ Trace each eligible finding in plugin source to verify file:line, entry point, guards, and measurable impact
+  ✓ Write skeptical review outputs to phase3 JSON and Markdown with corrections, missing evidence, and dynamic tests
+diff --git a//Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/1-cartflows.codex.llm.md b//Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/1-cartflows.codex.llm.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..db87c8e014dabf89a4c93fc48e4bc62ed4a44963
+--- /dev/null
++++ b//Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/1-cartflows.codex.llm.md
+@@ -0,0 +1,24 @@
++# Plugin Overview
++
++CartFlows 2.2.4 is a WooCommerce funnel builder and checkout plugin that adds custom checkout flows, upsells, and related admin tooling (`plugins/cartflows/cartflows.php:3-10`, `plugins/cartflows/readme.txt:1-24`). This Phase 3b skeptic pass has no finding-level scope because the canonical Phase 2 artifact contains `findings: []` and the Phase 3a gate reports `plausible: 0`, `uncertain: 0`, with both `validated_findings` and `actionable_findings` empty (`reports/phase2/cartflows-phase2.json:13-25`, `reports/phase3/cartflows-phase3.json:15-22`).
++
++# Validation Summary
++
++- Reviewed: 0
++- Downgraded: 0
++- Kept: 0
++- Upgraded: 0
++
++# Detailed Reviews
++
++None. `reports/phase3/cartflows-phase3.json:15-22` contains no `PLAUSIBLE` or `UNCERTAIN` findings, so there is no finding-level `Type`, `Minimum Role/Capability`, `Status Transition`, `missing evidence`, or `dynamic test plan` entry to add without inventing scope.
++
++# Negative Findings
++
++- `plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php:295`, `plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php:315`, `plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php:331`, and `plugins/cartflows/classes/class-cartflows-helper.php:1933` show the public checkout upload path still enforces a nonce, intersects field restrictions with a fixed media allowlist, and validates MIME/extension agreement before any file is moved. Current code therefore does not support an evidence-backed `Arbitrary File Upload` style escalation claim from the guest checkout surface.
++- `plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php:200`, `plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php:217`, and `plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php:228` show the Tutor LMS template-save AJAX path verifies a nonce, enforces `current_user_can( 'edit_post', $course_id )`, and only then updates the fixed plugin meta key. That is counter-evidence against a low-privilege `Broken Access Control` or `Privilege Escalation` narrative on this path.
++- `plugins/cartflows/admin-core/ajax/common-settings.php:101`, `plugins/cartflows/admin-core/ajax/common-settings.php:113`, `plugins/cartflows/admin-core/api/flows.php:69`, and `plugins/cartflows/admin-core/api/flows.php:299` show the admin AJAX and REST mutation surfaces remain capability-gated and protected by explicit permission callbacks. This matches the Phase 2 conclusion that any lower-role access here would require administrator-delegated CartFlows capabilities rather than ambient exposure (`reports/phase2/cartflows-phase2.json:13-17`).
++
++# Overall Assessment
++
++The deterministic gate remains authoritative for `cartflows`: there are no Phase 3a findings for the skeptic reviewer to downgrade, keep, or upgrade. Missing evidence and dynamic verification are therefore not applicable at finding granularity, and Phase 3b should only be reopened if a later canonical artifact introduces a concrete `PLAUSIBLE` or `UNCERTAIN` finding or if new source evidence shows one of the cited guards is bypassable.
+diff --git a//Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/cartflows-phase3-review.codex.json b//Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/cartflows-phase3-review.codex.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..6fd392bf3d5cee7bed12471bc8d3b01683e306b0
+--- /dev/null
++++ b//Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/cartflows-phase3-review.codex.json
+@@ -0,0 +1,4 @@
++{
++  "plugin_slug": "cartflows",
++  "reviews": []
++}
+
+codex
+Phase 3b artifacts are in place: [cartflows-phase3-review.codex.json](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/cartflows-phase3-review.codex.json) and [1-cartflows.codex.llm.md](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/1-cartflows.codex.llm.md).
+
+The review is intentionally empty at finding level because Phase 3a exposes no eligible scope: [cartflows-phase3.json](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/cartflows-phase3.json#L15) has `plausible: 0`, `uncertain: 0`, and no `validated_findings` or `actionable_findings`, while [cartflows-phase2.json](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase2/cartflows-phase2.json#L13) already records `findings: []`. The Markdown still documents negative evidence-backed areas in the plugin source so the empty review is justified rather than implicit. JSON syntax was validated with `jq`.
+diff --git a//Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/1-cartflows.codex.llm.md b//Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/1-cartflows.codex.llm.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..db87c8e014dabf89a4c93fc48e4bc62ed4a44963
+--- /dev/null
++++ b//Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/1-cartflows.codex.llm.md
+@@ -0,0 +1,24 @@
++# Plugin Overview
++
++CartFlows 2.2.4 is a WooCommerce funnel builder and checkout plugin that adds custom checkout flows, upsells, and related admin tooling (`plugins/cartflows/cartflows.php:3-10`, `plugins/cartflows/readme.txt:1-24`). This Phase 3b skeptic pass has no finding-level scope because the canonical Phase 2 artifact contains `findings: []` and the Phase 3a gate reports `plausible: 0`, `uncertain: 0`, with both `validated_findings` and `actionable_findings` empty (`reports/phase2/cartflows-phase2.json:13-25`, `reports/phase3/cartflows-phase3.json:15-22`).
++
++# Validation Summary
++
++- Reviewed: 0
++- Downgraded: 0
++- Kept: 0
++- Upgraded: 0
++
++# Detailed Reviews
++
++None. `reports/phase3/cartflows-phase3.json:15-22` contains no `PLAUSIBLE` or `UNCERTAIN` findings, so there is no finding-level `Type`, `Minimum Role/Capability`, `Status Transition`, `missing evidence`, or `dynamic test plan` entry to add without inventing scope.
++
++# Negative Findings
++
++- `plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php:295`, `plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php:315`, `plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php:331`, and `plugins/cartflows/classes/class-cartflows-helper.php:1933` show the public checkout upload path still enforces a nonce, intersects field restrictions with a fixed media allowlist, and validates MIME/extension agreement before any file is moved. Current code therefore does not support an evidence-backed `Arbitrary File Upload` style escalation claim from the guest checkout surface.
++- `plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php:200`, `plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php:217`, and `plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php:228` show the Tutor LMS template-save AJAX path verifies a nonce, enforces `current_user_can( 'edit_post', $course_id )`, and only then updates the fixed plugin meta key. That is counter-evidence against a low-privilege `Broken Access Control` or `Privilege Escalation` narrative on this path.
++- `plugins/cartflows/admin-core/ajax/common-settings.php:101`, `plugins/cartflows/admin-core/ajax/common-settings.php:113`, `plugins/cartflows/admin-core/api/flows.php:69`, and `plugins/cartflows/admin-core/api/flows.php:299` show the admin AJAX and REST mutation surfaces remain capability-gated and protected by explicit permission callbacks. This matches the Phase 2 conclusion that any lower-role access here would require administrator-delegated CartFlows capabilities rather than ambient exposure (`reports/phase2/cartflows-phase2.json:13-17`).
++
++# Overall Assessment
++
++The deterministic gate remains authoritative for `cartflows`: there are no Phase 3a findings for the skeptic reviewer to downgrade, keep, or upgrade. Missing evidence and dynamic verification are therefore not applicable at finding granularity, and Phase 3b should only be reopened if a later canonical artifact introduces a concrete `PLAUSIBLE` or `UNCERTAIN` finding or if new source evidence shows one of the cited guards is bypassable.
+diff --git a//Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/cartflows-phase3-review.codex.json b//Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/cartflows-phase3-review.codex.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..6fd392bf3d5cee7bed12471bc8d3b01683e306b0
+--- /dev/null
++++ b//Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/cartflows-phase3-review.codex.json
+@@ -0,0 +1,4 @@
++{
++  "plugin_slug": "cartflows",
++  "reviews": []
++}
+
+tokens used
+95,147

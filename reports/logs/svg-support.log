@@ -1,0 +1,35 @@
+==== PHASE 1: svg-support ====
+--- [1/4] Surface Map ---
+[+] Surface map: /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase1/svg-support-surface.txt
+--- [2/4] Semgrep ---
+[*] Semgrep Pro: svg-support
+[+] 20 findings
+    wp-type-juggling-loose-comparison: 13
+    wp-type-juggling-in-array-no-strict: 6
+    wp-xss-echo-no-escape: 1
+--- [3/4] Psalm Taint ---
+  Psalm taint analysis: svg-support
+  [!] Primary Psalm failed, retrying fallback config (wp-plugin-disabled)
+  [!] Psalm fallback failed (exit 1). See: /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/logs/svg-support-psalm.err
+--- [4/4] IR Extract + Rules ---
+[*] Extracting IR: svg-support
+    Entry points: 10
+    Guards: 4
+    Sources: 29
+    Sinks: 121
+    Time: 105ms
+    Anomalies: 10
+      [high] rule_01: Missing nonce check in admin_init handler 'admin_init'
+      [high] rule_01: Missing nonce check in admin_init handler 'admin_init'
+      [high] rule_01: Missing nonce check in admin_init handler 'admin_init'
+      [high] rule_01: Missing nonce check in admin_init handler 'admin_init'
+      [high] rule_01: Missing nonce check in admin_init handler 'admin_init'
+      [high] rule_02: Missing current_user_can() in admin_init handler 'admin_init' with admin-level operations
+      [high] rule_02: Missing current_user_can() in admin_init handler 'admin_init' with admin-level operations
+      [high] rule_02: Missing current_user_can() in admin_init handler 'admin_init' with admin-level operations
+      [high] rule_02: Missing current_user_can() in admin_init handler 'admin_init' with admin-level operations
+      [high] rule_02: Missing current_user_can() in admin_init handler 'admin_init' with admin-level operations
+    Stored: 10 anomalies + 20 semgrep + 0 progpilot
+    Total: 114ms | RAM: 10MB
+[+] Done: svg-support
+==== DONE: svg-support ====

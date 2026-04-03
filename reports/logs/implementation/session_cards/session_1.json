@@ -1,0 +1,99 @@
+{
+  "session": 1,
+  "title": "IR-01 (unresolved hooks log) + IR-06 (filter hooks) + IR-09 (Phase4 noise)",
+  "status": "COMPLETED",
+  "wave": "Wave 1",
+  "dependencies": [
+    {"session": 0, "reason": "Baseline benchmark phải có trước khi fix bất kỳ gì"}
+  ],
+  "gaps": ["IR-01", "IR-06", "IR-09"],
+  "critical_notes": [
+    "IR-01: downstream PHẢI update trong cùng session — phase2-prompt-template.md cần đọc unresolved_hooks",
+    "IR-09: thêm constructor flag $isFileLevel vào SourceSinkVisitor — IRBuilder Phase4 dùng flag này",
+    "IRBuilder.php: verify unresolved_hooks được collect từ EntryPointVisitor và output vào IR JSON"
+  ],
+  "files_to_read": [
+    {
+      "file": "tools/src/Extractor/Visitors/EntryPointVisitor.php",
+      "line_range": "full",
+      "reason": "451 lines — cần full để hiểu handleHook(), resolveStringArg(), và nơi thêm classifyExpression()"
+    },
+    {
+      "file": "tools/src/Extractor/IRBuilder.php",
+      "line_range": "1-120",
+      "reason": "Phần buildIR() output — verify unresolved_hooks được include trong output JSON"
+    },
+    {
+      "file": "tools/src/Extractor/Visitors/SourceSinkVisitor.php",
+      "line_range": "1-50",
+      "reason": "Constructor + constants — nơi thêm $isFileLevel flag cho IR-09"
+    },
+    {
+      "file": "tools/config/phase2-prompt-template.md",
+      "line_range": "full",
+      "reason": "61 lines — cần thêm unresolved_hooks section (IR-01 downstream)"
+    }
+  ],
+  "spec": {
+    "IR-01": {
+      "source_ref": "gap-analysis-final.md:304-354",
+      "file": "tools/src/Extractor/Visitors/EntryPointVisitor.php",
+      "target_function": "handleHook()",
+      "target_lines_approx": "90-96",
+      "change": {
+        "before": "if ($hookName === null) return; // silent drop",
+        "after": "if ($hookName === null) { $this->unresolvedHooks[] = ['file' => $this->currentFile, 'line' => $node->getStartLine(), 'function' => $funcType, 'hook_arg_type' => $this->classifyExpression($node->args[0]->value)]; return; }"
+      },
+      "new_method": {
+        "name": "classifyExpression(Node $expr): string",
+        "returns": {
+          "BinaryOp\\Concat": "concatenation",
+          "ClassConstFetch": "constant",
+          "PropertyFetch": "property",
+          "MethodCall": "method_call",
+          "Variable": "variable",
+          "default": "other"
+        }
+      },
+      "irbuilder_check": "Verify IRBuilder.php output array includes 'unresolved_hooks' key from EntryPointVisitor->getUnresolvedHooks()"
+    },
+    "IR-06": {
+      "source_ref": "gap-analysis-final.md:559-593",
+      "file": "tools/src/Extractor/Visitors/EntryPointVisitor.php",
+      "change": "Thêm SECURITY_SENSITIVE_FILTERS constant và handling trong add_filter() detection",
+      "constant": {
+        "upload_mimes":               {"type": "filter_upload",     "auth": "editor"},
+        "wp_handle_upload_prefilter": {"type": "filter_upload",     "auth": "contributor"},
+        "wp_handle_sideload_prefilter":{"type":"filter_upload",     "auth": "admin"},
+        "user_has_cap":               {"type": "filter_capability", "auth": "none"},
+        "authenticate":               {"type": "filter_auth",       "auth": "none"},
+        "the_content":                {"type": "filter_output",     "auth": "contributor"},
+        "comment_text":               {"type": "filter_output",     "auth": "none"},
+        "wp_mail":                    {"type": "filter_mail",       "auth": "unknown"}
+      }
+    },
+    "IR-09": {
+      "source_ref": "gap-analysis-final.md:740-780",
+      "file": "tools/src/Extractor/Visitors/SourceSinkVisitor.php",
+      "change": "Thêm constructor param $isFileLevel = false. Khi true: skip output_return sink detection.",
+      "irbuilder_change": "tools/src/Extractor/IRBuilder.php Phase4 loop: khởi tạo SourceSinkVisitor với isFileLevel=true"
+    },
+    "IR-01_downstream": {
+      "source_ref": "gap-analysis-final.md:304-354",
+      "file": "tools/config/phase2-prompt-template.md",
+      "change": "Thêm section 'Unresolved Hooks' hướng dẫn LLM đọc ir.unresolved_hooks[] và attempt trace"
+    }
+  },
+  "downstream_required": [
+    "tools/config/phase2-prompt-template.md — thêm unresolved_hooks section (IR-01 downstream)"
+  ],
+  "test_command": "php tools/bin/extract.php plugins/<plugin-with-dynamic-hooks>/",
+  "test_cases": [
+    "IR JSON chứa 'unresolved_hooks' array (non-empty cho plugin với dynamic hooks)",
+    "IR JSON chứa entry points cho filter hooks (upload_mimes, etc.) nếu plugin dùng chúng",
+    "IR JSON KHÔNG chứa output_return sinks từ Phase4 file-level scan",
+    "phase2-prompt-template.md có section 'Unresolved Hooks'"
+  ],
+  "commit_message": "Session 1: IR-01 unresolved hooks + IR-06 filter hooks + IR-09 Phase4 noise",
+  "next_session_preview": "Session 2 — IR-04 (guard effectiveness) + AR-01 Rule03 (mandatory co-deploy)"
+}

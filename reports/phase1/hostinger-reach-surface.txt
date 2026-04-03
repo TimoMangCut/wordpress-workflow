@@ -1,0 +1,151 @@
+=== SURFACE MAP: hostinger-reach ===
+Generated: 2026-04-02T02:10:34+07:00
+
+--- ENTRY POINTS ---
+[REST routes]
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/OptInMonster/OptInMonsterIntegration.php:214:                register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php:27:        register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php:80:        register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php:104:        register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php:114:        register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php:124:        register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/FormsRoutes.php:29:        register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/FormsRoutes.php:39:        register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/FormsRoutes.php:68:        register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/IntegrationsRoutes.php:21:        register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/IntegrationsRoutes.php:31:        register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/IntegrationsRoutes.php:54:        register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/IntegrationsRoutes.php:73:        register_rest_route(
+[AJAX handlers]
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/lib/WP_Async_Request.php:65:			add_action( 'wp_ajax_' . $this->identifier, array( $this, 'maybe_handle' ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/lib/WP_Async_Request.php:66:			add_action( 'wp_ajax_nopriv_' . $this->identifier, array( $this, 'maybe_handle' ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/hostinger/hostinger-wp-surveys/src/Ajax.php:43:            add_action('wp_ajax_hostinger_' . $event, [ $this, $event ]);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Admin/Notices/ConnectionNotice.php:29:        add_action( 'wp_ajax_' . self::NOTICE_ACTION, array( $this, 'handle_ajax_action' ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Admin/Notices/AddFormNotice.php:28:        add_action( 'wp_ajax_' . self::NOTICE_ACTION, array( $this, 'handle_ajax_action' ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Tracking/AbandonedCarts.php:37:        add_action( 'wp_ajax_nopriv_abandoned-carts', array( $this, 'handle_ajax_action' ) );
+[Admin POST]
+[Shortcodes + Blocks]
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Blocks/Block.php:34:        register_block_type(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Setup/Blocks.php:19:        if ( ! function_exists( 'register_block_type' ) ) {
+
+--- SECURITY GUARDS ---
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/ActionScheduler_AdminView.php:145:		if ( ! apply_filters( 'action_scheduler_check_pastdue_actions', current_user_can( 'manage_options' ) ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/abstracts/ActionScheduler_Abstract_ListTable.php:632:		if ( wp_verify_nonce( $nonce, $action . '::' . $row_id ) && method_exists( $this, $method ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/lib/WP_Async_Request.php:172:			check_ajax_referer( $this->identifier, 'nonce' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/hostinger/hostinger-wp-surveys/src/Ajax.php:84:        if (! wp_verify_nonce($nonce, 'hts-ajax-nonce')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/hostinger/hostinger-wp-surveys/src/Ajax.php:88:        if (! current_user_can('manage_options')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Admin/Notices/ConnectionNotice.php:45:        if ( ! current_user_can( 'manage_options' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Admin/Notices/ConnectionNotice.php:49:        check_ajax_referer( self::NOTICE_ACTION, 'nonce' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Admin/Notices/ConnectionNotice.php:121:        if ( ! current_user_can( 'manage_options' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Admin/Notices/AddFormNotice.php:44:        check_ajax_referer( self::NOTICE_ACTION, 'nonce' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Admin/Menus.php:45:        if ( ! current_user_can( 'manage_options' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/OptInMonster/OptInMonsterIntegration.php:203:        if ( ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/OptInMonster/OptInMonsterIntegration.php:220:                        'permission_callback' => '__return_true',
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php:33:                'permission_callback' => '__return_true',
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php:86:                'permission_callback' => function ( WP_REST_Request $request ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php:110:                'permission_callback' => array( $this, 'permission_check' ),
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php:120:                'permission_callback' => array( $this, 'permission_check' ),
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php:131:                    'permission_callback' => array( $this, 'permission_check' ),
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php:136:                    'permission_callback' => array( $this, 'permission_check' ),
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/FormsRoutes.php:35:                'permission_callback' => array( $this, 'permission_check' ),
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/FormsRoutes.php:45:                'permission_callback' => array( $this, 'permission_check' ),
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/FormsRoutes.php:74:                'permission_callback' => array( $this, 'permission_check' ),
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/Routes.php:33:        return current_user_can( 'manage_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/IntegrationsRoutes.php:27:                'permission_callback' => '__return_true',
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/IntegrationsRoutes.php:37:                'permission_callback' => array( $this, 'permission_check' ),
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/IntegrationsRoutes.php:60:                'permission_callback' => array( $this, 'permission_check' ),
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/IntegrationsRoutes.php:79:                'permission_callback' => array( $this, 'permission_check' ),
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/ApiHandler.php:70:        if ( current_user_can( 'manage_options' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/ReachApiHandler.php:168:        return wp_verify_nonce( $nonce, 'wp_rest' ) && $this->get_connection_status_handler();
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/ReachApiHandler.php:364:        if ( ! wp_verify_nonce( $nonce, 'wp_rest' ) || ! $this->get_connection_status_handler() ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Tracking/AbandonedCarts.php:41:        check_ajax_referer( 'abandoned-carts', 'nonce' );
+
+--- SINKS ---
+[SQL]
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/ActionScheduler_ListTable.php:360:			$found_tables = $wpdb->get_col( "SHOW TABLES LIKE '{$wpdb->prefix}actionscheduler%'" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/schema/ActionScheduler_LoggerSchema.php:88:		$table_list   = $wpdb->get_col( "SHOW TABLES LIKE '{$table_name}'" );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/schema/ActionScheduler_LoggerSchema.php:97:			$wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/schema/ActionScheduler_StoreSchema.php:130:		$table_list   = $wpdb->get_col( "SHOW TABLES LIKE '{$table_name}'" );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/schema/ActionScheduler_StoreSchema.php:141:			$wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/abstracts/ActionScheduler_Abstract_Schema.php:177:			$existing_table = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $pattern ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/abstracts/ActionScheduler_Abstract_ListTable.php:225:			$this->get_columns(),
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/abstracts/ActionScheduler_Abstract_ListTable.php:498:		$this->set_items( $wpdb->get_results( $sql, ARRAY_A ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/abstracts/ActionScheduler_Abstract_ListTable.php:501:		$total_items = $wpdb->get_var( $query_count ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_wpPostStore.php:474:		return ( 'count' === $query_type ) ? $wpdb->get_var( $sql ) : $wpdb->get_col( $sql ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_wpPostStore.php:604:		return $wpdb->get_var(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_wpPostStore.php:693:		$rows_affected = $wpdb->query( $wpdb->prepare( "{$update} {$where} {$order}", $params ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_wpPostStore.php:772:		$results = $wpdb->get_results(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_wpPostStore.php:816:		$action_ids = $wpdb->get_col(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_wpPostStore.php:831:		$result = $wpdb->query(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_wpPostStore.php:860:		$result = $wpdb->query(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_wpPostStore.php:890:		$result = $wpdb->query(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_wpPostStore.php:944:		return $wpdb->get_var(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_wpPostStore.php:969:		$status_updated = $wpdb->query(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_wpPostStore.php:1057:			$found_action        = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_DBLogger.php:58:		$entry = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->actionscheduler_logs} WHERE log_id=%d", $entry_id ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_DBLogger.php:95:		$records = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->actionscheduler_logs} WHERE action_id=%d", $action_id ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_DBLogger.php:152:		$wpdb->query( $sql_query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_HybridStore.php:154:			$id = (int) $wpdb->get_var( "SELECT MAX(ID) FROM $wpdb->posts" );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_wpCommentLogger.php:203:			$count    = $wpdb->get_results( "SELECT comment_approved, COUNT( * ) AS num_comments FROM {$wpdb->comments} WHERE comment_type NOT IN('order_note','action_log') GROUP BY comment_approved", ARRAY_A );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_DBStore.php:121:			$wpdb->query( $insert_sql );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_DBStore.php:289:			$group_id = (int) $wpdb->get_var( $wpdb->prepare( "SELECT group_id FROM {$wpdb->actionscheduler_groups} WHERE slug=%s", $slug ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_DBStore.php:338:		$data = $wpdb->get_row(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_DBStore.php:646:		return ( 'count' === $query_type ) ? $wpdb->get_var( $sql ) : $wpdb->get_col( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.NoSql, WordPress.DB.DirectDatabaseQuery.NoCaching
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_DBStore.php:664:		foreach ( $wpdb->get_results( $sql ) as $action_data ) { // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_DBStore.php:773:			$wpdb->query(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_DBStore.php:775:					"UPDATE {$wpdb->actionscheduler_actions} SET status = %s WHERE action_id IN {$query_in}", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_DBStore.php:835:		$record = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->actionscheduler_actions} WHERE action_id=%d", $action_id ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_DBStore.php:1014:		$rows_affected = $wpdb->query( $wpdb->prepare( $update_sql, $update_params ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_DBStore.php:1079:		return (int) $wpdb->get_var( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_DBStore.php:1099:		return (int) $wpdb->get_var( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_DBStore.php:1127:		foreach ( $wpdb->get_results( $sql ) as $claimed_action ) { // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_DBStore.php:1164:		$action_ids = $wpdb->get_col( $wpdb->prepare( "SELECT action_id FROM {$wpdb->actionscheduler_actions} WHERE claim_id = %d AND status = %s", $claim->get_id(), self::STATUS_PENDING ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_DBStore.php:1169:			$row_updates      = $wpdb->query( "UPDATE {$wpdb->actionscheduler_actions} SET claim_id = 0 WHERE action_id IN ({$action_id_string})" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_DBStore.php:1257:		$status_updated = $wpdb->query( $sql );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/data-stores/ActionScheduler_DBStore.php:1332:		$status = $wpdb->get_var( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/woocommerce/action-scheduler/classes/ActionScheduler_OptionLock.php:115:		return (string) $wpdb->get_var(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/hostinger/hostinger-wp-surveys/src/SurveyManager.php:349:        $oldestProductDate = $wpdb->get_var($getProductDate);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Repositories/ContactListRepository.php:24:        $results = $this->db->get_results( $query, ARRAY_A );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Repositories/ContactListRepository.php:48:        $results = $this->db->get_results( $query, ARRAY_A );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Repositories/CartRepository.php:28:        $results = $this->db->get_results( $query, ARRAY_A );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Repositories/CartRepository.php:76:        $results = $this->db->get_results( $query, ARRAY_A );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Repositories/FormRepository.php:23:        $results = $this->db->get_results( $query, ARRAY_A );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Repositories/FormRepository.php:56:        $results = $this->db->get_results( $query, ARRAY_A );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/WooCommerce/WooCommerceIntegration.php:248:            $wpdb->get_results( $sql )
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/WooCommerce/WooCommerceIntegration.php:260:        return $wpdb->get_var( "SELECT COUNT(*) FROM {$table}" ) ?? 0;
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/WooCommerce/WooCommerceIntegration.php:298:        $table_exists = $wpdb->get_var( "SHOW TABLES LIKE '$table'" ) === $table;
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/ThriveLeads/ThriveLeadsIntegration.php:103:        $entries = $wpdb->get_results(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/ThriveLeads/ThriveLeadsIntegration.php:153:        return (int) $wpdb->get_var(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/ThriveLeads/ThriveLeadsIntegration.php:166:        $found = $wpdb->get_var(
+[File ops]
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/automattic/jetpack-autoloader/src/AutoloadGenerator.php:396:			if ( file_put_contents( $outDir . '/' . $file, $content ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/automattic/jetpack-autoloader/src/AutoloadFileWriter.php:63:			$written = file_put_contents( $outDir . '/' . $newFile, $content );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/automattic/jetpack-autoloader/src/AutoloadFileWriter.php:93:		$sourceLoader  = fopen( __DIR__ . '/' . $filename, 'r' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/automattic/jetpack-autoloader/src/CustomAutoloaderPlugin.php:140:			$content = file_get_contents( $vendorPath . '/autoload_packages.php' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/automattic/jetpack-autoloader/src/CustomAutoloaderPlugin.php:148:			$content = file_get_contents( $vendorPath . '/autoload.php' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/hostinger/hostinger-wp-helper/src/Config.php:18:			$config_content = file_get_contents( $path );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/vendor/hostinger/hostinger-wp-helper/src/Utils.php:85:			$apiToken = file_get_contents( self::$apiTokenFile );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/ApiKeyManager.php:70:            $order_id = trim( file_get_contents( $api_token_path ) );
+
+--- REST JSON (magic quote bypass) ---
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/OptInMonster/OptInMonsterIntegration.php:68:            $data    = json_decode( $request->get_body() ?? '', true );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php:87:                    $csrf = $request->get_param( 'csrf_field' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php:71:        $is_active         = $request->get_param( Integration::INTEGRATION_IS_ACTIVE );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php:72:        $integration       = $request->get_param( 'integration' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php:98:        $integrations = $request->get_param( 'integrations' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php:111:        $integration = $request->get_param( 'integration' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/FormsApiHandler.php:43:        $contact_list_id = $request->get_param( 'contact_list_id' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/FormsApiHandler.php:44:        $type            = $request->get_param( 'type' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/FormsApiHandler.php:69:        $form_id   = $request->get_param( 'form_id' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/FormsApiHandler.php:70:        $type      = $request->get_param( 'type' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/FormsApiHandler.php:71:        $is_active = (int) $request->get_param( 'is_active' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/ReachApiHandler.php:144:        $email    = $request->get_param( 'email' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/ReachApiHandler.php:145:        $name     = $request->get_param( 'name' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/ReachApiHandler.php:146:        $surname  = $request->get_param( 'surname' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/ReachApiHandler.php:147:        $form_id  = $request->get_param( 'id' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/ReachApiHandler.php:148:        $metadata = $request->get_param( 'metadata' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/ReachApiHandler.php:149:        $tags     = $request->get_param( 'tags' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/ReachApiHandler.php:150:        $group    = apply_filters( 'hostinger_reach_get_group', $request->get_param( 'group' ), $form_id );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/ReachApiHandler.php:213:        $csrf_field = $request->get_param( 'csrf_field' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/ReachApiHandler.php:214:        $token      = $request->get_param( 'token' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/ReachApiHandler.php:370:        $names = $request->get_param( 'names' );

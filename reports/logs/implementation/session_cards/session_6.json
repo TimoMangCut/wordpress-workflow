@@ -1,0 +1,47 @@
+{
+  "session": 6,
+  "title": "Wave 1 Validation — benchmark run + USER REVIEW ①",
+  "status": "PENDING",
+  "wave": "Wave 1",
+  "dependencies": [
+    {"session": 1, "reason": "IR-01/06/09"},
+    {"session": 2, "reason": "IR-04/AR-01"},
+    {"session": 3, "reason": "IR-07/08"},
+    {"session": 4, "reason": "P2-01/02/03/04/G-04"},
+    {"session": 5, "reason": "AR-02/O-01/02/03"}
+  ],
+  "gaps": [],
+  "critical_notes": [
+    "KHÔNG đọc source code trong session này — chỉ chạy pipeline và đọc outputs",
+    "Accept criteria: Quality Score >= baseline cho TẤT CẢ benchmark plugins",
+    "Decision Rate không giảm > 10%",
+    "Nếu có regression → investigate TRƯỚC KHI proceed Wave 2"
+  ],
+  "files_to_read": [
+    {
+      "file": "benchmark/results/baseline.json",
+      "line_range": "full",
+      "reason": "Baseline metrics từ Session 0"
+    }
+  ],
+  "spec": {
+    "validation_steps": [
+      "1. Chạy full pipeline trên mỗi benchmark plugin: scan-all.sh + run-phase2.sh + run-phase3.sh",
+      "2. python3 benchmark/compare.py --all > benchmark/results/wave1_results.json",
+      "3. So sánh quality_score và decision_rate với baseline.json",
+      "4. Nếu pass: generate wave1_summary.json với verdict APPROVED",
+      "5. Nếu fail/regression: generate wave1_summary.json với verdict NEEDS_INVESTIGATION + plugin name + metric delta"
+    ]
+  },
+  "downstream_required": [],
+  "test_command": "python3 benchmark/compare.py --all",
+  "test_cases": [
+    "quality_score >= baseline.quality_score cho tất cả benchmark plugins",
+    "decision_rate >= baseline.decision_rate * 0.90",
+    "Không có plugin nào bị regression (score tuột > 5%)"
+  ],
+  "output_for_user_review": "benchmark/results/wave1_results.json",
+  "user_action_required": "Review wave1_results.json. Reply APPROVED để tiếp tục Wave 2, hoặc REJECT với plugin cần investigate.",
+  "commit_message": "Session 6: Wave 1 validation results",
+  "next_session_preview": "Session 7 — IR-03 (custom guard detection) — CHỈ sau khi user APPROVED Wave 1"
+}

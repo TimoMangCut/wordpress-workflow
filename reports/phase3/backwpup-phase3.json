@@ -1,0 +1,140 @@
+{
+  "plugin_slug": "backwpup",
+  "phase1_summary": {
+    "entry_points": 60,
+    "anomalies": 7,
+    "sources": 286,
+    "sinks": 2466
+  },
+  "phase2_summary": {
+    "total": 2,
+    "tp": 2,
+    "fp": 0,
+    "review": 0
+  },
+  "phase3_summary": {
+    "confirmed": 0,
+    "plausible": 0,
+    "uncertain": 2,
+    "likely_hallucination": 0
+  },
+  "validated_findings": [
+    {
+      "finding_id": "BWPUP-P2-001",
+      "verdict": "TP",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.6036,
+      "resolved_entry_point_id": "ep_rest___cloudsaveandtest",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "file_exists": true,
+        "path_reachable": false,
+        "auth_consistent": true,
+        "guard_consistent": true,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": true,
+        "code_evidence": false,
+        "reasoning_quality": true,
+        "cvss_plausible": false,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 1.0,
+        "path_reachable": 0.25,
+        "auth_consistent": 0.8,
+        "guard_consistent": 0.7,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 0.5,
+        "psalm_corroborates": 0.5,
+        "code_evidence": 0.25,
+        "reasoning_quality": 0.97,
+        "cvss_plausible": 0.2,
+        "patchstack_eligible": 1.0,
+        "no_hallucination": 1.0
+      },
+      "check_notes": {
+        "file_exists": "exists: inc/class-destination-s3.php",
+        "path_reachable": "neither source nor sink matched in EP ep_rest___cloudsaveandtest",
+        "auth_consistent": "EP type=rest_route auth depends on permission_callback",
+        "guard_consistent": "no direct guard contradiction detected",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
+        "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
+        "code_evidence": "sink function 'backwpup_destination_s3::job_run_archive' not found near line 551",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "invalid CVSS:3.1 vector",
+        "patchstack_eligible": "patchstack_eligible plausibility ok",
+        "no_hallucination": "no hallucination signals",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "code_evidence_missing_or_mismatch",
+        "insufficient_evidence_to_confirm",
+        "path_reachability_weak"
+      ]
+    },
+    {
+      "finding_id": "BWPUP-P2-002",
+      "verdict": "TP",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.6036,
+      "resolved_entry_point_id": "ep_rest_backwpup_v1__process_bulk_actions",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "file_exists": true,
+        "path_reachable": false,
+        "auth_consistent": true,
+        "guard_consistent": true,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": true,
+        "code_evidence": false,
+        "reasoning_quality": true,
+        "cvss_plausible": false,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 1.0,
+        "path_reachable": 0.25,
+        "auth_consistent": 0.8,
+        "guard_consistent": 0.7,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 0.5,
+        "psalm_corroborates": 0.5,
+        "code_evidence": 0.25,
+        "reasoning_quality": 0.97,
+        "cvss_plausible": 0.2,
+        "patchstack_eligible": 1.0,
+        "no_hallucination": 1.0
+      },
+      "check_notes": {
+        "file_exists": "exists: inc/class-destination-folder.php",
+        "path_reachable": "neither source nor sink matched in EP ep_rest_backwpup_v1__process_bulk_actions",
+        "auth_consistent": "EP type=rest_route auth depends on permission_callback",
+        "guard_consistent": "no direct guard contradiction detected",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
+        "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
+        "code_evidence": "sink function 'backwpup_destination_folder::file_delete' not found near line 75",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "invalid CVSS:3.1 vector",
+        "patchstack_eligible": "patchstack_eligible plausibility ok",
+        "no_hallucination": "no hallucination signals",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "code_evidence_missing_or_mismatch",
+        "insufficient_evidence_to_confirm",
+        "path_reachability_weak"
+      ]
+    }
+  ],
+  "actionable_findings": []
+}

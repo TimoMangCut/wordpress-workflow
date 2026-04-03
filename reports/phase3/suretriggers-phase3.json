@@ -1,0 +1,23 @@
+{
+  "plugin_slug": "suretriggers",
+  "phase1_summary": {
+    "entry_points": 24,
+    "anomalies": 7,
+    "sources": 233,
+    "sinks": 5846
+  },
+  "phase2_summary": {
+    "total": 0,
+    "tp": 0,
+    "fp": 0,
+    "review": 0
+  },
+  "phase3_summary": {
+    "confirmed": 0,
+    "plausible": 0,
+    "uncertain": 0,
+    "likely_hallucination": 0
+  },
+  "validated_findings": [],
+  "actionable_findings": []
+}

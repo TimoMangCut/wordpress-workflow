@@ -1,0 +1,15 @@
+{
+    "inputs": {
+        "inclusions": {
+            "extensions": ["php"]
+        }
+    },
+    "sources": "config/progpilot-wp-sources.json",
+    "sinks": "config/progpilot-wp-sinks.json",
+    "sanitizers": "config/progpilot-wp-sanitizers.json",
+    "outputs": {
+        "resolve_includes": true,
+        "resolve_includes_file": true,
+        "tainted_flow": true
+    }
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "env": {
+    "CLAUDE_BIN": "/opt/homebrew/bin/claude",
+    "CLAUDE_MODEL": "claude-sonnet-4.6"
+  },
+  "permissions": {
+    "allow": [
+      "Bash",
+      "WebFetch",
+      "Read/Write file",
+      "Edit"
+    ]
+  }
+}

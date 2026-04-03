@@ -1,0 +1,14 @@
+{
+    "sources": [
+        {"name": "$_GET",       "language": "php", "type": "array"},
+        {"name": "$_POST",      "language": "php", "type": "array"},
+        {"name": "$_REQUEST",   "language": "php", "type": "array"},
+        {"name": "$_COOKIE",    "language": "php", "type": "array"},
+        {"name": "$_FILES",     "language": "php", "type": "array"},
+        {"name": "$_SERVER",    "language": "php", "type": "array"},
+        {"name": "get_option",  "language": "php", "type": "function"},
+        {"name": "get_post_meta", "language": "php", "type": "function"},
+        {"name": "get_user_meta", "language": "php", "type": "function"},
+        {"name": "get_transient", "language": "php", "type": "function"}
+    ]
+}

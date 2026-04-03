@@ -1,0 +1,61 @@
+rules:
+  # =============================================================================
+  # PHP OBJECT INJECTION - WordPress (v5 - Full REST API Sources)
+  # CWE-502: Deserialization of Untrusted Data
+  # =============================================================================
+
+  - id: wp-object-injection-unserialize
+    mode: taint
+    languages: [php]
+    severity: WARNING
+    message: >-
+      PHP Object Injection: User input passed to unserialize()/maybe_unserialize().
+      Never unserialize user-controlled data. Use JSON (json_encode/json_decode) instead.
+    metadata:
+      cwe: ["CWE-502"]
+      owasp: ["A08:2021 - Software and Data Integrity Failures"]
+      category: security
+      technology: [wordpress]
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      references:
+        - https://owasp.org/www-community/vulnerabilities/PHP_Object_Injection
+        - https://patchstack.com/academy/wordpress/vulnerabilities/php-object-injection/
+
+    pattern-sources:
+      - pattern: $_GET
+      - pattern: $_POST
+      - pattern: $_REQUEST
+      - pattern: $_COOKIE
+      - pattern: $_GET[...]
+      - pattern: $_POST[...]
+      - pattern: $_REQUEST[...]
+      - pattern: $_COOKIE[...]
+      - pattern: $atts
+      - pattern: $atts[...]
+      - pattern: file_get_contents("php://input")
+      # REST API (ALL data UNSLASHED)
+      - pattern: $request->get_param(...)
+      - pattern: $request->get_params()
+      - pattern: $request->get_json_params()
+      - pattern: $request->get_body()
+      - pattern: $request->get_body_params()
+      - pattern: $request->get_query_params()
+      - pattern: $request[...]
+
+    pattern-sinks:
+      - pattern: unserialize(...)
+      - pattern: maybe_unserialize(...)
+
+    pattern-sanitizers:
+      - pattern: absint(...)
+      - pattern: intval(...)
+      - pattern: (int)$X
+      - pattern: (float)$X
+      - pattern: is_numeric(...)
+      - pattern: sanitize_text_field(...)
+      - pattern: esc_attr(...)
+      - pattern: esc_html(...)
+      - pattern: wp_kses(...)
+      - pattern: sanitize_key(...)

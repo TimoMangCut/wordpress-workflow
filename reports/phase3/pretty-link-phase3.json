@@ -1,0 +1,23 @@
+{
+  "plugin_slug": "pretty-link",
+  "phase1_summary": {
+    "entry_points": 68,
+    "anomalies": 33,
+    "sources": 572,
+    "sinks": 1514
+  },
+  "phase2_summary": {
+    "total": 0,
+    "tp": 0,
+    "fp": 0,
+    "review": 0
+  },
+  "phase3_summary": {
+    "confirmed": 0,
+    "plausible": 0,
+    "uncertain": 0,
+    "likely_hallucination": 0
+  },
+  "validated_findings": [],
+  "actionable_findings": []
+}

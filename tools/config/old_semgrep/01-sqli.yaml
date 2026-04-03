@@ -1,0 +1,68 @@
+rules:
+  # =============================================================================
+  # SQL INJECTION - WordPress
+  # CWE-89: SQL Injection
+  # Equivalent to baseline: sqli.yaml
+  # =============================================================================
+
+  - id: wp-sqli-wpdb-query
+    mode: taint
+    languages: [php]
+    severity: WARNING
+    message: >-
+      SQL Injection: User input flows into $wpdb query method without $wpdb->prepare().
+      Use $wpdb->prepare() with placeholders (%d, %s, %f) for all user-controlled data.
+    metadata:
+      cwe: ["CWE-89"]
+      owasp: ["A03:2021 - Injection"]
+      category: security
+      technology: [wordpress]
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      references:
+        - https://developer.wordpress.org/reference/classes/wpdb/prepare/
+        - https://patchstack.com/academy/wordpress/vulnerabilities/sql-injection/
+
+    pattern-sources:
+      - pattern: $_GET
+      - pattern: $_POST
+      - pattern: $_REQUEST
+      - pattern: $_COOKIE
+      - pattern: $_GET[...]
+      - pattern: $_POST[...]
+      - pattern: $_REQUEST[...]
+      - pattern: $_COOKIE[...]
+      - pattern: $atts
+      - pattern: $atts[...]
+      - pattern: file_get_contents("php://input")
+
+    pattern-sinks:
+      - pattern: $wpdb->query(...)
+      - pattern: $wpdb->get_var(...)
+      - pattern: $wpdb->get_row(...)
+      - pattern: $wpdb->get_col(...)
+      - pattern: $wpdb->get_results(...)
+
+    pattern-sanitizers:
+      - pattern: $wpdb->prepare(...)
+      - pattern: esc_sql(...)
+      - pattern: $wpdb->esc_like(...)
+      - pattern: $wpdb->insert(...)
+      - pattern: $wpdb->update(...)
+      - pattern: $wpdb->delete(...)
+      - pattern: $wpdb->replace(...)
+      - pattern: absint(...)
+      - pattern: intval(...)
+      - pattern: (int)$X
+      - pattern: floatval(...)
+      - pattern: (float)$X
+      - pattern: is_numeric(...)
+      - pattern: sanitize_key(...)
+      - pattern: wp_parse_id_list(...)
+      - pattern: boolval(...)
+      - pattern: (bool)$X
+      - pattern: esc_attr(...)
+      - pattern: esc_html(...)
+      - pattern: sanitize_text_field(...)
+      - pattern: sanitize_title(...)

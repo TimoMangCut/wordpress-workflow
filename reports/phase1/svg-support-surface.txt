@@ -1,0 +1,38 @@
+=== SURFACE MAP: svg-support ===
+Generated: 2026-04-02T00:40:09+07:00
+
+--- ENTRY POINTS ---
+[REST routes]
+[AJAX handlers]
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/svg-support/functions/featured-image.php:159:add_action('wp_ajax_bodhi_svgs_featured_image_inline_toggle', 'bodhi_svgs_featured_image_inline_toggle');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/svg-support/functions/featured-image.php:160:add_action('wp_ajax_nopriv_bodhi_svgs_featured_image_inline_toggle', 'bodhi_svgs_featured_image_inline_toggle');
+[Admin POST]
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/svg-support/functions/featured-image.php:39:	add_filter( 'admin_post_thumbnail_html', 'bodhi_svgs_featured_image_meta' );
+[Shortcodes + Blocks]
+
+--- SECURITY GUARDS ---
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/svg-support/includes/svg-tags.php:30:        if (current_user_can('manage_options')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/svg-support/admin/admin-init.php:35:	if ( ! current_user_can( 'manage_options' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/svg-support/functions/mime-types.php:37:    if ( empty($is_role_allowed) || !current_user_can('upload_files') ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/svg-support/functions/featured-image.php:49:		! wp_verify_nonce( 
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/svg-support/functions/featured-image.php:63:	if ( ! current_user_can( 'edit_post', $post_id ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/svg-support/functions/featured-image.php:136:    if (!isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'svg-support-featured')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/svg-support/functions/featured-image.php:140:    if (!current_user_can('edit_posts')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/svg-support/functions/attachment.php:351:	if (!defined('REST_REQUEST') && !wp_verify_nonce(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/svg-support/functions/attachment.php:368:	$can_upload_files = current_user_can('upload_files');
+
+--- SINKS ---
+[SQL]
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/svg-support/functions/meta-cleanup.php:10:    $wpdb->query("
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/svg-support/functions/meta-cleanup.php:24:    $wpdb->query("
+[File ops]
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/svg-support/functions/attachment.php:328:		$file_content = file_get_contents( $file_path );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/svg-support/functions/attachment.php:375:		$file_content = file_get_contents($file_path);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/svg-support/functions/attachment.php:390:		$write_result = file_put_contents($file_path, $clean_svg);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/svg-support/functions/attachment.php:400:add_filter('wp_handle_upload_prefilter', 'bodhi_svgs_sanitize_svg');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/svg-support/functions/attachment.php:525:add_filter('wp_handle_upload', 'bodhi_svgs_handle_upload_check');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/svg-support/functions/attachment.php:550:            $file_content = file_get_contents($file_path);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/svg-support/functions/attachment.php:555:                    file_put_contents($file_path, $clean_svg);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/svg-support/vendor/enshrined/svg-sanitize/src/svg-scanner.php:107:	$svg_file = @file_get_contents( $file_name );
+
+--- REST JSON (magic quote bypass) ---

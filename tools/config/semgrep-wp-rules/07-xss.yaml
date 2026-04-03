@@ -1,0 +1,177 @@
+rules:
+  # =============================================================================
+  # CROSS-SITE SCRIPTING (XSS) - WordPress (v5 - Full REST API Sources)
+  # CWE-79: Improper Neutralization of Input During Web Page Generation
+  # =============================================================================
+
+  - id: wp-xss-echo-no-escape
+    mode: taint
+    languages: [php]
+    severity: WARNING
+    message: >-
+      Cross-Site Scripting: User input flows into HTML output without context-appropriate
+      escaping. Use esc_html() for HTML body, esc_attr() for attributes, esc_url() for URLs.
+    metadata:
+      cwe: ["CWE-79"]
+      owasp: ["A03:2021 - Injection"]
+      category: security
+      technology: [wordpress]
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: MEDIUM
+
+    pattern-sources:
+      - pattern: $_GET
+      - pattern: $_POST
+      - pattern: $_REQUEST
+      - pattern: $_COOKIE
+      - pattern: $_SERVER
+      - pattern: $_GET[...]
+      - pattern: $_POST[...]
+      - pattern: $_REQUEST[...]
+      - pattern: $_COOKIE[...]
+      - pattern: $_SERVER[...]
+      - pattern: $atts
+      - pattern: $atts[...]
+      - pattern: $attributes
+      - pattern: $attributes[...]
+      - pattern: file_get_contents("php://input")
+      # REST API (ALL data UNSLASHED)
+      - pattern: $request->get_param(...)
+      - pattern: $request->get_params()
+      - pattern: $request->get_json_params()
+      - pattern: $request->get_body()
+      - pattern: $request->get_body_params()
+      - pattern: $request->get_query_params()
+      - pattern: $request->get_url_params()
+      - pattern: $request->get_header(...)
+      - pattern: $request[...]
+
+    pattern-sinks:
+      - pattern: echo $EXPR;
+      - pattern: print($EXPR);
+      - pattern: printf(...);
+      # Shortcode/block callbacks return HTML to be rendered in page
+      - pattern: return $EXPR;
+
+    pattern-sanitizers:
+      # Primary XSS escaping
+      - pattern: esc_html(...)
+      - pattern: esc_attr(...)
+      - pattern: esc_url(...)
+      - pattern: esc_js(...)
+      - pattern: esc_textarea(...)
+      - pattern: esc_xml(...)
+      # Localization wrappers with escaping
+      - pattern: esc_html__(...)
+      - pattern: esc_html_e(...)
+      - pattern: esc_html_x(...)
+      - pattern: esc_attr__(...)
+      - pattern: esc_attr_e(...)
+      - pattern: esc_attr_x(...)
+      # KSES filtering
+      - pattern: wp_kses(...)
+      - pattern: wp_kses_post(...)
+      - pattern: wp_kses_data(...)
+      - pattern: wp_filter_nohtml_kses(...)
+      - pattern: wp_filter_post_kses(...)
+      - pattern: wp_filter_kses(...)
+      - pattern: wp_strip_all_tags(...)
+      # Input sanitizers that break XSS taint
+      - pattern: sanitize_text_field(...)
+      - pattern: sanitize_textarea_field(...)
+      - pattern: sanitize_email(...)
+      - pattern: sanitize_file_name(...)
+      - pattern: sanitize_html_class(...)
+      - pattern: sanitize_key(...)
+      - pattern: sanitize_title(...)
+      - pattern: sanitize_user(...)
+      - pattern: sanitize_hex_color(...)
+      - pattern: sanitize_hex_color_no_hash(...)
+      - pattern: sanitize_url(...)
+      # Numeric casting
+      - pattern: absint(...)
+      - pattern: intval(...)
+      - pattern: (int)$X
+      - pattern: floatval(...)
+      - pattern: (float)$X
+      - pattern: is_numeric(...)
+      - pattern: boolval(...)
+      - pattern: (bool)$X
+      - pattern: wp_parse_id_list(...)
+      # WooCommerce
+      - pattern: wc_clean(...)
+      - pattern: wc_sanitize_textarea(...)
+      - pattern: wc_sanitize_tooltip(...)
+      # Give
+      - pattern: give_clean(...)
+      # JSON encode (output as JSON, not HTML)
+      - pattern: wp_json_encode(...)
+      - pattern: json_encode(...)
+
+  - id: wp-xss-add-query-arg
+    languages: [php]
+    severity: WARNING
+    message: >-
+      Reflected XSS via add_query_arg()/remove_query_arg(): These functions use
+      REQUEST_URI by default. Must wrap in esc_url() when output to HTML.
+    patterns:
+      - pattern-either:
+          - pattern: echo add_query_arg(...);
+          - pattern: echo remove_query_arg(...);
+          - pattern: print(add_query_arg(...));
+          - pattern: print(remove_query_arg(...));
+    metadata:
+      cwe: ["CWE-79"]
+      category: security
+      technology: [wordpress]
+      confidence: HIGH
+      impact: MEDIUM
+
+  - id: wp-xss-stored-option-meta
+    mode: taint
+    languages: [php]
+    severity: WARNING
+    message: >-
+      Stored XSS: Database-stored value echoed without escaping. If the stored value
+      originates from user input, this is exploitable Stored XSS.
+    metadata:
+      cwe: ["CWE-79"]
+      category: security
+      technology: [wordpress]
+      confidence: LOW
+      likelihood: MEDIUM
+      impact: MEDIUM
+
+    pattern-sources:
+      - pattern: get_option(...)
+      - pattern: get_post_meta(...)
+      - pattern: get_user_meta(...)
+      - pattern: get_transient(...)
+      - pattern: get_site_option(...)
+      - pattern: get_site_transient(...)
+
+    pattern-sinks:
+      - pattern: echo $EXPR;
+      - pattern: print($EXPR);
+      - pattern: printf(...);
+
+    pattern-sanitizers:
+      - pattern: esc_html(...)
+      - pattern: esc_attr(...)
+      - pattern: esc_url(...)
+      - pattern: esc_js(...)
+      - pattern: esc_textarea(...)
+      - pattern: wp_kses(...)
+      - pattern: wp_kses_post(...)
+      - pattern: wp_kses_data(...)
+      - pattern: wp_strip_all_tags(...)
+      - pattern: sanitize_text_field(...)
+      - pattern: absint(...)
+      - pattern: intval(...)
+      - pattern: (int)$X
+      - pattern: (float)$X
+      - pattern: wp_json_encode(...)
+      - pattern: json_encode(...)
+      - pattern: wc_clean(...)
+      - pattern: give_clean(...)

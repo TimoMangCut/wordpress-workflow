@@ -1,0 +1,34 @@
+==== PHASE 1: suretriggers ====
+--- [1/4] Surface Map ---
+[+] Surface map: /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase1/suretriggers-surface.txt
+--- [2/4] Semgrep ---
+[*] Semgrep Pro: suretriggers
+[+] 298 findings
+    wp-type-juggling-loose-comparison: 242
+    wp-type-juggling-in-array-no-strict: 36
+    wp-xss-echo-no-escape: 11
+    wp-nonce-check-ajax-referer-no-die: 3
+    wp-bac-rest-return-true: 2
+--- [3/4] Psalm Taint ---
+  Psalm taint analysis: suretriggers
+  [!] Primary Psalm failed, retrying fallback config (wp-plugin-disabled)
+  [!] Psalm fallback failed (exit 1). See: /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/logs/suretriggers-psalm.err
+--- [4/4] IR Extract + Rules ---
+[*] Extracting IR: suretriggers
+    Entry points: 24
+    Guards: 10
+    Sources: 233
+    Sinks: 5846
+    Time: 2555ms
+    Anomalies: 7
+      [high] rule_01: Missing nonce check in ajax_priv handler 'wp_ajax_suretriggers_save_settings'
+      [high] rule_02: Missing current_user_can() in ajax_priv handler 'wp_ajax_suretriggers_rating_clicked' with admin-level operations
+      [medium] rule_03: Flawed nonce check: guard at line 59 after side-effect at line 57
+      [medium] rule_05: Shortcode/block 'st_trigger_button' has attribute sources + output sinks — verify escaping
+      [high] rule_07: REST route '?connection/create-wp-connection' has permission_callback = __return_true — publicly accessible
+      [high] rule_07: REST route '?api-test' has permission_callback = __return_true — publicly accessible
+      [high] rule_10: Handler 'wp_ajax_nopriv_suretriggers_save_settings' missing nonce + capability — 1 other ajax_nopriv handlers have them
+    Stored: 7 anomalies + 298 semgrep + 0 progpilot
+    Total: 2602ms | RAM: 288MB
+[+] Done: suretriggers
+==== DONE: suretriggers ====

@@ -1,0 +1,75 @@
+rules:
+  # =============================================================================
+  # ARBITRARY FILE READ - WordPress (v5 - Full REST API Sources)
+  # CWE-22: Path Traversal, CWE-200: Information Exposure
+  # =============================================================================
+
+  - id: wp-arbitrary-file-read
+    mode: taint
+    languages: [php]
+    severity: ERROR
+    message: >-
+      Arbitrary File Read: User input controls file path in read operation.
+      Can read wp-config.php, /etc/passwd, or other sensitive files.
+      Use basename() + directory containment or allowlist validation.
+    metadata:
+      cwe: ["CWE-22", "CWE-200"]
+      owasp: ["A01:2021 - Broken Access Control"]
+      category: security
+      technology: [wordpress]
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+
+    pattern-sources:
+      - pattern: $_GET
+      - pattern: $_POST
+      - pattern: $_REQUEST
+      - pattern: $_COOKIE
+      - pattern: $_GET[...]
+      - pattern: $_POST[...]
+      - pattern: $_REQUEST[...]
+      - pattern: $_COOKIE[...]
+      - pattern: $atts
+      - pattern: $atts[...]
+      - pattern: filter_input(...)
+      # REST API (ALL data UNSLASHED)
+      - pattern: $request->get_param(...)
+      - pattern: $request->get_params()
+      - pattern: $request->get_json_params()
+      - pattern: $request->get_body_params()
+      - pattern: $request->get_query_params()
+      - pattern: $request->get_url_params()
+      - pattern: $request[...]
+
+    pattern-propagators:
+      - pattern: json_decode($SRC, ...)
+        from: $SRC
+        to: return
+
+    pattern-sinks:
+      - pattern: file_get_contents($PATH, ...)
+      - pattern: file($PATH, ...)
+      - pattern: fopen($PATH, ...)
+      - pattern: readfile($PATH)
+      - pattern: fread($HANDLE, ...)
+      - pattern: fgets($HANDLE, ...)
+      - pattern: fgetcsv($HANDLE, ...)
+      - pattern: $wp_filesystem->get_contents($PATH)
+      - pattern: $wp_filesystem->get_contents_array($PATH)
+
+    pattern-sanitizers:
+      - pattern: basename(...)
+      - pattern: realpath(...)
+      - pattern: sanitize_file_name(...)
+      - pattern: wp_normalize_path(...)
+      - pattern: validate_file(...)
+      - pattern: absint(...)
+      - pattern: intval(...)
+      - pattern: (int)$X
+      - pattern: is_numeric(...)
+      - pattern: in_array(..., $WHITELIST, true)
+      - pattern: in_array(..., $WHITELIST, ...)
+      - pattern: array_key_exists(...)
+      - pattern: wc_clean(...)
+      - pattern: give_clean(...)

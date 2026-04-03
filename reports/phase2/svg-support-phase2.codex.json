@@ -1,0 +1,268 @@
+{
+  "plugin_slug": "svg-support",
+  "analysis_summary": {
+    "phase": "phase2",
+    "ir_entry_points_reviewed": 10,
+    "phase1_anomalies_reviewed": 10,
+    "focus": [
+      "Validated the Phase 1 admin_init anomalies against the real callback bodies and their write sinks.",
+      "Traced the featured-image save, REST meta, and AJAX toggle surfaces to determine whether any low-privileged actor can modify meaningful state.",
+      "Reviewed the SVG upload, REST upload, file read/write, remote fetch, and frontend inline-rendering paths for Patchstack-relevant XSS, SSRF, and arbitrary file operation impact."
+    ],
+    "result": "No Patchstack-eligible true positive was confirmed in SVG Support 2.5.14 after direct source validation.",
+    "key_observation": "The interesting surfaces are either fixed migration/helpers with no attacker-controlled input, or they stay inside normal WordPress post-edit and upload capability boundaries. The packaged plugin does expose several configuration footguns, but not a default low-privilege exploit path.",
+    "tooling_notes": [
+      "Phase 1 IR and Semgrep were used as signal sources only.",
+      "Psalm SARIF was unavailable (`{\"status\":\"error\",\"exit_code\":1}`)."
+    ]
+  },
+  "overall_risk": "none",
+  "total_findings_analyzed": 0,
+  "true_positives": 0,
+  "false_positives": 0,
+  "needs_review": 0,
+  "findings": [],
+  "negative_findings": [
+    {
+      "finding_id": "NEG-001",
+      "state": "REJECTED",
+      "verdict": "FP",
+      "title": "admin_init anomalies are fixed migrations or UI helpers, not request-driven privilege breaks",
+      "entry_point_ids": [
+        "ep_admin_init_admin_init"
+      ],
+      "evidence": [
+        {
+          "file_path": "plugins/svg-support/admin/admin-init.php",
+          "line_number": 84,
+          "note": "bodhi_svgs_register_settings() only calls register_setting() with a sanitize callback."
+        },
+        {
+          "file_path": "plugins/svg-support/admin/admin-init.php",
+          "line_number": 98,
+          "note": "bodhi_svgs_remove_old_sanitize_setting() reads the fixed bodhi_svgs_settings option and removes one legacy key before update_option()."
+        },
+        {
+          "file_path": "plugins/svg-support/functions/thumbnail-display.php",
+          "line_number": 9,
+          "note": "bodhi_svgs_display_thumbs() only installs output-buffer helpers for the media-library UI template."
+        },
+        {
+          "file_path": "plugins/svg-support/svg-support.php",
+          "line_number": 84,
+          "note": "bodhi_svgs_version_updates() compares a fixed version option and, on upgrade, runs a local cleanup helper."
+        },
+        {
+          "file_path": "plugins/svg-support/functions/meta-cleanup.php",
+          "line_number": 6,
+          "note": "The cleanup SQL uses only hard-coded meta_key = 'inline_featured_image'; no request input reaches the query."
+        }
+      ],
+      "reasoning": {
+        "hypothesis": "Missing nonce and capability checks on admin_init might let subscriber-level users force privileged option or database writes.",
+        "trace": "The reviewed admin_init callbacks register plugin settings, remove one obsolete array key from bodhi_svgs_settings, patch the media-library template output, or migrate duplicate inline_featured_image meta during a version bump.",
+        "defenses": "None of the reviewed callbacks read $_GET, $_POST, $_REQUEST, or any other user-controlled parameter before reaching update_option() or $wpdb->query(). The write targets are fixed plugin-owned keys and fixed SQL conditions.",
+        "refutation": "I did not find any attacker-controlled source flowing into these sinks. A low-privileged user can trigger admin_init, but they cannot influence the migrated values, the option key, or the SQL predicates. The resulting side effects are maintenance-only and do not cross a security boundary.",
+        "conclusion": "Rejected as a false positive. Phase 1 correctly noticed missing guards, but the reachable sinks are not request-driven and do not create measurable security impact."
+      },
+      "reopen_if": "Show a bundled request parameter or lower-privileged UI flow that lets an attacker influence the data written by these admin_init callbacks."
+    },
+    {
+      "finding_id": "NEG-002",
+      "state": "REJECTED",
+      "verdict": "FP",
+      "title": "Featured-image meta surfaces do not produce a practical low-privileged write primitive",
+      "entry_point_ids": [
+        "ep_admin_post_admin_post_thumbnail_html",
+        "ep_init_init",
+        "ep_ajax_priv_wp_ajax_bodhi_svgs_featured_image_inline_toggle",
+        "ep_ajax_nopriv_wp_ajax_nopriv_bodhi_svgs_featured_image_inline_toggle"
+      ],
+      "evidence": [
+        {
+          "file_path": "plugins/svg-support/functions/featured-image.php",
+          "line_number": 45,
+          "note": "Classic-editor save path verifies bodhi_svgs_featured_image_nonce before any meta write."
+        },
+        {
+          "file_path": "plugins/svg-support/functions/featured-image.php",
+          "line_number": 63,
+          "note": "Classic-editor save path also enforces current_user_can('edit_post', $post_id)."
+        },
+        {
+          "file_path": "plugins/svg-support/functions/featured-image.php",
+          "line_number": 82,
+          "note": "The registered meta is a boolean flag named inline_featured_image that is exposed to REST."
+        },
+        {
+          "file_path": "plugins/svg-support/js/gutenberg-filters.js",
+          "line_number": 36,
+          "note": "The shipped block-editor UI updates inline_featured_image through core/editor.editPost({ meta }), not through the custom AJAX action."
+        },
+        {
+          "file_path": "plugins/svg-support/functions/featured-image.php",
+          "line_number": 134,
+          "note": "The custom AJAX handler requires wp_verify_nonce(..., 'svg-support-featured') and then current_user_can('edit_posts') before add_post_meta()."
+        },
+        {
+          "file_path": "plugins/svg-support/functions/featured-image.php",
+          "line_number": 159,
+          "note": "Both logged-in and nopriv AJAX hooks point to the same handler."
+        },
+        {
+          "file_path": "plugins/svg-support/functions/featured-image.php",
+          "line_number": 160,
+          "note": "Repo-wide search found the svg-support-featured nonce string only in this handler; no bundled wp_create_nonce() or client caller was found."
+        }
+      ],
+      "reasoning": {
+        "hypothesis": "The nopriv AJAX registration and the weak current_user_can('edit_posts') check could let low-privileged or unauthenticated users toggle inline_featured_image for arbitrary posts.",
+        "trace": "The real storage key is inline_featured_image. In the classic editor, it is written through save_post only after a post-specific nonce and current_user_can('edit_post', $post_id). In Gutenberg, the packaged UI edits the same boolean meta through the normal post-save flow. The custom AJAX route exists, but it first requires a svg-support-featured nonce, then requires current_user_can('edit_posts'), and only writes the same boolean flag via bodhi_svgs_update_featured_image_meta().",
+        "defenses": "The nopriv hook still fails current_user_can('edit_posts') for user 0. The packaged plugin does not mint or localize the svg-support-featured nonce anywhere else, so I did not find a working caller for the custom AJAX route. The affected storage key only toggles whether a featured SVG is rendered inline.",
+        "refutation": "I found no bundled source for a valid svg-support-featured nonce, and no shipped JavaScript calls the AJAX action. Even if an editor-level user could somehow reach the sink, the only writable state is the inline_featured_image boolean, which does not grant privileges, disclose data, or control an attacker-chosen option key.",
+        "conclusion": "Rejected as a false positive. The noisy AJAX registration and permissive auth_callback do not become a Patchstack-relevant exploit path in the packaged plugin."
+      },
+      "reopen_if": "Show a bundled low-privileged surface that emits a valid svg-support-featured nonce, or demonstrate that writing inline_featured_image for another post yields a concrete security impact beyond presentation changes."
+    },
+    {
+      "finding_id": "NEG-003",
+      "state": "REJECTED",
+      "verdict": "FP",
+      "title": "SVG upload and REST upload paths did not yield a low-privilege sanitization bypass or arbitrary file write",
+      "entry_point_ids": [
+        "wp_handle_upload_prefilter",
+        "rest_pre_upload_file",
+        "rest_insert_attachment"
+      ],
+      "evidence": [
+        {
+          "file_path": "plugins/svg-support/functions/mime-types.php",
+          "line_number": 15,
+          "note": "SVG MIME support is only added when the current user's role is in the configured allowlist and current_user_can('upload_files') succeeds."
+        },
+        {
+          "file_path": "plugins/svg-support/functions/attachment.php",
+          "line_number": 309,
+          "note": "bodhi_svgs_sanitize_svg() validates extension, MIME, and SVG structure before any write-back."
+        },
+        {
+          "file_path": "plugins/svg-support/functions/attachment.php",
+          "line_number": 351,
+          "note": "Non-REST uploads also require a valid media-form nonce."
+        },
+        {
+          "file_path": "plugins/svg-support/functions/attachment.php",
+          "line_number": 371,
+          "note": "The prefilter sanitizes the temporary upload unless the current role is explicitly configured to bypass sanitization."
+        },
+        {
+          "file_path": "plugins/svg-support/functions/attachment.php",
+          "line_number": 210,
+          "note": "bodhi_svgs_sanitize() constrains tags and attributes, removes remote references, and writes the sanitized SVG back to the same temp file."
+        },
+        {
+          "file_path": "plugins/svg-support/functions/attachment.php",
+          "line_number": 498,
+          "note": "REST uploads get an additional rest_pre_upload_file sanitization pass."
+        },
+        {
+          "file_path": "plugins/svg-support/functions/attachment.php",
+          "line_number": 527,
+          "note": "rest_insert_attachment() can re-sanitize the stored SVG file after insertion for the same REST path."
+        }
+      ],
+      "reasoning": {
+        "hypothesis": "A subscriber or other low-privileged actor may be able to upload an unsanitized SVG or steer the file_get_contents()/file_put_contents() calls in attachment.php toward arbitrary files.",
+        "trace": "Before WordPress accepts an SVG upload, the plugin must first add SVG to the caller's allowed MIME types, which only happens for configured roles that also have upload_files. The prefilter then validates MIME and content, rejects malformed SVGs, and sanitizes the current temporary upload file. REST uploads take the same upload path and also hit rest_pre_upload_file() and, later, rest_insert_attachment().",
+        "defenses": "Role allowlist, current_user_can('upload_files'), MIME/content validation, enshrined/svg-sanitize allowlists, removeRemoteReferences(true), and repeated REST-specific sanitization passes all sit before or around the write sinks.",
+        "refutation": "I did not find a source-to-sink path from subscriber or unauthenticated input to file_put_contents() outside the current upload temp file already under WordPress's upload transaction. The strict content-type check in rest_insert_attachment() is not a practical bypass because wp_handle_upload_prefilter() already sanitizes .svg uploads earlier in the same flow.",
+        "conclusion": "Rejected as a false positive. The file read/write sinks in attachment.php stay inside the expected WordPress upload boundary and do not form a low-privilege arbitrary write or stored-XSS primitive in the packaged plugin."
+      },
+      "reopen_if": "Show a bundled low-privileged role that can upload SVGs without passing through bodhi_svgs_sanitize_svg(), or a path that redirects the read/write sinks away from the current upload temp file."
+    },
+    {
+      "finding_id": "NEG-004",
+      "state": "REJECTED",
+      "verdict": "FP",
+      "title": "Remote fetch and XML parsing in attachment metadata are not a practical SSRF or XXE sink here",
+      "evidence": [
+        {
+          "file_path": "plugins/svg-support/functions/attachment.php",
+          "line_number": 23,
+          "note": "wp_prepare_attachment_for_js only falls back to a URL when get_attached_file() no longer resolves to a local path for an existing attachment."
+        },
+        {
+          "file_path": "plugins/svg-support/functions/attachment.php",
+          "line_number": 62,
+          "note": "bodhi_svgs_get_dimensions() calls wp_remote_get() only when it is handed a URL, otherwise it reads the local attachment file."
+        },
+        {
+          "file_path": "plugins/svg-support/functions/attachment.php",
+          "line_number": 88,
+          "note": "simplexml_load_string() is called without LIBXML_NOENT, LIBXML_DTDLOAD, or other entity-expansion flags."
+        },
+        {
+          "file_path": "plugins/svg-support/functions/attachment.php",
+          "line_number": 120,
+          "note": "Metadata generation passes get_attached_file($attachment_id) back into bodhi_svgs_get_dimensions()."
+        }
+      ],
+      "reasoning": {
+        "hypothesis": "The remote wp_remote_get() and simplexml_load_string() calls might let a low-privileged user trigger SSRF or XXE through a crafted SVG or attachment URL.",
+        "trace": "The reviewed call sites derive their input from existing WordPress attachment data: either get_attached_file($attachment->ID) or the already-stored attachment response URL when the local file is missing. The packaged plugin's upload flow stores local uploads and does not expose a route for lower-privileged users to create arbitrary external attachment URLs.",
+        "defenses": "No bundled source lets a lower-privileged user choose the URL passed into wp_remote_get(). The XML parser is invoked without entity-expansion flags, and a local PHP 8.5 CLI check with external file and HTTP entities returned empty text rather than resolving the entity in this environment.",
+        "refutation": "I found no packaged low-privilege entry point that can set an arbitrary remote attachment URL or a controlled filesystem path before these sinks execute. I also could not reproduce default external-entity expansion in the local environment.",
+        "conclusion": "Rejected as a false positive for this plugin package. The code is worth hardening, but I do not have a source-to-sink exploit path with practical low-privileged impact."
+      },
+      "reopen_if": "Show a bundled path that lets a low-privileged user set an attachment URL to an attacker-controlled remote host, or reproduce entity expansion on a supported PHP/WordPress target without additional libxml flags."
+    }
+  ],
+  "out_of_scope": [
+    {
+      "finding_id": "OOS-001",
+      "state": "RISK_NOTE",
+      "verdict": "OUT_OF_SCOPE",
+      "title": "Admin-configurable unsanitized SVG modes can reintroduce XSS risk in downstream deployments",
+      "vuln_type": "Unsafe Configuration / Stored XSS Footgun",
+      "cwe_id": "CWE-16",
+      "severity": "low",
+      "auth_required": "administrator to weaken the default configuration; lower-role exploitability depends on that change",
+      "confidence": "high",
+      "file_path": "plugins/svg-support/admin/svgs-settings-page.php",
+      "line_number": 90,
+      "evidence": [
+        {
+          "file_path": "plugins/svg-support/svg-support.php",
+          "line_number": 114,
+          "note": "The plugin defaults to sanitize_svg_front_end = on, restrict = ['administrator'], and sanitize_on_upload_roles = []."
+        },
+        {
+          "file_path": "plugins/svg-support/admin/svgs-settings-page.php",
+          "line_number": 90,
+          "note": "The settings page lets administrators widen SVG upload eligibility, exempt chosen roles from sanitization, and disable front-end sanitization."
+        },
+        {
+          "file_path": "plugins/svg-support/functions/attachment.php",
+          "line_number": 359,
+          "note": "Uploads bypass sanitization when the current role intersects sanitize_on_upload_roles."
+        },
+        {
+          "file_path": "plugins/svg-support/functions/enqueue.php",
+          "line_number": 82,
+          "note": "DOMPurify is only enqueued when sanitize_svg_front_end is on and advanced mode is enabled."
+        },
+        {
+          "file_path": "plugins/svg-support/js/svgs-inline.js",
+          "line_number": 64,
+          "note": "When frontSanitizationEnabled is off, the inline renderer replaces the IMG tag with raw fetched SVG markup."
+        }
+      ],
+      "reasoning": "This is not a packaged vulnerability because the default posture is defensive and any weaker behavior requires an administrator to deliberately loosen the role and sanitization settings. If a site owner both grants SVG upload capability to weaker roles and disables or bypasses sanitization, inline rendering can become an XSS footgun. That is a deployment choice rather than a default low-privilege exploit path in the shipped plugin.",
+      "patchstack_eligible": false
+    }
+  ],
+  "postprocess": {
+    "version": "v2-evidence-bind",
+    "downgraded_tp_to_review": 0
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "session": 1,
+  "date": "2026-04-03",
+  "status": "COMPLETED",
+  "gaps_addressed": ["IR-01", "IR-06", "IR-09"],
+  "files_modified": [
+    {
+      "file": "tools/src/Extractor/Visitors/EntryPointVisitor.php",
+      "functions_changed": ["handleHook()", "classifyExpression()", "getUnresolvedHooks()", "reset()"],
+      "lines_affected": "new property $unresolvedHooks; lines 93-150 (handleHook rewrite); +classifyExpression +getUnresolvedHooks +SECURITY_SENSITIVE_FILTERS constant",
+      "behavior_before": "handleHook() silently dropped dynamic hook names (null return). No filter_upload/filter_capability/filter_auth/filter_output/filter_mail entry points generated.",
+      "behavior_after": "Dynamic hooks captured into unresolvedHooks[] with hook_arg_type classification. SECURITY_SENSITIVE_FILTERS (upload_mimes, user_has_cap, authenticate, the_content, comment_text, wp_mail) now produce typed entry points via add_filter()."
+    },
+    {
+      "file": "tools/src/Extractor/IRBuilder.php",
+      "functions_changed": ["build()"],
+      "lines_affected": "allUnresolvedHooks variable + collect from getUnresolvedHooks(); IR assembly adds unresolved_hooks key; Phase4 SourceSinkVisitor init with isFileLevel=true",
+      "behavior_before": "IR JSON had no unresolved_hooks key. Phase4 SourceSinkVisitor used default constructor (isFileLevel=false), generating output_return false positives.",
+      "behavior_after": "IR JSON includes unresolved_hooks[] (merged across all files). Phase4 passes isFileLevel=true, suppressing output_return from file-level scan."
+    },
+    {
+      "file": "tools/src/Extractor/Visitors/SourceSinkVisitor.php",
+      "functions_changed": ["__construct()", "enterNode()"],
+      "lines_affected": "Property $isFileLevel added; constructor param bool $isFileLevel=false; output_return detection guarded by !$isFileLevel",
+      "behavior_before": "output_return sinks always captured, including from Phase4 file-level scan (false positives).",
+      "behavior_after": "output_return only captured when isFileLevel=false (Phase3 callback-scoped). Phase4 produces 0 output_return sinks."
+    },
+    {
+      "file": "tools/config/phase2-prompt-template.md",
+      "functions_changed": ["Task section"],
+      "lines_affected": "Added step 6: Unresolved Hooks instruction",
+      "behavior_before": "LLM had no instruction to inspect ir.unresolved_hooks[].",
+      "behavior_after": "LLM instructed to check unresolved_hooks[], attempt to trace dynamic hook names from source context, and note dynamic_hook_unresolved in negative_findings if unresolvable."
+    }
+  ],
+  "downstream_updated": [
+    "tools/config/phase2-prompt-template.md"
+  ],
+  "deviations_from_spec": [
+    "Spec showed $hookName === null check at approx line 94 — actual code confirmed at line 94. No deviation.",
+    "AUTH_LEVELS missing 'ajax_nopriv' key discovered during edit (edit accidentally removed it in intermediate step). Restored immediately. Logged as discovered_issues below."
+  ],
+  "test_command": "php -d memory_limit=512M tools/bin/extract.php plugins/hostinger-reach/ --json",
+  "test_result": "PASS: unresolved_hooks present (8 entries, types: concatenation/other), output_return Phase4 count=0 (all 14 output_return have entry_point_id from Phase3), filter EPs detected correctly (upload_mimes/user_has_cap/authenticate in unit test), ajax_nopriv auth=none correct",
+  "discovered_issues": [
+    {
+      "id": "EDIT-SIDE-EFFECT-01",
+      "description": "AUTH_LEVELS constant lost 'ajax_nopriv' key during intermediate edit step. Caught immediately by unit test warning. Restored before commit. No impact on final code.",
+      "severity": "low",
+      "action": "Fixed in same session — no separate session needed."
+    }
+  ],
+  "next_session": "session_2",
+  "notes": "E3 (one fix, one verify) followed: each gap tested before proceeding. E4 not applicable (no bool/null logic). E2 downstream (phase2-prompt-template.md) completed in session."
+}

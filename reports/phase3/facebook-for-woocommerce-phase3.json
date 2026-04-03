@@ -1,0 +1,23 @@
+{
+  "plugin_slug": "facebook-for-woocommerce",
+  "phase1_summary": {
+    "entry_points": 76,
+    "anomalies": 4,
+    "sources": 199,
+    "sinks": 1999
+  },
+  "phase2_summary": {
+    "total": 0,
+    "tp": 0,
+    "fp": 0,
+    "review": 0
+  },
+  "phase3_summary": {
+    "confirmed": 0,
+    "plausible": 0,
+    "uncertain": 0,
+    "likely_hallucination": 0
+  },
+  "validated_findings": [],
+  "actionable_findings": []
+}

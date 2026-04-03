@@ -1,0 +1,517 @@
+=== SURFACE MAP: backwpup ===
+Generated: 2026-04-03T01:37:56+07:00
+
+--- ENTRY POINTS ---
+[REST routes]
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Frontend/API/Rest.php:50:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/StorageProviders/Frontend/API/Rest.php:50:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/StorageProviders/API/Rest.php:82:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/StorageProviders/API/Rest.php:92:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/StorageProviders/API/Rest.php:102:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/StorageProviders/API/Rest.php:112:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/StorageProviders/API/Rest.php:122:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Admin/Messages/API/Rest.php:30:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Admin/Chatbot/API/ChatbotRest.php:50:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/Frontend/API/Rest.php:48:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:97:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:132:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:158:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:177:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:196:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:206:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:216:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:289:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:331:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:346:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Backups/History/Frontend/API/Rest.php:57:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Backups/History/Frontend/API/Rest.php:83:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Backups/API/Rest.php:94:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Backups/API/Rest.php:122:		register_rest_route(
+[AJAX handlers]
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-admin.php:282:			'wp_ajax_backwpup_debug_info',
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-admin.php:293:		add_action( 'wp_ajax_backwpup_working', [ \BackWPup_Page_Jobs::class, 'ajax_working' ] );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-admin.php:294:		add_action( 'wp_ajax_backwpup_cron_text', [ \BackWPup_Page_Editjob::class, 'ajax_cron_text' ] );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-admin.php:295:		add_action( 'wp_ajax_backwpup_view_log', [ \BackWPup_Page_Logs::class, 'ajax_view_log' ] );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-admin.php:296:		add_action( 'wp_ajax_download_backup_file', [ \BackWPup_Destination_Downloader::class, 'download_by_ajax' ] );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-admin.php:299:			add_action( 'wp_ajax_backwpup_jobtype_' . strtolower( $id ), [ $jobtypeclass, 'edit_ajax' ] );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-admin.php:304:					'wp_ajax_backwpup_dest_' . strtolower( $id ),
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-admin.php:324:		add_action( 'wp_ajax_encrypt_key_handler', [ $ajax_encryption_key_handler, 'handle' ] );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-restore-shared/src/AjaxHandler.php:125:            add_action(sprintf('wp_ajax_%s', $hook), function (): void {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Admin/Rating/RatingSubscriber.php:111:			'wp_ajax_backwpup_rating_notice_leave_review' => 'leave_review',
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Admin/Notices/Subscriber.php:50:			'wp_ajax_backwpup_dismiss_notice'    => 'backwpup_dismiss_notices',
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Tracking/Subscriber.php:45:			'wp_ajax_backwpup_notice_optin'                => 'notice_optin_callback',
+[Admin POST]
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-admin.php:1175:		add_action( 'admin_post_backwpup', [ $this, 'save_post_form' ] );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-admin.php:1177:		add_action( 'admin_post_backwpup_support', [ \BackWPup_Pro_Page_Support::class, 'save_post_form' ] );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/Notice/DismissibleNoticeOption.php:112:				'admin_post_' . self::FOR_GOOD_ACTION,
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/Notice/DismissibleNoticeOption.php:118:				'admin_post_' . self::FOR_NOW_ACTION,
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/Notice/DismissibleNoticeOption.php:124:				'admin_post_' . self::FOR_USER_FOR_GOOD_ACTION,
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Admin/Rating/RatingSubscriber.php:109:			'admin_post_backwpup_rating_notice_dismiss'   => 'dismiss',
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Admin/Rating/RatingSubscriber.php:110:			'admin_post_backwpup_rating_notice_remind'    => 'remind',
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Admin/Notices/Subscriber.php:51:			'admin_post_backwpup_dismiss_notice' => 'backwpup_dismiss_notices',
+[Shortcodes + Blocks]
+
+--- SECURITY GUARDS ---
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-adminbar.php:57:		if ( file_exists( BackWPup::get_plugin_data( 'running_file' ) ) && current_user_can( 'backwpup_jobs_start' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-adminbar.php:62:		if ( current_user_can( 'backwpup' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-adminbar.php:73:		if ( file_exists( BackWPup::get_plugin_data( 'running_file' ) ) && current_user_can( 'backwpup_jobs_start' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-adminbar.php:92:		if ( current_user_can( 'backwpup_logs' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-adminbar.php:103:		if ( current_user_can( 'backwpup_backups' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-jobs.php:68:		return current_user_can( 'backwpup' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-jobs.php:87:		if ( $nonce && wp_verify_nonce( $nonce, self::LIST_NONCE_ACTION ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-jobs.php:125:		if ( $nonce && wp_verify_nonce( $nonce, self::LIST_NONCE_ACTION ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-jobs.php:298:		if ( current_user_can( 'backwpup_jobs_edit' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-jobs.php:302:		if ( current_user_can( 'backwpup_jobs_start' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-jobs.php:306:		if ( current_user_can( 'backwpup_logs' ) && BackWPup_Option::get( $item, 'logfile' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-jobs.php:460:		if ( current_user_can( 'backwpup_backups_download' ) && ! empty( $download_url ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-jobs.php:469:		if ( current_user_can( 'backwpup_logs' ) && BackWPup_Option::get( $item, 'logfile' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-jobs.php:533:				if ( ! current_user_can( 'backwpup_jobs_edit' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-jobs.php:548:				if ( ! current_user_can( 'backwpup_jobs_edit' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-jobs.php:585:					if ( ! current_user_can( 'backwpup_jobs_start' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-jobs.php:687:				if ( ! current_user_can( 'backwpup_jobs_start' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-jobs.php:891:		if ( current_user_can( 'backwpup_jobs_start' ) && is_object( $job_object ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-jobs.php:1086:		$can_access = array_reduce( $allowed_caps, fn( $carry, $cap ) => $carry || current_user_can( $cap ), false );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-jobs.php:1103:		if ( ! check_ajax_referer( 'backwpupworking_ajax_nonce', '_ajax_nonce', false ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-jobs.php:1282:		if ( $nonce && wp_verify_nonce( $nonce, self::LIST_NONCE_ACTION ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-jobs.php:1317:		if ( $nonce && wp_verify_nonce( $nonce, self::LIST_NONCE_ACTION ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-jobs.php:1342:		if ( ! $nonce || ! wp_verify_nonce( $nonce, self::LIST_NONCE_ACTION ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-destination-rsc.php:432:			if ( ! current_user_can( 'backwpup_jobs_edit' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-destination-rsc.php:435:			check_ajax_referer( 'backwpup_ajax_nonce' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-admin.php:763:		if ( ! current_user_can( 'backwpup_restore' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-admin.php:851:		if ( ! current_user_can( 'backwpup' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-admin.php:997:		if ( ! is_super_admin() && ! current_user_can( 'backwpup_admin' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-admin.php:1063:		if ( ! is_super_admin() && ! current_user_can( 'backwpup_admin' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-admin.php:1072:		if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, 'backwpup_user_role' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-admin.php:1125:		if ( ! current_user_can( 'backwpup' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-destination-downloader.php:232:		if ( ! current_user_can( self::CAPABILITY ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-destination-msazure.php:483:			if ( ! current_user_can( 'backwpup_jobs_edit' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-destination-msazure.php:486:			check_ajax_referer( 'backwpup_ajax_nonce' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/Utils/BackWPupHelpers.php:176:				if ( current_user_can( 'backwpup_restore' ) && ! empty( $item['restoreurl'] ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/Utils/BackWPupHelpers.php:190:				} elseif ( current_user_can( 'backwpup_restore' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/Utils/BackWPupHelpers.php:198:				if ( current_user_can( 'backwpup_backups_delete' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-destination-s3.php:57:            if (!current_user_can('backwpup_jobs_edit')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-destination-s3.php:60:            check_ajax_referer('backwpup_ajax_nonce');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-destination-email.php:283:		if ( ! current_user_can( 'backwpup_jobs_edit' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-destination-email.php:287:		check_ajax_referer( 'backwpup_ajax_nonce' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/Notice/DismissibleNoticeOption.php:318:		if ( ! $capability || ! current_user_can( $capability ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/Notice/DismissibleNoticeOption.php:324:		if ( ! is_string( $nonce ) || ! wp_verify_nonce( $nonce, $action ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/Notice/Notice.php:100:		if ( ! current_user_can( static::CAPABILITY ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-backups.php:63:		return current_user_can( 'backwpup_backups' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-backups.php:121:		if ( $nonce && wp_verify_nonce( $nonce, self::LIST_NONCE_ACTION ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-backups.php:390:		if ( current_user_can( 'backwpup_backups_delete' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-backups.php:394:		if ( ! empty( $item['downloadurl'] ) && current_user_can( 'backwpup_backups_download' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-backups.php:425:		if ( current_user_can( 'backwpup_restore' ) && ! empty( $item['restoreurl'] ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-backups.php:505:				if ( ! current_user_can( 'backwpup_backups_delete' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-backups.php:561:					if ( ! current_user_can( 'backwpup_backups_download' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-backups.php:848:		if ( $nonce && wp_verify_nonce( $nonce, self::LIST_NONCE_ACTION ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-backups.php:873:		if ( ! $nonce || ! wp_verify_nonce( $nonce, self::LIST_NONCE_ACTION ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-settings.php:419:		if ( ! current_user_can( 'backwpup_settings' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-download-file.php:81:		if ( ! current_user_can( $this->capability ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-message-box.php:56:		if ( ! current_user_can( 'backwpup' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-message-box.php:131:		if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, $nonce_action ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-backwpup.php:24:			if ( ! current_user_can( 'backwpup_jobs_edit' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-backwpup.php:116:									if ( current_user_can( 'backwpup_jobs_edit' ) && current_user_can( 'backwpup_logs' ) && current_user_can( 'backwpup_jobs_start' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-backwpup.php:132:        if (current_user_can('backwpup_jobs_start')) {?>
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-backwpup.php:274:        if (!current_user_can('backwpup_jobs')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-backwpup.php:345:        if (!current_user_can('backwpup_logs')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-download-handler.php:75:		if ( ! current_user_can( $this->capability ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-logs.php:67:		return current_user_can( 'backwpup_logs' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-logs.php:255:		if ( current_user_can( 'backwpup_logs_delete' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-logs.php:340:				if ( ! current_user_can( 'backwpup_logs_delete' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-logs.php:516:		if ( ! current_user_can( 'backwpup_logs' ) || '' === $log || false === strpos( $log, 'backwpup_log_' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-logs.php:520:		check_ajax_referer( 'view-log_' . $log );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-editjob.php:45:		if ( ! current_user_can( 'backwpup_jobs_edit' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-editjob.php:986:			if ( ! current_user_can( 'backwpup_jobs_edit' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-page-editjob.php:989:			check_ajax_referer( 'backwpup_ajax_nonce' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/parts/backups/progress.php:11:if (current_user_can('backwpup_jobs_start') && is_object($job_object)) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-restore-shared/src/AjaxHandler.php:454:        return check_ajax_referer('backwpup_action_nonce', 'backwpup_action_nonce')
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-restore-shared/src/AjaxHandler.php:455:            && current_user_can('backwpup_restore');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/wp-media/wp-beta/src/Optin.php:38:		if ( ! current_user_can( $this->capability ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/wp-media/wp-mixpanel/src/Optin.php:38:		if ( ! current_user_can( $this->capability ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/wp-media/wp-mixpanel/src/TrackingPlugin.php:74:		if ( ! current_user_can( $event_capability ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/wp-media/wp-mixpanel/src/TrackingPlugin.php:138:		if ( ! current_user_can( $capability ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Beta/Subscriber.php:63:		if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( $_POST['_wpnonce'] ), 'backwpup_page' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Frontend/API/Rest.php:56:				'permission_callback' => [ $this, 'has_permission' ],
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Frontend/API/Rest.php:67:		return current_user_can( 'backwpup' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/StorageProviders/Frontend/API/Rest.php:56:				'permission_callback' => [ $this, 'has_permission' ],
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/StorageProviders/Frontend/API/Rest.php:67:		return current_user_can( 'backwpup' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/StorageProviders/API/Rest.php:88:				'permission_callback' => [ $this, 'has_permission' ],
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/StorageProviders/API/Rest.php:98:				'permission_callback' => [ $this, 'has_permission' ],
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/StorageProviders/API/Rest.php:108:				'permission_callback' => [ $this, 'has_permission' ],
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/StorageProviders/API/Rest.php:118:				'permission_callback' => [ $this, 'has_permission' ],
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/StorageProviders/API/Rest.php:128:				'permission_callback' => [ $this, 'has_permission' ],
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/StorageProviders/API/Rest.php:139:		return current_user_can( 'backwpup' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Admin/Messages/API/Rest.php:18:		return current_user_can( 'backwpup' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Admin/Messages/API/Rest.php:36:				'permission_callback' => [ $this, 'has_permission' ],
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Admin/Rating/RatingSubscriber.php:219:		check_ajax_referer( 'backwpup_rating_notice_leave_review' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Admin/Frontend/Subscriber.php:100:			if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'backwpup_redirect_nonce' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Admin/Chatbot/API/ChatbotRest.php:41:		return is_user_logged_in() && current_user_can( 'backwpup' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Admin/Chatbot/API/ChatbotRest.php:57:					'permission_callback' => [ $this, 'has_permission' ],
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Admin/Chatbot/API/ChatbotRest.php:62:					'permission_callback' => [ $this, 'has_context_token_permission' ],
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Admin/Notices/Notices.php:195:		if ( ! wp_verify_nonce( $args['_wpnonce'], "{$args['action']}_{$args['box']}" ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:2172:			if ( empty( $caps[ $method ] ) || ! current_user_can( $caps[ $method ] ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Tracking/Tracking.php:55:		if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( $_POST['_wpnonce'] ), 'backwpup_page' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Tracking/Tracking.php:359:		check_ajax_referer( 'backwpup_analytics_optin' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/Frontend/API/Rest.php:54:				'permission_callback' => [ $this, 'has_permission' ],
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/Frontend/API/Rest.php:65:		return current_user_can( 'backwpup' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:88:		return current_user_can( 'backwpup' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:103:				'permission_callback' => [ $this, 'has_permission' ],
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:138:				'permission_callback' => [ $this, 'has_permission' ],
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:164:				'permission_callback' => [ $this, 'has_permission' ],
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:183:				'permission_callback' => [ $this, 'has_permission' ],
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:202:				'permission_callback' => [ $this, 'has_permission' ],
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:212:				'permission_callback' => [ $this, 'has_permission' ],
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:222:				'permission_callback' => [ $this, 'has_permission' ],
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:295:				'permission_callback' => [ $this, 'has_permission' ],
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:337:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:338:					return current_user_can( 'backwpup_jobs_edit' ) || current_user_can( 'backwpup_settings' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:352:				'permission_callback' => [ $this, 'has_permission' ],
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Infrastructure/Restore/LogDownloader/View.php:14:use function current_user_can;
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Infrastructure/Restore/LogDownloader/View.php:97:        if (!current_user_can(self::$capability)) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Backups/History/Frontend/API/Rest.php:63:				'permission_callback' => [ $this, 'has_permission' ],
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Backups/History/Frontend/API/Rest.php:89:				'permission_callback' => [ $this, 'has_permission' ],
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Backups/History/Frontend/API/Rest.php:115:		return current_user_can( 'backwpup' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Backups/API/Rest.php:82:		return current_user_can( 'backwpup' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Backups/API/Rest.php:100:				'permission_callback' => [ $this, 'has_permission' ],
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Backups/API/Rest.php:128:				'permission_callback' => [ $this, 'has_permission' ],
+
+--- SINKS ---
+[SQL]
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-mysqldump.php:282:		$this->wpdb->query( $query );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-mysqldump.php:389:		$result = $this->wpdb->get_results( $sql, $output );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-mysqldump.php:436:		$mysqltimezone = $this->wpdb->get_var( 'SELECT @@time_zone' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-mysqldump.php:562:		$createtable = $this->wpdb->get_row( 'SHOW CREATE TABLE ' . $identifier, ARRAY_A );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-mysqldump.php:607:		$createview = $this->wpdb->get_row( 'SHOW CREATE VIEW ' . $identifier, ARRAY_A );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-mysqldump.php:1082:		$orgnames = (array) $this->wpdb->get_col_info( 'orgname' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-mysqldump.php:1083:		$types    = (array) $this->wpdb->get_col_info( 'type' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-mysqldump.php:1084:		$flags    = (array) $this->wpdb->get_col_info( 'flags' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-jobtype-wpexp.php:145:		global $wpdb, $wp_query;
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-jobtype-wpexp.php:182:					$post_ids = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- No WP API for raw export selection.
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-jobtype-wpexp.php:197:					$post_ids = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- No WP API for raw export selection.
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-jobtype-wpexp.php:395:						$posts = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- No WP API for raw export selection.
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-jobtype-wpexp.php:440:							$postmeta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->postmeta} WHERE post_id = %d", $post_item->ID ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- No WP API for raw postmeta export.
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-jobtype-wpexp.php:454:							$comments = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->comments} WHERE comment_post_ID = %d AND comment_approved <> 'spam'", $post_item->ID ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- No WP API for raw comment export.
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-jobtype-wpexp.php:475:								$c_meta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->commentmeta} WHERE comment_id = %d", $c->comment_ID ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- No WP API for raw commentmeta export.
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-jobtype-wpexp.php:777:			$results = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- No WP API for raw author export.
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-jobtype-dbdump.php:50:			$dbtables = $wpdb->get_results( 'SHOW TABLES', ARRAY_N ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- No WP API for SHOW TABLES.
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-jobtype-dbdump.php:90:						$tables = $wpdb->get_results( 'SHOW FULL TABLES', ARRAY_N ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- No WP API for SHOW FULL TABLES.
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-jobtype-dbdump.php:160:			$dbtables = $wpdb->get_results( 'SHOW TABLES', ARRAY_N ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- No WP API for SHOW TABLES.
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-jobtype-dbcheck.php:112:			$restables = $wpdb->get_results( 'SHOW FULL TABLES', ARRAY_N ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- No WP API for SHOW FULL TABLES.
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-jobtype-dbcheck.php:134:			$resstatus = $wpdb->get_results( 'SHOW TABLE STATUS', ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- No WP API for SHOW TABLE STATUS.
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-jobtype-dbcheck.php:170:				$check                = $wpdb->get_row( "CHECK TABLE `{$table_name}` MEDIUM", OBJECT ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Table name comes from SHOW TABLES.
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-jobtype-dbcheck.php:188:					$repair                = $wpdb->get_row( "REPAIR TABLE `{$table_name}` EXTENDED", OBJECT ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Table name comes from SHOW TABLES.
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/uninstall.php:41:		$wpdb->query( 'DELETE FROM ' . $wpdb->sitemeta . " WHERE meta_key LIKE '%backwpup_%' " );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/uninstall.php:44:		$wpdb->query( 'DELETE FROM ' . $wpdb->options . " WHERE option_name LIKE '%backwpup_%' " );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/uninstall.php:48:	$wpdb->query( 'DELETE FROM ' . $wpdb->usermeta . " WHERE meta_key LIKE '%backwpup_%' " );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/parts/sidebar/select-tables.php:33:$dbtables = $wpdb->get_results('SHOW TABLES', ARRAY_N);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Queries/Date.php:250:		$this->column        = $this->get_column( $date_query );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Queries/Date.php:286:			'column'        => $this->get_column(),
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Queries/Date.php:801:		$column        = $this->get_column( $query );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:477:		$possible_ins = $this->get_columns( array( 'in' => true ), 'and', 'name' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:484:		$possible_not_ins = $this->get_columns( array( 'not_in' => true ), 'and', 'name' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:491:		$possible_dates = $this->get_columns( array( 'date_query' => true ), 'and', 'name' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:632:				$this->found_items = (int) $this->get_db()->get_var( $found_items_query );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:740:		return array_flip( $this->get_columns( array(), 'and', 'name' ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:751:		return $this->get_column_field( array( 'primary' => true ), 'name', 'id' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:767:		$column = $this->get_column_by( $args );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:786:		$filter = $this->get_columns( $args );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:839:		$pattern = $this->get_column_field( array( 'name' => $column_name ), 'pattern', '%s' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:844:		$result  = $this->get_db()->get_row( $select );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:993:				? $this->get_db()->get_var( $this->request )
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:994:				: $this->get_db()->get_results( $this->request, ARRAY_A );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:1001:		$item_ids = $this->get_db()->get_col( $this->request );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:1034:			$possible_ins  = $this->get_columns( array( 'in'       => true ), 'and', 'name' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:1035:			$sortables     = $this->get_columns( array( 'sortable' => true ), 'and', 'name' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:1183:					$pattern   = $this->get_column_field( array( 'name' => $column->name ), 'pattern', '%s' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:1447:		$columns   = array_flip( $this->get_column_names() );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:1495:			$column      = $this->get_column_by( array( 'name' => $column_name ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:1506:			$sortables = $this->get_columns( array( 'sortable' => true ), 'and', 'name' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:1727:		$columns = $this->get_column_names();
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:1804:		$columns = $this->get_column_names();
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:1818:		$created = $this->get_column_by( array( 'created' => true ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:1824:		$modified = $this->get_column_by( array( 'modified' => true ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:1942:		$columns = $this->get_column_names();
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:1958:		$modified = $this->get_column_by( array( 'modified' => true ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:2106:			$column = $this->get_column_by( array( 'name' => $key ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:2169:			$caps = $this->get_column_field( array( 'name' => $key ), 'caps' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:2207:		$names    = $this->get_columns( array(), 'and', 'name'    );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:2208:		$defaults = $this->get_columns( array(), 'and', 'default' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:2235:		$columns = $this->get_columns( array( 'transition' => true ), 'and', 'name' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:2517:		$meta_ids = $this->get_db()->get_col( $prepared );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:2640:		$groups = $this->get_columns( array( 'cache_key' => true ), 'and', 'name' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:2707:			$results = $this->get_db()->get_results( $prepare );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:3050:		$column_names = $this->get_column_names();
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:3091:					$pattern   = $this->get_column_field( array( 'name' => $column ), 'pattern', '%s' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Query.php:3152:		$results = $this->get_db()->get_results( $query, $output );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Table.php:365:		$result   = $db->get_var( $prepared );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Table.php:390:		$result = $db->get_results( $query );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Dependencies/BerlinDB/Database/Table.php:593:		$result = $db->get_var( $query );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Cli/Commands/Status.php:74:		$message       = $this->get_colrefull_warning_errors( $job_object->warnings, $job_object->errors );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Cli/Commands/Status.php:95:		$message    = $this->get_colrefull_warning_errors( $log_header['warnings'], $log_header['errors'] );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Common/Database/Queries/AbstractQuery.php:37:		$result   = $db->get_var( $prepared );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Infrastructure/Restore/WpdbDatabaseType.php:70:			$this->wpdb->query($query); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Query is prepared above.
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Infrastructure/Restore/WpdbDatabaseType.php:97:        $result = $this->wpdb->query($query);
+[File ops]
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-mysqldump.php:103:				$this->handle = fopen( 'compress.zlib://' . $args['dumpfile'], 'ab' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-mysqldump.php:105:				$this->handle = fopen( $args['dumpfile'], 'ab' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-mysqldump.php:153:				'dumpfilehandle' => fopen( 'php://output', 'wb' ),
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-file.php:301:				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- Writing small protection files in-place.
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-file.php:302:				file_put_contents(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-file.php:315:				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- Writing small protection files in-place.
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-file.php:316:				file_put_contents(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-file.php:323:				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- Writing small protection files in-place.
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-file.php:324:				file_put_contents(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-file.php:330:				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- Writing small protection files in-place.
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-file.php:331:				file_put_contents(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-file.php:350:			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- Writing small marker file in-place.
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-file.php:351:			file_put_contents(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-destination-ftp-downloader.php:105:		$this->local_file_handler = fopen( $this->data->local_file_path(), 'wb' ); //phpcs:ignore
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-destination-msazure.php:232:			$file_handel = fopen( $job_object->backup_folder . $job_object->backup_file, 'rb' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-destination-folder-downloader.php:102:		$this->source_file_handler = @fopen( $file, 'rb' ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged, WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-destination-folder-downloader.php:145:			$this->local_file_handler = @fopen( $this->data->local_file_path(), 'wb' ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged, WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-jobtype-wpexp.php:240:      // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-jobtype-wpexp.php:241:			$written = file_put_contents( $job_object->steps_data[ $job_object->step_working ]['wpexportfile'], $header, FILE_APPEND );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-jobtype-wpexp.php:255:			$written = file_put_contents( $job_object->steps_data[ $job_object->step_working ]['wpexportfile'], $this->wxr_authors_list(), FILE_APPEND ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-jobtype-wpexp.php:286:				$written = file_put_contents( $job_object->steps_data[ $job_object->step_working ]['wpexportfile'], $cats_xml, FILE_APPEND ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-jobtype-wpexp.php:308:				$written = file_put_contents( $job_object->steps_data[ $job_object->step_working ]['wpexportfile'], $tags_xml, FILE_APPEND ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-jobtype-wpexp.php:348:				$written = file_put_contents( $job_object->steps_data[ $job_object->step_working ]['wpexportfile'], $terms_xml, FILE_APPEND ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-jobtype-wpexp.php:368:			$written   = file_put_contents( $job_object->steps_data[ $job_object->step_working ]['wpexportfile'], $menu_xml, FILE_APPEND ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-jobtype-wpexp.php:488:					$written = file_put_contents( $job_object->steps_data[ $job_object->step_working ]['wpexportfile'], $wxr_post, FILE_APPEND ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-jobtype-wpexp.php:497:			$written = file_put_contents( $job_object->steps_data[ $job_object->step_working ]['wpexportfile'], "</channel>\n</rss>", FILE_APPEND ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-destination-sugarsync-api.php:471:		$data_file_fd = fopen( $file, 'rb' ); //phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-destination-s3.php:526:                if (!$up_file_handle = fopen($job_object->backup_folder . $job_object->backup_file, 'rb')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-destination-s3.php:568:                if (!($file_handle = fopen(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-destination-dropbox-downloader.php:110:		$this->local_file_handler = fopen( $this->data->local_file_path(), 0 === $start_byte ? 'wb' : 'ab' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-destination-dropbox-api.php:217:		$file_handle = fopen( $file, 'rb' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-destination-sugarsync-downloader.php:104:		$this->local_file_handler = fopen( $this->data->local_file_path(), 0 === $start_byte ? 'wb' : 'ab' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-jobtype-wpplugin.php:123:			$handle = fopen( 'compress.zlib://' . BackWPup::get_plugin_data( 'TEMP' ) . $job_object->temp['pluginlistfile'], 'w' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-jobtype-wpplugin.php:125:			$handle = fopen( BackWPup::get_plugin_data( 'TEMP' ) . $job_object->temp['pluginlistfile'], 'w' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-create-archive.php:114:			$this->filehandler = $this->fopen( $this->file, 'ab' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-create-archive.php:120:			$this->filehandler = $this->fopen( $this->file, 'ab' ); // phpcs:ignore
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-create-archive.php:181:			$this->filehandler = $this->fopen( $this->file, 'w' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-create-archive.php:326:				$fd = $this->fopen( $file_name, 'rb' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-create-archive.php:635:			$fd = fopen( $file_name, 'rb' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-create-archive.php:899:	private function fopen( $filename, $mode ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-create-archive.php:900:		$fd = fopen( $filename, $mode ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-destination-rsc-downloader.php:118:		$this->local_handle = fopen( $this->data->local_file_path(), $mode ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-destination-s3-downloader.php:117:		$this->local_handle = fopen( $this->data->local_file_path(), 0 === $start_byte ? 'wb' : 'ab' ); //phpcs:ignore
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-job.php:869:			@unlink( BackWPup::get_plugin_data( 'TEMP' ) . $name ); //phpcs:ignore
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-job.php:1141:				$fd = fopen( $this->logfile, 'r+' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-job.php:1418:					@unlink( $log_file->getPathname() ); // phpcs:ignore
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-job.php:1480:			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-job.php:1481:			$fd = fopen( $this->logfile, 'r+' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-job.php:1653:						@unlink( $file->getPathname() ); // phpcs:ignore
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-job.php:1916:				@unlink( $running_file ); //phpcs:ignore
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-job.php:2138:			@unlink( $this->backup_folder . $this->backup_file ); //phpcs:ignore
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-job.php:2345:				@unlink( $this->steps_data[ $this->step_working ]['encrypted_filename'] ); //phpcs:ignore
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-job.php:2448:		if ( ! @unlink( $this->backup_folder . $this->backup_file ) ) { //phpcs:ignore
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-destination-msazure-downloader.php:106:		$this->local_file_handler = fopen( // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/inc/class-destination-ftp.php:195:				$fp = fopen( $job_object->backup_folder . $job_object->backup_file, 'rb' ); //phpcs:ignore
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/parts/backups/progress.php:13:    $logfiledata = file_get_contents($job_object->logfile);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-restore-shared/src/AjaxHandler.php:346:        file_put_contents($this->logFilePath, '', LOCK_EX); // phpcs:ignore
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-restore-shared/src/Api/Module/Database/SqlFileImport.php:170:            $content = file_get_contents($this->get_file_path($file), false, null, 0, 1024 * 1024) ?: '';
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-restore-shared/src/Api/Module/Database/SqlFileImport.php:265:        $handle = fopen($filename, 'r');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-restore-shared/src/Api/Module/Database/SqlFileImport.php:299:        $handle = fopen($filePath, 'r');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-restore-shared/src/Api/Module/Registry.php:122:            $data = file_get_contents($this->filePath) ?: '';
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-restore-shared/src/Api/Module/Registry.php:139:        $handle = fopen($this->filePath, 'a+');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-restore-shared/src/Api/Module/Registry.php:162:        if (file_put_contents($this->filePath, $data, LOCK_EX) === false) { // phpcs:ignore
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-restore-shared/src/Api/Module/Manifest/ManifestFile.php:46:        $manifest = json_decode(file_get_contents($file) ?: '');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-restore-shared/src/Api/Module/Manifest/ManifestFile.php:112:        $content = file_get_contents($file, false, null, 0, 1000) ?: ''; // phpcs:ignore
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-restore-shared/src/Api/Module/Decompress/Decompressor.php:229:            unlink($file->getRealPath()); // phpcs:ignore
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-restore-shared/src/Api/Module/Decompress/Decompressor.php:461:            && !unlink($this->registry->extract_folder)
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-restore-shared/src/Api/Module/Decryption/Decrypter.php:56:        $handle = @fopen($backupFile, 'r');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-restore-shared/src/Api/Module/Decryption/Decrypter.php:99:        $sourceHandle = fopen($backupFile, 'r');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-restore-shared/src/Api/Module/Decryption/Decrypter.php:113:            unlink($decryptedFilePath);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-restore-shared/src/Api/Module/Decryption/Decrypter.php:116:        $targetHandle = fopen($decryptedFilePath, 'a+');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-restore-shared/src/Api/Module/Decryption/Decrypter.php:134:        unlink($backupFile);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-restore-shared/src/Api/Module/Restore/RestoreFiles.php:196:        $config = file_get_contents($configPath) ?: '';
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-restore-shared/src/Api/Module/Restore/RestoreFiles.php:222:        file_put_contents($configPath, $config);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-restore-shared/src/Api/Module/Restore/RestoreFiles.php:391:                        unlink($src_file);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-restore-shared/src/Api/Module/Upload/BackupUpload.php:115:        $in = @fopen($tmp_file_name, 'r');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-restore-shared/src/Api/Module/Upload/BackupUpload.php:129:        @unlink($tmp_file_name);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-restore-shared/src/Api/Module/Upload/BackupUpload.php:179:        return fopen("{$file_path}.part", $this->get_current_chunk() === 0 ? 'wb' : 'ab');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-restore-shared/src/Api/Module/Upload/BackupUpload.php:197:                unlink($this->upload_folder);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:99://  -11 : Unable to delete file (unlink)
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:1118:            if (($this->zip_fd = @fopen($this->zipname, 'rb')) == 0)
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:2208:        if (($v_zip_temp_fd = @fopen($v_zip_temp_name, 'wb')) == 0)
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:2243:            @unlink($v_zip_temp_name);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:2271:                    @unlink($v_zip_temp_name);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:2326:        @unlink($this->zipname);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:2358:        if (($this->zip_fd = @fopen($this->zipname, $p_mode)) == 0)
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:2671:                    if (($v_file = @fopen($p_filename, "rb")) == 0) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:2810:        if (($v_file = @fopen($p_filename, "rb")) == 0) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:2844:        if (($v_file_compressed = @fopen($v_gzip_temp_name, "rb")) == 0) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:2876:        if (($v_file_compressed = @fopen($v_gzip_temp_name, "rb")) == 0)
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:2898:        @unlink($v_gzip_temp_name);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:3160:        if (($this->zip_fd = @fopen($this->zipname, 'rb')) == 0)
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:3829:                    if (($v_dest_file = @fopen($p_entry['filename'], 'wb')) == 0)
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:3902:                        if (($v_dest_file = @fopen($p_entry['filename'], 'wb')) == 0) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:3973:        if (($v_dest_file = @fopen($v_gzip_temp_name, "wb")) == 0) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:4003:        if (($v_dest_file = @fopen($p_entry['filename'], 'wb')) == 0) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:4030:        @unlink($v_gzip_temp_name);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:4850:                    @unlink($v_zip_temp_name);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:4865:                    @unlink($v_zip_temp_name);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:4883:                    @unlink($v_zip_temp_name);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:4894:                    @unlink($v_zip_temp_name);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:4910:                    @unlink($v_zip_temp_name);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:4936:                @unlink($v_zip_temp_name);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:4948:            @unlink($this->zipname);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:5115:        if (($v_zip_temp_fd = @fopen($v_zip_temp_name, 'wb')) == 0)
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:5212:        @unlink($this->zipname);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:5253:        if (($v_zip_temp_fd = @fopen($p_archive_filename, 'rb')) == 0)
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:5606://   tries to copy the $p_src file in a new $p_dest file and then unlink the
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:5621:        // ----- Try to copy & unlink the src
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/lib/pclzip.lib.php:5625:        else if (!@unlink($p_src)) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/src/Zip.php:153:        file_exists($this->fileName) and unlink($this->fileName);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/inpsyde/backwpup-archiver/src/FallBackZip.php:62:        file_exists($this->fileName) and unlink($this->fileName);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/pear/archive_tar/Archive/Tar.php:137:                if ($fp = @fopen($p_tarname, "rb")) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/pear/archive_tar/Archive/Tar.php:148:                    } elseif (file_get_contents($p_tarname, false, null, 1, 4) == '7zXZ') {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/pear/archive_tar/Archive/Tar.php:240:            @unlink($this->_temp_tarname);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/pear/archive_tar/Archive/Tar.php:762:                        $this->_file = @fopen($this->_tarname, "wb");
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/pear/archive_tar/Archive/Tar.php:795:                if (!$v_file_from = @fopen($this->_tarname, 'rb')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/pear/archive_tar/Archive/Tar.php:803:                if (!$v_file_to = @fopen($this->_temp_tarname, 'wb')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/pear/archive_tar/Archive/Tar.php:836:                        $this->_file = @fopen($v_filename, "rb");
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/pear/archive_tar/Archive/Tar.php:879:                        $this->_file = @fopen($this->_tarname, "r+b");
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/pear/archive_tar/Archive/Tar.php:936:            @unlink($this->_temp_tarname);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/pear/archive_tar/Archive/Tar.php:953:            @unlink($this->_temp_tarname);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/pear/archive_tar/Archive/Tar.php:957:            @unlink($this->_tarname);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/pear/archive_tar/Archive/Tar.php:1237:            if (($v_file = @fopen($p_filename, "rb")) == 0) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/pear/archive_tar/Archive/Tar.php:2149:                            @unlink($v_header['filename']);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/pear/archive_tar/Archive/Tar.php:2159:                        if (($v_dest_file = @fopen($v_header['filename'], "wb")) == 0) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/pear/archive_tar/Archive/Tar.php:2356:            if (!@unlink($this->_tarname . ".tmp")) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/pear/pear-core-minimal/src/System.php:225:                if (!@unlink($file)) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/pear/pear-core-minimal/src/System.php:238:                $delete = (is_dir($file)) ? 'rmdir' : 'unlink';
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/pear/pear-core-minimal/src/System.php:318:     * Note: as the class use fopen, urls should work also
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/pear/pear-core-minimal/src/System.php:347:            if (!$outputfd = fopen($outputfile, $mode)) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/pear/pear-core-minimal/src/System.php:354:            if (!$fd = fopen($file, 'r')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/pear/pear-core-minimal/src/System.php:422:            unlink($tmp); // be careful possible race condition here
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/pear/pear-core-minimal/src/OS/Guess.php:256:        $features_file = fopen($features_header_file, 'rb');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/pear/pear-core-minimal/src/OS/Guess.php:303:        $fp = fopen($tmpfile, "w");
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/pear/pear-core-minimal/src/OS/Guess.php:317:        unlink($tmpfile);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/phpseclib/phpseclib/phpseclib/Net/SSH2.php:4624:                    // PHP doesn't seem to like using constants in fopen()
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/phpseclib/phpseclib/phpseclib/Net/SSH2.php:4626:                    $fp = fopen($filename, 'w');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/phpseclib/phpseclib/phpseclib/Net/SFTP.php:2187:                    $fp = fopen('php://memory', 'w+');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/phpseclib/phpseclib/phpseclib/Net/SFTP.php:2198:                $fp = @fopen($data, 'rb');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/phpseclib/phpseclib/phpseclib/Net/SFTP.php:2407:                $fp = fopen($local_file, 'wb');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/phpseclib/phpseclib/phpseclib/Net/SFTP/Stream.php:6: * Creates an sftp:// protocol handler that can be used with, for example, fopen(), dir(), etc.
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/phpseclib/phpseclib/phpseclib/Net/SFTP/Stream.php:216:                       user_error('fopen(): failed to call user notifier', E_USER_WARNING);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/phpseclib/phpseclib/phpseclib/Net/SFTP/Stream.php:220:                       on which the fopen occurred as the line number - not the line that the
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/phpseclib/phpseclib/phpseclib/Net/SFTP/Stream.php:653:    private function _unlink($path)
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/phpseclib/phpseclib/phpseclib/Crypt/EC/BaseCurves/Prime.php:670:        file_put_contents('temp.txt', $str);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/phpseclib/phpseclib/phpseclib/System/SSH/Agent.php:143:            $this->fsock = fopen($address, 'r+b');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/mtdowling/jmespath.php/src/Env.php:64:            unlink($file);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/mtdowling/jmespath.php/src/DebugRuntime.php:91:        fprintf($this->out, file_get_contents($filename));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/mtdowling/jmespath.php/src/CompilerRuntime.php:75:        if (!file_put_contents($filename, $code)) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/guzzlehttp/psr7/src/StreamWrapper.php:47:        return fopen('guzzle://stream', $mode, false, self::createStreamContext($stream));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/guzzlehttp/psr7/src/Stream.php:15:     * @see https://www.php.net/manual/en/function.fopen.php
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/guzzlehttp/psr7/src/LazyOpenStream.php:30:     * @param string $mode     fopen mode to use when opening the stream
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/guzzlehttp/psr7/src/Uri.php:160:     * for the "file" scheme. This is because PHP stream functions like `file_get_contents` only work with
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/guzzlehttp/psr7/src/Utils.php:361:     * When fopen fails, PHP normally raises a warning. This function adds an
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/guzzlehttp/psr7/src/Utils.php:387:            $handle = fopen($filename, $mode);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/guzzlehttp/guzzle/src/Handler/MockHandler.php:128:                        \file_put_contents($sink, $contents);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/guzzlehttp/guzzle/src/Handler/StreamHandler.php:337:                $resource = @\fopen((string) $uri, 'r', false, $contextResource);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/guzzlehttp/guzzle/src/RequestOptions.php:89:     * fopen()  enable debug output with the HTTP handler used to send a
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/guzzlehttp/guzzle/src/Utils.php:100:        if (\ini_get('allow_url_fopen')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/guzzlehttp/guzzle/src/Utils.php:105:            throw new \RuntimeException('GuzzleHttp requires cURL, the allow_url_fopen ini setting, or a custom HTTP handler.');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/guzzlehttp/guzzle/src/Cookie/FileCookieJar.php:68:        if (false === \file_put_contents($filename, $jsonStr, \LOCK_EX)) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/guzzlehttp/guzzle/src/Cookie/FileCookieJar.php:84:        $json = \file_get_contents($filename);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/liborm85/composer-vendor-cleaner/src/Filesystem.php:43:        return $this->filesystem->unlink($file);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/liborm85/composer-vendor-cleaner/src/Plugin.php:105:            $externalDevFiles = @file_get_contents($devFiles);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/microsoft/azure-storage-common/src/Common/Internal/Utilities.php:468:        return fopen('data://text/plain,' . urlencode($string), 'rb');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/microsoft/azure-storage-common/src/Common/Internal/Utilities.php:777:        $resource = @fopen($path, 'a+');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/microsoft/azure-storage-blob/src/Blob/BlobRestProxy.php:3668:        $resource = fopen($path, 'w+');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/microsoft/microsoft-graph/src/Http/GraphRequest.php:423:            $file = fopen($path, 'w');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/microsoft/microsoft-graph/src/Http/GraphRequest.php:468:                $file = fopen($path, 'r');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/wp-media/wp-mixpanel/src/Classes/ConsumerStrategies/FileConsumer.php:33:            return file_put_contents($this->_file, json_encode($batch)."\n", FILE_APPEND | LOCK_EX) !== false;
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/swiftmailer/swiftmailer/lib/classes/Swift/FileSpool.php:98:            $fp = @fopen($fileName.'.message', 'x');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/swiftmailer/swiftmailer/lib/classes/Swift/FileSpool.php:167:                $message = unserialize(file_get_contents($file.'.sending'));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/swiftmailer/swiftmailer/lib/classes/Swift/FileSpool.php:171:                unlink($file.'.sending');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/swiftmailer/swiftmailer/lib/classes/Swift/CharacterStream/ArrayCharacterStream.php:192:        $fp = fopen('php://memory', 'w+b');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/swiftmailer/swiftmailer/lib/classes/Swift/ByteStream/FileByteStream.php:142:            $pointer = @fopen($this->_path, 'rb');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/swiftmailer/swiftmailer/lib/classes/Swift/ByteStream/FileByteStream.php:162:            if (!$this->_writer = fopen($this->_path, $this->_mode)) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/swiftmailer/swiftmailer/lib/classes/Swift/ByteStream/FileByteStream.php:210:        if ($tmpFile = fopen('php://temp/maxmemory:4096', 'w+b')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/swiftmailer/swiftmailer/lib/classes/Swift/ByteStream/FileByteStream.php:219:        $source = fopen($this->_path, 'rb');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/swiftmailer/swiftmailer/lib/classes/Swift/ByteStream/TemporaryFileByteStream.php:29:        if (($content = file_get_contents($this->getPath())) === false) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/swiftmailer/swiftmailer/lib/classes/Swift/ByteStream/TemporaryFileByteStream.php:39:            @unlink($this->getPath());
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/swiftmailer/swiftmailer/lib/classes/Swift/KeyCache/DiskKeyCache.php:242:            unlink($this->_path.'/'.$nsKey.'/'.$itemKey);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/swiftmailer/swiftmailer/lib/classes/Swift/KeyCache/DiskKeyCache.php:293:            $fp = fopen($this->_path.'/'.$nsKey.'/'.$itemKey, $openMode);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/swiftmailer/swiftmailer/lib/swiftmailer_generate_mimes_config.php:24:    $mime_types = @file_get_contents(APACHE_MIME_TYPES_URL);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/swiftmailer/swiftmailer/lib/swiftmailer_generate_mimes_config.php:25:    $mime_xml = @file_get_contents(FREEDESKTOP_XML_URL);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/swiftmailer/swiftmailer/lib/swiftmailer_generate_mimes_config.php:190:    @file_put_contents('./mime_types.php', $output);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/paragonie/random_compat/other/build_phar.php:7:    unlink($dist.'/random_compat.phar');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/paragonie/random_compat/other/build_phar.php:35:    $pkeyFile = file_get_contents($argv[1]);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/paragonie/random_compat/other/build_phar.php:48:            file_put_contents(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/aws/aws-sdk-php/src/functions.php:165:    return json_decode(file_get_contents($path), true);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/aws/aws-sdk-php/src/functions.php:461:        preg_replace('/^#.*\\n/m', "", file_get_contents($filename)),
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/aws/aws-sdk-php/src/functions.php:515:    $stream = fopen($filename, 'r');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/aws/aws-sdk-php/src/Token/SsoTokenProvider.php:236:        return json_decode(file_get_contents($tokenLocation), true);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/aws/aws-sdk-php/src/Token/SsoTokenProvider.php:276:        file_put_contents($tokenLocation, json_encode(array_filter($tokenData)));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/aws/aws-sdk-php/src/Handler/GuzzleV5/GuzzleHandler.php:93:                                    file_get_contents($options['sink'])
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/aws/aws-sdk-php/src/S3/Crypto/S3EncryptionClientV2.php:300:     *   object data. This will be handled by file_put_contents instead of the
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/aws/aws-sdk-php/src/S3/Crypto/S3EncryptionClientV2.php:391:                        file_put_contents(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/aws/aws-sdk-php/src/S3/Crypto/S3EncryptionClientV2.php:425:     *   object data. This will be handled by file_put_contents instead of the
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/aws/aws-sdk-php/src/S3/Crypto/S3EncryptionClient.php:225:     *   object data. This will be handled by file_put_contents instead of the
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/aws/aws-sdk-php/src/S3/Crypto/S3EncryptionClient.php:295:                        file_put_contents(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/aws/aws-sdk-php/src/S3/Crypto/S3EncryptionClient.php:323:     *   object data. This will be handled by file_put_contents instead of the
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/aws/aws-sdk-php/src/S3/StreamWrapper.php:59: * - For "unlink" only: Any option that can be passed to the DeleteObject
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/aws/aws-sdk-php/src/S3/StreamWrapper.php:232:    public function unlink($path)
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/aws/aws-sdk-php/src/S3/StreamWrapper.php:585:     * Validates the provided stream arguments for fopen and returns an array
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/aws/aws-sdk-php/src/S3/StreamWrapper.php:725:        $this->body = new Stream(fopen('php://temp', 'r+'));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/aws/aws-sdk-php/src/S3/StreamWrapper.php:881:                : $this->unlink(rtrim($path, '/') . '/');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/aws/aws-sdk-php/src/S3/Transfer.php:64:     *   transfers. Set to an fopen() resource to write to a specific stream
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/aws/aws-sdk-php/src/S3/Transfer.php:133:                $options['debug'] = fopen('php://output', 'w');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/aws/aws-sdk-php/src/TraceMiddleware.php:283:            $command['@http']['debug'] = fopen('php://temp', 'w+');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/aws/aws-sdk-php/src/Api/Validator.php:176:                $this->addError('must be an fopen resource, a '
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/aws/aws-sdk-php/src/EndpointV2/EndpointDefinitionProvider.php:29:            return json_decode(file_get_contents($basePath . $file));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/aws/aws-sdk-php/src/EndpointV2/EndpointDefinitionProvider.php:58:            return json_decode(file_get_contents($rulesetPath . $fileName . '.json'), true);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/aws/aws-sdk-php/src/Credentials/AssumeRoleWithWebIdentityCredentialProvider.php:102:                    $token = @file_get_contents($this->tokenFile);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/aws/aws-sdk-php/src/Credentials/AssumeRoleWithWebIdentityCredentialProvider.php:113:                        $token = @file_get_contents($this->tokenFile);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/aws/aws-sdk-php/src/Credentials/CredentialProvider.php:963:        $tokenData = json_decode(file_get_contents($tokenLocation), true);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/aws/aws-sdk-php/src/Credentials/EcsCredentialProvider.php:148:            $token =  @file_get_contents($path);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/aws/aws-sdk-php/src/Credentials/EcsCredentialProvider.php:159:            $token = @file_get_contents($path);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/psr/http-factory/src/StreamFactoryInterface.php:22:     * supported by the `fopen` function.
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/psr/http-factory/src/StreamFactoryInterface.php:24:     * The `$filename` MAY be any string supported by `fopen()`.
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/monolog/monolog/src/Monolog/Handler/RotatingFileHandler.php:167:                // suppress errors here as unlink() might fail if two processes
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/monolog/monolog/src/Monolog/Handler/RotatingFileHandler.php:172:                unlink($file);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/monolog/monolog/src/Monolog/Handler/DeduplicationHandler.php:149:        $handle = fopen($this->deduplicationStore, 'rw+');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/monolog/monolog/src/Monolog/Handler/DeduplicationHandler.php:184:        file_put_contents($this->deduplicationStore, $record['datetime']->getTimestamp() . ':' . $record['level_name'] . ':' . preg_replace('{[\r\n].*}', '', $record['message']) . "\n", FILE_APPEND);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/monolog/monolog/src/Monolog/Handler/StreamHandler.php:55:     * @param string          $fileOpenMode   The fopen() mode used when opening a file, if $stream is a file path
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/monolog/monolog/src/Monolog/Handler/StreamHandler.php:147:                $stream = fopen($url, $this->fileOpenMode);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/monolog/monolog/src/Monolog/Handler/StreamHandler.php:216:        $this->errorMessage = preg_replace('{^(fopen|mkdir|fwrite)\(.*?\): }', '', $msg);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/monolog/monolog/src/Monolog/Handler/CouchDBHandler.php:65:        if (false === @file_get_contents($url, false, $context)) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/StorageProviders/Rackspace/RackspaceProvider.php:393:		$handle       = fopen( $data, 'r' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/StorageProviders/Rackspace/RackspaceProvider.php:436:				'body'    => file_get_contents( $data ), //phpcs:ignore
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Cli/Helpers/CommandsLogHelpersTrait.php:167:        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Cli/Helpers/CommandsLogHelpersTrait.php:168:		$raw = file_get_contents( $path );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Infrastructure/Xml/WxrValidator.php:47:            $xml = file_get_contents($this->file);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Infrastructure/Http/Message/StreamFactory.php:42:            __('Invalid mode provided for fopen: %s', 'backwpup')
+
+--- REST JSON (magic quote bypass) ---
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/vendor/phpseclib/phpseclib/phpseclib/Net/SFTP/Stream.php:167:            $context = stream_context_get_params($this->context);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Frontend/API/Rest.php:84:		$params = $request->get_params();
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/StorageProviders/HiDrive/HiDriveProvider.php:81:		$params = $request->get_params();
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/StorageProviders/Dropbox/DropboxProvider.php:89:		$params = $request->get_params();
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/StorageProviders/API/Rest.php:151:		$params = $request->get_params();
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/StorageProviders/API/Rest.php:195:		$params = $request->get_params();
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/StorageProviders/API/Rest.php:232:		$params = $request->get_params();
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/StorageProviders/API/Rest.php:263:		$params = $request->get_params();
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/StorageProviders/API/Rest.php:317:		$params = $request->get_params();
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/StorageProviders/SugarSync/SugarSyncProvider.php:92:		$params = $request->get_params();
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/StorageProviders/SugarSync/SugarSyncProvider.php:118:		$params = $request->get_params();
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Admin/Chatbot/API/ChatbotRest.php:123:		$context_id    = (string) $request->get_param( 'context_id' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Admin/Chatbot/API/ChatbotRest.php:124:		$context_token = (string) $request->get_param( 'context_token' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Admin/Chatbot/API/ChatbotRest.php:145:		$context_id = (string) $request->get_param( 'context_id' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:382:		$params = $request->get_params();
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:437:		$params = $request->get_params();
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:470:		$params = $request->get_params();
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:494:		$params = $request->get_params();
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:554:		$params = $request->get_params();
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:592:		$params = $request->get_params(); // Get request parameters.
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:678:		$params = $request->get_params(); // Get request parameters.
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:737:		$params = $request->get_params();
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:763:		$params = $request->get_params();
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Jobs/API/Rest.php:793:		$params = $request->get_params();
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Backups/History/Frontend/API/Rest.php:147:		$params                  = $request->get_params();
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Backups/History/Frontend/API/Rest.php:258:		$params    = $request->get_params();
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Backups/API/Rest.php:158:		$params = $request->get_params();
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/backwpup/src/Backups/API/Rest.php:361:		$params   = $request->get_params();

@@ -1,0 +1,77 @@
+{
+  "session": 3,
+  "title": "IR-07 (storage reads sources + key field writes) + IR-08 (prepare window)",
+  "status": "PENDING",
+  "wave": "Wave 1",
+  "dependencies": [],
+  "gaps": ["IR-07", "IR-08"],
+  "critical_notes": [
+    "IR-07: storage reads → vào SOURCES array (không phải sinks) — gate build từ sources",
+    "IR-07 key arg index: get_option($key,$default) → arg[0], get_post_meta($id,$key,$single) → arg[1]",
+    "IR-07 write key index: update_option($key,$val) → arg[0], update_post_meta($id,$key,$val) → arg[1]",
+    "IR-08: chỉ thay đổi số 10 → 30, không thay đổi logic khác"
+  ],
+  "files_to_read": [
+    {
+      "file": "tools/src/Extractor/Visitors/SourceSinkVisitor.php",
+      "line_range": "full",
+      "reason": "298 lines — cần toàn bộ để hiểu SINK_MAP, addSink(), detectFuncSink(), và nơi thêm STORAGE_READ_MAP"
+    }
+  ],
+  "spec": {
+    "IR-07_reads": {
+      "source_ref": "gap-analysis-final.md:594-712",
+      "file": "tools/src/Extractor/Visitors/SourceSinkVisitor.php",
+      "change": "Thêm STORAGE_READ_MAP constant và detection vào sources array",
+      "constant": {
+        "get_option":       {"source_type": "option_read",  "key_arg_index": 0},
+        "get_site_option":  {"source_type": "option_read",  "key_arg_index": 0},
+        "get_post_meta":    {"source_type": "meta_read",    "key_arg_index": 1},
+        "get_user_meta":    {"source_type": "meta_read",    "key_arg_index": 1},
+        "get_term_meta":    {"source_type": "meta_read",    "key_arg_index": 1},
+        "get_comment_meta": {"source_type": "meta_read",    "key_arg_index": 1}
+      },
+      "output_to": "this->sources[] (KHÔNG phải sinks)",
+      "source_entry": {
+        "id": "src_<counter>",
+        "entry_point_id": "this->entryPointId",
+        "type": "<from map>",
+        "key": "<resolved string arg or null if dynamic>",
+        "variable": null,
+        "file": "this->currentFile",
+        "line": "node->getStartLine()"
+      }
+    },
+    "IR-07_writes": {
+      "source_ref": "gap-analysis-final.md:594-712",
+      "file": "tools/src/Extractor/Visitors/SourceSinkVisitor.php",
+      "change": "Thêm key field vào addSink() và extract key cho storage write calls",
+      "addSink_signature": "addSink(string $category, string $functionCalled, int $line, ?bool $usesPrepare, ?string $key = null): void",
+      "key_arg_index_per_function": {
+        "update_option": 0, "add_option": 0, "update_site_option": 0,
+        "update_post_meta": 1, "update_user_meta": 1,
+        "add_post_meta": 1, "update_term_meta": 1,
+        "update_comment_meta": 1
+      }
+    },
+    "IR-08": {
+      "source_ref": "gap-analysis-final.md:713-739",
+      "file": "tools/src/Extractor/Visitors/SourceSinkVisitor.php",
+      "target_method": "checkPrepareUsage() hoặc tương tự",
+      "change": {
+        "before": "($sinkLine - $prepareLine) <= 10",
+        "after":  "($sinkLine - $prepareLine) <= 30"
+      }
+    }
+  },
+  "downstream_required": [],
+  "test_command": "php tools/bin/extract.php plugins/<plugin-with-stored-flows>/",
+  "test_cases": [
+    "IR sources[] chứa option_read/meta_read entries với key field",
+    "IR sinks[] có key field cho update_option/update_post_meta (non-null cho literal keys)",
+    "gate _check_stored_2hop() không còn trả tối đa 0.65 khi key match",
+    "IR-08: SQL sink 25 lines sau prepare() vẫn được detect là prepared"
+  ],
+  "commit_message": "Session 3: IR-07 storage reads+write keys + IR-08 prepare window",
+  "next_session_preview": "Session 4 — P2-01/G-04 (FP evidence), P2-02 (dismissed signals), P2-03 (auth normalize), P2-04 (quick triage unresolved)"
+}

@@ -1,0 +1,475 @@
+{
+  "plugin_slug": "cartflows",
+  "analysis_summary": {
+    "phase": "phase2",
+    "plugin_version": "2.2.4",
+    "ir_entry_points_reviewed": 119,
+    "phase1_anomalies_reviewed": 41,
+    "focus": [
+      "Validated the public checkout AJAX surfaces called out by Phase 1, especially coupon/cart mutation, email/login UX, and checkout file upload.",
+      "Re-traced the higher-value admin mutation surfaces: REST endpoints under `admin-core/api`, role-manager capability assignment, rollback/importer flows, Tutor LMS compatibility AJAX, and SureTriggers/Woo Dynamic Flow AJAX.",
+      "Collapsed Semgrep's `check_ajax_referer(..., false)` signals by checking whether invalid-nonce branches terminate before reaching a state-changing sink."
+    ],
+    "result": "No Patchstack-eligible true positive or evidence-backed REVIEW finding was confirmed in CartFlows 2.2.4 after direct source validation.",
+    "key_observation": "The interesting public surfaces are limited to caller-owned WooCommerce checkout/session behavior or tightly constrained media uploads, while privileged admin/REST/ability paths are capability-gated and default to administrator-only access unless an administrator intentionally delegates CartFlows capabilities.",
+    "tooling_notes": [
+      "Phase 1 IR and 324 Semgrep results were treated as signal sources only and were revalidated against source.",
+      "The Psalm SARIF artifact existed only as `{\"status\":\"error\",\"exit_code\":1}` and provided no corroborating data."
+    ]
+  },
+  "overall_risk": "none",
+  "total_findings_analyzed": 0,
+  "true_positives": 0,
+  "false_positives": 0,
+  "needs_review": 0,
+  "findings": [],
+  "negative_findings": [
+    {
+      "finding_id": "NEG-001",
+      "state": "REJECTED",
+      "verdict": "FP",
+      "title": "Public checkout file upload is constrained to a hardcoded media allowlist and does not expose arbitrary upload or RCE",
+      "entry_point_ids": [
+        "ep_ajax_priv_wp_ajax_wcf_upload_checkout_file",
+        "ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file"
+      ],
+      "evidence": [
+        {
+          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+          "line_number": 57,
+          "note": "The upload handler is intentionally exposed on both `wp_ajax_` and `wp_ajax_nopriv_` for checkout visitors."
+        },
+        {
+          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-markup.php",
+          "line_number": 1776,
+          "note": "The file-upload nonce is localized into the public checkout page."
+        },
+        {
+          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+          "line_number": 295,
+          "note": "The handler rejects requests without a valid `wcf-file-upload` nonce."
+        },
+        {
+          "file_path": "plugins/cartflows/classes/class-cartflows-helper.php",
+          "line_number": 1933,
+          "note": "The master extension allowlist is fixed to media/document types: jpg, jpeg, png, gif, webp, ico, pdf, mp3, m4a, wav, mp4, m4v, mov."
+        },
+        {
+          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+          "line_number": 315,
+          "note": "Field-level restrictions are intersected with the master allowlist before acceptance."
+        },
+        {
+          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+          "line_number": 331,
+          "note": "The code validates extension and MIME using `wp_check_filetype_and_ext()`."
+        },
+        {
+          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+          "line_number": 423,
+          "note": "The stored filename is replaced with `wcf_<uuid>.<ext>` via `wp_unique_filename()`."
+        },
+        {
+          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+          "line_number": 425,
+          "note": "Upload storage goes through `wp_handle_upload()` into the normal WordPress uploads directory."
+        }
+      ],
+      "reasoning": {
+        "hypothesis": "Because the route is available to unauthenticated checkout visitors, it might permit arbitrary file upload, stored XSS via active content, or code execution.",
+        "trace": "The public checkout JavaScript sends `wcf_upload_checkout_file` requests with the localized nonce. `Cartflows_Checkout_Ajax::upload_checkout_file()` then normalizes the filename, derives the extension, intersects any field-specific restriction with `Cartflows_Helper::get_allowed_file_extensions()`, checks file size, validates the real type with `wp_check_filetype_and_ext()`, and finally stores the file through `wp_handle_upload()` using a generated UUID filename in the uploads directory.",
+        "defenses": "Nonce verification is enforced before any file handling. The hardcoded allowlist excludes PHP, HTML, SVG, JS, and other scriptable/executable extensions. The handler also validates MIME/extension agreement, constrains filenames to generated UUID-based names, and does not let the request control the destination path.",
+        "refutation": "I tried to identify a route from user input to an executable or scriptable extension and could not. The user-controlled `checkout_id` only influences stricter field-level restrictions fetched from post meta; it does not widen the master allowlist or change the storage path.",
+        "conclusion": "Rejected as a false positive for arbitrary file upload / RCE. The route is intentionally public for checkout UX, but the reachable sink is a constrained media upload under WordPress uploads semantics."
+      },
+      "reopen_if": "Show a bundled path that permits an executable or scriptable extension despite the master allowlist, or a path that moves the uploaded file outside the normal uploads directory."
+    },
+    {
+      "finding_id": "NEG-002",
+      "state": "REJECTED",
+      "verdict": "FP",
+      "title": "Public checkout AJAX surfaces stay inside the caller's checkout session; helper endpoints do not become a practical auth bypass",
+      "entry_point_ids": [
+        "ep_ajax_nopriv_wp_ajax_nopriv_wcf_woo_apply_coupon",
+        "ep_ajax_nopriv_wp_ajax_nopriv_wcf_woo_remove_coupon",
+        "ep_ajax_nopriv_wp_ajax_nopriv_wcf_woo_remove_cart_product",
+        "ep_ajax_nopriv_wp_ajax_nopriv_wcf_check_email_exists",
+        "ep_ajax_nopriv_wp_ajax_nopriv_wcf_woocommerce_login"
+      ],
+      "evidence": [
+        {
+          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+          "line_number": 45,
+          "note": "Coupon, cart, email-check, and login helpers are deliberately registered for public checkout visitors."
+        },
+        {
+          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+          "line_number": 123,
+          "note": "`apply_coupon()` reaches `WC()->cart->add_discount(...)` after nonce validation."
+        },
+        {
+          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+          "line_number": 171,
+          "note": "`wcf_woo_remove_cart_product()` reads the item from the current `WC()->cart` session and removes that cart item."
+        },
+        {
+          "file_path": "plugins/cartflows/assets/js/checkout-template.js",
+          "line_number": 628,
+          "note": "The public checkout UI intentionally calls `wcf_check_email_exists` to decide whether to show the login prompt."
+        },
+        {
+          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+          "line_number": 211,
+          "note": "`check_email_exists()` returns only `email_exists()` plus the checkout-login-reminder flag."
+        },
+        {
+          "file_path": "plugins/cartflows/assets/js/checkout-template.js",
+          "line_number": 724,
+          "note": "The public checkout login form intentionally posts to `wcf_woocommerce_login`."
+        },
+        {
+          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+          "line_number": 273,
+          "note": "`woocommerce_user_login()` delegates to normal WordPress `wp_signon()` authentication after nonce validation."
+        }
+      ],
+      "reasoning": {
+        "hypothesis": "The nopriv checkout AJAX routes might expose state-changing or authentication-impacting behavior beyond the current visitor's checkout context.",
+        "trace": "Coupon application and cart-item removal operate directly on `WC()->cart`, which is session-scoped to the current visitor. The email-check helper returns whether an email exists so the checkout can decide whether to show a login prompt. The login helper simply forwards the supplied credentials into `wp_signon()` and then reloads the page on success.",
+        "defenses": "The routes are intentionally public because checkout itself is public. Coupon/cart routes require their own checkout nonces and operate on the caller's current WooCommerce session, not on another user's stored order or account. The login route still uses normal WordPress authentication semantics through `wp_signon()`.",
+        "refutation": "I did not find any path that lets a visitor mutate another user's cart or account state. The email-existence response does disclose account existence on the checkout page, but from the plugin code alone that is a low-grade UX signal rather than a meaningful privilege boundary break, account takeover path, or Patchstack-eligible issue.",
+        "conclusion": "Rejected as a reportable security finding. These endpoints implement the intended guest-checkout flow rather than exposing a cross-user state change or authentication bypass."
+      },
+      "reopen_if": "Show a path from these public helpers to cross-user cart manipulation, credential bypass, or another concrete security impact beyond account-existence feedback."
+    },
+    {
+      "finding_id": "NEG-003",
+      "state": "REJECTED",
+      "verdict": "FP",
+      "title": "Tutor LMS course-template save AJAX is properly nonce- and object-capability-gated",
+      "entry_point_ids": [
+        "ep_ajax_priv_wp_ajax_cartflows_save_tutor_course_template"
+      ],
+      "evidence": [
+        {
+          "file_path": "plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php",
+          "line_number": 58,
+          "note": "The save action is registered only on the authenticated `wp_ajax_` hook."
+        },
+        {
+          "file_path": "plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php",
+          "line_number": 104,
+          "note": "The nonce is localized only on the Tutor course-builder admin page."
+        },
+        {
+          "file_path": "plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php",
+          "line_number": 200,
+          "note": "`ajax_save_course_template()` verifies the request nonce before any write."
+        },
+        {
+          "file_path": "plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php",
+          "line_number": 217,
+          "note": "The handler requires `current_user_can( 'edit_post', $course_id )` for the targeted course."
+        },
+        {
+          "file_path": "plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php",
+          "line_number": 228,
+          "note": "Only after both checks does it write the selected template to course meta."
+        }
+      ],
+      "reasoning": {
+        "hypothesis": "Phase 1 flagged a missing-capability condition on the Tutor LMS course-template AJAX write.",
+        "trace": "The authenticated AJAX callback verifies the Tutor-specific nonce, validates the supplied course ID, enforces `edit_post` on that exact course object, sanitizes and validates the template ID, and then stores the result with `update_post_meta()`.",
+        "defenses": "The nonce is minted only for the course-builder page, and the capability check is object-specific rather than a broad role check.",
+        "refutation": "I could not find a lower-privileged or unauthenticated branch that reaches the `update_post_meta()` sink without satisfying `current_user_can( 'edit_post', $course_id )`.",
+        "conclusion": "Rejected as a false positive. The suspected missing-capability path is refuted by the live nonce and object-capability checks."
+      },
+      "reopen_if": "Show a bundled path where a user who cannot edit the target Tutor course can still reach `update_post_meta()` for `Cartflows_Tutor_Compatibility::META_KEY`."
+    },
+    {
+      "finding_id": "NEG-004",
+      "state": "REJECTED",
+      "verdict": "FP",
+      "title": "Admin REST, AJAX, and ability surfaces are capability-gated; lower-role access is an intentional admin role-manager choice",
+      "evidence": [
+        {
+          "file_path": "plugins/cartflows/admin-core/inc/admin-menu.php",
+          "line_number": 339,
+          "note": "CartFlows adds its custom capabilities to the `administrator` role by default."
+        },
+        {
+          "file_path": "plugins/cartflows/admin-core/inc/global-settings.php",
+          "line_number": 29,
+          "note": "The role-manager UI explicitly exposes admin-controlled choices such as `No Access`, `Full Access`, and `Limited Access` for non-admin roles."
+        },
+        {
+          "file_path": "plugins/cartflows/admin-core/ajax/common-settings.php",
+          "line_number": 52,
+          "note": "Settings AJAX handlers are registered only when the current user already has `cartflows_manage_settings`."
+        },
+        {
+          "file_path": "plugins/cartflows/admin-core/ajax/common-settings.php",
+          "line_number": 101,
+          "note": "`save_global_settings()` still re-checks `cartflows_manage_settings` and its nonce before persisting anything."
+        },
+        {
+          "file_path": "plugins/cartflows/admin-core/ajax/common-settings.php",
+          "line_number": 370,
+          "note": "Role-manager writes constrain `access_key` to an allowlist before granting CartFlows capabilities."
+        },
+        {
+          "file_path": "plugins/cartflows/admin-core/api/flows.php",
+          "line_number": 69,
+          "note": "Flow REST routes use a permission callback rather than being public."
+        },
+        {
+          "file_path": "plugins/cartflows/admin-core/api/flows.php",
+          "line_number": 299,
+          "note": "The flow REST permission callback requires `cartflows_manage_flows_steps`."
+        },
+        {
+          "file_path": "plugins/cartflows/admin-core/api/common-settings.php",
+          "line_number": 129,
+          "note": "Common-settings REST access requires `cartflows_manage_settings`."
+        },
+        {
+          "file_path": "plugins/cartflows/admin-core/api/webhooks.php",
+          "line_number": 128,
+          "note": "Webhook REST access requires `cartflows_manage_settings`."
+        },
+        {
+          "file_path": "plugins/cartflows/abilities/class-cartflows-ability-runtime.php",
+          "line_number": 3198,
+          "note": "Ability execution requires a logged-in user whose account has the required capability or capability set."
+        }
+      ],
+      "reasoning": {
+        "hypothesis": "The admin REST or AJAX surfaces may accidentally expose settings, flow management, or ability execution to subscriber-level users.",
+        "trace": "Custom capabilities are granted to administrators by default. If an admin chooses to delegate access, the role manager stores only one of a small allowlisted set of access levels. The REST routes then enforce `cartflows_manage_settings` or `cartflows_manage_flows_steps` in permission callbacks, while the ability runtime checks for a logged-in user and required capabilities at execution time.",
+        "defenses": "Capability checks exist both at registration time and again in the write handlers. Lower-role access requires an intentional administrator configuration change in the role manager; it is not a default exposure.",
+        "refutation": "I did not find a public REST route, a missing permission callback, or a settings write that bypasses these capabilities. The observed lower-role path is an explicitly supported admin delegation feature rather than an accidental broken access control.",
+        "conclusion": "Rejected as a privilege-escalation candidate. The admin surfaces are capability-gated in live code and default to administrator-only access."
+      },
+      "reopen_if": "Show a route that reaches one of these admin sinks without `cartflows_manage_settings` / `cartflows_manage_flows_steps`, or a way to grant those capabilities without an existing administrator decision."
+    },
+    {
+      "finding_id": "NEG-005",
+      "state": "REJECTED",
+      "verdict": "FP",
+      "title": "Rollback and importer management flows are high-privileged site-management features, not lower-privilege escalation primitives",
+      "evidence": [
+        {
+          "file_path": "plugins/cartflows/classes/class-cartflows-admin.php",
+          "line_number": 72,
+          "note": "Rollback is exposed through the authenticated `admin_post_cartflows_rollback` route."
+        },
+        {
+          "file_path": "plugins/cartflows/classes/class-cartflows-admin.php",
+          "line_number": 361,
+          "note": "Rollback requires `current_user_can( 'install_plugins' )`."
+        },
+        {
+          "file_path": "plugins/cartflows/classes/class-cartflows-admin.php",
+          "line_number": 371,
+          "note": "Rollback also requires a dedicated `cartflows_rollback` admin nonce."
+        },
+        {
+          "file_path": "plugins/cartflows/classes/class-cartflows-admin.php",
+          "line_number": 373,
+          "note": "The selected rollback version must exist in the helper-provided allowlist before a package URL is built."
+        },
+        {
+          "file_path": "plugins/cartflows/admin-core/ajax/importer.php",
+          "line_number": 81,
+          "note": "The install route delegates directly to WordPress core `wp_ajax_install_plugin`, so no plugin-owned lower-privilege sink was introduced here."
+        },
+        {
+          "file_path": "plugins/cartflows/admin-core/ajax/importer.php",
+          "line_number": 442,
+          "note": "CartFlows' own plugin-activation AJAX requires both `cartflows_manage_flows_steps` and `activate_plugins`."
+        },
+        {
+          "file_path": "plugins/cartflows/admin-core/ajax/importer.php",
+          "line_number": 449,
+          "note": "The activation flow also requires a dedicated nonce."
+        },
+        {
+          "file_path": "plugins/cartflows/admin-core/ajax/importer.php",
+          "line_number": 504,
+          "note": "Theme activation likewise requires `switch_themes`."
+        }
+      ],
+      "reasoning": {
+        "hypothesis": "Importer and rollback actions might let a lower-privileged CartFlows user install, activate, or downgrade code.",
+        "trace": "The rollback endpoint is protected by `install_plugins`, a dedicated admin nonce, and a version allowlist. The plugin-owned importer endpoints require the normal high-privilege WordPress capabilities for plugin or theme management. The one installer registration visible in the plugin delegates to the core `wp_ajax_install_plugin` handler rather than a plugin-defined sink.",
+        "defenses": "These operations sit behind WordPress' normal software-management capabilities (`install_plugins`, `activate_plugins`, `switch_themes`) plus nonces.",
+        "refutation": "I did not find a plugin-defined route where a lower-privileged user can reach plugin installation, activation, theme switching, or rollback without satisfying the corresponding WordPress management capability.",
+        "conclusion": "Rejected as a Patchstack-eligible privilege-escalation candidate. The reachable management paths are high-privileged site-administration features."
+      },
+      "reopen_if": "Show a bundled path that reaches plugin install/activate/theme-switch/rollback without the corresponding WordPress management capability."
+    },
+    {
+      "finding_id": "NEG-006",
+      "state": "REJECTED",
+      "verdict": "FP",
+      "title": "Semgrep's `check_ajax_referer(..., false)` cluster does not create nonce bypasses because failure branches terminate before the sink",
+      "entry_point_ids": [
+        "ep_ajax_priv_wp_ajax_cartflows_snooze_script_migration",
+        "ep_ajax_priv_wp_ajax_cartflows_get_suretriggers_data",
+        "ep_ajax_priv_wp_ajax_wcf_woo_apply_coupon"
+      ],
+      "evidence": [
+        {
+          "file_path": "plugins/cartflows/classes/class-cartflows-admin-notices.php",
+          "line_number": 179,
+          "note": "Invalid nonce in `snooze_script_migration_notice()` immediately returns `wp_send_json_error()` before any status update."
+        },
+        {
+          "file_path": "plugins/cartflows/admin-core/ajax/flows.php",
+          "line_number": 92,
+          "note": "Bulk flow export returns `wp_send_json_error()` on nonce failure before any action."
+        },
+        {
+          "file_path": "plugins/cartflows/admin-core/ajax/common-settings.php",
+          "line_number": 113,
+          "note": "Settings save returns `wp_send_json_error()` on nonce failure before settings processing."
+        },
+        {
+          "file_path": "plugins/cartflows/wizard/ajax/wizard.php",
+          "line_number": 85,
+          "note": "Wizard AJAX routes return `wp_send_json_error()` on nonce failure before onboarding or plugin actions."
+        },
+        {
+          "file_path": "plugins/cartflows/compatibilities/plugins/class-cartflows-suretriggers-compatibility.php",
+          "line_number": 127,
+          "note": "SureTriggers data AJAX returns `wp_send_json_error()` when the nonce is invalid."
+        },
+        {
+          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+          "line_number": 109,
+          "note": "Public coupon application also fails closed with `wp_send_json_error()` when the nonce is missing."
+        }
+      ],
+      "reasoning": {
+        "hypothesis": "Using `check_ajax_referer(..., false)` may allow request processing to continue when the nonce is invalid.",
+        "trace": "In the reviewed handlers, the function's boolean return value is checked immediately. On failure, the code calls `wp_send_json_error()` and does not continue into the state-changing logic.",
+        "defenses": "WordPress terminates the AJAX request inside `wp_send_json_error()`, so the sink is not reached after nonce failure.",
+        "refutation": "I did not find a reviewed handler in this cluster that ignored the false return and kept executing the sensitive sink.",
+        "conclusion": "Rejected as a false positive pattern match. The `..., false` usage is not a vulnerability by itself in these handlers because the failure branches still fail closed."
+      },
+      "reopen_if": "Show a concrete handler where nonce failure does not terminate the request and sensitive code still executes."
+    },
+    {
+      "finding_id": "NEG-007",
+      "state": "REJECTED",
+      "verdict": "FP",
+      "title": "Flow search AJAX is capability-gated, nonce-checked, and limited to a prepared published-flow lookup",
+      "entry_point_ids": [
+        "ep_ajax_priv_wp_ajax_wcf_json_search_flows"
+      ],
+      "evidence": [
+        {
+          "file_path": "plugins/cartflows/modules/woo-dynamic-flow/classes/class-cartflows-wd-flow-product-meta.php",
+          "line_number": 43,
+          "note": "The search route is registered only on the authenticated `wp_ajax_` hook."
+        },
+        {
+          "file_path": "plugins/cartflows/modules/woo-dynamic-flow/classes/class-cartflows-wd-flow-product-meta.php",
+          "line_number": 85,
+          "note": "The handler first requires `cartflows_manage_flows_steps`."
+        },
+        {
+          "file_path": "plugins/cartflows/modules/woo-dynamic-flow/classes/class-cartflows-wd-flow-product-meta.php",
+          "line_number": 89,
+          "note": "The query body is entered only when the `wcf_json_search_flows` nonce verifies."
+        },
+        {
+          "file_path": "plugins/cartflows/modules/woo-dynamic-flow/classes/class-cartflows-wd-flow-product-meta.php",
+          "line_number": 99,
+          "note": "The SQL uses `$wpdb->prepare()` and searches only published CartFlows flow posts by title prefix."
+        },
+        {
+          "file_path": "plugins/cartflows/modules/woo-dynamic-flow/classes/class-cartflows-wd-flow-product-meta.php",
+          "line_number": 120,
+          "note": "The success path only returns an ID-to-title map via `wp_send_json()`."
+        }
+      ],
+      "reasoning": {
+        "hypothesis": "Phase 1 flagged a missing-nonce or weakly guarded privileged AJAX search surface.",
+        "trace": "The route is authenticated-only, requires `cartflows_manage_flows_steps`, enters the query block only after nonce verification, and then performs a prepared SELECT over published flow posts before returning titles.",
+        "defenses": "Capability gating, explicit nonce verification, and prepared SQL all exist. Even the successful path is read-only.",
+        "refutation": "I could not find a path where an invalid nonce continues into the query, nor a write sink or sensitive data exposure beyond flow titles already accessible to users with the same flow-management capability.",
+        "conclusion": "Rejected as a meaningful finding. The route is a normal authenticated admin search helper, not a nonce bypass or injection sink."
+      },
+      "reopen_if": "Show a branch where the nonce-gated query executes without nonce validation, or a lower-privileged actor can reach the route despite lacking `cartflows_manage_flows_steps`."
+    },
+    {
+      "finding_id": "NEG-008",
+      "state": "REJECTED",
+      "verdict": "FP",
+      "title": "`is_admin()`-based IR anomalies are UI/context guards rather than exploitable authorization checks",
+      "entry_point_ids": [
+        "ep_admin_init_admin_init",
+        "ep_template_redirect_template_redirect",
+        "ep_shortcode_cartflows_checkout",
+        "ep_shortcode_cartflows_optin",
+        "ep_init_init"
+      ],
+      "evidence": [
+        {
+          "file_path": "plugins/cartflows/wizard/inc/wizard-core.php",
+          "line_number": 47,
+          "note": "Wizard admin hooks are only registered when the current user already has `manage_options`."
+        },
+        {
+          "file_path": "plugins/cartflows/wizard/inc/wizard-core.php",
+          "line_number": 135,
+          "note": "The hide-notice branch still requires a dedicated `wcf_hide_notices_nonce` before updating the setup option."
+        },
+        {
+          "file_path": "plugins/cartflows/classes/class-cartflows-admin.php",
+          "line_number": 217,
+          "note": "The `admin_init` permalink-refresh hook only flushes rewrite rules when the plugin-owned `cartflows_permalink_refresh` option was already set."
+        },
+        {
+          "file_path": "plugins/cartflows/classes/class-cartflows-admin.php",
+          "line_number": 343,
+          "note": "The `is_admin()`-related cache-header logic only checks the requested CartFlows admin page and sets headers."
+        },
+        {
+          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-global-checkout.php",
+          "line_number": 143,
+          "note": "The frontend checkout redirect uses an admin-configured `global_checkout` option and `wp_safe_redirect()`."
+        },
+        {
+          "file_path": "plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php",
+          "line_number": 332,
+          "note": "The Tutor template redirect uses course meta chosen by an authorized editor and `wp_safe_redirect()`."
+        },
+        {
+          "file_path": "plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-markup.php",
+          "line_number": 481,
+          "note": "Checkout shortcode input is reduced to an integer ID and includes only fixed plugin template files."
+        },
+        {
+          "file_path": "plugins/cartflows/modules/optin/classes/class-cartflows-optin-markup.php",
+          "line_number": 234,
+          "note": "Opt-in shortcode input is likewise reduced to an integer ID and includes only the fixed opt-in template."
+        }
+      ],
+      "reasoning": {
+        "hypothesis": "Phase 1 marked several hooks as relying on `is_admin()` in ways that could amount to broken authorization.",
+        "trace": "The reviewed `admin_init`, `template_redirect`, `init`, and shortcode paths use `is_admin()` or related context checks to separate editor/admin UX from frontend execution, to decide whether to load a demo preview, or to perform redirects using admin-configured values. The actual mutations and privileged actions observed in these paths remain behind explicit nonces, capabilities, or fixed configuration values.",
+        "defenses": "Where state changes exist, they are nonce-protected or gated earlier by `manage_options` / object capabilities. Frontend redirects use `wp_safe_redirect()` or fixed template includes rather than user-controlled file/URL targets.",
+        "refutation": "I did not find a low-privileged request that used an `is_admin()` branch as the only authorization check for a meaningful sink. The IR signal was over-broad for these reviewed paths.",
+        "conclusion": "Rejected as a reportable finding. In the reviewed code, `is_admin()` serves as a context or UX gate, not as the sole protection for a practical privilege boundary."
+      },
+      "reopen_if": "Show a concrete low-privilege or public request where `is_admin()` is the only barrier before a meaningful privileged sink executes."
+    }
+  ],
+  "out_of_scope": [],
+  "postprocess": {
+    "version": "v2-evidence-bind",
+    "downgraded_tp_to_review": 0
+  }
+}

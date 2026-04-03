@@ -1,0 +1,24 @@
+{
+    "sinks": [
+        {"name": "echo",              "language": "php", "attack": "xss",  "cwe": "CWE-79"},
+        {"name": "print",             "language": "php", "attack": "xss",  "cwe": "CWE-79"},
+        {"name": "printf",            "language": "php", "attack": "xss",  "cwe": "CWE-79"},
+        {"name": "query",             "language": "php", "attack": "sql",  "cwe": "CWE-89",  "instanceof": "wpdb"},
+        {"name": "get_var",           "language": "php", "attack": "sql",  "cwe": "CWE-89",  "instanceof": "wpdb"},
+        {"name": "get_row",           "language": "php", "attack": "sql",  "cwe": "CWE-89",  "instanceof": "wpdb"},
+        {"name": "get_results",       "language": "php", "attack": "sql",  "cwe": "CWE-89",  "instanceof": "wpdb"},
+        {"name": "get_col",           "language": "php", "attack": "sql",  "cwe": "CWE-89",  "instanceof": "wpdb"},
+        {"name": "wp_remote_get",     "language": "php", "attack": "ssrf", "cwe": "CWE-918"},
+        {"name": "wp_remote_post",    "language": "php", "attack": "ssrf", "cwe": "CWE-918"},
+        {"name": "file_put_contents", "language": "php", "attack": "file_write", "cwe": "CWE-73"},
+        {"name": "file_get_contents", "language": "php", "attack": "file_read",  "cwe": "CWE-73"},
+        {"name": "fopen",             "language": "php", "attack": "file_write", "cwe": "CWE-73"},
+        {"name": "unlink",            "language": "php", "attack": "file_delete","cwe": "CWE-73"},
+        {"name": "include",           "language": "php", "attack": "lfi",  "cwe": "CWE-98"},
+        {"name": "require",           "language": "php", "attack": "lfi",  "cwe": "CWE-98"},
+        {"name": "unserialize",       "language": "php", "attack": "object_injection", "cwe": "CWE-502"},
+        {"name": "maybe_unserialize", "language": "php", "attack": "object_injection", "cwe": "CWE-502"},
+        {"name": "wp_redirect",       "language": "php", "attack": "redirect", "cwe": "CWE-601"},
+        {"name": "update_option",     "language": "php", "attack": "option_injection", "cwe": "CWE-862"}
+    ]
+}

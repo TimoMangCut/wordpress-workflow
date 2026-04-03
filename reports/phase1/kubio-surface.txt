@@ -1,0 +1,487 @@
+=== SURFACE MAP: kubio ===
+Generated: 2026-04-02T00:39:50+07:00
+
+--- ENTRY POINTS ---
+[REST routes]
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/integrations/third-party-themes/templates-importer.php:357:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/integrations/third-party-themes/templates-importer.php:369:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/SDApi/sd-endpoints.php:8:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/SDApi/sd-endpoints.php:20:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/SDApi/sd-endpoints.php:32:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/SDApi/sd-endpoints.php:44:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/SDApi/sd-endpoints.php:56:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:15:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:27:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:39:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:51:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:63:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:75:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:87:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:99:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:111:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:122:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:134:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:145:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:156:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:167:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:179:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:191:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:203:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:215:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:227:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:239:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:251:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:263:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:275:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:287:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:301:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:314:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:325:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:336:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:348:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:360:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:373:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:385:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:396:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:408:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:419:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:431:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:443:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/menu-rest-controller.php:11:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/menu-rest-controller.php:25:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/menu-rest-controller.php:40:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/class-wp-rest-menu-locations-controller.php:27:	 * @see   register_rest_route()
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/class-wp-rest-menu-locations-controller.php:30:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/class-wp-rest-menu-locations-controller.php:44:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/typekit.php:35:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/subscribe-form.php:44:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/index.php:16:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/index.php:29:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/index.php:41:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/contact-forms.php:10:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/contact-forms.php:23:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/newsletter/index.php:11:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/newsletter/index.php:24:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/fluent-booking.php:10:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/fluent-booking.php:23:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/bubble-chat.php:12:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/bubble-chat.php:25:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/bubble-chat.php:38:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/page-templates.php:26:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/multilanguage/index.php:12:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/multilanguage/wpml.php:8:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/multilanguage/polylang.php:8:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/multilanguage/polylang.php:27:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/multilanguage/polylang.php:46:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/kubio-cloud.php:11:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/kubio-cloud.php:23:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/update-settings-flags.php:69:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/update-settings-flags.php:82:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/update-settings-flags.php:95:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/update-settings-flags.php:108:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/update-settings-flags.php:121:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/contact-form.php:68:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/entity.php:16:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:12:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:24:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:36:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:48:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:60:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:72:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:83:		register_rest_route(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/Core/KubioFrontPageRevertNotice.php:49:		register_rest_route(
+[AJAX handlers]
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/filters/kubio-fresh-site.php:28:			'wp_ajax_save-widget',
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/filters/kubio-fresh-site.php:29:			'wp_ajax_widgets-order',
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/filters/dismissable-notice.php:94:add_action( 'wp_ajax_kubio-dismissable-notice--dismiss', '_kubio_dismiss_dismissable_notice' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/integrations/image-hub/image-hub.php:21:		add_action( 'wp_ajax_kubio-image-hub-install-plugin', array( $this, 'install_image_hub_plugin' ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/admin-tab/tab.php:51:	'wp_ajax_kubio_clear_ai_logs',
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/preview/index.php:171:	'wp_ajax_kubio-delete-changeset',
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/preview/index.php:281:	'wp_ajax_kubio_url_previewer',
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/editor-assets.php:499:add_action( 'wp_ajax_kubio_style_manager_web_worker', 'kubio_print_style_manager_web_worker' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/Core/KubioFrontPageRevertNotice.php:24:        add_action('wp_ajax_kubio_front_page_revert_action', array($this, 'onKeepKubioFrontPage'));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/Core/KubioFrontPageRevertNotice.php:25:        add_action('wp_ajax_kubio_restore_front_page', array($this, 'onRestoreUserFrontPage'));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/NotificationsManager.php:45:		add_action( 'wp_ajax_kubio-remote-notifications-retrieve', array( NotificationsManager::class, 'updateNotificationsData' ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/DemoSites/DemoSitesImporter.php:54:		add_action( 'wp_ajax_kubio-demo-site-import-data', array( $this, 'ajaxImportDemoData' ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/DemoSites/DemoSitesImporter.php:62:	 * This is the ajax callback added to `wp_ajax_kubio-demo-site-import-data` and it will import a demo-data by a
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/DemoSites/DemoSitesRepository.php:36:		add_action( 'wp_ajax_kubio-demo-sites-retrieve', array( $this, 'actionRetrieveDemoSites' ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/DemoSites/DemoSites.php:323:		add_action( 'wp_ajax_kubio-demo-site-install-plugin', array( $this, 'installPlugin' ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/DemoSites/DemoSites.php:324:		add_action( 'wp_ajax_kubio-demo-site-activate-plugin', array( $this, 'activatePlugin' ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/GoogleFontsLocalLoader.php:498:		add_action( "wp_ajax_{$this->font_file_action}", array( $this, 'resolveFont' ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/GoogleFontsLocalLoader.php:499:		add_action( "wp_ajax_nopriv_{$this->font_file_action}", array( $this, 'resolveFont' ) );
+[Admin POST]
+[Shortcodes + Blocks]
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/filters.php:76:	'kubio/blocks/register_block_type',
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/shortcodes/subscribe-form/subscribe-form.php:90:add_shortcode( 'kubio_newsletter', 'kubio_newsletter_shortcode' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/shortcodes/contact-form/index.php:8:add_shortcode( 'kubio_contact_form', 'kubio_contact_form_shortcode' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/kubio-block-library.php:143:function kubio_register_block_types() {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/kubio-block-library.php:186:add_action( 'init', 'kubio_register_block_types', 9 );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/kubio-block-library.php:200:function kubio_register_block_type_from_metadata_array( $metadata, $args = array() ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/filters/add-block-support.php:17:add_filter( 'register_block_type_args', 'kubio_ai_add_block_support', 10, 2 );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/Core/Registry.php:81:		$metadata = apply_filters( 'kubio/blocks/register_block_type', $metadata );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/Core/Registry.php:95:				kubio_register_block_type_from_metadata_array(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/Core/Registry.php:108:						kubio_register_block_type_from_metadata_array(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/build/third-party-blocks/index.php:16:		add_filter( 'register_block_type_args', array( $this, 'addBlockAttrsAndStyleSupport' ), 10, 2 );
+
+--- SECURITY GUARDS ---
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/filters/dismissable-notice.php:60:	check_ajax_referer( 'kubio-dismissable-notice--dismiss-nonce' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/global-data.php:53:				return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/integrations/third-party-themes/templates-importer.php:363:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/integrations/third-party-themes/templates-importer.php:364:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/integrations/third-party-themes/templates-importer.php:375:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/integrations/third-party-themes/templates-importer.php:376:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/integrations/image-hub/image-hub.php:67:		check_ajax_referer( 'kubio_ajax_nonce' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/integrations/image-hub/image-hub.php:68:		if(!current_user_can( 'install_plugins' )) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/add-edit-in-kubio.php:29:	if ( ! current_user_can( 'edit_theme_options' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/add-edit-in-kubio.php:119:	if ( ! current_user_can( 'edit_theme_options' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/add-edit-in-kubio.php:280:	if ( ! is_admin() && current_user_can( 'edit_theme_options' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/add-edit-in-kubio.php:355:	if ( ! current_user_can( 'edit_theme_options' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/SDApi/sd-endpoints.php:14:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/SDApi/sd-endpoints.php:15:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/SDApi/sd-endpoints.php:26:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/SDApi/sd-endpoints.php:27:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/SDApi/sd-endpoints.php:38:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/SDApi/sd-endpoints.php:39:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/SDApi/sd-endpoints.php:50:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/SDApi/sd-endpoints.php:51:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/SDApi/sd-endpoints.php:62:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/SDApi/sd-endpoints.php:63:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/admin-tab/tab.php:55:		if ( ! wp_verify_nonce( $nonce, 'kubio_clear_ai_logs' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:21:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:22:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:33:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:34:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:45:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:46:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:57:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:58:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:69:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:70:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:81:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:82:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:93:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:94:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:105:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:106:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:117:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:118:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:128:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:129:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:140:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:141:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:151:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:152:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:162:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:163:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:173:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:174:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:185:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:186:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:197:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:198:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:209:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:210:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:221:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:222:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:233:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:234:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:245:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:246:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:257:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:258:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:269:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:270:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:281:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:282:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:293:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:294:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:307:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:308:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:320:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:321:					return  current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:331:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:332:					return  current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:342:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:343:					return  current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:354:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:355:					return  current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:366:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:367:					return  current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:379:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:380:					return  current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:391:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:392:					return  current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:402:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:403:					return  current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:414:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:415:					return  current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:425:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:426:					return  current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:437:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:438:					return  current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:449:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:450:					return  current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/kubio-editor.php:978:	if ( ! current_user_can( 'edit_theme_options' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/kubio-editor.php:1246:			if ( ! current_user_can( 'edit_theme_options' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/menu-rest-controller.php:18:					'permission_callback' => array( $this, 'get_permissions' ),
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/menu-rest-controller.php:32:					'permission_callback' => array( $this, 'get_permissions' ),
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/menu-rest-controller.php:53:					'permission_callback' => array( $this, 'get_permissions' ),
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/menu-rest-controller.php:61:					'permission_callback' => array( $this, 'get_permissions' ),
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/menu-rest-controller.php:76:		return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/class-wp-rest-menus-controller.php:36:		if ( ! current_user_can( $tax_obj->cap->edit_terms ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/class-wp-rest-menus-controller.php:56:		if ( ! current_user_can( 'edit_term', $term->term_id ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/class-wp-rest-menus-controller.php:138:		if ( ! current_user_can( 'edit_theme_options' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/class-wp-rest-menus-controller.php:170:		if ( ! current_user_can( 'edit_theme_options' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/class-wp-rest-menu-locations-controller.php:37:					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/class-wp-rest-menu-locations-controller.php:57:					'permission_callback' => array( $this, 'get_item_permissions_check' ),
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/class-wp-rest-menu-locations-controller.php:75:		if ( ! current_user_can( 'edit_theme_options' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/class-wp-rest-menu-locations-controller.php:112:		if ( ! current_user_can( 'edit_theme_options' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/typekit.php:41:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/typekit.php:42:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/subscribe-form.php:50:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/subscribe-form.php:51:					return current_user_can( 'edit_posts' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/index.php:22:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/index.php:23:					return current_user_can( 'edit_posts' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/index.php:35:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/index.php:36:					return current_user_can( 'edit_posts' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/index.php:47:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/index.php:48:					return current_user_can( 'edit_posts' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/contact-forms.php:16:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/contact-forms.php:17:					return current_user_can( 'edit_posts' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/contact-forms.php:29:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/contact-forms.php:30:					return current_user_can( 'edit_posts' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/newsletter/index.php:17:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/newsletter/index.php:18:					return current_user_can( 'edit_posts' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/newsletter/index.php:30:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/newsletter/index.php:31:					return current_user_can( 'edit_posts' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/fluent-booking.php:16:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/fluent-booking.php:17:					return current_user_can( 'edit_posts' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/fluent-booking.php:29:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/fluent-booking.php:30:					return current_user_can( 'edit_posts' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/bubble-chat.php:18:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/bubble-chat.php:19:					return current_user_can( 'edit_posts' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/bubble-chat.php:31:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/bubble-chat.php:32:					return current_user_can( 'edit_posts' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/bubble-chat.php:44:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/bubble-chat.php:45:					return current_user_can( 'edit_posts' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/page-templates.php:32:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/page-templates.php:33:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/multilanguage/index.php:18:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/multilanguage/index.php:19:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/multilanguage/wpml.php:14:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/multilanguage/wpml.php:15:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/multilanguage/wpml.php:23:	//check_ajax_referer('kubio_api_wpml_add_page_translation'); // TODO: check nonce
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/multilanguage/polylang.php:14:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/multilanguage/polylang.php:15:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/multilanguage/polylang.php:33:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/multilanguage/polylang.php:34:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/multilanguage/polylang.php:52:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/multilanguage/polylang.php:53:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/multilanguage/polylang.php:61:	//check_ajax_referer('kubio_api_polylang_add_page_translation'); // TODO: check nonce
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/multilanguage/polylang.php:86:	//check_ajax_referer('kubio_api_polylang_add_template_translation'); // TODO: check nonce
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/multilanguage/polylang.php:101:	//check_ajax_referer('nonce_name'); // TODO: check nonce
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/save-template-parts-filter.php:61:			return current_user_can( 'edit_posts' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/kubio-cloud.php:17:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/kubio-cloud.php:18:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/kubio-cloud.php:29:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/kubio-cloud.php:30:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/update-settings-flags.php:75:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/update-settings-flags.php:76:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/update-settings-flags.php:88:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/update-settings-flags.php:89:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/update-settings-flags.php:101:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/update-settings-flags.php:102:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/update-settings-flags.php:114:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/update-settings-flags.php:115:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/update-settings-flags.php:127:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/update-settings-flags.php:128:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/contact-form.php:74:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/contact-form.php:75:					return current_user_can( 'edit_posts' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/entity.php:22:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/entity.php:23:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:18:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:19:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:30:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:31:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:42:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:43:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:54:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:55:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:66:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:67:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:78:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:79:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:89:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:90:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/preview/index.php:173:		check_ajax_referer( 'kubio_ajax_nonce' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/preview/index.php:285:		check_ajax_referer( 'kubio_ajax_nonce' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/admin-pages/main-page/demo-sites.php:7:if ( ! current_user_can( 'edit_theme_options' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/full-site-editing/class-templates-list-table.php:13:		$can_edit_post = current_user_can( 'edit_post', $post->ID );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/full-site-editing/class-templates-list-table.php:38:		if ( current_user_can( 'delete_post', $post->ID ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/full-site-editing/class-templates-list-table.php:124:		if ( ! current_user_can( 'delete_post', $post->ID ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/editor-assets.php:451:	check_ajax_referer( 'kubio_style_manager_web_worker_nonce' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/Core/KubioFrontPageRevertNotice.php:55:				'permission_callback' => function () {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/Core/KubioFrontPageRevertNotice.php:56:					return current_user_can( 'edit_theme_options' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/Core/KubioFrontPageRevertNotice.php:94:        return is_user_logged_in() && current_user_can('manage_options');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/Core/KubioFrontPageRevertNotice.php:145:        check_ajax_referer(static::$nonceKey);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/Core/KubioFrontPageRevertNotice.php:153:        check_ajax_referer(static::$nonceKey);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/Core/Utils.php:99:		return current_user_can( 'edit_theme_options' ) && current_user_can( 'edit_posts' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/NotificationsManager.php:80:		check_ajax_referer( 'kubio-remote-notifications-retrieve-nonce' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/DemoSites/DemoSitesRepository.php:46:		check_ajax_referer( 'kubio-demo-sites-retrieve-nonce' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/DemoSites/DemoSitesHelpers.php:16:		check_ajax_referer( 'kubio-ajax-demo-site-verification', 'nonce' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/DemoSites/DemoSitesHelpers.php:19:		if ( ! current_user_can( 'import' ) ) {
+
+--- SINKS ---
+[SQL]
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/recommendations/fluent-booking.php:33:	$calendars = $wpdb->get_results( "SELECT * FROM $calendar_table WHERE user_id = 1", ARRAY_A );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/recommendations/fluent-booking.php:45:	$events = $wpdb->get_results( "SELECT * FROM $calendar_slot_table WHERE calendar_id = $calendar_id", ARRAY_A );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/recommendations/fluent-booking.php:86:	$calendars = $wpdb->get_results( "SELECT * FROM $calendar_table WHERE user_id = 1", OBJECT );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/menu-rest-controller.php:19:					'args'                => $this->get_collection_params(),
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/class-wp-rest-menu-locations-controller.php:38:					'args'                => $this->get_collection_params(),
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/Core/Importer.php:630:		$id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid=%s", $guid ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/DemoSites/WXRExporter.php:70:		$post_ids = $wpdb->get_col( "SELECT ID FROM {$wpdb->posts} $join WHERE $where" );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/DemoSites/WXRExporter.php:202:						$posts = $wpdb->get_results( "SELECT * FROM {$wpdb->posts} $where" );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/DemoSites/WXRExporter.php:269:								$postmeta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $wpdb->postmeta WHERE post_id = %d", $post->ID ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/DemoSites/WXRExporter.php:295:								$_comments = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $wpdb->comments WHERE comment_post_ID = %d AND comment_approved <> 'spam'", $post->ID ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/DemoSites/WXRExporter.php:314:										$c_meta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $wpdb->commentmeta WHERE comment_id = %d", $c->comment_ID ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/DemoSites/WXRExporter.php:392:		$results = $wpdb->get_results( "SELECT DISTINCT post_author FROM $wpdb->posts WHERE post_status != 'auto-draft' $and" );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/DemoSites/WXRExporter.php:474:		$termmeta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $wpdb->termmeta WHERE term_id = %d", $term->term_id ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/DemoSites/WXRImporter.php:444:			$wpdb->query( $query );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/proteusthemes/wp-content-importer-v2/src/WXRImporter.php:2306:			$wpdb->query( $query );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/proteusthemes/wp-content-importer-v2/src/WXRImporter.php:2310:			$wpdb->query( $query );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/proteusthemes/wp-content-importer-v2/src/WXRImporter.php:2395:		$posts = $wpdb->get_results( "SELECT ID, guid FROM {$wpdb->posts}" );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/proteusthemes/wp-content-importer-v2/src/WXRImporter.php:2448:		$posts = $wpdb->get_results( "SELECT comment_ID, comment_author, comment_date FROM {$wpdb->comments}" );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/proteusthemes/wp-content-importer-v2/src/WXRImporter.php:2502:		$terms = $wpdb->get_results( $query );
+[File ops]
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/migrations/1-kubio_themes_add_pls_prs_templates.php:17:	$page_with_left_sidebar  = file_get_contents( "{$root}/templates/page-with-left-sidebar.html" );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/migrations/1-kubio_themes_add_pls_prs_templates.php:18:	$page_with_right_sidebar = file_get_contents( "{$root}/templates/page-with-right-sidebar.html" );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/migrations/1-kubio_themes_add_pls_prs_templates.php:19:	$page_sidebar            = file_get_contents( "{$root}/parts/page-sidebar.html" );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/plugin.php:63:define( 'KUBIO_LOGO_SVG', file_get_contents( KUBIO_LOGO_PATH ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/global-data.php:123:			$content = file_get_contents( __DIR__ . '/../defaults/global-data.json' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/global-data.php:221:	$content = file_get_contents( __DIR__ . '/../defaults/global-data.json' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/recommendations/recommendation-page-post-type.php:50:	$single_template = file_get_contents( KUBIO_ROOT_DIR . '/defaults/recommendations-templates/single-kubio_recommend_page.html' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/integrations/woocommerce-basic/woocommerce-basic.php:58:	$style_types = json_decode( file_get_contents( KUBIO_BUILD_DIR . '/woocommerce-styles/style-types.json' ), true );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/integrations/third-party-themes/templates.php:36:		if ( ! preg_match( '|Template Name:(.*)$|mi', file_get_contents( $full_path ), $header ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/integrations/third-party-themes/templates.php:50:		if ( preg_match( '|Template Post Type:(.*)$|mi', file_get_contents( $full_path ), $type ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/integrations/third-party-themes/templates-importer.php:57:			$content = file_get_contents( $templates[ $template_key ] );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/integrations/third-party-themes/templates-importer.php:107:			$content = file_get_contents( $file );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/integrations/third-party-themes/templates-importer.php:274:				$fp_content = file_get_contents( KUBIO_ROOT_DIR . '/lib/integrations/third-party-themes/front-page.html' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/integrations/third-party-themes/templates-importer.php:420:			$data['post_content'] = KubioThirdPartyThemeBlockImporter::mapBlocksTemplateParts( file_get_contents( $file ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/integrations/third-party-themes/templates-importer.php:428:			$header = file_get_contents( $file );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/integrations/third-party-themes/templates-importer.php:436:			$header = file_get_contents( KUBIO_3RD_PARTY_DEFAULT_TEMPLATES_PATH . '/parts/kubio-header.html' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/integrations/third-party-themes/templates-importer.php:447:		$footer = file_get_contents( KUBIO_3RD_PARTY_DEFAULT_TEMPLATES_PATH . '/parts/kubio-footer.html' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/integrations/third-party-themes/templates-importer.php:457:			$sidebar = file_get_contents( KUBIO_3RD_PARTY_DEFAULT_TEMPLATES_PATH . '/default-blog/parts/kubio-blog-sidebar.html' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/kubio-block-library.php:80:		$metadata = json_decode( file_get_contents( $mixin ), true );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/SDApi/KubioImageManager.php:32:		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/SDApi/KubioImageManager.php:33:		$filename = fopen( $this->get_image_path( $output_file ), 'wb' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/SDApi/KubioImageManager.php:47:		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/SDApi/KubioImageManager.php:48:		$filename = fopen(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/SDApi/KubioImageManager.php:79:			file_get_contents(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/SDApi/KubioImageManager.php:90:		$file_contents = file_get_contents( $image_url );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/admin-tab/partials/log.php:23:		$lines = array_merge( $lines, explode( "\n", file_get_contents( $log_file ) ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/index.php:76:	$content = file_get_contents( $page_file_path );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:150:			'body'    => file_get_contents( $zip_path ),
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:213:			'body'    => file_get_contents( $zip_path ),
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:282:			$file     = file_get_contents( $file_path );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/admin-pages/main-page/get-started.php:76:										$icon      = file_exists( $icon_file ) ? file_get_contents( $icon_file ) : '';
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/admin-pages/pages.php:41:						<?php echo wp_kses_post( file_get_contents( kubio_admin_assets_path() . '/kubio-logo.svg' ) ); ?>
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/full-site-editing/template-loader.php:116:		$file_contents         = file_get_contents( $higher_priority_block_template_path );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/full-site-editing/template-loader.php:248:					$file_contents = file_get_contents( $template_part_file_path );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/full-site-editing/block-templates.php:142:	$template_content       = file_get_contents( $template_file['path'] );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/editor-assets.php:485:	$content = file_get_contents( KUBIO_ROOT_DIR . '/defaults/style-manager-web-worker-template.js' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/Core/Blocks/TemplatePartBlockBase.php:99:							$content = file_get_contents( $template_part_file_path );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/Core/Activation.php:348:			$content              = file_get_contents( KUBIO_ROOT_DIR . '/defaults/default-site.dat' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/Core/Importer.php:276:				$content = file_get_contents( $path );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/Core/Backup.php:130:				file_put_contents( $htaccess_file, "Deny from all\n" );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/Core/Backup.php:134:		return file_put_contents( $file_path, serialize( $content ) ) !== false;
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/Core/Backup.php:145:		return unserialize( file_get_contents( $file_path ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/Core/Separators/Separator.php:11:use function file_get_contents;
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/Core/Separators/Separator.php:56:		$html = file_get_contents( KUBIO_ROOT_DIR . 'lib/shapes/separators/' . $type . '.svg' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/Core/GlobalElements/Icon.php:21:				$svg = file_get_contents( $svg_file );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/DemoSites/DemoSitesHelpers.php:106:			$content = file_get_contents( $source );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/DemoSites/DemoSitesHelpers.php:172:		$content     = file_get_contents( $kds_file );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/DemoSites/DemoSitesHelpers.php:225:		if ( false === file_put_contents( $file_path, $content ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/DemoSites/DemoSitesHelpers.php:300:			$existing_data = file_get_contents( $file_path );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/DemoSites/DemoSitesHelpers.php:310:		if ( ! file_put_contents( $file_path, $existing_data . $separator . $content . PHP_EOL ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/GoogleFontsLocalLoader.php:152:		return file_put_contents( $path, $content );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/GoogleFontsLocalLoader.php:430:			return file_get_contents( $this->getLocalFontFilePath( $font_file ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/CLI/ExportDemoSiteCommand.php:54:		file_put_contents( $file, $content );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/Config.php:5:use function file_get_contents;
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/Config.php:25:		self::$config_types = apply_filters( 'kubio/style-types', json_decode( file_get_contents( $types_f ), true ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/FileLog.php:71:		$response = file_put_contents(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/src/FileLog.php:103:		$response = file_put_contents(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/build/third-party-blocks/index.php:178:					$settings = json_decode( file_get_contents( __DIR__ . '/' . $meta_file ), true );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/proteusthemes/wp-content-importer-v2/src/WXRImporter.php:1935:			unlink( $upload['file'] );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/proteusthemes/wp-content-importer-v2/src/WXRImporter.php:1943:			unlink( $upload['file'] );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/proteusthemes/wp-content-importer-v2/src/WXRImporter.php:1963:		// 	unlink( $upload['file'] );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/proteusthemes/wp-content-importer-v2/src/WXRImporter.php:1968:			unlink( $upload['file'] );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/proteusthemes/wp-content-importer-v2/src/WXRImporter.php:1974:			unlink( $upload['file'] );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/lodash-php/lodash-php/src/String/template.php:181:            \file_put_contents($file, "<?php namespace __template; $imports (function() { extract(".\var_export($arguments, true).'); ?>'.$this->source.'<?php })()?>');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/lodash-php/lodash-php/src/String/template.php:190:            \unlink($file);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/fzaninotto/faker/src/Faker/Provider/de_CH/Text.php:1806:    1.E.4.  Do not unlink or detach or remove the full Project Gutenberg-tm
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/fzaninotto/faker/src/Faker/Provider/en_US/Text.php:3490:    1.E.4.  Do not unlink or detach or remove the full Project Gutenberg-tm
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/fzaninotto/faker/src/Faker/Provider/fr_CA/Text.php:2214:    1.E.4.  Do not unlink or detach or remove the full Project Gutenberg-tm
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/fzaninotto/faker/src/Faker/Provider/fr_FR/Text.php:15301:    1.E.4.  Do not unlink or detach or remove the full Project Gutenberg-tm
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/fzaninotto/faker/src/Faker/Provider/Image.php:60:     * Requires curl, or allow_url_fopen to be on in php.ini.
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/fzaninotto/faker/src/Faker/Provider/Image.php:83:            $fp = fopen($filepath, 'w');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/fzaninotto/faker/src/Faker/Provider/Image.php:91:                unlink($filepath);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/fzaninotto/faker/src/Faker/Provider/Image.php:96:        } elseif (ini_get('allow_url_fopen')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/fzaninotto/faker/src/Faker/Provider/Image.php:97:            // use remote fopen() via copy()
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/fzaninotto/faker/src/Faker/Provider/Image.php:100:            return new \RuntimeException('The image formatter downloads an image from a remote HTTP server. Therefore, it requires that PHP can request remote hosts, either via cURL or fopen()');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/fzaninotto/faker/src/Faker/Provider/de_DE/Text.php:1806:    1.E.4.  Do not unlink or detach or remove the full Project Gutenberg-tm
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/symfony/var-dumper/Caster/ExceptionCaster.php:239:                        $src = self::extractSource(file_get_contents($f['file']), $f['line'], self::$srcContext, 'php', $f['file'], $f);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/symfony/var-dumper/Command/Descriptor/HtmlDescriptor.php:38:            $styles = file_get_contents(__DIR__.'/../../Resources/css/htmlDescriptor.css');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/symfony/var-dumper/Command/Descriptor/HtmlDescriptor.php:39:            $scripts = file_get_contents(__DIR__.'/../../Resources/js/htmlDescriptor.js');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/symfony/var-dumper/Dumper/AbstractDumper.php:72:                $output = fopen($output, 'w');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/symfony/var-dumper/Dumper/AbstractDumper.php:129:            $output = fopen('php://memory', 'r+');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/symfony/var-dumper/Dumper/CliDumper.php:557:        $h = 'Output' === $h['stream_type'] && 'PHP' === $h['wrapper_type'] ? fopen('php://stdout', 'w') : $this->outputStream;
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/symfony/property-info/PhpStan/NameScopeFactory.php:58:            if (false === $contents = file_get_contents($fileName)) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/sebastian/diff/src/Output/DiffOnlyOutputBuilder.php:13:use function fopen;
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/sebastian/diff/src/Output/DiffOnlyOutputBuilder.php:37:        $buffer = fopen('php://memory', 'r+b');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/sebastian/diff/src/Output/UnifiedDiffOutputBuilder.php:15:use function fopen;
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/sebastian/diff/src/Output/UnifiedDiffOutputBuilder.php:62:        $buffer = fopen('php://memory', 'r+b');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/sebastian/diff/src/Output/StrictUnifiedDiffOutputBuilder.php:16:use function fopen;
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/sebastian/diff/src/Output/StrictUnifiedDiffOutputBuilder.php:113:        $buffer = fopen('php://memory', 'r+b');
+
+--- REST JSON (magic quote bypass) ---
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/integrations/third-party-themes/templates-importer.php:243:		$start_with_frontpage = Utils::isTrue( $req->get_param( 'start_with_frontpage' ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/AI/api.php:485:			'disabled' => $request->get_param( 'disabled' ),
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/menu-rest-controller.php:89:		$type           = $request->get_param( 'type' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/menu-rest-controller.php:90:		$content        = $request->get_param( 'data' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/menu-rest-controller.php:94:		$location       = $request->get_param( 'location' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/menu-rest-controller.php:105:			'id'           => intval( $request->get_param( 'id' ) ),
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/menu-rest-controller.php:283:		$id = intval( $request->get_param( 'id' ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/menu-rest-controller.php:289:		$location = $request->get_param( 'location' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/menu-rest-controller.php:306:		$id       = intval( $request->get_param( 'id' ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/menu-rest-controller.php:307:		$location = $request->get_param( 'location' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/menu-rest-controller.php:308:		$label    = $request->get_param( 'label' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/menu-rest-controller.php:340:		$location = $request->get_param( 'location' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/menu/menu-rest-controller.php:341:		$id       = $request->get_param( 'id' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/get-body-class.php:14:			$classes = array_diff( get_body_class(), $omit_classes );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/typekit.php:5:	$path = $data->get_param( 'path' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/typekit.php:6:	$key  = $data->get_param( 'key' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/index.php:57:	$plugin_slug    = $request->get_param( 'pluginSlug' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/index.php:82:	$plugin_slug = $request->get_param( 'plugin' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/bubble-chat.php:126:		$id = $request->get_param( 'widgetId' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/recommendations/bubble-chat.php:127:		$params = $request->get_param( 'params' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/multilanguage/wpml.php:25:	$post_id  = $request->get_param( 'postId' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/multilanguage/wpml.php:26:	$new_lang = $request->get_param( 'newLang' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/multilanguage/polylang.php:63:	$post_id  = $request->get_param( 'postId' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/multilanguage/polylang.php:64:	$new_lang = $request->get_param( 'newLang' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/multilanguage/polylang.php:88:	$post_id  = $request->get_param( 'postId' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/multilanguage/polylang.php:89:	$new_lang = $request->get_param( 'newLang' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/multilanguage/polylang.php:102:	$post_type = $request->get_param( 'postType' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:110:	$name        = $request->get_param( 'name' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:111:	$category    = $request->get_param( 'category' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:112:	$snippet     = $request->get_param( 'snippet' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:113:	$screenshot  = $request->get_param( 'screenshot' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:114:	$global_data = $request->get_param( 'globalData' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:171:	$id          = $request->get_param( 'id' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:172:	$name        = $request->get_param( 'name' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:173:	$category    = $request->get_param( 'category' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:174:	$snippet     = $request->get_param( 'snippet' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:175:	$screenshot  = $request->get_param( 'screenshot' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:176:	$global_data = $request->get_param( 'globalData' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:340:	$params          = $request->get_param( 'params' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/lib/api/colibri.php:380:	$params          = $request->get_param( 'params' );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/kubio/vendor/symfony/var-dumper/Caster/ResourceCaster.php:58:        return @stream_context_get_params($stream) ?: $a;

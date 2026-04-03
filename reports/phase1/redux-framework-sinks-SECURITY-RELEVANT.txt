@@ -1,0 +1,2020 @@
+SECURITY-RELEVANT SINKS (224 entries)
+Categories included: ['sql', 'include', 'eval', 'file_write', 'file_read', 'file_delete', 'exec', 'redirect', 'option_update', 'meta_update', 'remote_request', 'unserialize', 'header']
+====================================================================================================
+
+--- Security Sink #1 ---
+  id:                       sink_1
+  entry_point_id:           ep_ajax_priv_wp_ajax_redux_update_google_fonts
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-ajax-typography.php
+  line:                     47
+
+--- Security Sink #2 ---
+  id:                       sink_1
+  entry_point_id:           ep_ajax_priv_wp_ajax_redux_hide_admin_notice
+  category:                 meta_update
+  function_called:          update_user_meta
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-admin-notices.php
+  line:                     241
+
+--- Security Sink #3 ---
+  id:                       sink_1
+  entry_point_id:           ep_ajax_priv_wp_ajax_redux_get_icons
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/icon_select/class-redux-extension-icon-select.php
+  line:                     76
+
+--- Security Sink #4 ---
+  id:                       sink_2
+  entry_point_id:           ep_ajax_priv_wp_ajax_redux_get_icons
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/icon_select/class-redux-extension-icon-select.php
+  line:                     81
+
+--- Security Sink #5 ---
+  id:                       sink_3
+  entry_point_id:           ep_ajax_priv_wp_ajax_redux_get_icons
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/icon_select/class-redux-extension-icon-select.php
+  line:                     86
+
+--- Security Sink #6 ---
+  id:                       sink_1
+  entry_point_id:           ep_wp_loaded_wp_loaded
+  category:                 option_update
+  function_called:          update_site_option
+  uses_prepared_statement:  None
+  file:                     class-redux-framework-plugin.php
+  line:                     400
+
+--- Security Sink #7 ---
+  id:                       sink_2
+  entry_point_id:           ep_wp_loaded_wp_loaded
+  category:                 option_update
+  function_called:          update_option
+  uses_prepared_statement:  None
+  file:                     class-redux-framework-plugin.php
+  line:                     402
+
+--- Security Sink #8 ---
+  id:                       sink_3
+  entry_point_id:           ep_wp_loaded_wp_loaded
+  category:                 redirect
+  function_called:          wp_safe_redirect
+  uses_prepared_statement:  None
+  file:                     class-redux-framework-plugin.php
+  line:                     405
+
+--- Security Sink #9 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-templates/classes/class-init.php
+  line:                     34
+
+--- Security Sink #10 ---
+  id:                       sink_4
+  entry_point_id:           None
+  category:                 eval
+  function_called:          call_user_func
+  uses_prepared_statement:  None
+  file:                     redux-templates/classes/class-template-overrides.php
+  line:                     60
+
+--- Security Sink #11 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-templates/redux-templates.php
+  line:                     16
+
+--- Security Sink #12 ---
+  id:                       sink_2
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-templates/redux-templates.php
+  line:                     17
+
+--- Security Sink #13 ---
+  id:                       sink_4
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/themecheck/class-redux-themecheck.php
+  line:                     184
+
+--- Security Sink #14 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 redirect
+  function_called:          wp_safe_redirect
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-network.php
+  line:                     78
+
+--- Security Sink #15 ---
+  id:                       sink_68
+  entry_point_id:           None
+  category:                 eval
+  function_called:          call_user_func_array
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-helpers.php
+  line:                     845
+
+--- Security Sink #16 ---
+  id:                       sink_69
+  entry_point_id:           None
+  category:                 eval
+  function_called:          call_user_func_array
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-helpers.php
+  line:                     865
+
+--- Security Sink #17 ---
+  id:                       sink_76
+  entry_point_id:           None
+  category:                 remote_request
+  function_called:          wp_remote_get
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-helpers.php
+  line:                     935
+
+--- Security Sink #18 ---
+  id:                       sink_78
+  entry_point_id:           None
+  category:                 file_delete
+  function_called:          unlink
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-helpers.php
+  line:                     955
+
+--- Security Sink #19 ---
+  id:                       sink_87
+  entry_point_id:           None
+  category:                 eval
+  function_called:          call_user_func_array
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-helpers.php
+  line:                     1126
+
+--- Security Sink #20 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-output.php
+  line:                     105
+
+--- Security Sink #21 ---
+  id:                       sink_2
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-output.php
+  line:                     175
+
+--- Security Sink #22 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 option_update
+  function_called:          update_option
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-transients.php
+  line:                     37
+
+--- Security Sink #23 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-filesystem.php
+  line:                     109
+
+--- Security Sink #24 ---
+  id:                       sink_2
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-filesystem.php
+  line:                     110
+
+--- Security Sink #25 ---
+  id:                       sink_3
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-filesystem.php
+  line:                     111
+
+--- Security Sink #26 ---
+  id:                       sink_13
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-filesystem.php
+  line:                     187
+
+--- Security Sink #27 ---
+  id:                       sink_14
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-filesystem.php
+  line:                     188
+
+--- Security Sink #28 ---
+  id:                       sink_15
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-filesystem.php
+  line:                     189
+
+--- Security Sink #29 ---
+  id:                       sink_21
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-filesystem.php
+  line:                     264
+
+--- Security Sink #30 ---
+  id:                       sink_22
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-filesystem.php
+  line:                     265
+
+--- Security Sink #31 ---
+  id:                       sink_24
+  entry_point_id:           None
+  category:                 file_delete
+  function_called:          rmdir
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-filesystem.php
+  line:                     361
+
+--- Security Sink #32 ---
+  id:                       sink_25
+  entry_point_id:           None
+  category:                 file_write
+  function_called:          copy
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-filesystem.php
+  line:                     363
+
+--- Security Sink #33 ---
+  id:                       sink_26
+  entry_point_id:           None
+  category:                 file_delete
+  function_called:          rmdir
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-filesystem.php
+  line:                     368
+
+--- Security Sink #34 ---
+  id:                       sink_27
+  entry_point_id:           None
+  category:                 file_delete
+  function_called:          unlink
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-filesystem.php
+  line:                     370
+
+--- Security Sink #35 ---
+  id:                       sink_35
+  entry_point_id:           None
+  category:                 file_write
+  function_called:          file_put_contents
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-filesystem.php
+  line:                     536
+
+--- Security Sink #36 ---
+  id:                       sink_39
+  entry_point_id:           None
+  category:                 include
+  function_called:          include_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-filesystem.php
+  line:                     606
+
+--- Security Sink #37 ---
+  id:                       sink_40
+  entry_point_id:           None
+  category:                 file_read
+  function_called:          file_get_contents
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-filesystem.php
+  line:                     613
+
+--- Security Sink #38 ---
+  id:                       sink_43
+  entry_point_id:           None
+  category:                 file_delete
+  function_called:          unlink
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-filesystem.php
+  line:                     648
+
+--- Security Sink #39 ---
+  id:                       sink_56
+  entry_point_id:           None
+  category:                 file_delete
+  function_called:          rmdir
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-filesystem.php
+  line:                     858
+
+--- Security Sink #40 ---
+  id:                       sink_57
+  entry_point_id:           None
+  category:                 file_delete
+  function_called:          rmdir
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-filesystem.php
+  line:                     870
+
+--- Security Sink #41 ---
+  id:                       sink_58
+  entry_point_id:           None
+  category:                 file_delete
+  function_called:          unlink
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-filesystem.php
+  line:                     872
+
+--- Security Sink #42 ---
+  id:                       sink_59
+  entry_point_id:           None
+  category:                 file_delete
+  function_called:          rmdir
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-filesystem.php
+  line:                     877
+
+--- Security Sink #43 ---
+  id:                       sink_67
+  entry_point_id:           None
+  category:                 file_write
+  function_called:          move_uploaded_file
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-filesystem.php
+  line:                     974
+
+--- Security Sink #44 ---
+  id:                       sink_71
+  entry_point_id:           None
+  category:                 file_write
+  function_called:          copy
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-filesystem.php
+  line:                     1008
+
+--- Security Sink #45 ---
+  id:                       sink_72
+  entry_point_id:           None
+  category:                 file_write
+  function_called:          copy
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-filesystem.php
+  line:                     1016
+
+--- Security Sink #46 ---
+  id:                       sink_77
+  entry_point_id:           None
+  category:                 file_write
+  function_called:          copy
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-filesystem.php
+  line:                     1049
+
+--- Security Sink #47 ---
+  id:                       sink_78
+  entry_point_id:           None
+  category:                 file_delete
+  function_called:          unlink
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-filesystem.php
+  line:                     1053
+
+--- Security Sink #48 ---
+  id:                       sink_14
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-functions.php
+  line:                     266
+
+--- Security Sink #49 ---
+  id:                       sink_15
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-functions.php
+  line:                     267
+
+--- Security Sink #50 ---
+  id:                       sink_35
+  entry_point_id:           None
+  category:                 include
+  function_called:          require
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-panel.php
+  line:                     341
+
+--- Security Sink #51 ---
+  id:                       sink_37
+  entry_point_id:           None
+  category:                 include
+  function_called:          require
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-panel.php
+  line:                     347
+
+--- Security Sink #52 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 eval
+  function_called:          call_user_func
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-page-render.php
+  line:                     73
+
+--- Security Sink #53 ---
+  id:                       sink_2
+  entry_point_id:           None
+  category:                 eval
+  function_called:          call_user_func
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-page-render.php
+  line:                     112
+
+--- Security Sink #54 ---
+  id:                       sink_3
+  entry_point_id:           None
+  category:                 eval
+  function_called:          call_user_func
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-page-render.php
+  line:                     325
+
+--- Security Sink #55 ---
+  id:                       sink_5
+  entry_point_id:           None
+  category:                 eval
+  function_called:          call_user_func
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-page-render.php
+  line:                     421
+
+--- Security Sink #56 ---
+  id:                       sink_6
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-page-render.php
+  line:                     501
+
+--- Security Sink #57 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 eval
+  function_called:          call_user_func
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-sanitize.php
+  line:                     85
+
+--- Security Sink #58 ---
+  id:                       sink_2
+  entry_point_id:           None
+  category:                 eval
+  function_called:          call_user_func
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-sanitize.php
+  line:                     108
+
+--- Security Sink #59 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-api.php
+  line:                     127
+
+--- Security Sink #60 ---
+  id:                       sink_2
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-api.php
+  line:                     128
+
+--- Security Sink #61 ---
+  id:                       sink_3
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-api.php
+  line:                     129
+
+--- Security Sink #62 ---
+  id:                       sink_6
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-api.php
+  line:                     242
+
+--- Security Sink #63 ---
+  id:                       sink_7
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-api.php
+  line:                     246
+
+--- Security Sink #64 ---
+  id:                       sink_13
+  entry_point_id:           None
+  category:                 include
+  function_called:          include_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-api.php
+  line:                     325
+
+--- Security Sink #65 ---
+  id:                       sink_14
+  entry_point_id:           None
+  category:                 include
+  function_called:          include_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-api.php
+  line:                     328
+
+--- Security Sink #66 ---
+  id:                       sink_53
+  entry_point_id:           None
+  category:                 include
+  function_called:          include_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-api.php
+  line:                     1525
+
+--- Security Sink #67 ---
+  id:                       sink_60
+  entry_point_id:           None
+  category:                 option_update
+  function_called:          update_option
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-api.php
+  line:                     1751
+
+--- Security Sink #68 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-args.php
+  line:                     208
+
+--- Security Sink #69 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-enqueue.php
+  line:                     409
+
+--- Security Sink #70 ---
+  id:                       sink_2
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-validation.php
+  line:                     140
+
+--- Security Sink #71 ---
+  id:                       sink_3
+  entry_point_id:           None
+  category:                 eval
+  function_called:          call_user_func
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-validation.php
+  line:                     227
+
+--- Security Sink #72 ---
+  id:                       sink_7
+  entry_point_id:           None
+  category:                 eval
+  function_called:          call_user_func
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-wordpress-data.php
+  line:                     475
+
+--- Security Sink #73 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-autoloader.php
+  line:                     81
+
+--- Security Sink #74 ---
+  id:                       sink_2
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-autoloader.php
+  line:                     87
+
+--- Security Sink #75 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 option_update
+  function_called:          update_site_option
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-options-constructor.php
+  line:                     186
+
+--- Security Sink #76 ---
+  id:                       sink_2
+  entry_point_id:           None
+  category:                 option_update
+  function_called:          update_option
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-options-constructor.php
+  line:                     189
+
+--- Security Sink #77 ---
+  id:                       sink_21
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-functions-ex.php
+  line:                     432
+
+--- Security Sink #78 ---
+  id:                       sink_7
+  entry_point_id:           None
+  category:                 meta_update
+  function_called:          update_user_meta
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-admin-notices.php
+  line:                     205
+
+--- Security Sink #79 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/classes/class-redux-extensions.php
+  line:                     68
+
+--- Security Sink #80 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 redirect
+  function_called:          wp_safe_redirect
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/welcome/class-redux-welcome.php
+  line:                     78
+
+--- Security Sink #81 ---
+  id:                       sink_10
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/welcome/class-redux-welcome.php
+  line:                     170
+
+--- Security Sink #82 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 remote_request
+  function_called:          wp_remote_get
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/icon_select/icon_select/class-redux-icon-select.php
+  line:                     109
+
+--- Security Sink #83 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/customizer/inc/customizer_section.php
+  line:                     12
+
+--- Security Sink #84 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/customizer/inc/customizer_panel.php
+  line:                     12
+
+--- Security Sink #85 ---
+  id:                       sink_3
+  entry_point_id:           None
+  category:                 include
+  function_called:          include_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/customizer/class-redux-extension-customizer.php
+  line:                     253
+
+--- Security Sink #86 ---
+  id:                       sink_12
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/customizer/class-redux-extension-customizer.php
+  line:                     399
+
+--- Security Sink #87 ---
+  id:                       sink_13
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/customizer/class-redux-extension-customizer.php
+  line:                     407
+
+--- Security Sink #88 ---
+  id:                       sink_14
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/customizer/class-redux-extension-customizer.php
+  line:                     415
+
+--- Security Sink #89 ---
+  id:                       sink_15
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/customizer/class-redux-extension-customizer.php
+  line:                     607
+
+--- Security Sink #90 ---
+  id:                       sink_16
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/customizer/class-redux-extension-customizer.php
+  line:                     781
+
+--- Security Sink #91 ---
+  id:                       sink_3
+  entry_point_id:           None
+  category:                 option_update
+  function_called:          update_option
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/color_scheme/color_scheme/inc/class-redux-color-scheme-functions.php
+  line:                     128
+
+--- Security Sink #92 ---
+  id:                       sink_15
+  entry_point_id:           None
+  category:                 option_update
+  function_called:          update_option
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/color_scheme/color_scheme/inc/class-redux-color-scheme-functions.php
+  line:                     288
+
+--- Security Sink #93 ---
+  id:                       sink_22
+  entry_point_id:           None
+  category:                 option_update
+  function_called:          update_option
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/color_scheme/color_scheme/inc/class-redux-color-scheme-functions.php
+  line:                     521
+
+--- Security Sink #94 ---
+  id:                       sink_23
+  entry_point_id:           None
+  category:                 option_update
+  function_called:          update_option
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/color_scheme/color_scheme/inc/class-redux-color-scheme-functions.php
+  line:                     524
+
+--- Security Sink #95 ---
+  id:                       sink_44
+  entry_point_id:           None
+  category:                 option_update
+  function_called:          update_option
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/color_scheme/color_scheme/inc/class-redux-color-scheme-functions.php
+  line:                     1117
+
+--- Security Sink #96 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 include
+  function_called:          include_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/color_scheme/class-redux-extension-color-scheme.php
+  line:                     90
+
+--- Security Sink #97 ---
+  id:                       sink_4
+  entry_point_id:           None
+  category:                 option_update
+  function_called:          update_option
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/color_scheme/class-redux-extension-color-scheme.php
+  line:                     138
+
+--- Security Sink #98 ---
+  id:                       sink_6
+  entry_point_id:           None
+  category:                 include
+  function_called:          include_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/color_scheme/class-redux-extension-color-scheme.php
+  line:                     187
+
+--- Security Sink #99 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 include
+  function_called:          include_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/social_profiles/social_profiles/inc/class-redux-social-profiles-widget.php
+  line:                     123
+
+--- Security Sink #100 ---
+  id:                       sink_6
+  entry_point_id:           None
+  category:                 include
+  function_called:          include_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/social_profiles/redux-social-profiles-helpers.php
+  line:                     67
+
+--- Security Sink #101 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/social_profiles/class-redux-extension-social-profiles.php
+  line:                     75
+
+--- Security Sink #102 ---
+  id:                       sink_2
+  entry_point_id:           None
+  category:                 include
+  function_called:          include_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/social_profiles/class-redux-extension-social-profiles.php
+  line:                     77
+
+--- Security Sink #103 ---
+  id:                       sink_3
+  entry_point_id:           None
+  category:                 include
+  function_called:          include_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/social_profiles/class-redux-extension-social-profiles.php
+  line:                     78
+
+--- Security Sink #104 ---
+  id:                       sink_4
+  entry_point_id:           None
+  category:                 include
+  function_called:          include_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/social_profiles/class-redux-extension-social-profiles.php
+  line:                     101
+
+--- Security Sink #105 ---
+  id:                       sink_5
+  entry_point_id:           None
+  category:                 include
+  function_called:          include_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/social_profiles/class-redux-extension-social-profiles.php
+  line:                     110
+
+--- Security Sink #106 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/shortcodes/class-redux-extension-shortcodes.php
+  line:                     46
+
+--- Security Sink #107 ---
+  id:                       sink_7
+  entry_point_id:           None
+  category:                 redirect
+  function_called:          wp_safe_redirect
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/widget_areas/class-redux-widget-areas.php
+  line:                     139
+
+--- Security Sink #108 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/widget_areas/class-redux-extension-widget-areas.php
+  line:                     47
+
+--- Security Sink #109 ---
+  id:                       sink_18
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/tabbed/tabbed/class-redux-tabbed.php
+  line:                     175
+
+--- Security Sink #110 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 include
+  function_called:          include_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/taxonomy/class-redux-extension-taxonomy.php
+  line:                     160
+
+--- Security Sink #111 ---
+  id:                       sink_12
+  entry_point_id:           None
+  category:                 meta_update
+  function_called:          update_post_meta
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/taxonomy/class-redux-extension-taxonomy.php
+  line:                     717
+
+--- Security Sink #112 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/users/class-redux-extension-users.php
+  line:                     153
+
+--- Security Sink #113 ---
+  id:                       sink_16
+  entry_point_id:           None
+  category:                 meta_update
+  function_called:          update_post_meta
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/users/class-redux-extension-users.php
+  line:                     715
+
+--- Security Sink #114 ---
+  id:                       sink_52
+  entry_point_id:           None
+  category:                 meta_update
+  function_called:          update_user_meta
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/users/class-redux-extension-users.php
+  line:                     1108
+
+--- Security Sink #115 ---
+  id:                       sink_20
+  entry_point_id:           None
+  category:                 option_update
+  function_called:          update_option
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/custom_fonts/class-redux-extension-custom-fonts.php
+  line:                     696
+
+--- Security Sink #116 ---
+  id:                       sink_21
+  entry_point_id:           None
+  category:                 remote_request
+  function_called:          wp_remote_post
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/custom_fonts/class-redux-extension-custom-fonts.php
+  line:                     733
+
+--- Security Sink #117 ---
+  id:                       sink_31
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/repeater/repeater/class-redux-repeater.php
+  line:                     432
+
+--- Security Sink #118 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 include
+  function_called:          include_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/metaboxes/class-redux-metaboxes-api.php
+  line:                     86
+
+--- Security Sink #119 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 include
+  function_called:          include_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/metaboxes/class-redux-extension-metaboxes.php
+  line:                     194
+
+--- Security Sink #120 ---
+  id:                       sink_21
+  entry_point_id:           None
+  category:                 eval
+  function_called:          call_user_func
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/metaboxes/class-redux-extension-metaboxes.php
+  line:                     1026
+
+--- Security Sink #121 ---
+  id:                       sink_27
+  entry_point_id:           None
+  category:                 meta_update
+  function_called:          update_post_meta
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/metaboxes/class-redux-extension-metaboxes.php
+  line:                     1119
+
+--- Security Sink #122 ---
+  id:                       sink_62
+  entry_point_id:           None
+  category:                 meta_update
+  function_called:          update_post_meta
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/metaboxes/class-redux-extension-metaboxes.php
+  line:                     1479
+
+--- Security Sink #123 ---
+  id:                       sink_64
+  entry_point_id:           None
+  category:                 meta_update
+  function_called:          update_post_meta
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/metaboxes/class-redux-extension-metaboxes.php
+  line:                     1511
+
+--- Security Sink #124 ---
+  id:                       sink_65
+  entry_point_id:           None
+  category:                 meta_update
+  function_called:          update_post_meta
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/extensions/metaboxes/class-redux-extension-metaboxes.php
+  line:                     1515
+
+--- Security Sink #125 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 file_write
+  function_called:          file_put_contents
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/lib/get-font-classes.php
+  line:                     34
+
+--- Security Sink #126 ---
+  id:                       sink_2
+  entry_point_id:           None
+  category:                 file_read
+  function_called:          file_get_contents
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/lib/get-font-classes.php
+  line:                     42
+
+--- Security Sink #127 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 include
+  function_called:          include_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/fields/color_gradient/class-redux-color-gradient.php
+  line:                     71
+
+--- Security Sink #128 ---
+  id:                       sink_2
+  entry_point_id:           None
+  category:                 include
+  function_called:          include_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/fields/color_gradient/class-redux-color-gradient.php
+  line:                     74
+
+--- Security Sink #129 ---
+  id:                       sink_155
+  entry_point_id:           None
+  category:                 include
+  function_called:          include
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/fields/typography/class-redux-typography.php
+  line:                     1432
+
+--- Security Sink #130 ---
+  id:                       sink_158
+  entry_point_id:           None
+  category:                 option_update
+  function_called:          update_option
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/fields/typography/class-redux-typography.php
+  line:                     1567
+
+--- Security Sink #131 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 include
+  function_called:          include_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/fields/select/class-redux-select.php
+  line:                     78
+
+--- Security Sink #132 ---
+  id:                       sink_63
+  entry_point_id:           None
+  category:                 eval
+  function_called:          call_user_func
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/fields/raw/parsedown.php
+  line:                     1458
+
+--- Security Sink #133 ---
+  id:                       sink_65
+  entry_point_id:           None
+  category:                 eval
+  function_called:          call_user_func
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/fields/raw/parsedown.php
+  line:                     1476
+
+--- Security Sink #134 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/fields/raw/class-redux-raw.php
+  line:                     39
+
+--- Security Sink #135 ---
+  id:                       sink_2
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/fields/raw/class-redux-raw.php
+  line:                     48
+
+--- Security Sink #136 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 include
+  function_called:          include_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/fields/media/class-redux-media.php
+  line:                     111
+
+--- Security Sink #137 ---
+  id:                       sink_2
+  entry_point_id:           None
+  category:                 include
+  function_called:          include_once
+  uses_prepared_statement:  None
+  file:                     redux-core/inc/fields/media/class-redux-media.php
+  line:                     114
+
+--- Security Sink #138 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 sql
+  function_called:          get_var
+  uses_prepared_statement:  True
+  file:                     redux-core/inc/validation/unique_slug/class-redux-validation-unique-slug.php
+  line:                     45
+
+--- Security Sink #139 ---
+  id:                       sink_2
+  entry_point_id:           None
+  category:                 sql
+  function_called:          get_var
+  uses_prepared_statement:  True
+  file:                     redux-core/inc/validation/unique_slug/class-redux-validation-unique-slug.php
+  line:                     68
+
+--- Security Sink #140 ---
+  id:                       sink_2
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/class-redux-core.php
+  line:                     301
+
+--- Security Sink #141 ---
+  id:                       sink_4
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/class-redux-core.php
+  line:                     338
+
+--- Security Sink #142 ---
+  id:                       sink_5
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/class-redux-core.php
+  line:                     339
+
+--- Security Sink #143 ---
+  id:                       sink_6
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/class-redux-core.php
+  line:                     340
+
+--- Security Sink #144 ---
+  id:                       sink_7
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/class-redux-core.php
+  line:                     341
+
+--- Security Sink #145 ---
+  id:                       sink_10
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/class-redux-core.php
+  line:                     390
+
+--- Security Sink #146 ---
+  id:                       sink_12
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/class-redux-core.php
+  line:                     536
+
+--- Security Sink #147 ---
+  id:                       sink_13
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/class-redux-core.php
+  line:                     542
+
+--- Security Sink #148 ---
+  id:                       sink_14
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/class-redux-core.php
+  line:                     543
+
+--- Security Sink #149 ---
+  id:                       sink_15
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/class-redux-core.php
+  line:                     550
+
+--- Security Sink #150 ---
+  id:                       sink_16
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/class-redux-core.php
+  line:                     557
+
+--- Security Sink #151 ---
+  id:                       sink_17
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/class-redux-core.php
+  line:                     563
+
+--- Security Sink #152 ---
+  id:                       sink_18
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/class-redux-core.php
+  line:                     592
+
+--- Security Sink #153 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-core/framework.php
+  line:                     33
+
+--- Security Sink #154 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-framework.php
+  line:                     35
+
+--- Security Sink #155 ---
+  id:                       sink_2
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     redux-framework.php
+  line:                     43
+
+--- Security Sink #156 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sections/extensions/icon-select.php
+  line:                     16
+
+--- Security Sink #157 ---
+  id:                       sink_1
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     330
+
+--- Security Sink #158 ---
+  id:                       sink_2
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     331
+
+--- Security Sink #159 ---
+  id:                       sink_3
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     332
+
+--- Security Sink #160 ---
+  id:                       sink_4
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     333
+
+--- Security Sink #161 ---
+  id:                       sink_5
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     334
+
+--- Security Sink #162 ---
+  id:                       sink_6
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     335
+
+--- Security Sink #163 ---
+  id:                       sink_7
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     336
+
+--- Security Sink #164 ---
+  id:                       sink_8
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     349
+
+--- Security Sink #165 ---
+  id:                       sink_9
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     350
+
+--- Security Sink #166 ---
+  id:                       sink_10
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     362
+
+--- Security Sink #167 ---
+  id:                       sink_11
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     363
+
+--- Security Sink #168 ---
+  id:                       sink_12
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     364
+
+--- Security Sink #169 ---
+  id:                       sink_13
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     365
+
+--- Security Sink #170 ---
+  id:                       sink_14
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     366
+
+--- Security Sink #171 ---
+  id:                       sink_15
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     367
+
+--- Security Sink #172 ---
+  id:                       sink_16
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     379
+
+--- Security Sink #173 ---
+  id:                       sink_17
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     380
+
+--- Security Sink #174 ---
+  id:                       sink_18
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     381
+
+--- Security Sink #175 ---
+  id:                       sink_19
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     382
+
+--- Security Sink #176 ---
+  id:                       sink_20
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     383
+
+--- Security Sink #177 ---
+  id:                       sink_21
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     395
+
+--- Security Sink #178 ---
+  id:                       sink_22
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     396
+
+--- Security Sink #179 ---
+  id:                       sink_23
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     397
+
+--- Security Sink #180 ---
+  id:                       sink_24
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     398
+
+--- Security Sink #181 ---
+  id:                       sink_25
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     410
+
+--- Security Sink #182 ---
+  id:                       sink_26
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     411
+
+--- Security Sink #183 ---
+  id:                       sink_27
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     412
+
+--- Security Sink #184 ---
+  id:                       sink_28
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     413
+
+--- Security Sink #185 ---
+  id:                       sink_29
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     433
+
+--- Security Sink #186 ---
+  id:                       sink_30
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     434
+
+--- Security Sink #187 ---
+  id:                       sink_31
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     446
+
+--- Security Sink #188 ---
+  id:                       sink_32
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     447
+
+--- Security Sink #189 ---
+  id:                       sink_33
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     448
+
+--- Security Sink #190 ---
+  id:                       sink_34
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     460
+
+--- Security Sink #191 ---
+  id:                       sink_35
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     461
+
+--- Security Sink #192 ---
+  id:                       sink_36
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     464
+
+--- Security Sink #193 ---
+  id:                       sink_37
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     476
+
+--- Security Sink #194 ---
+  id:                       sink_38
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     477
+
+--- Security Sink #195 ---
+  id:                       sink_39
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     478
+
+--- Security Sink #196 ---
+  id:                       sink_40
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     479
+
+--- Security Sink #197 ---
+  id:                       sink_41
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     489
+
+--- Security Sink #198 ---
+  id:                       sink_42
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     492
+
+--- Security Sink #199 ---
+  id:                       sink_43
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     495
+
+--- Security Sink #200 ---
+  id:                       sink_44
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     498
+
+--- Security Sink #201 ---
+  id:                       sink_45
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     500
+
+--- Security Sink #202 ---
+  id:                       sink_46
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     511
+
+--- Security Sink #203 ---
+  id:                       sink_47
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     512
+
+--- Security Sink #204 ---
+  id:                       sink_48
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     526
+
+--- Security Sink #205 ---
+  id:                       sink_49
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     527
+
+--- Security Sink #206 ---
+  id:                       sink_50
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     528
+
+--- Security Sink #207 ---
+  id:                       sink_51
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     529
+
+--- Security Sink #208 ---
+  id:                       sink_52
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     530
+
+--- Security Sink #209 ---
+  id:                       sink_53
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     531
+
+--- Security Sink #210 ---
+  id:                       sink_54
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     532
+
+--- Security Sink #211 ---
+  id:                       sink_55
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     533
+
+--- Security Sink #212 ---
+  id:                       sink_56
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     534
+
+--- Security Sink #213 ---
+  id:                       sink_57
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     535
+
+--- Security Sink #214 ---
+  id:                       sink_58
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     536
+
+--- Security Sink #215 ---
+  id:                       sink_59
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     537
+
+--- Security Sink #216 ---
+  id:                       sink_60
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     538
+
+--- Security Sink #217 ---
+  id:                       sink_61
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     sample/sample-config.php
+  line:                     543
+
+--- Security Sink #218 ---
+  id:                       sink_5
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     class-redux-framework-plugin.php
+  line:                     164
+
+--- Security Sink #219 ---
+  id:                       sink_6
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     class-redux-framework-plugin.php
+  line:                     168
+
+--- Security Sink #220 ---
+  id:                       sink_7
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     class-redux-framework-plugin.php
+  line:                     188
+
+--- Security Sink #221 ---
+  id:                       sink_8
+  entry_point_id:           None
+  category:                 include
+  function_called:          require_once
+  uses_prepared_statement:  None
+  file:                     class-redux-framework-plugin.php
+  line:                     223
+
+--- Security Sink #222 ---
+  id:                       sink_9
+  entry_point_id:           None
+  category:                 option_update
+  function_called:          update_option
+  uses_prepared_statement:  None
+  file:                     class-redux-framework-plugin.php
+  line:                     240
+
+--- Security Sink #223 ---
+  id:                       sink_10
+  entry_point_id:           None
+  category:                 sql
+  function_called:          get_col
+  uses_prepared_statement:  True
+  file:                     class-redux-framework-plugin.php
+  line:                     326
+
+--- Security Sink #224 ---
+  id:                       sink_12
+  entry_point_id:           None
+  category:                 option_update
+  function_called:          update_option
+  uses_prepared_statement:  None
+  file:                     class-redux-framework-plugin.php
+  line:                     347
+

@@ -1,0 +1,144 @@
+rules:
+  # =============================================================================
+  # FILE OPERATIONS - Path Traversal, LFI (v4 - Enhanced)
+  # CWE-22: Path Traversal, CWE-98: LFI
+  # Updated: 2026-01-27 - Added plugin sanitizers + flow breakers
+  # =============================================================================
+
+  - id: wp-lfi-include-v4
+    mode: taint
+    languages: [php]
+    severity: ERROR
+    message: >-
+      Local File Inclusion: User input in include/require can lead to code execution.
+      Use basename() and validate against a whitelist of allowed files.
+    metadata:
+      cwe: ["CWE-98", "CWE-22"]
+      owasp: ["A03:2021 - Injection"]
+      category: security
+      technology: [wordpress]
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+
+    pattern-sources:
+      - pattern: $_GET
+      - pattern: $_POST
+      - pattern: $_REQUEST
+      - pattern: $_COOKIE
+      - pattern: $_GET[...]
+      - pattern: $_POST[...]
+      - pattern: $_REQUEST[...]
+      - pattern: $_COOKIE[...]
+      - pattern: $atts
+      - pattern: $atts[...]
+      - pattern: $request->get_param(...)
+
+    pattern-propagators:
+      - pattern: json_decode($SRC, ...)
+        from: $SRC
+        to: return
+
+    pattern-sinks:
+      - pattern: include $X
+      - pattern: include($X)
+      - pattern: include_once $X
+      - pattern: include_once($X)
+      - pattern: require $X
+      - pattern: require($X)
+      - pattern: require_once $X
+      - pattern: require_once($X)
+
+    pattern-sanitizers:
+      # Path sanitizers
+      - pattern: basename(...)
+      - pattern: realpath(...)
+      - pattern: sanitize_file_name(...)
+      - pattern: wp_normalize_path(...)
+      # Numeric (for ID-based includes)
+      - pattern: absint(...)
+      - pattern: intval(...)
+      - pattern: (int)$X
+      - pattern: is_numeric(...)
+      # Allowlist patterns
+      - pattern: in_array(..., $WHITELIST, true)
+      - pattern: array_key_exists(...)
+      # WooCommerce
+      - pattern: wc_clean(...)
+      # Give
+      - pattern: give_clean(...)
+
+  - id: wp-arbitrary-file-delete-v4
+    mode: taint
+    languages: [php]
+    severity: ERROR
+    message: >-
+      Arbitrary File Deletion: User input controls file path in delete operation.
+      Can delete wp-config.php or other critical files.
+    metadata:
+      cwe: ["CWE-22", "CWE-73"]
+      owasp: ["A01:2021 - Broken Access Control"]
+      category: security
+      technology: [wordpress]
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+
+    pattern-sources:
+      - pattern: $_GET
+      - pattern: $_POST
+      - pattern: $_REQUEST
+      - pattern: $_GET[...]
+      - pattern: $_POST[...]
+      - pattern: $_REQUEST[...]
+      - pattern: $request->get_param(...)
+
+    pattern-sinks:
+      - pattern: unlink($PATH)
+      - pattern: rmdir($PATH)
+      - pattern: wp_delete_file($PATH)
+
+    pattern-sanitizers:
+      - pattern: basename(...)
+      - pattern: realpath(...)
+      - pattern: sanitize_file_name(...)
+      - pattern: absint(...)
+      - pattern: intval(...)
+      - pattern: (int)$X
+      - pattern: in_array(..., $WHITELIST, true)
+
+  - id: wp-arbitrary-file-write-v4
+    mode: taint
+    languages: [php]
+    severity: ERROR
+    message: >-
+      Arbitrary File Write: User input controls file path or content in write operation.
+      Can lead to remote code execution via PHP file upload.
+    metadata:
+      cwe: ["CWE-22", "CWE-434"]
+      owasp: ["A03:2021 - Injection"]
+      category: security
+      technology: [wordpress]
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+
+    pattern-sources:
+      - pattern: $_GET[...]
+      - pattern: $_POST[...]
+      - pattern: $_REQUEST[...]
+      - pattern: $_FILES[...]
+      - pattern: $request->get_param(...)
+      - pattern: file_get_contents("php://input")
+
+    pattern-sinks:
+      - pattern: file_put_contents($PATH, ...)
+      - pattern: fwrite($HANDLE, ...)
+      - pattern: move_uploaded_file($TMP, $PATH)
+      - pattern: copy($SRC, $DEST)
+
+    pattern-sanitizers:
+      - pattern: basename(...)
+      - pattern: sanitize_file_name(...)
+      - pattern: wp_check_filetype(...)
+      - pattern: in_array(..., $WHITELIST, true)

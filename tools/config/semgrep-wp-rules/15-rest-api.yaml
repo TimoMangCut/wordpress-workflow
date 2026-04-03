@@ -1,0 +1,238 @@
+rules:
+  # =============================================================================
+  # REST API SPECIFIC - WordPress (NEW)
+  # Rules that target REST API-specific patterns and vulnerabilities
+  # REST data is UNSLASHED — bypasses wp_magic_quotes() protection entirely
+  # =============================================================================
+
+  # --- HIGH PRECISION: Type-hint scoped REST SQLi ---
+  # Uses WP_REST_Request type-hint to scope to REST callbacks only
+  # Higher confidence than generic rules
+
+  - id: wp-rest-sqli-scoped
+    mode: taint
+    languages: [php]
+    severity: ERROR
+    message: >-
+      SQL Injection in REST API callback: Data from WP_REST_Request flows to
+      $wpdb query without prepare(). REST API data is UNSLASHED and bypasses
+      wp_magic_quotes(). This is the #1 WordPress SQLi vector.
+    metadata:
+      cwe: ["CWE-89"]
+      owasp: ["A03:2021 - Injection"]
+      category: security
+      technology: [wordpress]
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+
+    pattern-sources:
+      - patterns:
+          - pattern-inside: |
+              function $FUNC(..., WP_REST_Request $REQUEST, ...) {
+                ...
+              }
+          - pattern-either:
+              - pattern: $REQUEST->get_param(...)
+              - pattern: $REQUEST->get_params()
+              - pattern: $REQUEST->get_json_params()
+              - pattern: $REQUEST->get_body()
+              - pattern: $REQUEST->get_body_params()
+              - pattern: $REQUEST->get_query_params()
+              - pattern: $REQUEST->get_url_params()
+              - pattern: $REQUEST[...]
+
+    pattern-sinks:
+      - pattern: $wpdb->query(...)
+      - pattern: $wpdb->get_var(...)
+      - pattern: $wpdb->get_row(...)
+      - pattern: $wpdb->get_col(...)
+      - pattern: $wpdb->get_results(...)
+
+    pattern-sanitizers:
+      - pattern: $wpdb->prepare(...)
+      - pattern: esc_sql(...)
+      - pattern: absint(...)
+      - pattern: intval(...)
+      - pattern: (int)$X
+      - pattern: floatval(...)
+      - pattern: (float)$X
+      - pattern: sanitize_key(...)
+      - pattern: sanitize_sql_orderby(...)
+      - pattern: wp_parse_id_list(...)
+      - pattern: is_numeric(...)
+
+  # --- HIGH PRECISION: Type-hint scoped REST XSS ---
+
+  - id: wp-rest-xss-scoped
+    mode: taint
+    languages: [php]
+    severity: WARNING
+    message: >-
+      XSS in REST API callback: Data from WP_REST_Request echoed without escaping.
+      Use esc_html(), esc_attr(), esc_url(), or wp_kses().
+    metadata:
+      cwe: ["CWE-79"]
+      owasp: ["A03:2021 - Injection"]
+      category: security
+      technology: [wordpress]
+      confidence: HIGH
+      likelihood: MEDIUM
+      impact: MEDIUM
+
+    pattern-sources:
+      - patterns:
+          - pattern-inside: |
+              function $FUNC(..., WP_REST_Request $REQUEST, ...) {
+                ...
+              }
+          - pattern-either:
+              - pattern: $REQUEST->get_param(...);
+              - pattern: $REQUEST->get_params();
+              - pattern: $REQUEST->get_json_params();
+              - pattern: $REQUEST->get_body_params();
+              - pattern: $REQUEST->get_query_params();
+              - pattern: $REQUEST[...];
+
+    pattern-sinks:
+      - pattern: echo $EXPR;
+      - pattern: print($EXPR);
+      - pattern: printf(...);
+
+    pattern-sanitizers:
+      - pattern: esc_html(...)
+      - pattern: esc_attr(...)
+      - pattern: esc_url(...)
+      - pattern: esc_js(...)
+      - pattern: esc_textarea(...)
+      - pattern: wp_kses(...)
+      - pattern: wp_kses_post(...)
+      - pattern: sanitize_text_field(...)
+      - pattern: absint(...)
+      - pattern: intval(...)
+      - pattern: (int)$X
+
+  # --- HIGH PRECISION: Type-hint scoped REST file operations ---
+
+  - id: wp-rest-file-ops-scoped
+    mode: taint
+    languages: [php]
+    severity: ERROR
+    message: >-
+      File operation in REST API callback with user-controlled path. REST data
+      is UNSLASHED. Validate and sanitize paths to prevent traversal.
+    metadata:
+      cwe: ["CWE-22"]
+      owasp: ["A01:2021 - Broken Access Control"]
+      category: security
+      technology: [wordpress]
+      confidence: HIGH
+      likelihood: MEDIUM
+      impact: HIGH
+
+    pattern-sources:
+      - patterns:
+          - pattern-inside: |
+              function $FUNC(..., WP_REST_Request $REQUEST, ...) {
+                ...
+              }
+          - pattern-either:
+              - pattern: $REQUEST->get_param(...)
+              - pattern: $REQUEST->get_params()
+              - pattern: $REQUEST->get_json_params()
+              - pattern: $REQUEST[...]
+
+    pattern-sinks:
+      - pattern: file_get_contents(...)
+      - pattern: fopen(...)
+      - pattern: readfile(...)
+      - pattern: file_put_contents(...)
+      - pattern: unlink(...)
+      - pattern: include $X
+      - pattern: include_once $X
+      - pattern: require $X
+      - pattern: require_once $X
+
+    pattern-sanitizers:
+      - pattern: basename(...)
+      - pattern: realpath(...)
+      - pattern: sanitize_file_name(...)
+      - pattern: validate_file(...)
+      - pattern: absint(...)
+      - pattern: intval(...)
+      - pattern: (int)$X
+      - pattern: in_array(..., $WHITELIST, true)
+      - pattern: in_array(..., $WHITELIST, ...)
+
+  # --- REST API: Unsafe data storage (stored XSS / second-order injection) ---
+
+  - id: wp-rest-unsafe-storage
+    mode: taint
+    languages: [php]
+    severity: WARNING
+    message: >-
+      REST API input stored without sanitization. Data from WP_REST_Request is
+      UNSLASHED. Sanitize before passing to WordPress storage functions to prevent
+      stored XSS and second-order injection.
+    metadata:
+      cwe: ["CWE-79", "CWE-89"]
+      owasp: ["A03:2021 - Injection"]
+      category: security
+      technology: [wordpress]
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: MEDIUM
+
+    pattern-sources:
+      - pattern: $request->get_param(...)
+      - pattern: $request->get_params()
+      - pattern: $request->get_json_params()
+      - pattern: $request->get_body()
+      - pattern: $request->get_body_params()
+      - pattern: $request[...]
+
+    pattern-sinks:
+      - pattern: update_option(...)
+      - pattern: update_post_meta(...)
+      - pattern: update_user_meta(...)
+      - pattern: add_option(...)
+      - pattern: add_post_meta(...)
+      - pattern: add_user_meta(...)
+      - pattern: update_site_option(...)
+
+    pattern-sanitizers:
+      - pattern: sanitize_text_field(...)
+      - pattern: sanitize_textarea_field(...)
+      - pattern: sanitize_email(...)
+      - pattern: sanitize_key(...)
+      - pattern: sanitize_url(...)
+      - pattern: wp_kses(...)
+      - pattern: wp_kses_post(...)
+      - pattern: esc_html(...)
+      - pattern: esc_attr(...)
+      - pattern: absint(...)
+      - pattern: intval(...)
+      - pattern: (int)$X
+      - pattern: (float)$X
+      - pattern: wc_clean(...)
+      - pattern: give_clean(...)
+
+  # --- REST API: Missing permission_callback ---
+
+  - id: wp-rest-missing-permission-callback
+    languages: [php]
+    severity: WARNING
+    message: >-
+      REST route registered without permission_callback. Since WP 5.5, this triggers
+      a _doing_it_wrong notice but the route STILL WORKS and is publicly accessible.
+    patterns:
+      - pattern: register_rest_route($NS, $ROUTE, $ARGS)
+      - pattern-not: |
+          register_rest_route($NS, $ROUTE, array(..., 'permission_callback' => $PERM, ...))
+    metadata:
+      cwe: ["CWE-862"]
+      owasp: ["A01:2021 - Broken Access Control"]
+      category: security
+      technology: [wordpress]
+      confidence: HIGH
+      impact: HIGH

@@ -1,0 +1,140 @@
+{
+  "plugin_slug": "kubio",
+  "phase1_summary": {
+    "entry_points": 168,
+    "anomalies": 12,
+    "sources": 196,
+    "sinks": 2418
+  },
+  "phase2_summary": {
+    "total": 2,
+    "tp": 0,
+    "fp": 0,
+    "review": 2
+  },
+  "phase3_summary": {
+    "confirmed": 0,
+    "plausible": 0,
+    "uncertain": 2,
+    "likely_hallucination": 0
+  },
+  "validated_findings": [
+    {
+      "finding_id": "KUBIO-P2-REV-001",
+      "verdict": "REVIEW",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.6571,
+      "resolved_entry_point_id": "ep_rest___snippet",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "file_exists": true,
+        "path_reachable": false,
+        "auth_consistent": true,
+        "guard_consistent": true,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": false,
+        "code_evidence": false,
+        "reasoning_quality": true,
+        "cvss_plausible": true,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 0.7,
+        "path_reachable": 0.35,
+        "auth_consistent": 0.8,
+        "guard_consistent": 0.7,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 1.0,
+        "psalm_corroborates": null,
+        "code_evidence": 0.25,
+        "reasoning_quality": 0.97,
+        "cvss_plausible": 0.8,
+        "patchstack_eligible": 1.0,
+        "no_hallucination": 1.0
+      },
+      "check_notes": {
+        "file_exists": "basename resolved uniquely \u2192 lib/api/colibri.php",
+        "path_reachable": "stored-mode: no storage read/write for key='kubio_cloud_api_key' in IR (might be dynamic key)",
+        "auth_consistent": "EP type=rest_route auth depends on permission_callback",
+        "guard_consistent": "no direct guard contradiction detected",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep corroborates (same file suffix, \u00b120 lines)",
+        "psalm_corroborates": "Psalm SARIF not available/valid (N/A)",
+        "code_evidence": "sink function 'kubio_create_snippet_zip' not found near line 282",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "cvss_vector omitted (allowed)",
+        "patchstack_eligible": "patchstack_eligible plausibility ok",
+        "no_hallucination": "no hallucination signals",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "code_evidence_missing_or_mismatch",
+        "insufficient_evidence_to_confirm",
+        "path_reachability_weak"
+      ]
+    },
+    {
+      "finding_id": "KUBIO-P2-REV-002",
+      "verdict": "REVIEW",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.5619,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_kubio_demo_site_install_plugin",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "file_exists": true,
+        "path_reachable": false,
+        "auth_consistent": false,
+        "guard_consistent": true,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": false,
+        "code_evidence": false,
+        "reasoning_quality": true,
+        "cvss_plausible": true,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 0.7,
+        "path_reachable": 0.25,
+        "auth_consistent": 0.25,
+        "guard_consistent": 0.7,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 0.5,
+        "psalm_corroborates": null,
+        "code_evidence": 0.25,
+        "reasoning_quality": 0.97,
+        "cvss_plausible": 0.8,
+        "patchstack_eligible": 1.0,
+        "no_hallucination": 1.0
+      },
+      "check_notes": {
+        "file_exists": "basename resolved uniquely \u2192 lib/src/PluginsManager.php",
+        "path_reachable": "neither source nor sink matched in EP ep_ajax_priv_wp_ajax_kubio_demo_site_install_plugin",
+        "auth_consistent": "auth mismatch: EP type=ajax_priv expects subscriber, finding claims authenticated user who can satisfy current_user_can('import') and obtain the demo-site nonce",
+        "guard_consistent": "no direct guard contradiction detected",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
+        "psalm_corroborates": "Psalm SARIF not available/valid (N/A)",
+        "code_evidence": "sink function 'kubio\\pluginsmanager::installplugin' not found near line 65",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "cvss_vector omitted (allowed)",
+        "patchstack_eligible": "patchstack_eligible plausibility ok",
+        "no_hallucination": "no hallucination signals",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "code_evidence_missing_or_mismatch",
+        "insufficient_evidence_to_confirm",
+        "path_reachability_weak"
+      ]
+    }
+  ],
+  "actionable_findings": []
+}

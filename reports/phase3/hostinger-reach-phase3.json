@@ -1,0 +1,82 @@
+{
+  "plugin_slug": "hostinger-reach",
+  "phase1_summary": {
+    "entry_points": 25,
+    "anomalies": 3,
+    "sources": 55,
+    "sinks": 695
+  },
+  "phase2_summary": {
+    "total": 1,
+    "tp": 0,
+    "fp": 0,
+    "review": 1
+  },
+  "phase3_summary": {
+    "confirmed": 0,
+    "plausible": 0,
+    "uncertain": 1,
+    "likely_hallucination": 0
+  },
+  "validated_findings": [
+    {
+      "finding_id": "HOSTINGER-REACH-P2-REV-001",
+      "verdict": "REVIEW",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.6143,
+      "resolved_entry_point_id": "ep_rest__token",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "file_exists": true,
+        "path_reachable": false,
+        "auth_consistent": true,
+        "guard_consistent": true,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": false,
+        "code_evidence": false,
+        "reasoning_quality": true,
+        "cvss_plausible": true,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 0.7,
+        "path_reachable": 0.25,
+        "auth_consistent": 0.8,
+        "guard_consistent": 0.7,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 0.5,
+        "psalm_corroborates": null,
+        "code_evidence": 0.25,
+        "reasoning_quality": 0.97,
+        "cvss_plausible": 0.8,
+        "patchstack_eligible": 1.0,
+        "no_hallucination": 1.0
+      },
+      "check_notes": {
+        "file_exists": "basename resolved uniquely \u2192 src/Api/ApiKeyManager.php",
+        "path_reachable": "neither source nor sink matched in EP ep_rest__token",
+        "auth_consistent": "EP type=rest_route auth depends on permission_callback",
+        "guard_consistent": "no direct guard contradiction detected",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
+        "psalm_corroborates": "Psalm SARIF not available/valid (N/A)",
+        "code_evidence": "sink function 'hostinger\\reach\\api\\apikeymanager::store_token' not found near line 21",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "cvss_vector omitted (allowed)",
+        "patchstack_eligible": "patchstack_eligible plausibility ok",
+        "no_hallucination": "no hallucination signals",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "code_evidence_missing_or_mismatch",
+        "insufficient_evidence_to_confirm",
+        "path_reachability_weak"
+      ]
+    }
+  ],
+  "actionable_findings": []
+}

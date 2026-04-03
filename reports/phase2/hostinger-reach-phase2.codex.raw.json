@@ -1,0 +1,139 @@
+{
+  "plugin_slug": "hostinger-reach",
+  "analysis_summary": {
+    "scope": "Validated the Phase 1 IR and Semgrep signals directly against Hostinger Reach 1.4.4 source, prioritizing public REST/AJAX routes, token-linking logic, integration state updates, and WooCommerce/OptInMonster intake paths.",
+    "highlights": [
+      "No Patchstack-eligible true positive was confirmed from the reviewed candidates.",
+      "All REST mutation routes that can activate plugins, toggle forms, import contacts, or read Reach account data are protected by the shared current_user_can('manage_options') permission_check() helper.",
+      "One public linking flow remains REVIEW: POST /hostinger-reach/v1/token accepts either the admin-generated transient CSRF or the contents of /.api_token before storing a new Reach API token."
+    ]
+  },
+  "overall_risk": "review",
+  "total_findings_analyzed": 5,
+  "true_positives": 0,
+  "false_positives": 4,
+  "needs_review": 1,
+  "findings": [
+    {
+      "finding_id": "HOSTINGER-REACH-P2-REV-001",
+      "verdict": "REVIEW",
+      "vuln_type": "Improper Authentication on Public Reach Token Linking Route",
+      "cwe_id": "CWE-287",
+      "severity": "high",
+      "auth_required": "none",
+      "confidence": "medium",
+      "entry_point_id": "ep_rest__token",
+      "source_function": "Hostinger\\Reach\\Api\\Handlers\\ReachApiHandler::post_token_handler",
+      "sink_function": "Hostinger\\Reach\\Api\\ApiKeyManager::store_token",
+      "source_file_path": "plugins/hostinger-reach/src/Api/Handlers/ReachApiHandler.php",
+      "source_line_number": 214,
+      "sink_file_path": "plugins/hostinger-reach/src/Api/ApiKeyManager.php",
+      "sink_line_number": 21,
+      "file_path": "plugins/hostinger-reach/src/Api/ApiKeyManager.php",
+      "line_number": 21,
+      "storage_key": "hostinger_reach_api_key",
+      "reasoning": {
+        "hypothesis": "An unauthenticated caller may be able to rebind the plugin to an attacker-controlled Reach account because the public /token route trusts a long-lived server-side value from /.api_token as alternate authorization material.",
+        "trace": [
+          "ReachRoutes registers POST /token with a permission_callback that reads csrf_field from the request and returns ApiKeyManager::validate_csrf($csrf) at plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php:80-90.",
+          "ApiKeyManager::validate_csrf() accepts either the transient hostinger_reach_csrf_token or the contents of /.api_token via get_order_id() at plugins/hostinger-reach/src/Api/ApiKeyManager.php:36-45 and plugins/hostinger-reach/src/Api/ApiKeyManager.php:67-85.",
+          "The bundled Hostinger helper code uses the same /.api_token file as an API token source, not as a one-time nonce, at plugins/hostinger-reach/vendor/hostinger/hostinger-wp-helper/src/Utils.php:12-17 and plugins/hostinger-reach/vendor/hostinger/hostinger-wp-helper/src/Utils.php:80-87.",
+          "Once post_token_handler() accepts the request, it reads the attacker-controlled token parameter and stores it through ApiKeyManager::store_token(), which updates option hostinger_reach_api_key at plugins/hostinger-reach/src/Api/Handlers/ReachApiHandler.php:212-220 and plugins/hostinger-reach/src/Api/ApiKeyManager.php:18-21."
+        ],
+        "defenses": [
+          "The intended admin flow generates a short-lived transient CSRF through the manage_options-gated /generate-auth-url route at plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php:104-112 and plugins/hostinger-reach/src/Api/Handlers/ReachApiHandler.php:171-196.",
+          "I did not find any other write-capable Reach routes exposed without current_user_can('manage_options'); /overview, /tags, /forms, /contact-lists, integration POST, and import routes all stay behind permission_check() at plugins/hostinger-reach/src/Api/Routes/Routes.php:25-33 plus their respective route registrations."
+        ],
+        "refutation": [
+          "I did not find a repository-local path that exposes /.api_token to unauthenticated or low-privileged users; the code only reads it server-side.",
+          "I also did not find the file contents reflected into REST responses, localized JavaScript, or HTML templates in this plugin.",
+          "Because end-to-end exploitability depends on obtaining that server-side token from another channel outside the visible source, I cannot prove unauthenticated rebinding from this repository alone."
+        ],
+        "conclusion": "The code does let a public route treat a long-lived server token as valid authorization before updating the stored Reach API key. That is a real trust-boundary concern, but the missing proof is a practical path for a remote attacker to obtain the /.api_token value. Keeping this as REVIEW rather than TP."
+      },
+      "poc_description": "In a test environment where the contents of the server-root /.api_token file are known, send POST /wp-json/hostinger-reach/v1/token with csrf_field set to that file value and token set to an attacker-controlled Reach API token. Then verify that subsequent admin-only Reach operations use the new account. Without disclosure of /.api_token, exploitation remains unproven.",
+      "cvss_vector": null,
+      "remediation": "Remove the /.api_token fallback from validate_csrf(), require a short-lived one-time value generated by the authenticated admin flow, and bind the token exchange to an authenticated manage_options session or a signed callback with expiry and replay protection.",
+      "patchstack_eligible": false
+    }
+  ],
+  "negative_findings": [
+    {
+      "finding_id": "HOSTINGER-REACH-P2-NEG-001",
+      "verdict": "FP",
+      "summary": "Semgrep's arbitrary option update / privilege escalation claim on /integrations is refuted.",
+      "evidence": [
+        "plugins/hostinger-reach/src/Api/Routes/Routes.php:25-33",
+        "plugins/hostinger-reach/src/Api/Routes/IntegrationsRoutes.php:31-49",
+        "plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php:70-85",
+        "plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php:201-210"
+      ],
+      "reasoning": "REFUTATION ATTEMPT: Check whether REST input can choose an arbitrary option name or bypass authorization. RESULT: refuted. The POST /integrations route requires current_user_can('manage_options'), validates integration against IntegrationsApiHandler::get_integrations(), and only updates the fixed option hostinger_reach_integrations. I found no path to write attacker-chosen keys such as users_can_register or default_role."
+    },
+    {
+      "finding_id": "HOSTINGER-REACH-P2-NEG-002",
+      "verdict": "FP",
+      "summary": "Phase 1 'unknown auth' REST mutation candidates are admin-gated in live code.",
+      "evidence": [
+        "plugins/hostinger-reach/src/Api/Routes/Routes.php:25-33",
+        "plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php:104-141",
+        "plugins/hostinger-reach/src/Api/Routes/FormsRoutes.php:29-74",
+        "plugins/hostinger-reach/src/Api/Routes/IntegrationsRoutes.php:31-79"
+      ],
+      "reasoning": "REFUTATION ATTEMPT: Trace all state-changing REST routes to their actual permission callback instead of trusting IR's unknown-auth label. RESULT: refuted. /generate-auth-url, /overview, /tags, /forms, /contact-lists, POST /integrations, GET /import/<integration>, and POST /import all inherit permission_check(), which returns current_user_can('manage_options')."
+    },
+    {
+      "finding_id": "HOSTINGER-REACH-P2-NEG-003",
+      "verdict": "FP",
+      "summary": "The public abandoned-carts AJAX endpoint is session-scoped marketing state, not a cross-user write or read primitive.",
+      "evidence": [
+        "plugins/hostinger-reach/src/Tracking/AbandonedCarts.php:37-43",
+        "plugins/hostinger-reach/src/Tracking/AbandonedCarts.php:64-70",
+        "plugins/hostinger-reach/src/Tracking/AbandonedCarts.php:149-170",
+        "plugins/hostinger-reach/src/Tracking/AbandonedCarts.php:211-236"
+      ],
+      "reasoning": "REFUTATION ATTEMPT: Check whether wp_ajax_nopriv_abandoned-carts can overwrite or disclose another user's cart. RESULT: refuted. The handler only accepts email, then stores cart metadata keyed to the current WooCommerce session/customer hash. I found no path from this endpoint to enumerate, read, or modify another user's cart record. The remaining effect is self-session marketing abuse, not meaningful WordPress privilege or data impact."
+    },
+    {
+      "finding_id": "HOSTINGER-REACH-P2-NEG-004",
+      "verdict": "FP",
+      "summary": "The SatisfactionSurvey XSS signal is a dataflow false positive.",
+      "evidence": [
+        "plugins/hostinger-reach/src/Admin/Surveys/SatisfactionSurvey.php:18",
+        "plugins/hostinger-reach/src/Admin/Surveys/SatisfactionSurvey.php:50-51"
+      ],
+      "reasoning": "REFUTATION ATTEMPT: Determine whether REQUEST_URI reaches an HTML or JavaScript sink. RESULT: refuted. $_SERVER['REQUEST_URI'] is only consumed by str_contains() to decide whether the survey should load. It is not echoed, concatenated into markup, or returned in a REST/AJAX response."
+    }
+  ],
+  "out_of_scope": [
+    {
+      "finding_id": "HOSTINGER-REACH-P2-OOS-001",
+      "verdict": "OOS",
+      "vuln_type": "Low-impact Information Disclosure of Integration State",
+      "auth_required": "none",
+      "severity": "low",
+      "evidence": [
+        "plugins/hostinger-reach/src/Api/Routes/IntegrationsRoutes.php:21-28",
+        "plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php:162-198"
+      ],
+      "reasoning": "Unauthenticated GET /integrations exposes plugin metadata such as titles, admin URLs, installation flags, activation flags, and import summaries. I did not find secrets, API tokens, contact data, or privileged state changes in that response. This is plugin/integration enumeration only and not a meaningful Patchstack-quality impact.",
+      "patchstack_eligible": false
+    },
+    {
+      "finding_id": "HOSTINGER-REACH-P2-OOS-002",
+      "verdict": "OOS",
+      "vuln_type": "Public Marketing Intake Abuse / Contact List Pollution",
+      "auth_required": "none",
+      "severity": "low",
+      "evidence": [
+        "plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php:27-33",
+        "plugins/hostinger-reach/src/Api/Handlers/ReachApiHandler.php:139-168",
+        "plugins/hostinger-reach/src/Blocks/SubscriptionFormBlock.php:15-18",
+        "plugins/hostinger-reach/src/Integrations/OptInMonster/OptInMonsterIntegration.php:62-64",
+        "plugins/hostinger-reach/src/Integrations/OptInMonster/OptInMonsterIntegration.php:201-245"
+      ],
+      "reasoning": "The subscription form and OptInMonster flows are intentionally public and localize a wp_rest nonce into rendered frontend code so visitors can submit marketing contacts. That means third parties can script submissions or pollute contact intake, but I did not find privilege escalation, secret exposure, or a WordPress-side state change beyond the feature's intended contact-ingestion behavior. This is product abuse/spam territory rather than a Patchstack-meaningful security finding.",
+      "patchstack_eligible": false
+    }
+  ]
+}

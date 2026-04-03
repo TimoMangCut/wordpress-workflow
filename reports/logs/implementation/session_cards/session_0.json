@@ -1,0 +1,77 @@
+{
+  "session": 0,
+  "title": "Benchmark setup — ground truth + compare.py",
+  "status": "PENDING",
+  "wave": "PRE-WORK",
+  "dependencies": [],
+  "gaps": [],
+  "critical_notes": [
+    "Benchmark PHẢI có baseline trước khi Wave 1 bắt đầu",
+    "Minimum viable: 3 plugins với known output từ existing reports",
+    "compare.py chỉ cần Quality Score và Decision Rate — không phức tạp hơn"
+  ],
+  "files_to_read": [
+    {
+      "file": "reports/",
+      "line_range": "directory listing only",
+      "reason": "Xem plugins nào đã có phase3 output để dùng làm ground truth"
+    }
+  ],
+  "spec": {
+    "benchmark_structure": {
+      "source_ref": "7-workflow-wp/IMPLEMENTATION-PLAN.md:156-215",
+      "create_dirs": [
+        "benchmark/",
+        "benchmark/ground-truth/",
+        "benchmark/results/"
+      ],
+      "create_files": [
+        "benchmark/compare.py",
+        "benchmark/README.md",
+        "benchmark/ground-truth/<slug>.json (3+ files)"
+      ]
+    },
+    "compare_py": {
+      "source_ref": "skill-sets-framework.md:412-427",
+      "inputs": [
+        "reports/<slug>-phase3.json",
+        "benchmark/ground-truth/<slug>.json"
+      ],
+      "metrics": {
+        "quality_score": "TP / (TP + FP + FN)",
+        "decision_rate": "(TP + FP) / (TP + FP + REVIEW_HIT + REVIEW_MISS)"
+      },
+      "output": "benchmark/results/run_<timestamp>.json",
+      "cli": "python3 benchmark/compare.py <slug>  OR  python3 benchmark/compare.py --all"
+    },
+    "ground_truth_schema": {
+      "source_ref": "skill-sets-framework.md:373-409",
+      "note": "Canonical schema là của skill-sets-framework.md — KHÔNG được invent fields khác",
+      "top_level_fields": [
+        "plugin_slug", "plugin_version", "verified_by",
+        "verified_date", "findings[]", "confirmed_clean_areas[]"
+      ],
+      "finding_fields": [
+        "vuln_type", "entry_point_type", "hook_name",
+        "sink_file", "sink_line_approx", "severity", "description",
+        "flow_type (optional: cross_ep)",
+        "store_entry_point_type (optional, cross_ep only)",
+        "store_hook_name (optional, cross_ep only)",
+        "store_auth (optional, cross_ep only)",
+        "load_entry_point_type (optional, cross_ep only)",
+        "load_hook_name (optional, cross_ep only)",
+        "storage_key (optional, cross_ep only)"
+      ]
+    }
+  },
+  "downstream_required": [],
+  "test_command": "python3 benchmark/compare.py --all",
+  "test_cases": [
+    "compare.py exit 0",
+    "output is valid JSON",
+    "quality_score và decision_rate được tính",
+    "baseline.json saved to benchmark/results/baseline.json"
+  ],
+  "commit_message": "Session 0: benchmark setup — ground truth + compare.py",
+  "next_session_preview": "Session 1 — IR-01 (unresolved hooks) + IR-06 (filter hooks) + IR-09 (Phase4 noise)"
+}

@@ -1,0 +1,262 @@
+=== SURFACE MAP: pretty-link ===
+Generated: 2026-04-02T02:07:30+07:00
+
+--- ENTRY POINTS ---
+[REST routes]
+[AJAX handlers]
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliPopupController.php:39:    add_action('wp_ajax_prli_stop_popup', array($this, 'ajax_stop_or_delay_popup'));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliPopupController.php:40:    add_action('wp_ajax_prli_delay_popup', array($this, 'ajax_stop_or_delay_popup'));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliStripeConnectController.php:21:    add_action( 'wp_ajax_prli_stripe_connect_update_creds', array( $this, 'process_update_creds' ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliStripeConnectController.php:22:    add_action( 'wp_ajax_prli_stripe_connect_refresh', array( $this, 'process_refresh_tokens' ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliStripeConnectController.php:23:    add_action( 'wp_ajax_prli_stripe_connect_disconnect', array( $this, 'process_disconnect' ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliStripeController.php:14:    add_action('wp_ajax_prli_search_stripe_prices', array($this, 'search_stripe_prices'));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliStripeController.php:15:    add_action('wp_ajax_prli_stripe_add_product', array($this, 'add_product'));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliStripeController.php:22:    add_action('wp_ajax_prli_dismiss_customer_portal_notice', array($this, 'dismiss_customer_portal_notice'));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliReviewNoticeController.php:10:    add_action( 'wp_ajax_pl_dismiss_review_prompt', array( $this, 'dismiss_review_prompt' ) );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliPostsController.php:10:    add_action('wp_ajax_prli_tinymce_form', array($this, 'display_tinymce_form'));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliPostsController.php:11:    add_action('wp_ajax_prli_tinymce_validate_slug', array($this, 'validate_tinymce_slug'));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliPostsController.php:12:    add_action('wp_ajax_prli_create_pretty_link', array($this, 'create_pretty_link'));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliPostsController.php:13:    add_action('wp_ajax_prli_search_for_links', array($this, 'search_results'));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliLinksController.php:17:    add_action( 'wp_ajax_validate_pretty_link', array($this,'ajax_validate_pretty_link') );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliLinksController.php:18:    add_action( 'wp_ajax_reset_pretty_link', array($this,'ajax_reset_pretty_link') );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliLinksController.php:19:    add_action( 'wp_ajax_prli_quick_create', array($this, 'ajax_quick_create'));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliLinksController.php:46:    add_action('wp_ajax_prli_links_list_save_bulk_edit', array($this, 'save_bulk_edit'));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliAddonsController.php:9:    add_action('wp_ajax_prli_addon_activate', array($this, 'ajax_addon_activate'));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliAddonsController.php:10:    add_action('wp_ajax_prli_addon_deactivate', array($this, 'ajax_addon_deactivate'));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliAddonsController.php:11:    add_action('wp_ajax_prli_addon_install', array($this, 'ajax_addon_install'));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliAppController.php:51:    add_action('wp_ajax_pl_dismiss_upgrade_header', array($this, 'dismiss_upgrade_header'));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliAppController.php:52:    add_action('wp_ajax_prli_dismiss_notice', array($this, 'dismiss_notice'));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliAppController.php:53:    add_action('wp_ajax_prli_dismiss_daily_notice', array($this, 'dismiss_daily_notice'));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliAppController.php:54:    add_action('wp_ajax_prli_dismiss_monthly_notice', array($this, 'dismiss_monthly_notice'));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliOnboardingController.php:9:    add_action('wp_ajax_prli_onboarding_save_features', 'PrliOnboardingController::save_features');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliOnboardingController.php:10:    add_action('wp_ajax_prli_onboarding_save_new_link', 'PrliOnboardingController::save_new_link');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliOnboardingController.php:11:    add_action('wp_ajax_prli_onboarding_save_new_category', 'PrliOnboardingController::save_new_category');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliOnboardingController.php:12:    add_action('wp_ajax_prli_onboarding_get_category', 'PrliOnboardingController::get_category');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliOnboardingController.php:13:    add_action('wp_ajax_prli_onboarding_set_content', 'PrliOnboardingController::set_content');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliOnboardingController.php:14:    add_action('wp_ajax_prli_onboarding_unset_content', 'PrliOnboardingController::unset_content');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliOnboardingController.php:15:    add_action('wp_ajax_prli_onboarding_import_links', 'PrliOnboardingController::import_links');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliOnboardingController.php:16:    add_action('wp_ajax_prli_onboarding_mark_content_steps_skipped', 'PrliOnboardingController::mark_content_steps_skipped');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliOnboardingController.php:17:    add_action('wp_ajax_prli_onboarding_mark_steps_complete', 'PrliOnboardingController::mark_steps_complete');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliOnboardingController.php:18:    add_action('wp_ajax_prli_onboarding_unset_category', 'PrliOnboardingController::unset_category');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliOnboardingController.php:19:    add_action('wp_ajax_prli_onboarding_install_correct_edition', 'PrliOnboardingController::install_correct_edition');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliOnboardingController.php:20:    add_action('wp_ajax_prli_onboarding_install_addons', 'PrliOnboardingController::install_addons');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliOnboardingController.php:21:    add_action('wp_ajax_prli_onboarding_load_complete_step', 'PrliOnboardingController::load_complete_step');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliOnboardingController.php:22:    add_action('wp_ajax_prli_onboarding_load_create_new_content', 'PrliOnboardingController::load_create_new_content');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliOnboardingController.php:23:    add_action('wp_ajax_prli_onboarding_load_link_step_content', 'PrliOnboardingController::load_link_step_content');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliOnboardingController.php:24:    add_action('wp_ajax_prli_onboarding_re_render_links_list', 'PrliOnboardingController::re_render_links_list');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliOnboardingController.php:25:    add_action('wp_ajax_prli_onboarding_load_finish_step', 'PrliOnboardingController::load_finish_step');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliOnboardingController.php:26:    add_action('wp_ajax_prli_onboarding_finish', 'PrliOnboardingController::finish');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliUpdateController.php:21:      add_action('wp_ajax_plp_edge_updates', array($this, 'plp_edge_updates'));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliUpdateController.php:28:    add_action('wp_ajax_prli_activate_license', array($this, 'ajax_activate_license'));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliUpdateController.php:29:    add_action('wp_ajax_prli_deactivate_license', array($this, 'ajax_deactivate_license'));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliUpdateController.php:30:    add_action('wp_ajax_prli_install_license_edition', array($this, 'ajax_install_license_edition'));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:28:        add_action('wp_ajax_mosh_addon_activate', [self::class, 'ajaxAddonActivate']);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:29:        add_action('wp_ajax_mosh_addon_deactivate', [self::class, 'ajaxAddonDeactivate']);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:30:        add_action('wp_ajax_mosh_addon_install', [self::class, 'ajaxAddonInstall']);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/App.php:48:        add_action('wp_ajax_' . self::AJAX_ACTION_PREFIX . $this->config->instanceId, [$this, 'addonAction']);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/vendor-prefixed/caseproof/ground-level-in-product-notifications/Services/Ajax.php:67:                'wp_ajax_' . $this->action(),
+[Admin POST]
+[Shortcodes + Blocks]
+
+--- SECURITY GUARDS ---
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:1005:    return self::current_user_can('manage_options');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:1009:    return self::current_user_can('subscriber');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:1013:    return self::current_user_can('edit_others_posts');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:1032:    return self::current_user_can(self::get_minimum_role());
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:1060:  public static function check_ajax_referer($slug,$param) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:1061:    self::include_pluggables('check_ajax_referer');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:1062:    return check_ajax_referer($slug,$param);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:1082:  public static function current_user_can($role) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:1084:    return current_user_can($role);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:1161:      return self::current_user_can($prli_cap);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:1281:    return current_user_can('unfiltered_html') ? $value : wp_kses_post($value);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:1334:      !current_user_can('update_plugins') ||
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:761:      if(!current_user_can($post_type_object->cap->read_private_posts)) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/lib/PrliNotifications.php:23:      current_user_can( 'manage_options' )
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliPopupController.php:91:    PrliUtils::check_ajax_referer('prli-admin-popup','security');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliStripeConnectController.php:99:    if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'stripe-update-creds' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliStripeConnectController.php:168:    if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'stripe-refresh' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliStripeConnectController.php:228:    if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'stripe-disconnect' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliOptionsController.php:41:      if ( empty( $_REQUEST['_wpnonce'] ) || ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'update-options' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliStripeController.php:603:      if(!PrliUtils::is_get_request() || !PrliUtils::is_logged_in_and_an_admin() || !check_ajax_referer('prli_search_stripe_prices', false, false)) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliStripeController.php:740:      if(!PrliUtils::is_post_request() || !PrliUtils::is_logged_in_and_an_admin() || !check_ajax_referer('prli_stripe_add_product', false, false)) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliStripeController.php:1140:    if(!PrliUtils::is_post_request() || !PrliUtils::is_logged_in_and_an_admin() || !check_ajax_referer('prli_dismiss_customer_portal_notice', false, false)) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliToolsController.php:16:    if($action == 'clear_all_clicks' && wp_verify_nonce($nonce, 'prli-clear-clicks-all')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliToolsController.php:19:    else if($action == 'clear_30day_clicks' && wp_verify_nonce($nonce, 'prli-clear-clicks-30day')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliToolsController.php:22:    else if($action == 'clear_90day_clicks' && wp_verify_nonce($nonce, 'prli-clear-clicks-90day')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliReviewNoticeController.php:15:    if ( empty( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'pl_dismiss_review_prompt' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliReviewNoticeController.php:44:    if ( ! current_user_can( 'manage_options' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliAuthenticatorController.php:33:    if ( ! current_user_can( 'manage_options' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliAuthenticatorController.php:38:    if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'prli-clear-connection-data' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliAuthenticatorController.php:83:    if(!isset($_GET['nonce']) || !wp_verify_nonce($_GET['nonce'], 'prli-connect')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliAuthenticatorController.php:165:    if(!isset($_GET['nonce']) || !wp_verify_nonce($_GET['nonce'], 'prli-disconnect')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliPostsController.php:156:    if( ! check_ajax_referer( 'prli_tinymce_nonce', false, false ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliPostsController.php:184:    if( ! check_ajax_referer( 'prli_create_link_nonce', false, false ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliClicksController.php:26:      if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'prli-csv-nonce' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliLinksController.php:294:    if(!wp_verify_nonce(isset($_POST[PrliLink::$nonce_str]) ? $_POST[PrliLink::$nonce_str] : '', PrliLink::$nonce_str . wp_salt())) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliLinksController.php:467:    check_ajax_referer('validate_pretty_link','security');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliLinksController.php:714:    if( ! check_ajax_referer( 'prli_admin_link_list_nonce', false, false ) || ! PrliUtils::is_authorized() ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliLinksController.php:842:    check_ajax_referer('reset_pretty_link','security');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliLinksController.php:870:    if (!check_ajax_referer('prli_quick_create', false, false)) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliAddonsController.php:61:    if(!current_user_can('activate_plugins')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliAddonsController.php:65:    if(!check_ajax_referer('prli_addons', false, false)) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliAddonsController.php:104:    if(!current_user_can('deactivate_plugins')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliAddonsController.php:108:    if(!check_ajax_referer('prli_addons', false, false)) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliAddonsController.php:127:    if(!current_user_can('install_plugins') || !current_user_can('activate_plugins')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliAddonsController.php:131:    if(!check_ajax_referer('prli_addons', false, false)) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliAppController.php:69:    if ( empty( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'pl_dismiss_upgrade_header' ) ) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliAppController.php:131:    if(check_ajax_referer('prli_dismiss_notice', false, false) && isset($_POST['notice']) && is_string($_POST['notice'])) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliAppController.php:145:    if(check_ajax_referer('prli_dismiss_notice', false, false) && isset($_POST['notice']) && is_string($_POST['notice'])) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliAppController.php:159:    if(check_ajax_referer('prli_dismiss_notice', false, false) && isset($_POST['notice']) && is_string($_POST['notice'])) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliAppController.php:780:    if(current_user_can($role)) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliOnboardingController.php:203:    if(!check_ajax_referer($nonce_action, false, false)) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliOnboardingController.php:397:    if(!current_user_can('publish_posts')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliOnboardingController.php:638:    if(!current_user_can('publish_posts')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliOnboardingController.php:731:    if(!current_user_can('publish_posts')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliOnboardingController.php:775:    if(!current_user_can('publish_posts')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliOnboardingController.php:833:    if(!current_user_can('publish_posts')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliUpdateController.php:73:    if(!check_ajax_referer('prli_activate_license', false, false)) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliUpdateController.php:168:    if(!check_ajax_referer('prli_deactivate_license', false, false)) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliUpdateController.php:203:    if(!current_user_can('update_plugins')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliUpdateController.php:207:    if(!check_ajax_referer('prli_install_license_edition', false, false)) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliUpdateController.php:666:    if(!PrliUtils::is_prli_admin() || !wp_verify_nonce($_POST['wpnonce'],'wp-edge-updates')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/views/clicks/csv.php:5:  if(is_user_logged_in() and current_user_can('level_10'))
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:157:        if (! current_user_can('activate_plugins')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:161:        if (! check_ajax_referer('mosh_addons', false, false)) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:203:        if (! current_user_can('deactivate_plugins')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:206:        if (! check_ajax_referer('mosh_addons', false, false)) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:231:        if (! current_user_can('install_plugins') || ! current_user_can('activate_plugins')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:235:        if (! check_ajax_referer('mosh_addons', false, false)) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/LicenseManager.php:202:        if (!current_user_can('manage_options')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/LicenseManager.php:207:        if (!isset($_POST['_wpnonce']) || !wp_verify_nonce($_POST['_wpnonce'], 'mothership_activate_license')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/LicenseManager.php:259:        if (!current_user_can('manage_options')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/LicenseManager.php:264:        if (!isset($_POST['_wpnonce']) || !wp_verify_nonce($_POST['_wpnonce'], 'mothership_deactivate_license')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Helper/AddonHelper.php:18:        if (check_ajax_referer('caseproof_growth_tools_install_addon', 'nonce')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Helper/AddonHelper.php:20:            if (! current_user_can('activate_plugin')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Helper/AddonHelper.php:54:        check_ajax_referer('caseproof_growth_tools_install_addon', 'nonce');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Helper/AddonHelper.php:57:        if (! current_user_can('activate_plugins')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Helper/AddonHelper.php:92:        check_ajax_referer('caseproof_growth_tools_install_addon', 'nonce');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Helper/AddonHelper.php:95:        if (! current_user_can('install_plugins')) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/vendor-prefixed/caseproof/ground-level-in-product-notifications/Service.php:233:        return current_user_can($this->container->get(self::USER_CAPABILITY));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/vendor-prefixed/caseproof/ground-level-in-product-notifications/Services/Ajax.php:116:        $verify = wp_verify_nonce(
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/vendor-prefixed/caseproof/ground-level-in-product-notifications/Services/Ajax.php:128:        if (! current_user_can($this->container->get(IPNService::USER_CAPABILITY))) {
+
+--- SINKS ---
+[SQL]
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliGroup.php:20:    $query = $wpdb->prepare( $query, $values['name'], $values['description'] );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliGroup.php:21:    $query_results = $wpdb->query($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliGroup.php:30:    $query = $wpdb->prepare($query, $values['name'], $values['description'], $id);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliGroup.php:31:    $query_results = $wpdb->query($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliGroup.php:41:    $wpdb->query($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliGroup.php:44:    return $wpdb->query($destroy);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliGroup.php:55:      return $wpdb->get_row($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliGroup.php:66:      return $wpdb->get_results($query, $return_type);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliGroup.php:74:      return $wpdb->get_var($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliGroup.php:88:      $results = $wpdb->get_results($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliClick.php:29:    return $wpdb->get_var($q);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliClick.php:37:      return $wpdb->get_var($q);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliClick.php:101:    return $wpdb->get_row($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliClick.php:116:    return $wpdb->get_results($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliClick.php:124:    $wpdb->query($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliClick.php:127:    return $wpdb->query($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliClick.php:141:      $query = $wpdb->prepare( $query, $oldest_time );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliClick.php:143:      $wpdb->query($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliClick.php:156:    return $wpdb->get_var($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliClick.php:166:    return $wpdb->get_var($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliClick.php:184:    $results = $wpdb->get_results($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliClick.php:210:    $clicks_array = $wpdb->get_results($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliClick.php:242:      $link_slug = "'/".$wpdb->get_var($wpdb->prepare("SELECT slug FROM {$prli_link->table_name} WHERE id = %d", $link_id))."'";
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliDb.php:29:    $wpdb->query('SET SQL_BIG_SELECTS=1'); //This may be getting set back to 0 when SET MAX_JOIN_SIZE is executed
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliDb.php:30:    $wpdb->query('SET MAX_JOIN_SIZE=18446744073709551615');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliDb.php:31:    //$wpdb->query('SET GLOBAL innodb_large_prefix=1'); //Will fail on some installs without proper privileges still
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliDb.php:36:    $collation = $wpdb->get_row("SHOW FULL COLUMNS FROM {$wpdb->posts} WHERE field = 'post_content'");
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliDb.php:156:    $table_res = $wpdb->get_var($q);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLinkMeta.php:35:      $res = $wpdb->get_var("{$query} LIMIT 1");
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLinkMeta.php:38:      $res = $wpdb->get_col("{$query} ORDER BY meta_order, id", 0);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLinkMeta.php:83:    return $wpdb->query($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLinkMeta.php:98:    return $wpdb->query($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLinkMeta.php:111:    return $wpdb->query($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:34:    $first_click = $wpdb->get_var($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:55:    $first_click = $wpdb->get_var("SELECT created_at FROM $clicks_table ORDER BY created_at LIMIT 1;");
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:196:    $pretty_link = $wpdb->get_row($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:279:          $results = $wpdb->query( $insert );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:537:      $links = $wpdb->get_results($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:544:          $query = $wpdb->prepare($query_str, 'pixel', $link->id);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:545:          $wpdb->query($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:549:          $query = $wpdb->prepare($query_str, 'prettybar', $link->id);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:550:          $wpdb->query($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:554:          $query = $wpdb->prepare($query_str, 'cloak', $link->id);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:555:          $wpdb->query($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:560:      $wpdb->query($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:614:          $wpdb->query($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:638:      $query = $wpdb->prepare($query_str, '_pretty-link', 'pretty-link');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:639:      $wpdb->query($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:641:      $query = $wpdb->prepare($query_str, '_prli-keyword-cached-content', 'prli-keyword-cached-content');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:642:      $wpdb->query($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:644:      $query = $wpdb->prepare($query_str, '_prlipro-post-options', 'prlipro-post-options');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:645:      $wpdb->query($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:658:      $query = $wpdb->prepare($query,'pretty-link-posted-to-twitter');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:659:      $posts_posted = $wpdb->get_results($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:670:      $query = $wpdb->prepare($query,'pretty-link-posted-to-twitter','pretty-link-tweet-count','pretty-link-tweet-last-update','prli-keyword-replacement-count');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:671:      $results = $wpdb->query($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:674:      $query = $wpdb->prepare($query,'prli-url-aliases');
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:675:      $results = $wpdb->query($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:696:      while(0 < ($count = $wpdb->get_var($count_q))) {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:698:        $links = $wpdb->get_results($q);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:832:    $count = $wpdb->get_var($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:837:      $wpdb->query($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:1377:    $query = $wpdb->prepare($query, "publish", "page");
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:1378:    $results = $wpdb->get_results($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:17:    return $wpdb->get_var($q);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:23:    return $wpdb->get_var($q);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:65:      $wpdb->query($q);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:139:    return $wpdb->query($q);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:158:    $query_results = $wpdb->query($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:177:    $wpdb->query($metas);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:178:    $wpdb->query($reset);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:180:    return $wpdb->query($destroy);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:191:    return $wpdb->query($reset);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:260:    $query = $wpdb->prepare($query, $val);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:261:    $link  = $wpdb->get_row($query, $return_type);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:277:    $query = $wpdb->prepare($query_str,$target_url);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:278:    return $wpdb->get_var($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:284:    $query = $wpdb->prepare($query_str,$target_url);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:285:    $pretty_link = $wpdb->get_row($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:330:    $query = $wpdb->prepare($query_str, $id);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:331:    $res = $wpdb->get_row($query, $return_type);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:396:    return $wpdb->get_results($query, $return_type);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:416:    $slugs = $wpdb->get_col($query,0);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:535:    $query = $wpdb->prepare($query, $prli_blogurl.PrliUtils::get_permalink_pre_slug_uri());
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:536:    $plinks = $wpdb->get_col($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:554:    $query = $wpdb->prepare($query, $prli_blogurl.PrliUtils::get_permalink_pre_slug_uri());
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:557:    $results = (array)$wpdb->get_results($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:599:    $link_id = $wpdb->get_var($q);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:619:    return $wpdb->get_var($q);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:668:    return $wpdb->query($q);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:685:    return $wpdb->query($q);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:743:      $groups = $wpdb->get_results($q);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:778:    $results = (array)$wpdb->get_results($wpdb->prepare($query, PrliLink::$cpt), ARRAY_A);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliLink.php:793:    return (bool) $wpdb->get_var($query);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliReviewNoticeController.php:71:    $click_count = $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}prli_clicks" );
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliPostsController.php:237:    $results = $wpdb->get_results($q, ARRAY_A);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliClicksController.php:88:      $link_name = $wpdb->get_var($wpdb->prepare("SELECT name FROM {$wpdb->prefix}prli_links WHERE id=%d", $params['l']));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliClicksController.php:89:      $link_slug = $wpdb->get_var($wpdb->prepare("SELECT slug FROM {$wpdb->prefix}prli_links WHERE id=%d", $params['l']));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliClicksController.php:140:      $link_name = $wpdb->get_var($wpdb->prepare("SELECT name FROM {$wpdb->prefix}prli_links WHERE id=%d",$l));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliClicksController.php:141:      $link_slug = $wpdb->get_var($wpdb->prepare("SELECT slug FROM {$wpdb->prefix}prli_links WHERE id=%d",$l));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliClicksController.php:194:      $link_name = $wpdb->get_var($wpdb->prepare("SELECT name FROM {$wpdb->prefix}prli_links WHERE id=%d", $l));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliClicksController.php:195:      $link_slug = $wpdb->get_var($wpdb->prepare("SELECT slug FROM {$wpdb->prefix}prli_links WHERE id=%d", $l));
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliLinksController.php:433:    $timeouts = $wpdb->get_col($q);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliLinksController.php:451:      $res = $wpdb->query($tq);
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliLinksController.php:1053:      $exact_search_terms = '%' . $wpdb->esc_like( $wp_query->query_vars['s'] ) . '%';
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliOnboardingController.php:39:    $wpdb->query("INSERT INTO {$wpdb->options} (option_name, option_value) VALUES('prli_onboarded', '1') ON DUPLICATE KEY UPDATE option_value = VALUES(option_value);");
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliOnboardingController.php:947:    $onboarding_complete = $wpdb->get_var("SELECT option_value FROM {$wpdb->options} WHERE option_name = 'prli_onboarding_complete'");
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliOnboardingController.php:1014:    $onboarded = $wpdb->get_var("SELECT option_value FROM {$wpdb->options} WHERE option_name = 'prli_onboarded'");
+[File ops]
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:487:    // unlink pro directory
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliUtils.php:510:      return unlink($dir);
+
+--- REST JSON (magic quote bypass) ---
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliGroup.php:93:  public function get_params_array()
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/models/PrliClick.php:268:  public function get_params_array() {
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliReportsController.php:12:    $params = $prli_click->get_params_array();
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/pretty-link/app/controllers/PrliClicksController.php:56:    $params = $prli_click->get_params_array();

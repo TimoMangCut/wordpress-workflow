@@ -1,0 +1,109 @@
+rules:
+  # =============================================================================
+  # REMOTE CODE EXECUTION (RCE) - WordPress/PHP
+  # CWE-94: Code Injection, CWE-95: Eval Injection
+  # =============================================================================
+
+  - id: wp-rce-eval-assert
+    mode: taint
+    languages: [php]
+    severity: ERROR
+    message: >-
+      Remote Code Execution: User input in eval()/assert()/create_function().
+      Never pass user-controlled data to code execution functions.
+    metadata:
+      cwe: ["CWE-94", "CWE-95"]
+      owasp: ["A03:2021 - Injection"]
+      category: security
+      technology: [wordpress]
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+
+    pattern-sources:
+      - pattern: $_GET
+      - pattern: $_POST
+      - pattern: $_REQUEST
+      - pattern: $_COOKIE
+      - pattern: $_GET[...]
+      - pattern: $_POST[...]
+      - pattern: $_REQUEST[...]
+      - pattern: $_COOKIE[...]
+      - pattern: $atts
+      - pattern: $atts[...]
+      - pattern: $request->get_param(...)
+      - pattern: file_get_contents("php://input")
+
+    pattern-sinks:
+      - pattern: eval(...)
+      - pattern: assert(...)
+      - pattern: create_function(...)
+      - pattern: preg_replace($PATTERN, $REPLACEMENT, ...)
+
+    pattern-sanitizers:
+      - pattern: absint(...)
+      - pattern: intval(...)
+      - pattern: (int)$X
+      - pattern: (float)$X
+      - pattern: is_numeric(...)
+      - pattern: in_array(..., $WHITELIST, true)
+      - pattern: in_array(..., $WHITELIST, ...)
+      - pattern: sanitize_key(...)
+      - pattern: sanitize_text_field(...)
+      - pattern: esc_html(...)
+      - pattern: esc_attr(...)
+
+  - id: wp-rce-call-user-func
+    mode: taint
+    languages: [php]
+    severity: ERROR
+    message: >-
+      Remote Code Execution: User input controls function name in call_user_func().
+      Validate callback against an explicit allowlist.
+    metadata:
+      cwe: ["CWE-94"]
+      owasp: ["A03:2021 - Injection"]
+      category: security
+      technology: [wordpress]
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+
+    pattern-sources:
+      - pattern: $_GET[...]
+      - pattern: $_POST[...]
+      - pattern: $_REQUEST[...]
+      - pattern: $atts[...]
+      - pattern: $request->get_param(...)
+
+    pattern-sinks:
+      - pattern: call_user_func($FUNC, ...)
+      - pattern: call_user_func_array($FUNC, ...)
+      - pattern: $FUNC(...)
+
+    pattern-sanitizers:
+      - pattern: in_array(..., $WHITELIST, true)
+      - pattern: in_array(..., $WHITELIST, ...)
+      - pattern: array_key_exists(...)
+      - pattern: absint(...)
+      - pattern: intval(...)
+      - pattern: (int)$X
+
+  - id: wp-rce-extract
+    languages: [php]
+    severity: WARNING
+    message: >-
+      Variable Overwrite: extract() on user input overwrites variables in current scope.
+      Can lead to authentication bypass or code execution.
+    patterns:
+      - pattern-either:
+          - pattern: extract($_GET, ...)
+          - pattern: extract($_POST, ...)
+          - pattern: extract($_REQUEST, ...)
+          - pattern: extract($_COOKIE, ...)
+    metadata:
+      cwe: ["CWE-621"]
+      category: security
+      technology: [wordpress]
+      confidence: HIGH
+      impact: HIGH

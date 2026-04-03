@@ -1,0 +1,35 @@
+{
+  "name": "wp-audit/extractor",
+  "description": "WordPress Plugin IR Extractor for Security Audit",
+  "type": "project",
+  "require": {
+    "php": ">=8.3",
+    "nikic/php-parser": "^5.0",
+    "designsecurity/progpilot": "^1.3"
+  },
+  "require-dev": {
+    "vimeo/psalm": "^6.15.1",
+    "php-stubs/wordpress-stubs": "^6.0",
+    "humanmade/psalm-plugin-wordpress": "3.1.2.1"
+  },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "forks/psalm-plugin-wordpress",
+      "options": {
+        "symlink": false
+      }
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "WPAudit\\": "src/"
+    }
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "platform": {
+      "php": "8.3.30"
+    }
+  }
+}

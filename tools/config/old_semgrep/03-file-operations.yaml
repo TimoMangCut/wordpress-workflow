@@ -1,0 +1,93 @@
+rules:
+  # =============================================================================
+  # FILE OPERATIONS - Path Traversal, LFI, Arbitrary File Delete
+  # CWE-22: Path Traversal, CWE-98: LFI
+  # Equivalent to baseline: lfi.yaml, file_del.yaml
+  # =============================================================================
+
+  - id: wp-lfi-include
+    mode: taint
+    languages: [php]
+    severity: ERROR
+    message: >-
+      Local File Inclusion: User input in include/require can lead to code execution.
+      Use basename() and validate against a whitelist of allowed files.
+    metadata:
+      cwe: ["CWE-98", "CWE-22"]
+      owasp: ["A03:2021 - Injection"]
+      category: security
+      technology: [wordpress]
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      references:
+        - https://owasp.org/www-community/attacks/Path_Traversal
+
+    pattern-sources:
+      - pattern: $_GET
+      - pattern: $_POST
+      - pattern: $_REQUEST
+      - pattern: $_COOKIE
+      - pattern: $_GET[...]
+      - pattern: $_POST[...]
+      - pattern: $_REQUEST[...]
+      - pattern: $_COOKIE[...]
+      - pattern: $atts
+      - pattern: $atts[...]
+
+    pattern-sinks:
+      - pattern: include $X
+      - pattern: include($X)
+      - pattern: include_once $X
+      - pattern: include_once($X)
+      - pattern: require $X
+      - pattern: require($X)
+      - pattern: require_once $X
+      - pattern: require_once($X)
+
+    pattern-sanitizers:
+      - pattern: basename(...)
+      - pattern: realpath(...)
+      - pattern: sanitize_file_name(...)
+      - pattern: wp_normalize_path(...)
+      - pattern: absint(...)
+      - pattern: intval(...)
+      - pattern: (int)$X
+      - pattern: is_numeric(...)
+
+  - id: wp-arbitrary-file-delete
+    mode: taint
+    languages: [php]
+    severity: ERROR
+    message: >-
+      Arbitrary File Deletion: User input controls file path in delete operation.
+      Can delete wp-config.php or other critical files. Validate paths strictly.
+    metadata:
+      cwe: ["CWE-22", "CWE-73"]
+      owasp: ["A01:2021 - Broken Access Control"]
+      category: security
+      technology: [wordpress]
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+
+    pattern-sources:
+      - pattern: $_GET
+      - pattern: $_POST
+      - pattern: $_REQUEST
+      - pattern: $_GET[...]
+      - pattern: $_POST[...]
+      - pattern: $_REQUEST[...]
+
+    pattern-sinks:
+      - pattern: unlink($PATH)
+      - pattern: rmdir($PATH)
+      - pattern: wp_delete_file($PATH)
+
+    pattern-sanitizers:
+      - pattern: basename(...)
+      - pattern: realpath(...)
+      - pattern: sanitize_file_name(...)
+      - pattern: absint(...)
+      - pattern: intval(...)
+      - pattern: (int)$X

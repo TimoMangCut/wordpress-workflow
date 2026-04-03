@@ -1,0 +1,42 @@
+{
+  "session": 2,
+  "date": "2026-04-03",
+  "status": "COMPLETED",
+  "gaps_addressed": ["IR-04", "AR-01"],
+  "files_modified": [
+    {
+      "file": "tools/src/Extractor/Visitors/GuardVisitor.php",
+      "functions_changed": ["enterNode", "determineEffectiveness"],
+      "lines_affected": "63-115, 143-188",
+      "behavior_before": "current_user_can() and wp_verify_nonce() always set is_effective=true unless guard-after-side-effect pattern detected",
+      "behavior_after": "current_user_can(): true if in if/elseif cond, false if in Assign, null otherwise. wp_verify_nonce(): same logic. check_ajax_referer/check_admin_referer: default true (auto-die). determineEffectiveness() reads parent attribute set by ParentConnectingVisitor."
+    },
+    {
+      "file": "tools/src/Extractor/IRBuilder.php",
+      "functions_changed": ["build"],
+      "lines_affected": "119-122",
+      "behavior_before": "GuardVisitor traversal had no parent context available",
+      "behavior_after": "ParentConnectingVisitor added before GuardVisitor in same traversal so $node->getAttribute('parent') is populated for determineEffectiveness()"
+    },
+    {
+      "file": "tools/src/Rules/AnomalyRules.php",
+      "functions_changed": ["rule03_flawedNoncePattern"],
+      "lines_affected": "88",
+      "behavior_before": "if ($guard['type'] === 'nonce_check' && !$guard['is_effective']) — fires for both false AND null",
+      "behavior_after": "if ($guard['type'] === 'nonce_check' && $guard['is_effective'] === false) — fires only for confirmed false"
+    }
+  ],
+  "downstream_updated": [],
+  "deviations_from_spec": [
+    {
+      "spec": "Apply determineEffectiveness() to wp_verify_nonce() AND current_user_can()",
+      "actual": "Also scoped AWAY from check_ajax_referer/check_admin_referer (kept default=true) since those functions auto-die on failure, making AST context irrelevant. This is correct behavior not covered explicitly in spec.",
+      "impact": "No negative impact — these functions do not need return-value checking"
+    }
+  ],
+  "test_command": "php tools/bin/extract.php /tmp/test-ir04-plugin/ --json",
+  "test_result": "PASS: Assignment → false; direct if → true; BooleanAnd → null (Rule03 silent); wp_verify_nonce assignment → false (Rule03 fires). All 4 spec cases confirmed.",
+  "discovered_issues": [],
+  "next_session": "session_3",
+  "notes": "Session card critical note correctly identified co-deploy requirement. AR-01 Rule03 === false change is minimal and exact. ParentConnectingVisitor is available in php-parser vendor (verified at tools/vendor/nikic/php-parser)."
+}

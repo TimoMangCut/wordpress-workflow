@@ -1,0 +1,113 @@
+{
+    "inputs": {
+        "inclusions": [],
+        "exclusions": [
+            "vendor",
+            "node_modules",
+            ".git",
+            "tests",
+            "test"
+        ]
+    },
+    "outputs": {
+        "tainted_flow": true,
+        "resolve_includes": true
+    },
+    "sources": {
+        "custom": [
+            {"name": "$_GET", "is_array": true, "language": "php"},
+            {"name": "$_POST", "is_array": true, "language": "php"},
+            {"name": "$_REQUEST", "is_array": true, "language": "php"},
+            {"name": "$_COOKIE", "is_array": true, "language": "php"},
+            {"name": "$_SERVER", "is_array": true, "language": "php"},
+            {"name": "$_FILES", "is_array": true, "language": "php"},
+            {"name": "file_get_contents", "language": "php"},
+            {"name": "get_option", "language": "php"},
+            {"name": "get_post_meta", "language": "php"},
+            {"name": "get_user_meta", "language": "php"},
+            {"name": "get_transient", "language": "php"},
+            {"name": "get_site_option", "language": "php"},
+            {"name": "get_site_transient", "language": "php"},
+            {"name": "get_term_meta", "language": "php"},
+            {"name": "get_comment_meta", "language": "php"}
+        ]
+    },
+    "sinks": {
+        "custom": [
+            {"name": "echo", "language": "php", "attack": "xss", "cwe": "CWE_79"},
+            {"name": "print", "language": "php", "attack": "xss", "cwe": "CWE_79"},
+            {"name": "printf", "language": "php", "attack": "xss", "cwe": "CWE_79"},
+            {"name": "query", "language": "php", "instanceof": "wpdb", "attack": "sql_injection", "cwe": "CWE_89"},
+            {"name": "get_var", "language": "php", "instanceof": "wpdb", "attack": "sql_injection", "cwe": "CWE_89"},
+            {"name": "get_row", "language": "php", "instanceof": "wpdb", "attack": "sql_injection", "cwe": "CWE_89"},
+            {"name": "get_col", "language": "php", "instanceof": "wpdb", "attack": "sql_injection", "cwe": "CWE_89"},
+            {"name": "get_results", "language": "php", "instanceof": "wpdb", "attack": "sql_injection", "cwe": "CWE_89"},
+            {"name": "include", "language": "php", "attack": "file_inclusion", "cwe": "CWE_98"},
+            {"name": "include_once", "language": "php", "attack": "file_inclusion", "cwe": "CWE_98"},
+            {"name": "require", "language": "php", "attack": "file_inclusion", "cwe": "CWE_98"},
+            {"name": "require_once", "language": "php", "attack": "file_inclusion", "cwe": "CWE_98"},
+            {"name": "file_put_contents", "language": "php", "attack": "file_inclusion", "cwe": "CWE_22"},
+            {"name": "fwrite", "language": "php", "attack": "file_inclusion", "cwe": "CWE_22"},
+            {"name": "unlink", "language": "php", "attack": "file_inclusion", "cwe": "CWE_22"},
+            {"name": "unserialize", "language": "php", "attack": "object_injection", "cwe": "CWE_502"},
+            {"name": "maybe_unserialize", "language": "php", "attack": "object_injection", "cwe": "CWE_502"},
+            {"name": "exec", "language": "php", "attack": "command_injection", "cwe": "CWE_78"},
+            {"name": "system", "language": "php", "attack": "command_injection", "cwe": "CWE_78"},
+            {"name": "shell_exec", "language": "php", "attack": "command_injection", "cwe": "CWE_78"},
+            {"name": "passthru", "language": "php", "attack": "command_injection", "cwe": "CWE_78"},
+            {"name": "eval", "language": "php", "attack": "code_injection", "cwe": "CWE_94"},
+            {"name": "wp_redirect", "language": "php", "attack": "open_redirect", "cwe": "CWE_601"},
+            {"name": "wp_remote_get", "language": "php", "attack": "ssrf", "cwe": "CWE_918"},
+            {"name": "wp_remote_post", "language": "php", "attack": "ssrf", "cwe": "CWE_918"},
+            {"name": "wp_remote_request", "language": "php", "attack": "ssrf", "cwe": "CWE_918"},
+            {"name": "update_option", "language": "php", "attack": "security_misconfiguration", "cwe": "CWE_269"},
+            {"name": "update_user_meta", "language": "php", "attack": "security_misconfiguration", "cwe": "CWE_269"}
+        ]
+    },
+    "sanitizers": {
+        "custom": [
+            {"name": "esc_html", "language": "php", "prevent": ["xss"]},
+            {"name": "esc_attr", "language": "php", "prevent": ["xss"]},
+            {"name": "esc_url", "language": "php", "prevent": ["xss", "open_redirect"]},
+            {"name": "esc_js", "language": "php", "prevent": ["xss"]},
+            {"name": "esc_textarea", "language": "php", "prevent": ["xss"]},
+            {"name": "wp_kses", "language": "php", "prevent": ["xss"]},
+            {"name": "wp_kses_post", "language": "php", "prevent": ["xss"]},
+            {"name": "wp_strip_all_tags", "language": "php", "prevent": ["xss"]},
+            {"name": "sanitize_text_field", "language": "php", "prevent": ["xss"]},
+            {"name": "sanitize_textarea_field", "language": "php", "prevent": ["xss"]},
+            {"name": "sanitize_email", "language": "php", "prevent": ["xss"]},
+            {"name": "sanitize_file_name", "language": "php", "prevent": ["file_inclusion"]},
+            {"name": "sanitize_key", "language": "php", "prevent": ["xss", "sql_injection"]},
+            {"name": "sanitize_url", "language": "php", "prevent": ["xss", "open_redirect"]},
+            {"name": "absint", "language": "php", "prevent": ["xss", "sql_injection"]},
+            {"name": "intval", "language": "php", "prevent": ["xss", "sql_injection"]},
+            {"name": "prepare", "language": "php", "instanceof": "wpdb", "prevent": ["sql_injection"]},
+            {"name": "esc_sql", "language": "php", "prevent": ["sql_injection"]},
+            {"name": "esc_like", "language": "php", "instanceof": "wpdb", "prevent": ["sql_injection"]},
+            {"name": "wp_safe_redirect", "language": "php", "prevent": ["open_redirect"]},
+            {"name": "wp_validate_redirect", "language": "php", "prevent": ["open_redirect"]},
+            {"name": "wp_http_validate_url", "language": "php", "prevent": ["ssrf"]},
+            {"name": "escapeshellarg", "language": "php", "prevent": ["command_injection"]},
+            {"name": "escapeshellcmd", "language": "php", "prevent": ["command_injection"]},
+            {"name": "basename", "language": "php", "prevent": ["file_inclusion"]},
+            {"name": "realpath", "language": "php", "prevent": ["file_inclusion"]},
+            {"name": "validate_file", "language": "php", "prevent": ["file_inclusion"]},
+            {"name": "htmlspecialchars", "language": "php", "prevent": ["xss"]},
+            {"name": "wp_json_encode", "language": "php", "prevent": ["xss"]},
+            {"name": "json_encode", "language": "php", "prevent": ["xss"]},
+            {"name": "wc_clean", "language": "php", "prevent": ["xss"]},
+            {"name": "give_clean", "language": "php", "prevent": ["xss"]}
+        ]
+    },
+    "validators": {
+        "custom": [
+            {"name": "wp_verify_nonce", "language": "php", "valid_when_returns": true},
+            {"name": "check_ajax_referer", "language": "php", "valid_when_returns": true},
+            {"name": "current_user_can", "language": "php", "valid_when_returns": true},
+            {"name": "is_numeric", "language": "php", "valid_when_returns": true},
+            {"name": "is_email", "language": "php", "valid_when_returns": true},
+            {"name": "in_array", "language": "php", "valid_when_returns": true}
+        ]
+    }
+}

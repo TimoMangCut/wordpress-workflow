@@ -1,0 +1,119 @@
+rules:
+  # =============================================================================
+  # PRIVILEGE ESCALATION - WordPress
+  # CWE-269: Improper Privilege Management
+  # CWE-862: Missing Authorization
+  # =============================================================================
+
+  - id: wp-privesc-user-role-update
+    mode: taint
+    languages: [php]
+    severity: ERROR
+    message: >-
+      Privilege Escalation: User input controls role parameter in user creation/update.
+      Attacker can set role=administrator. Validate role against allowlist.
+    metadata:
+      cwe: ["CWE-269"]
+      owasp: ["A01:2021 - Broken Access Control"]
+      category: security
+      technology: [wordpress]
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+
+    pattern-sources:
+      - pattern: $_GET
+      - pattern: $_POST
+      - pattern: $_REQUEST
+      - pattern: $_GET[...]
+      - pattern: $_POST[...]
+      - pattern: $_REQUEST[...]
+      - pattern: $request->get_param(...)
+      - pattern: $request->get_params()
+      - pattern: file_get_contents("php://input")
+
+    pattern-sinks:
+      - pattern: wp_insert_user(...)
+      - pattern: wp_update_user(...)
+      - pattern: wp_set_password(...)
+      - pattern: $USER->set_role(...)
+      - pattern: wp_set_auth_cookie(...)
+      - pattern: wp_set_current_user(...)
+
+    pattern-sanitizers:
+      - pattern: in_array(..., $WHITELIST, true)
+      - pattern: in_array(..., $WHITELIST, ...)
+      - pattern: current_user_can(...)
+      - pattern: absint(...)
+      - pattern: intval(...)
+      - pattern: (int)$X
+
+  - id: wp-privesc-option-update
+    mode: taint
+    languages: [php]
+    severity: ERROR
+    message: >-
+      Privilege Escalation via Option Update: User input controls option key/value.
+      Can set users_can_register=1 + default_role=administrator for account takeover.
+    metadata:
+      cwe: ["CWE-269", "CWE-862"]
+      owasp: ["A01:2021 - Broken Access Control"]
+      category: security
+      technology: [wordpress]
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+
+    pattern-sources:
+      - pattern: $_GET[...]
+      - pattern: $_POST[...]
+      - pattern: $_REQUEST[...]
+      - pattern: $request->get_param(...)
+
+    pattern-sinks:
+      - pattern: update_option(...)
+      - pattern: update_site_option(...)
+
+    pattern-sanitizers:
+      - pattern: in_array(..., $WHITELIST, true)
+      - pattern: in_array(..., $WHITELIST, ...)
+      - pattern: array_key_exists(...)
+      - pattern: current_user_can(...)
+      - pattern: absint(...)
+      - pattern: intval(...)
+      - pattern: (int)$X
+
+  - id: wp-privesc-usermeta-update
+    mode: taint
+    languages: [php]
+    severity: ERROR
+    message: >-
+      Privilege Escalation via User Meta: User input controls meta key/value.
+      Can set wp_capabilities to {administrator:1} for role escalation.
+    metadata:
+      cwe: ["CWE-269"]
+      owasp: ["A01:2021 - Broken Access Control"]
+      category: security
+      technology: [wordpress]
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+
+    pattern-sources:
+      - pattern: $_GET[...]
+      - pattern: $_POST[...]
+      - pattern: $_REQUEST[...]
+      - pattern: $request->get_param(...)
+
+    pattern-sinks:
+      - pattern: update_user_meta(...)
+
+    pattern-sanitizers:
+      - pattern: in_array(..., $WHITELIST, true)
+      - pattern: in_array(..., $WHITELIST, ...)
+      - pattern: array_key_exists(...)
+      - pattern: current_user_can(...)
+      - pattern: absint(...)
+      - pattern: intval(...)
+      - pattern: (int)$X
+      - pattern: sanitize_key(...)

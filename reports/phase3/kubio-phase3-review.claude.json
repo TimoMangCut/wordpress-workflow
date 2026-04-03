@@ -1,0 +1,112 @@
+{
+  "plugin_slug": "kubio",
+  "reviews": [
+    {
+      "finding_id": "KUBIO-P2-REV-001",
+      "original_status": "UNCERTAIN",
+      "verdict_change": "keep",
+      "suggested_field_corrections": {
+        "entry_point_id": "ep_rest___snippet",
+        "source_file_path": "plugins/kubio/lib/api/colibri.php",
+        "source_line_number": 112,
+        "sink_file_path": "plugins/kubio/lib/api/colibri.php",
+        "sink_line_number": 282,
+        "storage_key": "kubio_cloud_api_key"
+      },
+      "reason": "The path traversal from user-controlled snippet JSON into file_get_contents is code-real: the regex (.*?) on line 265 captures arbitrary suffixes including ../ sequences, and line 279 concatenates the captured suffix directly onto basedir with no realpath, validate_file, or prefix check before the file_get_contents at line 282. However, the read data is bundled into a ZIP sent only to Kubio's cloud endpoint (not returned in the HTTP response), so actual exfiltration depends on the external cloud accepting an attacker-controlled API key — which cannot be verified from source alone.",
+      "counter_evidence": [
+        {
+          "type": "guard",
+          "file": "plugins/kubio/lib/api/colibri.php",
+          "line": 54,
+          "detail": "permission_callback requires current_user_can('edit_theme_options'), limiting access to Administrators (single-site) or Site Admins (multisite). This is admin-level, reducing Patchstack eligibility."
+        },
+        {
+          "type": "guard",
+          "file": "plugins/kubio/lib/api/colibri.php",
+          "line": 281,
+          "detail": "file_exists() check at line 281 is present before file_get_contents at line 282, but this is not a security control — it merely confirms the traversed path resolves to a real file."
+        },
+        {
+          "type": "sanitizer",
+          "file": "plugins/kubio/lib/api/colibri.php",
+          "line": 283,
+          "detail": "wp_normalize_path() at line 283 is applied to the ZIP entry name ('assets' + uploaded_file), NOT to the file system path used in file_get_contents. It does not resolve '..' segments and does not protect against traversal."
+        },
+        {
+          "type": "unreachable",
+          "file": "plugins/kubio/lib/api/colibri.php",
+          "line": 142,
+          "detail": "The ZIP contents are uploaded to Kubio's cloud via wp_remote_post to Utils::getSnippetsURL('/save') at line 139-151, using the kubio_cloud_api_key. The response body is returned to the caller as JSON success, but the ZIP file content itself is not in the response. Attacker cannot read the traversed file content from the HTTP response alone; exfiltration requires cloud-side cooperation."
+        }
+      ],
+      "missing_evidence": [
+        "Dynamic verification that the Kubio cloud API accepts an attacker-supplied API key and allows the attacker to retrieve uploaded ZIP contents",
+        "Confirmation that the regex captures ../ segments in the actual WordPress REST request pipeline (JSON encoding behavior with nested objects)",
+        "Verification of whether the ZIP file persists on the local filesystem (get_temp_dir() + name + '.zip') and could be accessed through another path"
+      ],
+      "dynamic_test_plan": [
+        "Step 1: Set up a WordPress single-site test instance with Kubio plugin activated. Create an administrator user.",
+        "Step 2: Authenticate as administrator and POST to /wp-json/kubio/v1/kubio-api-key with body {\"key\": \"attacker-controlled-api-key\"} to set the cloud API key.",
+        "Step 3: POST to /wp-json/kubio/v1/snippet with a crafted snippet JSON payload containing a forged URL: e.g. {\"name\": \"test\", \"category\": \"1\", \"screenshot\": \"data:image/png;base64,iVBOR...\", \"globalData\": {}, \"snippet\": [\"kubio/section\", {\"imageURL\": \"https://<site>/wp-content/uploads/../../wp-config.php\"}, []]}",
+        "Step 4: Monitor the server filesystem at get_temp_dir() for the created ZIP file. Extract it and check if wp-config.php contents appear under assets/../../wp-config.php entry.",
+        "Step 5: If the ZIP contains the traversed file, check the HTTP response to see if any file content is leaked. Also check if the temporary ZIP file remains on disk after the request completes (no unlink observed in code).",
+        "Step 6: For full chain: register a Kubio cloud account, obtain a legitimate API key, set it via step 2, then trigger the snippet save. Check if the uploaded ZIP can be downloaded from the Kubio cloud dashboard."
+      ]
+    },
+    {
+      "finding_id": "KUBIO-P2-REV-002",
+      "original_status": "UNCERTAIN",
+      "verdict_change": "keep",
+      "suggested_field_corrections": {
+        "entry_point_id": "ep_ajax_priv_wp_ajax_kubio_demo_site_install_plugin",
+        "source_file_path": "plugins/kubio/lib/src/DemoSites/DemoSites.php",
+        "source_line_number": 331,
+        "sink_file_path": "plugins/kubio/lib/src/PluginsManager.php",
+        "sink_line_number": 65,
+        "storage_key": null
+      },
+      "reason": "The capability mismatch is code-real: verifyAjaxCall() at DemoSitesHelpers.php:15-31 only checks current_user_can('import') and a nonce, then the flow reaches Plugin_Upgrader->install() at PluginsManager.php:65 and activate_plugin() at PluginsManager.php:99 with no install_plugins/activate_plugins check anywhere in the chain. The Image Hub handler (image-hub.php:68) explicitly checks install_plugins for the same PluginsManager call, confirming the developers understood this check is needed. On standard single-site WordPress, administrators have both 'import' and 'install_plugins', so there is no privilege escalation. On multisite, site administrators have 'import' but NOT 'install_plugins', making this a genuine privilege boundary bypass — but only if DISALLOW_FILE_MODS is not set and the file system method is 'direct'.",
+      "counter_evidence": [
+        {
+          "type": "guard",
+          "file": "plugins/kubio/lib/src/DemoSites/DemoSitesHelpers.php",
+          "line": 16,
+          "detail": "check_ajax_referer('kubio-ajax-demo-site-verification', 'nonce') validates the nonce, preventing CSRF. The nonce itself is emitted in demo-sites.php:201 (gated by edit_theme_options at line 7) and editor-assets.php:378 (gated by block editor access, i.e. edit_posts)."
+        },
+        {
+          "type": "guard",
+          "file": "plugins/kubio/lib/src/DemoSites/DemoSitesHelpers.php",
+          "line": 19,
+          "detail": "current_user_can('import') is checked. On single-site WordPress, only administrators have this capability. On multisite, site administrators also have it."
+        },
+        {
+          "type": "guard",
+          "file": "plugins/kubio/lib/src/DemoSites/DemoSites.php",
+          "line": 331,
+          "detail": "sanitize_text_field() is applied to the slug parameter, preventing injection. The slug is also validated by WordPress plugins_api() which fetches from the official WordPress.org plugin repository only."
+        },
+        {
+          "type": "guard",
+          "file": "plugins/kubio/lib/admin-pages/main-page/demo-sites.php",
+          "line": 7,
+          "detail": "The demo-sites admin page (which emits the nonce at line 201) checks current_user_can('edit_theme_options') at line 7 before rendering. This limits nonce exposure on this page to administrators."
+        }
+      ],
+      "missing_evidence": [
+        "Dynamic verification on a multisite WordPress installation confirming that a site administrator (non-super-admin) can satisfy current_user_can('import') while lacking install_plugins",
+        "Verification of whether WordPress multisite DISALLOW_FILE_MODS or file_mods_allowed filter blocks Plugin_Upgrader->install() at the filesystem level even without a capability check",
+        "Confirmation that the nonce from editor-assets.php:378 is accessible to the site admin role on multisite (editor-assets is loaded during block editor, which requires edit_posts)"
+      ],
+      "dynamic_test_plan": [
+        "Step 1: Set up a WordPress multisite installation with Kubio plugin network-activated.",
+        "Step 2: Create a site administrator user (not Super Admin) on a sub-site. Verify this user has current_user_can('import') == true and current_user_can('install_plugins') == false.",
+        "Step 3: Log in as the site admin. Navigate to the Kubio editor or Starter Sites page to obtain the kubio-ajax-demo-site-verification nonce from the page source or inline JS data.",
+        "Step 4: POST to /wp-admin/admin-ajax.php with action=kubio-demo-site-install-plugin, slug=hello-dolly (a harmless test plugin), nonce=<obtained nonce>.",
+        "Step 5: Check response. If 200/success, verify the plugin was downloaded and installed in wp-content/plugins/.",
+        "Step 6: POST to /wp-admin/admin-ajax.php with action=kubio-demo-site-activate-plugin, slug=hello-dolly, nonce=<nonce>. Verify the plugin is now active.",
+        "Step 7: Compare behavior: attempt the same installation via WordPress native wp-admin/plugin-install.php as the same site admin — it should be blocked by install_plugins capability check."
+      ]
+    }
+  ]
+}

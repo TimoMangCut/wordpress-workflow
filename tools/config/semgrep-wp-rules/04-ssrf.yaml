@@ -1,0 +1,62 @@
+rules:
+  # =============================================================================
+  # SERVER-SIDE REQUEST FORGERY (SSRF) - WordPress (v5 - Full REST API Sources)
+  # CWE-918: Server-Side Request Forgery
+  # =============================================================================
+
+  - id: wp-ssrf-remote-request
+    mode: taint
+    languages: [php]
+    severity: WARNING
+    message: >-
+      SSRF: User input controls URL in wp_remote_get/post without validation.
+      Use wp_safe_remote_get() or validate URL with wp_http_validate_url().
+    metadata:
+      cwe: ["CWE-918"]
+      owasp: ["A10:2021 - Server-Side Request Forgery"]
+      category: security
+      technology: [wordpress]
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      references:
+        - https://developer.wordpress.org/reference/functions/wp_safe_remote_get/
+        - https://patchstack.com/academy/wordpress/vulnerabilities/server-side-request-forgery/
+
+    pattern-sources:
+      - pattern: $_GET
+      - pattern: $_POST
+      - pattern: $_REQUEST
+      - pattern: $_GET[...]
+      - pattern: $_POST[...]
+      - pattern: $_REQUEST[...]
+      - pattern: $atts
+      - pattern: $atts[...]
+      # REST API (ALL data UNSLASHED)
+      - pattern: $request->get_param(...)
+      - pattern: $request->get_params()
+      - pattern: $request->get_json_params()
+      - pattern: $request->get_body_params()
+      - pattern: $request->get_query_params()
+      - pattern: $request[...]
+
+    pattern-sinks:
+      - pattern: wp_remote_get($URL, ...)
+      - pattern: wp_remote_post($URL, ...)
+      - pattern: wp_remote_head($URL, ...)
+      - pattern: wp_remote_request($URL, ...)
+      - pattern: curl_setopt($CH, CURLOPT_URL, $URL)
+      - pattern: curl_init($URL)
+
+    pattern-sanitizers:
+      - pattern: wp_safe_remote_get(...)
+      - pattern: wp_safe_remote_post(...)
+      - pattern: wp_safe_remote_head(...)
+      - pattern: wp_safe_remote_request(...)
+      - pattern: wp_http_validate_url(...)
+      - pattern: esc_url_raw(...)
+      - pattern: esc_url(...)
+      - pattern: filter_var($URL, FILTER_VALIDATE_URL)
+      - pattern: absint(...)
+      - pattern: intval(...)
+      - pattern: (int)$X

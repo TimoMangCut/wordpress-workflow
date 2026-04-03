@@ -1,0 +1,272 @@
+{
+  "plugin_slug": "smart-slider-3",
+  "analysis_summary": {
+    "artifacts_used": {
+      "ir": "reports/phase1/smart-slider-3-ir.json",
+      "semgrep": "reports/phase1/smart-slider-3-semgrep.json",
+      "psalm": "reports/phase1/smart-slider-3-psalm.sarif"
+    },
+    "artifact_notes": [
+      "Phase 1 IR contained 3 anomalies, all in plugins/smart-slider-3/Nextend/WordPress/OutputBuffer.php.",
+      "Semgrep was treated as signal only and manually validated against source.",
+      "Psalm corroboration was unavailable because reports/phase1/smart-slider-3-psalm.sarif only contains {\"status\":\"error\",\"exit_code\":1}."
+    ],
+    "coverage": [
+      "Validated all IR anomalies in OutputBuffer compatibility branches.",
+      "Manually traced wp_ajax_smart-slider3 routing and the helper AJAX actions reachable from TinyMCE/editor integrations.",
+      "Reviewed the frontend iframe pre-render path, the wp_remote_get sink, and the import deserialization path for practical low-privilege impact."
+    ],
+    "conclusion": "No Patchstack-eligible unauthenticated or subscriber/customer issue was confirmed in the reviewed surfaces. The IR anomalies are false positives, and the additional high-risk sinks reviewed were either securely constrained or admin-only."
+  },
+  "overall_risk": "none",
+  "total_findings_analyzed": 3,
+  "true_positives": 0,
+  "false_positives": 3,
+  "needs_review": 0,
+  "findings": [
+    {
+      "finding_id": "anom_1",
+      "verdict": "FP",
+      "state": "REJECTED",
+      "vuln_type": "Authorization Bypass",
+      "cwe_id": "CWE-862",
+      "severity": "informational",
+      "auth_required": "none",
+      "confidence": "high",
+      "entry_point_id": "ep_init_init",
+      "source_function": "Nextend\\WordPress\\OutputBuffer::onInit",
+      "sink_function": "Nextend\\WordPress\\OutputBuffer::onInit",
+      "source_file_path": "plugins/smart-slider-3/Nextend/WordPress/OutputBuffer.php",
+      "source_line_number": 128,
+      "sink_file_path": "plugins/smart-slider-3/Nextend/WordPress/OutputBuffer.php",
+      "sink_line_number": 134,
+      "file_path": "plugins/smart-slider-3/Nextend/WordPress/OutputBuffer.php",
+      "line_number": 134,
+      "reasoning": {
+        "hypothesis": "The `!is_admin()` check could be acting as an authorization gate on a low-privilege request path.",
+        "trace": "The `init` hook reaches `Nextend\\WordPress\\OutputBuffer::onInit()`, where the Borlabs compatibility branch only decides whether to attach `template_redirect` output buffering when the request is not an admin request.",
+        "defenses": "No attacker-controlled data reaches a privileged sink here. The branch only toggles frontend buffering behavior and does not expose data, change state, or bypass a capability check.",
+        "refutation": "A request to `/wp-admin/admin-ajax.php` merely makes `!is_admin()` false and skips installation of the frontend `template_redirect` hook. No privileged controller, AJAX action, or admin page becomes reachable from this branch.",
+        "conclusion": "False positive. `is_admin()` is used as environment detection for cache/output-buffer compatibility, not as an authorization primitive."
+      },
+      "poc_description": "No PoC applicable because the branch does not create a security impact.",
+      "cvss_vector": null,
+      "remediation": "No security fix required.",
+      "patchstack_eligible": false,
+      "reopen_condition": "Show a reachable low-privilege path where this exact branch unlocks a privileged action or sensitive response."
+    },
+    {
+      "finding_id": "anom_2",
+      "verdict": "FP",
+      "state": "REJECTED",
+      "vuln_type": "Authorization Bypass",
+      "cwe_id": "CWE-862",
+      "severity": "informational",
+      "auth_required": "none",
+      "confidence": "high",
+      "entry_point_id": "ep_init_init",
+      "source_function": "Nextend\\WordPress\\OutputBuffer::onInit",
+      "sink_function": "Nextend\\WordPress\\OutputBuffer::onInit",
+      "source_file_path": "plugins/smart-slider-3/Nextend/WordPress/OutputBuffer.php",
+      "source_line_number": 128,
+      "sink_file_path": "plugins/smart-slider-3/Nextend/WordPress/OutputBuffer.php",
+      "sink_line_number": 143,
+      "file_path": "plugins/smart-slider-3/Nextend/WordPress/OutputBuffer.php",
+      "line_number": 143,
+      "reasoning": {
+        "hypothesis": "The Themify compatibility branch may treat `is_admin()` as an authorization check and allow subscriber access through `/wp-admin/admin-ajax.php`.",
+        "trace": "The same `init` entry point reaches `OutputBuffer::onInit()`. The branch at line 143 attaches a `template_include` filter only when `THEMIFY_VERSION` is defined and the request is not in the admin area.",
+        "defenses": "The branch never dispatches a privileged action. It only chooses whether to start output buffering before a frontend template loads.",
+        "refutation": "On actual admin or AJAX requests the condition becomes false and the compatibility filter is not installed at all. That behavior removes functionality instead of granting access, so there is no source-to-impact path for CWE-862.",
+        "conclusion": "False positive. This is frontend-only execution control, not a permission boundary."
+      },
+      "poc_description": "No PoC applicable because no security impact was identified.",
+      "cvss_vector": null,
+      "remediation": "No security fix required.",
+      "patchstack_eligible": false,
+      "reopen_condition": "Show a concrete path where this Themify branch exposes a privileged resource to an unauthorized actor."
+    },
+    {
+      "finding_id": "anom_3",
+      "verdict": "FP",
+      "state": "REJECTED",
+      "vuln_type": "Authorization Bypass",
+      "cwe_id": "CWE-862",
+      "severity": "informational",
+      "auth_required": "none",
+      "confidence": "high",
+      "entry_point_id": "ep_template_redirect_template_redirect",
+      "source_function": "Nextend\\WordPress\\OutputBuffer::outputStart",
+      "sink_function": "Nextend\\WordPress\\OutputBuffer::outputStart",
+      "source_file_path": "plugins/smart-slider-3/Nextend/WordPress/OutputBuffer.php",
+      "source_line_number": 173,
+      "sink_file_path": "plugins/smart-slider-3/Nextend/WordPress/OutputBuffer.php",
+      "sink_line_number": 199,
+      "file_path": "plugins/smart-slider-3/Nextend/WordPress/OutputBuffer.php",
+      "line_number": 199,
+      "reasoning": {
+        "hypothesis": "The Gantry compatibility branch may use `!is_admin()` as an auth check and let low-privilege users reach a protected output filter.",
+        "trace": "The `template_redirect`/`init` buffering path reaches `OutputBuffer::outputStart()`. When Gantry 4 is present, the code only swaps to `gantry_before_render_output` on non-admin requests.",
+        "defenses": "The sink is `prepareOutput($buffer)`, which only applies the `wordpress_prepare_output` filter to page HTML. There is no data mutation, capability bypass, or sensitive sink behind this branch.",
+        "refutation": "Admin or AJAX requests do not become authorized; they simply stay on the default output-buffer path. The branch is a performance/compatibility decision for frontend rendering.",
+        "conclusion": "False positive. No exploitable authorization issue exists at this location."
+      },
+      "poc_description": "No PoC applicable because the branch only changes rendering mechanics.",
+      "cvss_vector": null,
+      "remediation": "No security fix required.",
+      "patchstack_eligible": false,
+      "reopen_condition": "Show a privileged Gantry-only action or secret-dependent output that becomes reachable solely because this branch uses `is_admin()`."
+    }
+  ],
+  "negative_findings": [
+    {
+      "finding_id": "neg_001",
+      "title": "Nonce-gated helper AJAX endpoints do not create a meaningful low-privilege break",
+      "state": "REJECTED",
+      "reasoning": {
+        "hypothesis": "Editors/contributors may obtain the shared `nextend_security` nonce from TinyMCE integration and use helper AJAX endpoints that lack `smartslider_*` capability checks.",
+        "trace": [
+          {
+            "file_path": "plugins/smart-slider-3/Nextend/SmartSlider3/Platform/WordPress/HelperTinyMCE.php",
+            "line_number": 30,
+            "note": "Users with `edit_posts` or `edit_pages` receive the Smart Slider editor integration on post/page edit screens."
+          },
+          {
+            "file_path": "plugins/smart-slider-3/Nextend/SmartSlider3/Platform/WordPress/HelperTinyMCE.php",
+            "line_number": 69,
+            "note": "The helper loads `Predefined::backend()` for those editor users."
+          },
+          {
+            "file_path": "plugins/smart-slider-3/Nextend/Framework/Asset/Predefined.php",
+            "line_number": 31,
+            "note": "Backend assets inject the shared `nextend_nonce` into JavaScript."
+          },
+          {
+            "file_path": "plugins/smart-slider-3/Nextend/SmartSlider3/Application/Admin/Sliders/ControllerAjaxSliders.php",
+            "line_number": 26,
+            "note": "`actionList()` is nonce-gated but returns only published slider metadata."
+          },
+          {
+            "file_path": "plugins/smart-slider-3/Nextend/Framework/Content/ControllerAjaxContent.php",
+            "line_number": 12,
+            "note": "Content helper endpoints are nonce-gated but only return site search results."
+          },
+          {
+            "file_path": "plugins/smart-slider-3/Nextend/Framework/Content/WordPress/WordPressContent.php",
+            "line_number": 20,
+            "note": "Both search helpers query `post_status=publish` only."
+          },
+          {
+            "file_path": "plugins/smart-slider-3/Nextend/Framework/Browse/ControllerAjaxBrowse.php",
+            "line_number": 17,
+            "note": "Browse index is nonce-gated and limited to the plugin public images folder."
+          }
+        ],
+        "refutation": "The reachable helper actions do not mutate state and do not expose protected admin-only data. `actionList()` enumerates published sliders only, content search returns published posts only, and browse/index enumerates files under the public image root rather than arbitrary server paths in a default deployment.",
+        "conclusion": "Rejected as a vulnerability. The missing `smartslider_*` capability checks on these helper endpoints do not produce measurable security impact in Patchstack terms."
+      },
+      "reopen_condition": "Show a helper AJAX action reachable with the same editor nonce that performs a privileged state change or returns non-public data."
+    },
+    {
+      "finding_id": "neg_002",
+      "title": "Frontend iframe pre-render loose comparison is not a practical auth bypass",
+      "state": "REJECTED",
+      "reasoning": {
+        "hypothesis": "The public iframe branch may be bypassable because `md5(Request::$GET->getInt('sliderid') . NONCE_SALT) == Request::$GET->getCmd('hash')` uses a loose comparison.",
+        "trace": [
+          {
+            "file_path": "plugins/smart-slider-3/Nextend/SmartSlider3/Platform/WordPress/WordPressFrontend.php",
+            "line_number": 37,
+            "note": "Unauthenticated iframe access requires a numeric `sliderid` and a hash check."
+          },
+          {
+            "file_path": "plugins/smart-slider-3/Nextend/SmartSlider3/Application/Frontend/Slider/ControllerPreRenderSlider.php",
+            "line_number": 15,
+            "note": "The sink only renders the requested iframe slider."
+          },
+          {
+            "file_path": "plugins/smart-slider-3/Nextend/SmartSlider3/Slider/Slider.php",
+            "line_number": 164,
+            "note": "Non-admin rendering rejects unpublished sliders."
+          },
+          {
+            "file_path": "plugins/smart-slider-3/Nextend/SmartSlider3/SliderManager/SliderManager.php",
+            "line_number": 106,
+            "note": "Rendering also requires the slider to be available in a published group context unless the caller is admin."
+          }
+        ],
+        "refutation": "Even if a site-specific magic-hash edge case could be demonstrated, the reachable sink still renders only published/available slider output. That is not a meaningful privilege boundary break, and no concrete confidentiality or integrity impact beyond already-published slider content was proven.",
+        "conclusion": "Rejected. The loose comparison is not a practical or reportable auth bypass in this plugin context."
+      },
+      "reopen_condition": "Demonstrate a practical bypass for an existing slider ID together with a concrete impact beyond rendering already-published slider content."
+    },
+    {
+      "finding_id": "neg_003",
+      "title": "The `wp_remote_get()` sink is constrained to same-host searches and admin-only capability",
+      "state": "REJECTED",
+      "reasoning": {
+        "hypothesis": "`ControllerAjaxSliders::actionSearch()` could become an SSRF primitive via `HttpClient::get()`.",
+        "trace": [
+          {
+            "file_path": "plugins/smart-slider-3/Nextend/SmartSlider3/Application/Admin/Sliders/ControllerAjaxSliders.php",
+            "line_number": 154,
+            "note": "The action requires `smartslider_config` before any request is sent."
+          },
+          {
+            "file_path": "plugins/smart-slider-3/Nextend/SmartSlider3/Application/Admin/Sliders/ControllerAjaxSliders.php",
+            "line_number": 164,
+            "note": "The remote fetch only happens when `parse_url($keyword)['host'] === parse_url(Platform::getSiteUrl())['host']`."
+          },
+          {
+            "file_path": "plugins/smart-slider-3/Nextend/Framework/Misc/HttpClient.php",
+            "line_number": 17,
+            "note": "The sink is a direct `wp_remote_get($url, $options)` call."
+          }
+        ],
+        "refutation": "The host equality check constrains the fetch to the site host, and the action is admin-only by default because `smartslider_config` is granted to administrators during install. This refutes a low-privilege SSRF path.",
+        "conclusion": "Rejected. No Patchstack-relevant SSRF path was confirmed."
+      },
+      "reopen_condition": "Show a bypass for the same-host check or a low-privilege path to `smartslider_config`."
+    }
+  ],
+  "out_of_scope": [
+    {
+      "finding_id": "oos_001",
+      "title": "Slider import deserialization is behind an admin-only import workflow",
+      "state": "RISK_NOTE",
+      "reason": "The deserialization sink exists, but the reachable WordPress entry point is admin-only and therefore outside Patchstack's low-privilege scope.",
+      "trace": [
+        {
+          "file_path": "plugins/smart-slider-3/Nextend/SmartSlider3/Application/Admin/Sliders/ControllerAjaxSliders.php",
+          "line_number": 249,
+          "note": "`actionImport()` requires a valid `nextend_nonce`."
+        },
+        {
+          "file_path": "plugins/smart-slider-3/Nextend/SmartSlider3/Application/Admin/Sliders/ControllerAjaxSliders.php",
+          "line_number": 251,
+          "note": "`actionImport()` also requires `smartslider_edit`."
+        },
+        {
+          "file_path": "plugins/smart-slider-3/Nextend/SmartSlider3/Install/WordPress/InstallWordPress.php",
+          "line_number": 13,
+          "note": "Smart Slider capabilities are granted to the administrator role during install."
+        },
+        {
+          "file_path": "plugins/smart-slider-3/Nextend/SmartSlider3/BackupSlider/ImportSlider.php",
+          "line_number": 76,
+          "note": "Serialized backup data is validated by `Serialize\\Parser` before the sink."
+        },
+        {
+          "file_path": "plugins/smart-slider-3/Nextend/SmartSlider3/BackupSlider/ImportSlider.php",
+          "line_number": 81,
+          "note": "The deserialization sink is `unserialize($importData['data'])`."
+        }
+      ],
+      "impact_if_reachable": "If a non-admin actor could reach this path with attacker-controlled import data, object injection could become interesting. That low-privilege reachability was not present in the audited code."
+    }
+  ],
+  "postprocess": {
+    "version": "v2-evidence-bind",
+    "downgraded_tp_to_review": 0
+  }
+}

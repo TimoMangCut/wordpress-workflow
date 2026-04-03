@@ -1,0 +1,397 @@
+{
+  "plugin_slug": "pretty-link",
+  "analysis_summary": {
+    "phase": "phase2",
+    "plugin_version": "3.6.21",
+    "ir_entry_points_reviewed": 68,
+    "phase1_anomalies_reviewed": 33,
+    "focus": [
+      "Validated the unauthenticated and low-privileged entry points called out by Phase 1: bookmarklet/init routes, XML-RPC, public invoice rendering, click-report download routing, Authenticator connect/disconnect, and Stripe connect AJAX handlers.",
+      "Traced the main high-value sink families to exact code lines: update_option()/set_transient(), wp_remote_get()/wp_remote_post()/wp_remote_request(), wp_redirect(), and CSV output paths.",
+      "Refuted Semgrep and IR over-taint around option updates by checking real option-key construction, nonce enforcement, capability gates, and whether the resulting state change crosses a meaningful security boundary."
+    ],
+    "result": "No Patchstack-eligible true positive or evidence-backed REVIEW finding was confirmed in Pretty Links 3.6.21 after direct source validation.",
+    "key_observation": "The interesting web-facing surfaces are either protected by user-bound nonces plus administrator/authorized-user gates, or they depend on secret values such as the bookmarklet token or a Stripe checkout session ID that are not exposed to low-privileged attackers by the shipped plugin.",
+    "tooling_notes": [
+      "Phase 1 IR and Semgrep were treated as signal sources only and were revalidated against source.",
+      "The Psalm SARIF artifact existed only as `{\"status\":\"error\",\"exit_code\":1}` and provided no corroborating data."
+    ]
+  },
+  "overall_risk": "none",
+  "total_findings_analyzed": 0,
+  "true_positives": 0,
+  "false_positives": 0,
+  "needs_review": 0,
+  "findings": [],
+  "negative_findings": [
+    {
+      "finding_id": "NEG-001",
+      "state": "REJECTED",
+      "verdict": "FP",
+      "title": "Authenticator connect flow is not a web-reachable SSRF or arbitrary option-update primitive",
+      "entry_point_ids": [
+        "ep_init_init"
+      ],
+      "evidence": [
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliAuthenticatorController.php",
+          "line_number": 78,
+          "note": "process_connect() only runs when `?prli-connect=true` is present."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliAuthenticatorController.php",
+          "line_number": 83,
+          "note": "The request must carry a valid `prli-connect` nonce before any network or storage action."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliAuthenticatorController.php",
+          "line_number": 88,
+          "note": "The callback exits unless `PrliUtils::is_authorized()` is true."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliAuthenticatorController.php",
+          "line_number": 96,
+          "note": "The remote request uses the fixed host `PRLI_AUTH_SERVICE_URL`; only `site_uuid` is interpolated into the path."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliAuthenticatorController.php",
+          "line_number": 109,
+          "note": "All writes target fixed plugin-owned option names such as `prli_authenticator_account_email` and `prli_authenticator_secret_token`."
+        }
+      ],
+      "reasoning": {
+        "hypothesis": "Phase 1 and Semgrep suggested that `process_connect()` may let an attacker drive SSRF through `site_uuid` or perform privilege escalation through `update_option()`.",
+        "trace": "The init handler `PrliAuthenticatorController::process_connect()` reads `$_GET['site_uuid']` and `$_GET['auth_code']`, sanitizes both, sends a request to `PRLI_AUTH_SERVICE_URL . \"/api/tokens/{$site_uuid}\"`, decodes the response, and stores only fixed Pretty Links connection options.",
+        "defenses": "The code requires a valid nonce at `PrliAuthenticatorController.php:83`, then requires `PrliUtils::is_authorized()` at line 88. The sink writes are hard-coded plugin option keys, not user-controlled option names.",
+        "refutation": "I could not find attacker control over the remote scheme, host, or option key. The only variable segment in the request is the path component under a fixed service domain. That defeats the Semgrep SSRF hypothesis. The option-update hypothesis also fails because the code never concatenates user input into the option names and only touches Pretty Links-owned connection fields.",
+        "conclusion": "Rejected as a false positive for web exploitation. The remaining concern is the disabled TLS verification on outbound requests, which is tracked separately as an out-of-scope network-MITM hardening issue."
+      },
+      "reopen_if": "Show a bundled path that lets a low-privileged or unauthenticated user mint a valid `prli-connect` nonce, or demonstrate control of the remote host/option key rather than only the path segment and returned values."
+    },
+    {
+      "finding_id": "NEG-002",
+      "state": "REJECTED",
+      "verdict": "FP",
+      "title": "Stripe connect AJAX handlers do not expose arbitrary option updates or subscriber-level credential takeover",
+      "entry_point_ids": [
+        "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+        "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+        "ep_ajax_priv_wp_ajax_prli_stripe_connect_disconnect"
+      ],
+      "evidence": [
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliStripeConnectController.php",
+          "line_number": 99,
+          "note": "`process_update_creds()` requires a valid `stripe-update-creds` nonce."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliStripeConnectController.php",
+          "line_number": 114,
+          "note": "`process_update_creds()` exits unless `PrliUtils::is_authorized()` is true."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliStripeConnectController.php",
+          "line_number": 139,
+          "note": "Credential retrieval ignores the request's `pmt` value and instead uses the fixed `PrliStripeConnect::get_method_id()`."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliStripeConnectController.php",
+          "line_number": 149,
+          "note": "The updated option names are fixed Stripe-related keys such as `prli_stripe_test_secret_key` and `prli_stripe_connect_status`."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliStripeConnectController.php",
+          "line_number": 168,
+          "note": "`process_refresh_tokens()` also requires its own nonce and authorized-user check before refreshing or storing tokens."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliStripeConnectController.php",
+          "line_number": 202,
+          "note": "Refresh writes the same fixed plugin-owned option set; no request input reaches the option key."
+        }
+      ],
+      "reasoning": {
+        "hypothesis": "The Stripe connect AJAX endpoints might let any logged-in user update arbitrary WordPress options or force the plugin to adopt attacker-controlled Stripe credentials.",
+        "trace": "`process_update_creds()` and `process_refresh_tokens()` both start with nonce checks, then require `PrliUtils::is_authorized()`, then fetch remote data using the fixed service method ID, and finally store the returned values in fixed Pretty Links Stripe options.",
+        "defenses": "Each AJAX action is `wp_ajax_` only, has a dedicated nonce, and enforces the plugin's authorization boundary. The stored option names are constant strings; only the values returned by the remote service vary.",
+        "refutation": "I did not find any path where a subscriber or unauthenticated actor can reach these sinks. I also did not find any path where request input controls the option key or remote host. The `pmt` parameter only gates early execution and does not become the method ID used for the remote call.",
+        "conclusion": "Rejected as a false positive. The code is updating plugin-owned Stripe configuration after authenticated, nonce-protected service interactions, not exposing a generic option-update primitive."
+      },
+      "reopen_if": "Show a bundled way for a lower-privileged actor to satisfy the nonces/authorization checks, or a path where request input controls the Stripe method ID or option key."
+    },
+    {
+      "finding_id": "NEG-003",
+      "state": "REJECTED",
+      "verdict": "FP",
+      "title": "Notice-dismiss AJAX routes only touch plugin-scoped notice flags and do not become privilege escalation",
+      "evidence": [
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliAppController.php",
+          "line_number": 131,
+          "note": "`dismiss_notice()` requires `check_ajax_referer('prli_dismiss_notice', false, false)` and a string `notice` parameter."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliAppController.php",
+          "line_number": 132,
+          "note": "The callback exits unless `PrliUtils::is_authorized()` is true."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliAppController.php",
+          "line_number": 137,
+          "note": "User input is reduced with `sanitize_key()` before use."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliAppController.php",
+          "line_number": 138,
+          "note": "The persistent key is always prefixed as `prli_dismiss_notice_$notice`."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliAppController.php",
+          "line_number": 152,
+          "note": "The daily-dismiss path writes a transient using the same fixed prefix."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliAppController.php",
+          "line_number": 166,
+          "note": "The monthly-dismiss path also writes only a plugin-scoped transient."
+        }
+      ],
+      "reasoning": {
+        "hypothesis": "Semgrep's `update_option(\"prli_dismiss_notice_$notice\", true)` hit could let an attacker write arbitrary WordPress options and escalate privileges.",
+        "trace": "The three dismiss callbacks take `$_POST['notice']`, verify a nonce, require an authorized plugin user, reduce the value with `sanitize_key()`, and then write only notice-related options or transients whose names start with `prli_dismiss_notice_`.",
+        "defenses": "The nonce and `PrliUtils::is_authorized()` checks gate entry. The sink names are constrained by a fixed prefix, and the resulting state change only affects Pretty Links notice visibility.",
+        "refutation": "I could not make user input escape the hard-coded `prli_dismiss_notice_` prefix or influence a sensitive core option such as `default_role` or `users_can_register`. Even a successful call only suppresses plugin notices, which is not a meaningful security boundary in this context.",
+        "conclusion": "Rejected as a false positive. The pattern looks like an option update, but the reachable impact is limited to plugin-local notice state."
+      },
+      "reopen_if": "Show a way to break out of the hard-coded prefix or a notice key whose suppression changes access control or discloses data."
+    },
+    {
+      "finding_id": "NEG-004",
+      "state": "REJECTED",
+      "verdict": "FP",
+      "title": "Bookmarklet route is gated by a secret token and does not yield a practical unauthenticated create-link or SSRF primitive",
+      "evidence": [
+        {
+          "file_path": "plugins/pretty-link/app/models/PrliOptions.php",
+          "line_number": 342,
+          "note": "The bookmarklet secret is generated once as `md5(get_option('auth_salt') . time())` and stored in plugin options."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/models/PrliLink.php",
+          "line_number": 585,
+          "note": "The bookmarklet URL embeds `k={$prli_options->bookmarklet_auth}` as a bearer token."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/views/tools/form.php",
+          "line_number": 26,
+          "note": "That bookmarklet URL is presented on the Tools page, which is part of the authorized admin UI."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliToolsController.php",
+          "line_number": 34,
+          "note": "`standalone_route()` only continues when `$_GET['k'] == $prli_options->bookmarklet_auth`; otherwise it redirects home."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliToolsController.php",
+          "line_number": 53,
+          "note": "Only after the token check does the route call `prli_create_pretty_link()` with the requested target URL."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/models/PrliLink.php",
+          "line_number": 59,
+          "note": "Link creation auto-fetches a page title via `PrliUtils::get_page_title()` when no explicit name is supplied."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/models/PrliUtils.php",
+          "line_number": 856,
+          "note": "`get_page_title()` performs a server-side `wp_remote_get($url, ...)` only after the bookmarklet token gate or another authorized link-creation flow."
+        }
+      ],
+      "reasoning": {
+        "hypothesis": "Because `standalone_route()` is reachable on the public frontend, an unauthenticated attacker could create Pretty Links or trigger server-side fetches to arbitrary URLs.",
+        "trace": "The public `action=prli_bookmarklet` route checks `$_GET['k']` against the stored `bookmarklet_auth` secret before it calls `bookmark()`, and `bookmark()` then invokes `prli_create_pretty_link()`. If the new link has no title, the create flow fetches the target URL to extract a page title.",
+        "defenses": "The route is not open by default; it requires possession of the secret bookmarklet token. That token is generated from the site's auth salt and time and is exposed by the shipped plugin only on the authorized Tools page.",
+        "refutation": "I did not find a bundled path that leaks `bookmarklet_auth` to unauthenticated users or to roles below the plugin's authorized UI boundary. Without that secret, the route just redirects home. That makes the create-link and page-title-fetch behavior theoretical for an unauthenticated attacker, not a demonstrated exploit path.",
+        "conclusion": "Rejected as a false positive. The bookmarklet is a token-gated feature, not a default unauthenticated create-link or SSRF endpoint."
+      },
+      "reopen_if": "Show a bundled low-privileged or public surface that exposes `bookmarklet_auth`, or demonstrate a feasible token prediction/collision attack against the generated value."
+    },
+    {
+      "finding_id": "NEG-005",
+      "state": "REJECTED",
+      "verdict": "FP",
+      "title": "Public invoice rendering requires possession of a Stripe checkout session ID and does not expose a practical low-privilege data leak",
+      "entry_point_ids": [
+        "ep_init_init"
+      ],
+      "evidence": [
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliStripeController.php",
+          "line_number": 884,
+          "note": "`display_invoice()` only activates when `$_GET['prli_session_id']` exists and begins with `cs_`."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliStripeController.php",
+          "line_number": 899,
+          "note": "The session ID is then used to retrieve the Stripe checkout session from the site's own Stripe account."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/views/prettypay/invoice.php",
+          "line_number": 9,
+          "note": "The rendered output contains payment status and the payment intent ID, not customer credentials."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/views/prettypay/invoice.php",
+          "line_number": 29,
+          "note": "The line-item table exposes descriptions, prices, subtotal, tax, and total."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/views/prettypay/invoice.php",
+          "line_number": 59,
+          "note": "For subscriptions it links only to the site's customer-portal page, not directly to an authenticated Stripe portal session."
+        }
+      ],
+      "reasoning": {
+        "hypothesis": "Because the invoice view is public and lacks a nonce or capability check, any attacker can read arbitrary Stripe checkout data by supplying `prli_session_id`.",
+        "trace": "A public page load with `prli_session_id=cs_...` reaches `PrliStripeController::display_invoice()`, which asks Stripe for that session and appends the rendered invoice template to the page content.",
+        "defenses": "The only selector is the Stripe checkout session ID itself. The plugin does not expose a route to enumerate session IDs, and the rendered template omits customer email, payment method details, and other high-sensitivity account data.",
+        "refutation": "I found no bundled path that leaks arbitrary checkout session IDs to low-privileged users, and I found no evidence that the plugin makes those IDs predictable or enumerable. The success URL intentionally carries the session ID back to the paying user, so possession of that value is already the gating secret for the lightweight invoice summary the plugin renders.",
+        "conclusion": "Rejected as a false positive for Patchstack-style reporting. The code could be hardened further, but I do not have an evidence-backed low-privilege or unauthenticated disclosure primitive."
+      },
+      "reopen_if": "Show a bundled route that discloses other users' `prli_session_id` values or expands the invoice output to include materially sensitive customer data."
+    },
+    {
+      "finding_id": "NEG-006",
+      "state": "REJECTED",
+      "verdict": "FP",
+      "title": "Public click-report download routing remains bound to an admin nonce and an admin-only output gate",
+      "evidence": [
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliClicksController.php",
+          "line_number": 25,
+          "note": "The public `action=prli_download_csv_hit_report` path only runs after `wp_verify_nonce($_GET['_wpnonce'], 'prli-csv-nonce')` passes."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/views/clicks/csv_download.php",
+          "line_number": 28,
+          "note": "The CSV links are minted from the admin download page with `wp_nonce_url(..., 'prli-csv-nonce')`."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/views/clicks/csv.php",
+          "line_number": 5,
+          "note": "The CSV body is emitted only when `is_user_logged_in()` and `current_user_can('level_10')` are both true."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/views/clicks/csv.php",
+          "line_number": 35,
+          "note": "Non-admin or unauthenticated requests are redirected away instead of receiving the click data."
+        }
+      ],
+      "reasoning": {
+        "hypothesis": "Because the CSV route is wired off `init`, an unauthenticated attacker may be able to download click logs containing IP addresses and referrers.",
+        "trace": "The `route_scripts()` init hook checks the public `action` parameter, verifies a nonce, calls `click_report()`, and then includes `csv.php`, which contains the final output gate.",
+        "defenses": "The nonce is generated only on the authorized admin download page, and WordPress nonces are tied to the generating user's session. The template still refuses to emit the CSV unless the requester is logged in and has the old `level_10` administrator capability.",
+        "refutation": "I did not find a bundled source that generates `prli-csv-nonce` for low-privileged users or for anonymous visitors. Even if the route is reached, the CSV template itself blocks output for non-admin sessions.",
+        "conclusion": "Rejected as a false positive. The public route shape is noisy, but the effective trust boundary remains administrator-only."
+      },
+      "reopen_if": "Show a path that mints a valid `prli-csv-nonce` for lower roles or bypasses the `current_user_can('level_10')` check in `csv.php`."
+    },
+    {
+      "finding_id": "NEG-007",
+      "state": "REJECTED",
+      "verdict": "FP",
+      "title": "XML-RPC export is public only in the expected sense and still requires administrator credentials",
+      "evidence": [
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliXmlRpcController.php",
+          "line_number": 17,
+          "note": "The plugin registers public XML-RPC methods such as `prli.create_pretty_link` and `prli.get_link`."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliXmlRpcController.php",
+          "line_number": 35,
+          "note": "Each method first checks that XML-RPC is enabled for the site."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliXmlRpcController.php",
+          "line_number": 38,
+          "note": "The handler then requires `user_pass_ok($username, $password)`."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliXmlRpcController.php",
+          "line_number": 42,
+          "note": "The caller must also resolve to a user with `user_level >= 8`, i.e. administrator-level credentials."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliXmlRpcController.php",
+          "line_number": 102,
+          "note": "The same auth checks guard the actual `create_pretty_link()` XML-RPC method."
+        }
+      ],
+      "reasoning": {
+        "hypothesis": "The exported XML-RPC API could provide an unauthenticated or low-privileged path to create or enumerate Pretty Links.",
+        "trace": "The XML-RPC methods are reachable via WordPress's normal XML-RPC surface, but each handler enforces XML-RPC enablement, username/password validation, and an administrator-level check before reaching the create/get logic.",
+        "defenses": "The plugin does not register nopriv AJAX or REST equivalents for these methods. The XML-RPC calls are credential-gated, and the role check blocks lower-privileged users even if they have valid site accounts.",
+        "refutation": "I did not find an authentication bypass, weak alternative token, or lower-role allowance in the exported methods. The code is exposing an admin API, not silently bypassing WordPress authentication.",
+        "conclusion": "Rejected as a false positive. The XML-RPC surface is intentional and remains administrator-authenticated."
+      },
+      "reopen_if": "Show a weakness in `user_pass_ok()` usage, an alternate unauthenticated XML-RPC method path, or a lower role that passes the `user_level >= 8` gate."
+    }
+  ],
+  "out_of_scope": [
+    {
+      "finding_id": "OOS-001",
+      "state": "RISK_NOTE",
+      "verdict": "OUT_OF_SCOPE",
+      "title": "Outbound service calls disable TLS certificate verification",
+      "vuln_type": "Improper Certificate Validation / Active Network MITM",
+      "cwe_id": "CWE-295",
+      "severity": "medium",
+      "auth_required": "active network attacker; not a low-privilege WordPress user",
+      "confidence": "high",
+      "source_function": "PrliAuthenticatorController::process_connect",
+      "sink_function": "update_option",
+      "source_file_path": "plugins/pretty-link/app/controllers/PrliAuthenticatorController.php",
+      "source_line_number": 96,
+      "sink_file_path": "plugins/pretty-link/app/controllers/PrliAuthenticatorController.php",
+      "sink_line_number": 113,
+      "file_path": "plugins/pretty-link/app/controllers/PrliAuthenticatorController.php",
+      "line_number": 96,
+      "evidence": [
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliAuthenticatorController.php",
+          "line_number": 96,
+          "note": "`process_connect()` calls `wp_remote_get(..., ['sslverify' => false, ...])` against the Authenticator service."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliAuthenticatorController.php",
+          "line_number": 109,
+          "note": "The unauthenticated network response is trusted to populate connection options such as account email and secret token."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliStripeConnectController.php",
+          "line_number": 77,
+          "note": "`maybe_update_domain()` also posts to the Auth service with `sslverify => false`."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/controllers/PrliStripeController.php",
+          "line_number": 510,
+          "note": "`a99_f33_9c7()` disables certificate verification when contacting prettylinks.com."
+        },
+        {
+          "file_path": "plugins/pretty-link/app/models/PrliUtils.php",
+          "line_number": 856,
+          "note": "`get_page_title()` disables certificate verification for title-fetch requests as well."
+        }
+      ],
+      "reasoning": {
+        "hypothesis": "A network attacker who can intercept outbound HTTPS traffic could tamper with service responses and influence stored connection state because multiple remote requests explicitly disable certificate validation.",
+        "trace": "During the Authenticator connect flow, the plugin disables TLS verification, accepts the returned JSON body, and stores fields such as `prli_authenticator_account_email`, `prli_authenticator_secret_token`, and `prli_authenticator_user_uuid` without an application-level signature on that response.",
+        "defenses": "The web entry points are still nonce- and capability-gated, so a normal low-privileged WordPress user cannot trigger these paths arbitrarily. The issue requires an active network attacker or similarly powerful traffic interception position.",
+        "refutation": "I found no route to exploit this from the normal Patchstack threat model of unauthenticated/subscriber web attackers. The prerequisite is network-layer interference, not a WordPress permission flaw.",
+        "conclusion": "This is a real hardening problem, but it falls outside the requested Patchstack-oriented web-app scope because exploitation requires an active MITM rather than a lower-privileged WordPress actor."
+      },
+      "patchstack_eligible": false
+    }
+  ]
+}

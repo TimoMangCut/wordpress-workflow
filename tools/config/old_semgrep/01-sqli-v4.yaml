@@ -1,0 +1,84 @@
+rules:
+  # =============================================================================
+  # SQL INJECTION - WordPress (v4 - Enhanced with Plugin Sanitizers)
+  # CWE-89: SQL Injection
+  # Updated: 2026-01-27 - Added WooCommerce, Give sanitizers
+  # =============================================================================
+
+  - id: wp-sqli-wpdb-query-v4
+    mode: taint
+    languages: [php]
+    severity: WARNING
+    message: >-
+      SQL Injection: User input flows into wpdb query without prepare().
+      Use wpdb->prepare() with placeholders (%d, %s, %f).
+    metadata:
+      cwe: ["CWE-89"]
+      owasp: ["A03:2021 - Injection"]
+      category: security
+      technology: [wordpress]
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+
+    pattern-sources:
+      # Standard PHP superglobals
+      - pattern: $_GET
+      - pattern: $_POST
+      - pattern: $_REQUEST
+      - pattern: $_COOKIE
+      - pattern: $_GET[...]
+      - pattern: $_POST[...]
+      - pattern: $_REQUEST[...]
+      - pattern: $_COOKIE[...]
+      # WordPress specific
+      - pattern: $atts
+      - pattern: $atts[...]
+      - pattern: file_get_contents("php://input")
+      # REST API
+      - pattern: $request->get_param(...)
+      - pattern: $request->get_params()
+
+    pattern-sinks:
+      - pattern: $wpdb->query(...)
+      - pattern: $wpdb->get_var(...)
+      - pattern: $wpdb->get_row(...)
+      - pattern: $wpdb->get_col(...)
+      - pattern: $wpdb->get_results(...)
+
+    pattern-sanitizers:
+      # SQL specific
+      - pattern: $wpdb->prepare(...)
+      - pattern: esc_sql(...)
+      - pattern: $wpdb->esc_like(...)
+      - pattern: $wpdb->insert(...)
+      - pattern: $wpdb->update(...)
+      - pattern: $wpdb->delete(...)
+      - pattern: $wpdb->replace(...)
+      # Numeric casting (critical for SQLi)
+      - pattern: absint(...)
+      - pattern: intval(...)
+      - pattern: (int)$X
+      - pattern: floatval(...)
+      - pattern: (float)$X
+      # String sanitizers
+      - pattern: sanitize_text_field(...)
+      - pattern: sanitize_key(...)
+      - pattern: sanitize_title(...)
+      - pattern: esc_attr(...)
+      - pattern: esc_html(...)
+      # WooCommerce sanitizers (NEW)
+      - pattern: wc_clean(...)
+      - pattern: wc_sanitize_textarea(...)
+      - pattern: wc_stock_amount(...)
+      - pattern: wc_sanitize_taxonomy_name(...)
+      # Give sanitizers (NEW)
+      - pattern: give_clean(...)
+      - pattern: give_sanitize_amount(...)
+      - pattern: give_sanitize_amount_for_db(...)
+      - pattern: give_maybe_sanitize_amount(...)
+      # Type validation
+      - pattern: is_numeric(...)
+      - pattern: wp_parse_id_list(...)
+      - pattern: boolval(...)
+      - pattern: (bool)$X

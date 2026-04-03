@@ -1,0 +1,16 @@
+{
+  "plugin_slug": "duplicator",
+  "reviews": [],
+  "_meta": {
+    "reviewer": "claude-llm-skeptic",
+    "review_date": "2026-04-02",
+    "plugin_version": "1.5.16",
+    "scope_note": "Phase 3a gate reported plausible=0 and uncertain=0. There are no findings in scope for LLM skeptic review. This file is intentionally empty of review entries.",
+    "entry_points_covered_by_phase2": 28,
+    "phase2_negative_findings": 10,
+    "phase3a_confirmed": 0,
+    "phase3a_plausible": 0,
+    "phase3a_uncertain": 0,
+    "phase3a_likely_hallucination": 0
+  }
+}

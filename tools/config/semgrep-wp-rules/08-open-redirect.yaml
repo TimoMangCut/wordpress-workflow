@@ -1,0 +1,60 @@
+rules:
+  # =============================================================================
+  # OPEN REDIRECT - WordPress (v5 - Full REST API Sources)
+  # CWE-601: URL Redirection to Untrusted Site
+  # =============================================================================
+
+  - id: wp-open-redirect
+    mode: taint
+    languages: [php]
+    severity: WARNING
+    message: >-
+      Open Redirect: User input controls redirect URL via wp_redirect().
+      Use wp_safe_redirect() which validates against allowed hosts.
+    metadata:
+      cwe: ["CWE-601"]
+      owasp: ["A01:2021 - Broken Access Control"]
+      category: security
+      technology: [wordpress]
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: MEDIUM
+
+    pattern-sources:
+      - pattern: $_GET
+      - pattern: $_POST
+      - pattern: $_REQUEST
+      - pattern: $_GET[...]
+      - pattern: $_POST[...]
+      - pattern: $_REQUEST[...]
+      - pattern: $_SERVER['HTTP_REFERER']
+      - pattern: wp_get_raw_referer()
+      # REST API (ALL data UNSLASHED)
+      - pattern: $request->get_param(...)
+      - pattern: $request->get_params()
+      - pattern: $request->get_json_params()
+      - pattern: $request->get_body_params()
+      - pattern: $request->get_query_params()
+      - pattern: $request[...]
+
+    pattern-sinks:
+      - pattern: wp_redirect($URL, ...)
+      - pattern: |
+          header("Location: " . $URL)
+      - pattern: |
+          header('Location: ' . $URL)
+
+    pattern-sanitizers:
+      - pattern: wp_safe_redirect(...)
+      - pattern: wp_validate_redirect(...)
+      - pattern: wp_sanitize_redirect(...)
+      - pattern: esc_url(...)
+      - pattern: esc_url_raw(...)
+      - pattern: sanitize_url(...)
+      - pattern: absint(...)
+      - pattern: intval(...)
+      - pattern: (int)$X
+      - pattern: admin_url(...)
+      - pattern: home_url(...)
+      - pattern: site_url(...)
+      - pattern: wp_get_referer()

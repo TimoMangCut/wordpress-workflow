@@ -1,0 +1,54 @@
+{
+  "plugin_slug": "hostinger-reach",
+  "reviews": [
+    {
+      "finding_id": "HOSTINGER-REACH-P2-REV-001",
+      "original_status": "UNCERTAIN",
+      "verdict_change": "keep",
+      "suggested_field_corrections": {
+        "entry_point_id": "ep_rest__token",
+        "source_file_path": "plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php",
+        "source_line_number": 80,
+        "sink_file_path": "plugins/hostinger-reach/src/Api/ApiKeyManager.php",
+        "sink_line_number": 21,
+        "storage_key": "hostinger_reach_api_key"
+      },
+      "reason": "The route, auth bypass path, and sink all exist exactly as claimed; the finding remains UNCERTAIN because no mechanism in this plugin's source exposes the /.api_token file value to an unauthenticated remote attacker. The Phase 3a 'sink not found' issue was a line-matching artefact: store_token() is declared at ApiKeyManager.php:18 and the update_option() sink is on line 21, which is correct.",
+      "counter_evidence": [
+        {
+          "type": "guard",
+          "file": "plugins/hostinger-reach/src/Api/ApiKeyManager.php",
+          "line": 80,
+          "detail": "get_api_token_path() constructs the path as /{parts[1]}/{parts[2]}/.api_token. On Hostinger, __DIR__ resolves to something like /home/username/public_html/wp-content/plugins/hostinger-reach/src/Api, yielding /home/username/.api_token — a home-directory path above the webroot that is not HTTP-accessible."
+        },
+        {
+          "type": "unreachable",
+          "file": "plugins/hostinger-reach/src/Api/ApiKeyManager.php",
+          "line": 67,
+          "detail": "get_order_id() reads the .api_token file server-side only; its value is never reflected into any REST response, localized JavaScript, HTML template, or AJAX response visible to an unauthenticated caller within this plugin's source."
+        },
+        {
+          "type": "guard",
+          "file": "plugins/hostinger-reach/vendor/hostinger/hostinger-wp-helper/src/Utils.php",
+          "line": 81,
+          "detail": "Utils::getApiToken() (vendor copy, same path logic) is also server-side only. No call site in this plugin passes its return value to a public-facing output. Reviewed all public REST handlers and AJAX callbacks — none return or log the .api_token value."
+        }
+      ],
+      "missing_evidence": [
+        "Confirmation that /.api_token (i.e. /home/{username}/.api_token on Hostinger hosting) is web-accessible or reflected by any other Hostinger-bundled plugin installed on the same server.",
+        "Confirmation of the exact filesystem path produced by get_api_token_path() on a real Hostinger deployment — specifically whether parts[2] is 'public_html' (yielding /home/public_html/.api_token, still not web-accessible) or a username.",
+        "Evidence of any server misconfiguration or nginx/apache alias that makes the home-directory .api_token file fetchable over HTTP.",
+        "Review of other Hostinger-bundled plugins (e.g., hostinger-wp, hostinger-easy-onboarding) to determine whether any public endpoint returns Utils::getApiToken() output."
+      ],
+      "dynamic_test_plan": [
+        "Step 1: On a fresh Hostinger hosting account, install and activate the plugin. Note the WordPress installation path (e.g. /home/u123456789/domains/example.com/public_html).",
+        "Step 2: Determine get_api_token_path() output: SSH in and run: php -r \"$d='/home/u123456789/domains/example.com/public_html/wp-content/plugins/hostinger-reach/src/Api'; $p=explode('/',$d); echo '/'.$p[1].'/'.$p[2].'/.api_token';\"",
+        "Step 3: Check whether the resulting path (expected: /home/u123456789/.api_token) exists and contains a token value.",
+        "Step 4: Attempt to fetch the file directly via HTTP: curl -s https://example.com/.api_token — expect 404 or empty (path is above webroot).",
+        "Step 5: Search all other active Hostinger plugins for call sites of Utils::getApiToken() or equivalent that return its value in a public HTTP response.",
+        "Step 6: If the token value is obtainable (via any channel), send: POST /wp-json/hostinger-reach/v1/token with body {\"csrf_field\":\"<token_value>\",\"token\":\"attacker-reach-api-key\"} and verify that get_option('hostinger_reach_api_key') is updated with the attacker-supplied value.",
+        "Step 7: After successful rebind, confirm that subsequent authenticated admin operations (e.g. GET /wp-json/hostinger-reach/v1/overview) use the attacker's Reach account credentials."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<psalm
+    errorLevel="6"
+    resolveFromConfigFile="false"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="https://getpsalm.org/schema/config"
+    xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
+    findUnusedBaselineEntry="false"
+    findUnusedCode="false"
+>
+    <!--
+        Primary+vendor config for scan-psalm.sh.
+        Keeps PsalmWordPress plugin integration enabled and also scans plugin vendor/
+        to mitigate class storage crashes on some plugins.
+    -->
+
+    <projectFiles>
+        <directory name="__PLUGIN_DIR__" />
+        <ignoreFiles allowMissingFiles="true">
+            <directory name="__PLUGIN_DIR__/node_modules" />
+        </ignoreFiles>
+    </projectFiles>
+
+    <stubs>
+        <file name="vendor/php-stubs/wordpress-stubs/wordpress-stubs.php" preloadClasses="true" />
+        <file name="config/psalm-wp-taint-stubs.php" preloadClasses="true" />
+    </stubs>
+
+    <plugins>
+        <pluginClass class="PsalmWordPress\Plugin" />
+    </plugins>
+
+    <issueHandlers>
+        <UndefinedFunction errorLevel="suppress" />
+        <UndefinedClass errorLevel="suppress" />
+        <UndefinedVariable errorLevel="suppress" />
+        <UndefinedGlobalVariable errorLevel="suppress" />
+        <UndefinedConstant errorLevel="suppress" />
+        <UndefinedPropertyFetch errorLevel="suppress" />
+        <UndefinedPropertyAssignment errorLevel="suppress" />
+        <UndefinedMethod errorLevel="suppress" />
+        <UndefinedMagicMethod errorLevel="suppress" />
+        <MissingFile errorLevel="suppress" />
+        <MissingReturnType errorLevel="suppress" />
+        <MissingParamType errorLevel="suppress" />
+        <MissingPropertyType errorLevel="suppress" />
+        <MixedAssignment errorLevel="suppress" />
+        <MixedArgument errorLevel="suppress" />
+        <MixedArrayAccess errorLevel="suppress" />
+        <MixedMethodCall errorLevel="suppress" />
+        <MixedReturnStatement errorLevel="suppress" />
+        <PossiblyUndefinedVariable errorLevel="suppress" />
+        <PossiblyNullArgument errorLevel="suppress" />
+        <PossiblyNullReference errorLevel="suppress" />
+        <PossiblyInvalidArgument errorLevel="suppress" />
+    </issueHandlers>
+</psalm>
