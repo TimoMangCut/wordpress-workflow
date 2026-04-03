@@ -151,7 +151,13 @@ class IRBuilder
         }
 
         // Phase 4: Also collect file-level sources/sinks for files with NO entry points
-        // (e.g., init hooks with inline code not in a callback)
+        // (e.g., init hooks with inline code not in a callback).
+        // A-01: Also detect coverage gaps — files with WP security signals but no entry point.
+        $securitySignals = [
+            'wp_verify_nonce', 'check_ajax_referer', 'current_user_can',
+            'wp_die', '$wpdb', 'sanitize_',
+        ];
+        $coverageGaps = [];
         foreach ($astCache as $relPath => $ast) {
             // IR-09: pass isFileLevel=true to suppress output_return false positives
             $ssVisitor = new SourceSinkVisitor($relPath, null, true);
@@ -184,6 +190,29 @@ class IRBuilder
                     $allSources[] = $source;
                 }
             }
+
+            // A-01: Coverage gap detection.
+            // A file is a gap if it has WP security signals but NO discovered entry point.
+            // String-level scan (intentionally shallow — not AST).
+            if (!$this->hasEntryPoints($relPath, $allEntryPoints)) {
+                $absPath = $this->pluginDir . '/' . $relPath;
+                $rawSource = file_get_contents($absPath);
+                if ($rawSource !== false) {
+                    $signals = [];
+                    foreach ($securitySignals as $sig) {
+                        if (str_contains($rawSource, $sig)) {
+                            $signals[] = $sig;
+                        }
+                    }
+                    if (!empty($signals)) {
+                        $coverageGaps[] = [
+                            'file'    => $relPath,
+                            'signals' => $signals,
+                            'reason'  => 'has_security_functions_but_no_entry_point',
+                        ];
+                    }
+                }
+            }
         }
 
         // Phase 5: Extract plugin metadata
@@ -197,6 +226,7 @@ class IRBuilder
             'guards'           => $allGuards,
             'sources'          => $allSources,
             'sinks'            => $allSinks,
+            'coverage_gaps'    => $coverageGaps,
             'anomalies'        => [], // Populated by AnomalyRules
         ];
 
@@ -446,6 +476,20 @@ class IRBuilder
         $traverser->traverse($ast);
 
         return $finder->body;
+    }
+
+    /**
+     * A-01: Returns true if any discovered entry point has its callback in $relPath.
+     * Used during Phase 4 to skip coverage gap detection for files that already have EPs.
+     */
+    private function hasEntryPoints(string $relPath, array $allEntryPoints): bool
+    {
+        foreach ($allEntryPoints as $ep) {
+            if (($ep['callback']['file'] ?? null) === $relPath) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
