@@ -2,6 +2,7 @@
   "session": 6,
   "title": "Wave 1 Validation — benchmark run + USER REVIEW ①",
   "status": "PENDING",
+  "created_by_session": 5,
   "wave": "Wave 1",
   "dependencies": [
     {"session": 1, "reason": "IR-01/06/09"},

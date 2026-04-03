@@ -1,0 +1,65 @@
+{
+  "session": 5,
+  "date": "2026-04-03",
+  "status": "COMPLETED",
+  "gaps_addressed": ["AR-02", "O-01", "O-02", "O-03"],
+  "files_modified": [
+    {
+      "file": "tools/src/Rules/AnomalyRules.php",
+      "functions_changed": ["rule04_sqlWithoutPrepare"],
+      "lines_affected": "97-173",
+      "behavior_before": "EP-level severity: any prepare() in EP → all unprepared sinks downgraded to 'medium'. uses_prepared_statement !== false skipped (null also skipped).",
+      "behavior_after": "Per-sink severity: true=skip; null→'high'; false+EP-has-prepare→'high'; false+EP-no-prepare→'critical'. Eliminates false 'medium' for mixed-prepare EPs. Null sinks now reported as 'high' instead of silently skipped."
+    },
+    {
+      "file": "tools/bin/phase3_gate.py",
+      "functions_changed": ["main (actionable building block)"],
+      "lines_affected": "1116-1126, 1142, 1155",
+      "behavior_before": "Single actionable_findings list includes all CONFIRMED/PLAUSIBLE TPs regardless of patchstack_eligible.",
+      "behavior_after": "actionable_findings = patchstack_eligible is not False. New actionable_not_patchstack list = patchstack_eligible === False. Summary print updated."
+    },
+    {
+      "file": "tools/bin/scan-semgrep.sh",
+      "functions_changed": ["success block (post-mv)"],
+      "lines_affected": "62-76",
+      "behavior_before": "No ruleset metadata recorded in semgrep JSON output.",
+      "behavior_after": "After successful scan, injects _scan_meta={ruleset_path, rule_count, semgrep_version} into output JSON via inline Python."
+    },
+    {
+      "file": "tools/bin/phase2_postprocess.py",
+      "functions_changed": ["main (downgrade block)"],
+      "lines_affected": "348-353",
+      "behavior_before": "TP→REVIEW downgrade overwrites verdict without preserving original. No traceability of which findings were TPs.",
+      "behavior_after": "Sets original_verdict=f['verdict'] before overwriting with 'REVIEW'. Guard: only set if not already present (idempotent). downgraded_tp_to_review count already existed."
+    }
+  ],
+  "downstream_updated": [],
+  "deviations_from_spec": [
+    {
+      "gap": "O-01",
+      "spec_in_session_card": "Thêm timestamp và pipeline_run_id vào markdown report header (file: phase3_write_md.py)",
+      "actual_per_source_ref": "Filter patchstack_eligible is not False in phase3_gate.py actionable list. Tách section (file: phase3_gate.py)",
+      "source_ref": "gap-analysis-final.md:1161-1173",
+      "resolution": "source_ref governs per E1"
+    },
+    {
+      "gap": "O-02",
+      "spec_in_session_card": "Verify set -euo pipefail in run-phase2.sh. Add trap cleanup for temp files.",
+      "actual_per_source_ref": "Thêm semgrep ruleset metadata (_scan_meta) vào scan-semgrep.sh output JSON.",
+      "source_ref": "gap-analysis-final.md:1175-1189",
+      "resolution": "source_ref governs per E1. run-phase2.sh already had set -euo pipefail (line 9) — no change needed there."
+    },
+    {
+      "gap": "O-03",
+      "spec_in_session_card": "Thêm pipeline_version field vào output JSON. Version = string hardcoded.",
+      "actual_per_source_ref": "Preserve original_verdict field + downgraded_tp_count. Note: downgraded_tp_to_review already existed; only original_verdict was missing.",
+      "source_ref": "gap-analysis-final.md:1191-1201",
+      "resolution": "source_ref governs per E1"
+    }
+  ],
+  "test_command": "php -r '... mock IR test ...' (inline PHP unit)",
+  "test_result": "PASS: true→skip; false+mixed-EP→high; null→high; false+no-prepare-EP→critical. O-01 patchstack filter verified. O-02/O-03 syntax OK.",
+  "discovered_issues": [],
+  "next_session": "session_6",
+  "notes": "Session card O-01/O-02/O-03 specs were significantly wrong vs source_ref. All three redirected to correct files/logic per E1. AR-02 spec had one minor conflict (source_ref said false+mixed→high, session card said false→critical regardless) — resolved by reading source_ref intent: the 'high' is for the mixed case specifically. null→high added from session card logic which does not conflict with source_ref."
+}
