@@ -1,0 +1,12 @@
+model = "gpt-5.4"
+model_reasoning_effort = "xhigh"
+personality = "pragmatic"
+project_doc_max_bytes = 131072
+
+[shell_environment_policy]
+inherit = "core"
+
+[shell_environment_policy.set]
+LLM_PROVIDERS = "codex"
+PHASE2_PRIMARY_PROVIDER = "codex"
+PHASE3_PRIMARY_PROVIDER = "codex"

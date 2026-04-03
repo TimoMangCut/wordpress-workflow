@@ -164,6 +164,11 @@ SCRIPT CANONICAL CHECK
 [ ] tools/updated-scripts/ đã có LEGACY.md (đánh dấu không dùng)
 [ ] Mọi pipeline step dùng tools/bin/ không phải tools/updated-scripts/
 
+GIT HYGIENE — RULE: repo-safe shared config = tracked; machine-local/secrets = ignored
+  - Tracked (portable, no secrets): .codex/config.toml, .claude/settings.json
+  - Ignored (machine-local): .claude/settings.local.json, *.local.toml, *.local.json
+  - Rule: phân tách shared vs local, KHÔNG ignore cả directory nếu chứa shared config
+
 ARTIFACT FRESHNESS
 [ ] reports/backwpup-threat-context.json được regenerate từ current generate_threat_context.py
 [ ] benchmark/results/wave2_summary.json verdict = APPROVED

@@ -12,5 +12,8 @@
 .DS_Store
 **/.DS_Store
 
-# External tool config (machine-local, not part of pipeline)
-/.codex/
+# Tool local overrides (machine-specific paths, auth, session state)
+# Shared/portable config (e.g., .codex/config.toml, .claude/settings.json) stays tracked.
+.claude/settings.local.json
+*.local.toml
+*.local.json
