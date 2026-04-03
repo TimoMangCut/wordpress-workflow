@@ -412,12 +412,15 @@ class EntryPointVisitor extends NodeVisitorAbstract
         foreach ($array->items as $item) {
             if ($item === null || $item->key === null) continue;
             $key = $this->resolveStringValue($item->key);
-            match ($key) {
-                'callback' => $config['callback'] = $this->resolveCallback(new Node\Arg($item->value)),
-                'permission_callback' => $config['permission_callback'] = $this->resolvePermissionCallback($item->value),
-                'methods' => $config['methods'] = $this->resolveStringValue($item->value),
-                default => null,
-            };
+            if ($key === 'callback') {
+                $config['callback'] = $this->resolveCallback(new Node\Arg($item->value));
+            } elseif ($key === 'permission_callback') {
+                // IR-05: store both the string sentinel AND the AST node for closure analysis
+                $config['permission_callback']     = $this->resolvePermissionCallback($item->value);
+                $config['permission_callback_ast'] = $this->resolvePermissionCallbackAst($item->value);
+            } elseif ($key === 'methods') {
+                $config['methods'] = $this->resolveStringValue($item->value);
+            }
         }
         return $config;
     }
@@ -430,13 +433,180 @@ class EntryPointVisitor extends NodeVisitorAbstract
         return '__dynamic__';
     }
 
+    /**
+     * IR-05: store AST node for closure/arrow permission_callback so inferRestAuth()
+     * can partial-analyze the body. String callbacks store null here.
+     */
+    private function resolvePermissionCallbackAst(Node $value): ?Node
+    {
+        if ($value instanceof Node\Expr\Closure || $value instanceof Node\Expr\ArrowFunction) {
+            return $value;
+        }
+        return null;
+    }
+
     private function inferRestAuth(array $routeInfo): string
     {
         $pc = $routeInfo['permission_callback'] ?? null;
         if ($pc === null) return 'none';
         if ($pc === '__return_true') return 'none';
         if ($pc === 'is_user_logged_in') return 'subscriber';
+
+        // IR-05: partial-analyze closure/arrow function body
+        $ast = $routeInfo['permission_callback_ast'] ?? null;
+        if ($ast instanceof Node\Expr\Closure || $ast instanceof Node\Expr\ArrowFunction) {
+            return $this->analyzePermissionCallbackBody($ast);
+        }
+
         return 'unknown';
+    }
+
+    /**
+     * IR-05: scan closure/arrow body for well-known auth patterns.
+     * Read-only — does NOT trace full call chains.
+     *
+     * Mapping:
+     *   current_user_can('manage_options'|'administrator')    → 'admin'
+     *   current_user_can('edit_posts'|'publish_posts')        → 'author'
+     *   current_user_can('read'|'edit_others_posts'|any cap)  → 'subscriber'
+     *   is_user_logged_in()                                   → 'subscriber'
+     *   unconditional `return true`                           → 'none'
+     *   else                                                  → 'unknown'
+     */
+    private function analyzePermissionCallbackBody(Node $closureNode): string
+    {
+        // For ArrowFunction the body is a single Expr, not a stmts array.
+        // Wrap it so we can use unified stmt walking below.
+        if ($closureNode instanceof Node\Expr\ArrowFunction) {
+            $bodyExpr = $closureNode->expr;
+            // Arrow function: `fn() => true`  — unconditional none
+            if ($bodyExpr instanceof Node\Expr\ConstFetch
+                && strtolower($bodyExpr->name->toString()) === 'true') {
+                return 'none';
+            }
+            // Single current_user_can call at top level
+            if ($bodyExpr instanceof Node\Expr\FuncCall) {
+                return $this->classifyAuthFuncCall($bodyExpr) ?? 'unknown';
+            }
+            return 'unknown';
+        }
+
+        /** @var Node\Expr\Closure $closureNode */
+        $stmts = $closureNode->stmts;
+
+        // Pattern: single `return true;` — unconditional open access
+        if (count($stmts) === 1
+            && $stmts[0] instanceof Node\Stmt\Return_
+            && $stmts[0]->expr instanceof Node\Expr\ConstFetch
+            && strtolower($stmts[0]->expr->name->toString()) === 'true') {
+            return 'none';
+        }
+
+        // Walk all statements, collect auth-level signals
+        $detected = $this->walkStmtsForAuth($stmts);
+        if ($detected !== null) return $detected;
+
+        return 'unknown';
+    }
+
+    /**
+     * Walk a flat statement list looking for the strongest auth signal.
+     * Returns the first definitive match, or null if nothing recognized.
+     */
+    private function walkStmtsForAuth(array $stmts): ?string
+    {
+        foreach ($stmts as $stmt) {
+            if ($stmt === null) continue;
+
+            // `if (current_user_can(...)) { ... }` — check the condition
+            if ($stmt instanceof Node\Stmt\If_) {
+                $cond = $stmt->cond;
+                $level = $this->classifyAuthCondition($cond);
+                if ($level !== null) return $level;
+            }
+
+            // Bare return of a FuncCall: `return current_user_can(...);`
+            if ($stmt instanceof Node\Stmt\Return_ && $stmt->expr instanceof Node\Expr\FuncCall) {
+                $level = $this->classifyAuthFuncCall($stmt->expr);
+                if ($level !== null) return $level;
+            }
+
+            // Expression statement: `current_user_can(...)` or `is_user_logged_in()`
+            if ($stmt instanceof Node\Stmt\Expression && $stmt->expr instanceof Node\Expr\FuncCall) {
+                $level = $this->classifyAuthFuncCall($stmt->expr);
+                if ($level !== null) return $level;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Classify a condition expression for auth level.
+     * Handles: FuncCall, BooleanNot(FuncCall), LogicalAnd/BinaryOp\BooleanAnd.
+     */
+    private function classifyAuthCondition(Node\Expr $cond): ?string
+    {
+        if ($cond instanceof Node\Expr\FuncCall) {
+            return $this->classifyAuthFuncCall($cond);
+        }
+        if ($cond instanceof Node\Expr\BooleanNot && $cond->expr instanceof Node\Expr\FuncCall) {
+            // !is_user_logged_in() → still subscriber-gated (we care about the function used)
+            return $this->classifyAuthFuncCall($cond->expr);
+        }
+        // BooleanAnd: both sides — take the strongest (lowest privilege = highest auth requirement)
+        if ($cond instanceof Node\Expr\BinaryOp\BooleanAnd) {
+            $left  = $this->classifyAuthCondition($cond->left);
+            $right = $this->classifyAuthCondition($cond->right);
+            return $this->strongerAuthLevel($left, $right);
+        }
+        return null;
+    }
+
+    /**
+     * Classify a FuncCall node as an auth-level signal.
+     * Returns 'admin'|'author'|'subscriber'|null (null = not an auth function).
+     */
+    private function classifyAuthFuncCall(Node\Expr\FuncCall $call): ?string
+    {
+        if (!($call->name instanceof Node\Name)) return null;
+        $name = $call->name->toString();
+
+        if ($name === 'is_user_logged_in') return 'subscriber';
+
+        if ($name === 'current_user_can') {
+            if (empty($call->args)) return null;
+            $cap = $call->args[0]->value ?? null;
+            if (!($cap instanceof Node\Scalar\String_)) return null;
+            $capStr = $cap->value;
+
+            // Admin-level capabilities
+            if (in_array($capStr, ['manage_options', 'administrator', 'install_plugins',
+                                   'activate_plugins', 'manage_network', 'delete_plugins'], true)) {
+                return 'admin';
+            }
+            // Author-level capabilities
+            if (in_array($capStr, ['edit_posts', 'publish_posts', 'edit_published_posts',
+                                   'upload_files'], true)) {
+                return 'author';
+            }
+            // Any other recognized capability → subscriber floor
+            return 'subscriber';
+        }
+
+        return null;
+    }
+
+    /**
+     * Return the more restrictive (higher-privilege) auth level of two signals.
+     * Priority: admin > author > subscriber > unknown > null
+     */
+    private function strongerAuthLevel(?string $a, ?string $b): ?string
+    {
+        $order = ['admin' => 4, 'author' => 3, 'subscriber' => 2, 'unknown' => 1];
+        $scoreA = $order[$a] ?? 0;
+        $scoreB = $order[$b] ?? 0;
+        if ($scoreA === 0 && $scoreB === 0) return null;
+        return $scoreA >= $scoreB ? $a : $b;
     }
 
     private function resolveFuncName(Node\Expr\FuncCall $node): ?string

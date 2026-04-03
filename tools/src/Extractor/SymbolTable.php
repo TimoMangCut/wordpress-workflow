@@ -13,6 +13,8 @@ class SymbolTable
 {
     private array $functions = [];
     private array $classes = [];
+    /** IR-10: trait method registry, keyed by trait name, for cross-file resolution */
+    private array $traitMethods = [];
     private string $pluginRoot;
 
     public function __construct(string $pluginRoot)
@@ -48,6 +50,42 @@ class SymbolTable
             $relPath = $this->relativePath($file);
             $this->collectDeclarations($ast, $relPath);
         }
+
+        // IR-10: Post-processing pass — merge trait methods into classes.
+        // Deferred to here so cross-file trait→class resolution works correctly.
+        // (Trait declared in file A, used by class in file B.)
+        $this->resolveTraitUses();
+    }
+
+    /**
+     * IR-10: After all files are processed, merge each class's trait methods.
+     * Own class methods take precedence — trait methods only fill gaps.
+     * Also handles method aliasing stored in class['trait_aliases'].
+     */
+    private function resolveTraitUses(): void
+    {
+        foreach ($this->classes as $className => &$classInfo) {
+            $traitUses = $classInfo['trait_uses'] ?? [];
+            foreach ($traitUses as $traitName) {
+                if (!isset($this->traitMethods[$traitName])) continue;
+                foreach ($this->traitMethods[$traitName] as $methodName => $methodInfo) {
+                    if (!isset($classInfo['methods'][$methodName])) {
+                        $classInfo['methods'][$methodName] = $methodInfo;
+                    }
+                }
+            }
+            // Apply aliases: stored as [alias => [traitName, originalMethod]]
+            $aliases = $classInfo['trait_aliases'] ?? [];
+            foreach ($aliases as $aliasName => [$traitName, $originalMethod]) {
+                if (!isset($classInfo['methods'][$aliasName])) {
+                    $source = $this->traitMethods[$traitName][$originalMethod] ?? null;
+                    if ($source !== null) {
+                        $classInfo['methods'][$aliasName] = $source;
+                    }
+                }
+            }
+        }
+        unset($classInfo); // break reference
     }
 
     private function collectDeclarations(array $stmts, string $file): void
@@ -56,6 +94,8 @@ class SymbolTable
         $visitor = new class($file) extends NodeVisitorAbstract {
             public array $functions = [];
             public array $classes = [];
+            /** IR-10: trait method registry for traits declared in this file */
+            public array $traitMethods = [];
             private string $file;
             private ?string $currentClass = null;
 
@@ -93,6 +133,9 @@ class SymbolTable
                         'line_end' => $node->getEndLine(),
                         'methods' => [],
                         'extends' => ($node->extends !== null) ? $node->extends->toString() : null,
+                        // IR-10: trait resolution metadata — used by resolveTraitUses() post-pass
+                        'trait_uses'    => [],
+                        'trait_aliases' => [],
                     ];
                 }
 
@@ -104,6 +147,55 @@ class SymbolTable
                         'is_static' => $node->isStatic(),
                         'is_public' => $node->isPublic(),
                     ];
+                }
+
+                // IR-10: collect trait method declarations
+                if ($node instanceof Node\Stmt\Trait_) {
+                    $traitName = $node->name->toString();
+                    if (!isset($this->traitMethods[$traitName])) {
+                        $this->traitMethods[$traitName] = [];
+                    }
+                    foreach ($node->stmts as $stmt) {
+                        if ($stmt instanceof Node\Stmt\ClassMethod) {
+                            $this->traitMethods[$traitName][$stmt->name->toString()] = [
+                                'file'       => $this->file,
+                                'line_start' => $stmt->getStartLine(),
+                                'line_end'   => $stmt->getEndLine(),
+                                'is_static'  => $stmt->isStatic(),
+                                'is_public'  => $stmt->isPublic(),
+                            ];
+                        }
+                    }
+                }
+
+                // IR-10: capture TraitUse inside a class — store for deferred resolution
+                if ($node instanceof Node\Stmt\TraitUse && $this->currentClass !== null) {
+                    foreach ($node->traits as $traitNameNode) {
+                        $tn = $traitNameNode->toString();
+                        if (!in_array($tn, $this->classes[$this->currentClass]['trait_uses'], true)) {
+                            $this->classes[$this->currentClass]['trait_uses'][] = $tn;
+                        }
+                    }
+                    // Handle method aliasing: TraitUseAdaptation\Alias
+                    foreach ($node->adaptations as $adaptation) {
+                        if ($adaptation instanceof Node\Stmt\TraitUseAdaptation\Alias
+                            && $adaptation->newName !== null) {
+                            $sourceTrait    = ($adaptation->trait !== null)
+                                ? $adaptation->trait->toString()
+                                : null;
+                            $originalMethod = $adaptation->method->toString();
+                            $aliasMethod    = $adaptation->newName->toString();
+                            // Determine which trait the original method comes from.
+                            // If sourceTrait is null, we'll use the first matching trait
+                            // at resolve time. Store enough info for the post-pass.
+                            $resolvedTrait = $sourceTrait
+                                ?? ($this->classes[$this->currentClass]['trait_uses'][0] ?? null);
+                            if ($resolvedTrait !== null) {
+                                $this->classes[$this->currentClass]['trait_aliases'][$aliasMethod] =
+                                    [$resolvedTrait, $originalMethod];
+                            }
+                        }
+                    }
                 }
 
                 return null;
@@ -124,6 +216,14 @@ class SymbolTable
         $this->functions = array_merge($this->functions, $visitor->functions);
         foreach ($visitor->classes as $name => $info) {
             $this->classes[$name] = $info;
+        }
+        // IR-10: merge this file's trait declarations into the global registry
+        foreach ($visitor->traitMethods as $traitName => $methods) {
+            if (!isset($this->traitMethods[$traitName])) {
+                $this->traitMethods[$traitName] = $methods;
+            } else {
+                $this->traitMethods[$traitName] = array_merge($this->traitMethods[$traitName], $methods);
+            }
         }
     }
 
