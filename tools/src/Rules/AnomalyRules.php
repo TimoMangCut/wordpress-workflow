@@ -99,14 +99,18 @@ class AnomalyRules
      * ONLY fires when:
      *   1. Sink is scoped to an entry point (not file-level helpers)
      *   2. Entry point has user input sources (superglobals, REST, shortcode attrs)
-     *   3. No prepare() detected in same callback
-     * This prevents FP on static SQL queries that don't use user input.
+     *   3. uses_prepared_statement is false or null (true = skip)
+     * Severity is per-sink, not per-EP:
+     *   - uses_prepared_statement === false, EP has no prepare() elsewhere → 'critical'
+     *   - uses_prepared_statement === false, EP has prepare() elsewhere    → 'high'
+     *   - uses_prepared_statement === null (unknown)                        → 'high'
      */
     private function rule04_sqlWithoutPrepare(array $ir): array
     {
         $anomalies = [];
 
         // Pre-compute: which entry points have ANY prepare() sink?
+        // Used only for severity differentiation on confirmed-unprepared sinks.
         $epHasPrepare = [];
         foreach ($ir['sinks'] as $sink) {
             if ($sink['category'] === 'sql' && $sink['uses_prepared_statement'] === true
@@ -136,19 +140,33 @@ class AnomalyRules
             // Skip file-level sinks (not scoped to entry point)
             if ($sink['entry_point_id'] === null) continue;
             if ($sink['category'] !== 'sql') continue;
-            if ($sink['uses_prepared_statement'] !== false) continue;
+
+            // Per-sink: skip only when prepare() confirmed on this sink
+            if ($sink['uses_prepared_statement'] === true) continue;
 
             // CRITICAL FP PREVENTION: Skip if entry point has NO user input sources.
             // Static SQL like "$wpdb->get_results('SELECT ... FROM wp_posts')" is not exploitable.
             if (!isset($epHasUserSource[$sink['entry_point_id']])) continue;
 
-            // If same callback ALSO has prepare() calls, downgrade severity
-            $severity = isset($epHasPrepare[$sink['entry_point_id']]) ? 'medium' : 'critical';
+            // Per-sink severity:
+            //   null  → 'high'  (prepare status unknown — cannot confirm safe)
+            //   false → 'critical' if EP has no other prepare(); 'high' if mixed
+            if ($sink['uses_prepared_statement'] === null) {
+                $severity = 'high';
+                $note = ' (prepare() status unknown — verify manually)';
+            } else {
+                // === false
+                $hasPrepareElsewhere = isset($epHasPrepare[$sink['entry_point_id']]);
+                $severity = $hasPrepareElsewhere ? 'high' : 'critical';
+                $note = $hasPrepareElsewhere
+                    ? ' (prepare() found on other sinks in callback — verify all paths)'
+                    : '';
+            }
 
             $anomalies[] = $this->makeAnomaly('rule_04', 'unsanitized_sql', $severity, 'CWE-89',
                 $sink['entry_point_id'],
                 "SQL query via \$wpdb->{$sink['function_called']}() without prepare() — user input present in callback"
-                . ($severity === 'medium' ? ' (prepare() found elsewhere — verify all paths)' : ''),
+                . $note,
                 $sink['file'], $sink['line']);
         }
         return $anomalies;

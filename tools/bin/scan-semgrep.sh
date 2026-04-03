@@ -61,6 +61,21 @@ if semgrep --pro \
     # Success: move temp to final output
     mv "$TMPOUT" "$OUTPUT"
 
+    # O-02: Inject ruleset metadata for reproducibility
+    RULE_COUNT=$(ls "$RULES_DIR"/*.yaml 2>/dev/null | wc -l | tr -d ' ')
+    SEMGREP_VERSION=$(semgrep --version 2>/dev/null | head -1 || echo "unknown")
+    python3 - "$OUTPUT" "$RULES_DIR" "$RULE_COUNT" "$SEMGREP_VERSION" <<'PYEOF'
+import json, sys
+out_path, rules_dir, rule_count, semgrep_ver = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+data = json.loads(open(out_path).read())
+data["_scan_meta"] = {
+    "ruleset_path": rules_dir,
+    "rule_count": int(rule_count),
+    "semgrep_version": semgrep_ver.strip(),
+}
+open(out_path, "w").write(json.dumps(data, indent=2))
+PYEOF
+
     # Print summary
     python3 -c "
 import json

@@ -1114,9 +1114,15 @@ def main() -> int:
     hallucinated = [v for v in validated if v["validation_status"] == "LIKELY_HALLUCINATION"]
 
     actionable = []
+    actionable_not_patchstack = []
     for i, v in enumerate(validated):
         if findings[i].get("verdict") == "TP" and v["validation_status"] in ("CONFIRMED", "PLAUSIBLE"):
-            actionable.append({**findings[i], "confidence_score": v["confidence_score"]})
+            merged = {**findings[i], "confidence_score": v["confidence_score"]}
+            # O-01: separate patchstack-ineligible findings from actionable list
+            if findings[i].get("patchstack_eligible") is False:
+                actionable_not_patchstack.append(merged)
+            else:
+                actionable.append(merged)
 
     output = {
         "plugin_slug": slug,
@@ -1140,6 +1146,7 @@ def main() -> int:
         },
         "validated_findings": validated,
         "actionable_findings": actionable,
+        "actionable_not_patchstack": actionable_not_patchstack,
     }
 
     output_path = layout.phase3 / f"{slug}-phase3.json"
@@ -1152,7 +1159,7 @@ def main() -> int:
     print(f"[INFO] Phase 1: {output['phase1_summary']['entry_points']} EPs, {output['phase1_summary']['anomalies']} anomalies")
     print(f"[INFO] Phase 2: {output['phase2_summary']['total']} findings ({output['phase2_summary']['tp']} TP)")
     print(f"[INFO] Phase 3: {len(confirmed)} confirmed, {len(plausible)} plausible, {len(uncertain)} uncertain, {len(hallucinated)} hallucinated")
-    print(f"[INFO] Actionable: {len(actionable)}")
+    print(f"[INFO] Actionable: {len(actionable)} (patchstack-eligible) + {len(actionable_not_patchstack)} (not patchstack-eligible)")
     print(f"[OK] Output: {output_path}")
 
     return 0

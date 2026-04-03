@@ -348,6 +348,9 @@ def main() -> int:
             # Downgrade TP→REVIEW if critical evidence missing (do not reject)
             critical = {"missing_entry_point_id", "missing_sink_location", "missing_sink_function", "sink_file_not_found"}
             if any(i in critical for i in issues):
+                # O-03: preserve original verdict before downgrade for traceability
+                if "original_verdict" not in f:
+                    f["original_verdict"] = f["verdict"]
                 f["verdict"] = "REVIEW"
                 f["postprocess_downgrade_reason"] = "critical evidence missing/unresolvable; needs clarification"
                 downgraded += 1
