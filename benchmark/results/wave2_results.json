@@ -1,0 +1,82 @@
+{
+  "wave": 2,
+  "run_timestamp": "2026-04-03T17:14:05Z",
+  "sessions_included": [7, 8, 9, 10],
+  "gaps_addressed": [
+    "IR-03", "IR-05",
+    "A-01", "A-02",
+    "L-01", "L-02"
+  ],
+  "plugins": [
+    {
+      "slug": "backwpup",
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "review_hit": 0,
+      "review_miss": 0,
+      "quality_score": 1.0,
+      "decision_rate": 1.0,
+      "gt_findings_count": 2,
+      "pipeline_tp_count": 2,
+      "pipeline_review_count": 0,
+      "vs_baseline": {
+        "quality_score_delta": 0.0,
+        "decision_rate_delta": 0.0,
+        "regression": false
+      }
+    },
+    {
+      "slug": "cartflows",
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "review_hit": 0,
+      "review_miss": 0,
+      "quality_score": null,
+      "decision_rate": null,
+      "gt_findings_count": 0,
+      "pipeline_tp_count": 0,
+      "pipeline_review_count": 0,
+      "vs_baseline": {
+        "quality_score_delta": null,
+        "decision_rate_delta": null,
+        "regression": false,
+        "note": "No ground truth findings — FP-rate benchmark only (0 FP maintained)"
+      }
+    },
+    {
+      "slug": "pretty-link",
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "review_hit": 0,
+      "review_miss": 0,
+      "quality_score": null,
+      "decision_rate": null,
+      "gt_findings_count": 0,
+      "pipeline_tp_count": 0,
+      "pipeline_review_count": 0,
+      "vs_baseline": {
+        "quality_score_delta": null,
+        "decision_rate_delta": null,
+        "regression": false,
+        "note": "No ground truth findings — FP-rate benchmark only (0 FP maintained)"
+      }
+    }
+  ],
+  "aggregate": {
+    "total_tp": 2,
+    "total_fp": 0,
+    "total_fn": 0,
+    "total_review_hit": 0,
+    "total_review_miss": 0,
+    "quality_score": 1.0,
+    "decision_rate": 1.0,
+    "vs_baseline": {
+      "quality_score_delta": 0.0,
+      "decision_rate_delta": 0.0,
+      "regression": false
+    }
+  }
+}

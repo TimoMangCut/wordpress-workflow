@@ -1,0 +1,29 @@
+{
+  "wave": 2,
+  "verdict": "APPROVED",
+  "run_timestamp": "2026-04-03T17:14:05Z",
+  "sessions_validated": [7, 8, 9, 10],
+  "accept_criteria": {
+    "quality_score_gte_baseline": "PASS — 1.0 >= 1.0 (backwpup); N/A for cartflows/pretty-link (no GT findings)",
+    "decision_rate_no_drop_gt_10pct": "PASS — 1.0 delta = 0.0 (no drop)",
+    "fp_zero": "PASS — FP=0 across all plugins"
+  },
+  "metrics_delta": {
+    "quality_score": {
+      "baseline": 1.0,
+      "wave2": 1.0,
+      "delta": 0.0
+    },
+    "decision_rate": {
+      "baseline": 1.0,
+      "wave2": 1.0,
+      "delta": 0.0
+    },
+    "total_tp": {"baseline": 2, "wave2": 2},
+    "total_fp": {"baseline": 0, "wave2": 0},
+    "total_fn": {"baseline": 0, "wave2": 0}
+  },
+  "regressions": [],
+  "approved_to_proceed": true,
+  "next_session": "session_12 — IR-02 (cross-function call chain) — awaiting user APPROVED signal"
+}
