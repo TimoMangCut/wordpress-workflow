@@ -340,7 +340,34 @@ class SemanticValidator:
         issues: List[str] = []
 
         # A finding with verdict=FP is not scored like a TP: it is accepted as "not a vuln".
+        # G-04: validate FP evidence — populate issues[] when evidence is absent or contradicts.
         if verdict == "FP":
+            fp_checks: Dict[str, Optional[float]] = {}
+            fp_check_notes: Dict[str, str] = {}
+            fp_issues: List[str] = []
+
+            # Check 1: fp_reason must be present (prompt-required field)
+            if not finding.get("fp_reason"):
+                fp_issues.append("fp_missing_reason: FP finding has no fp_reason — evidence-free dismissal")
+
+            # Check 2: fp_evidence.file must exist on disk (if provided)
+            fp_ev = finding.get("fp_evidence") or {}
+            if fp_ev.get("file"):
+                fe_score, fe_notes = self._check_file_exists(
+                    {"sink_file_path": fp_ev["file"], "source_file_path": fp_ev["file"]}
+                )
+                fp_checks["fp_evidence_file_exists"] = fe_score
+                fp_check_notes["fp_evidence_file_exists"] = fe_notes
+                if fe_score is not None and fe_score < 0.5:
+                    fp_issues.append(f"fp_evidence_file_not_found: {fp_ev['file']}")
+            else:
+                fp_issues.append("fp_missing_evidence: FP finding has no fp_evidence object")
+
+            # Check 3: run code evidence check on the finding itself (corroboration signal)
+            ce_score, ce_notes = self._check_code_evidence(finding)
+            fp_checks["fp_code_evidence"] = ce_score
+            fp_check_notes["fp_code_evidence"] = ce_notes
+
             return {
                 "finding_id": finding.get("finding_id"),
                 "verdict": verdict,
@@ -350,10 +377,10 @@ class SemanticValidator:
                 "entry_point_exact": resolution.exact,
                 "suggested_entry_point_id": resolution.suggested_entry_point_id,
                 "entry_point_resolution_notes": resolution.notes,
-                "checks": {},
-                "check_scores": {},
-                "check_notes": {},
-                "issues": [],
+                "checks": fp_checks,
+                "check_scores": fp_checks,
+                "check_notes": fp_check_notes,
+                "issues": fp_issues,
             }
 
         # --- compute checks ---

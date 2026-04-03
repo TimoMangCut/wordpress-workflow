@@ -546,10 +546,16 @@ PYEOF
 postprocess_phase2_output() {
     local slug="$1"
     local output_path="$2"
+    local semgrep_path="${PHASE1_DIR}/${slug}-semgrep.json"
+    local semgrep_arg=""
+    if [ -f "$semgrep_path" ]; then
+        semgrep_arg="--semgrep-report ${semgrep_path}"
+    fi
     python3 "${BIN_DIR}/phase2_postprocess.py" "$slug" \
         --reports-dir "$REPORTS_DIR" \
         --plugins-dir "$PLUGINS_DIR" \
         --phase2-path "$output_path" \
+        ${semgrep_arg} \
         --in-place
 }
 
@@ -780,7 +786,9 @@ run_one() {
             quick_counts="$(phase2_counts "$provider_output")"
             IFS='|' read -r q_tp q_fp q_rv q_total q_risk <<< "$quick_counts"
             echo "  ${provider} quick results: ${q_tp} TP, ${q_fp} FP, ${q_rv} REVIEW | Risk: ${q_risk}"
-            if [ "$q_tp" -gt 0 ] || [ "$q_rv" -gt 0 ]; then
+            # P2-04: also escalate when IR has unresolved hooks (dynamic callbacks IR-01 can't trace)
+            unresolved_count=$(python3 -c "import json,sys; d=json.load(open('${ir_file}')); print(len(d.get('unresolved_hooks',[]))) " 2>/dev/null || echo "0")
+            if [ "$q_tp" -gt 0 ] || [ "$q_rv" -gt 0 ] || [ "$unresolved_count" -gt 0 ]; then
                 providers_for_deep+=("$provider")
             fi
         done

@@ -63,6 +63,10 @@ Finding requirements:
   - patchstack_eligible
 - For stored/second-order flows: include storage_key when identifiable.
 - All `source_file_path`, `sink_file_path`, and `file_path` values must be relative to the plugin root. Never prefix them with `plugins/{PLUGIN_SLUG}/`.
+- For FP verdict (MANDATORY — no exceptions):
+  - fp_reason: one sentence explaining what specific defense makes this not exploitable
+  - fp_evidence: {"defense": "<type>", "file": "<plugin-relative path>", "line": <int>}
+  - Allowed defense types: no_user_input_reachable | sanitized_before_sink | hardcoded_value | internal_call_only | capability_required_enforced | nonce_enforced | dead_code | other
 
 Important:
 - Do not invent constants, nonces, routes, capability strings, option/meta keys.

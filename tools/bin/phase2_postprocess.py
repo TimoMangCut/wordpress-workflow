@@ -171,12 +171,72 @@ def is_stored(vuln_type: str) -> bool:
     return ("stored" in v) or ("second" in v)
 
 
+# P2-03: auth_required normalization table
+_AUTH_NORMALIZE = {
+    "unauthenticated": "none",
+    "anonymous": "none",
+    "public": "none",
+    "any": "none",
+    "any logged-in user": "subscriber",
+    "any logged in user": "subscriber",
+    "logged_in": "subscriber",
+    "logged-in": "subscriber",
+    "authenticated": "subscriber",
+    "editor+": "editor",
+    "administrator": "admin",
+    "administrators": "admin",
+    "super admin": "system",
+    "network admin": "system",
+}
+_VALID_AUTH = {"none", "subscriber", "contributor", "author", "editor", "admin", "system", "unknown"}
+
+
+def normalize_auth(value: Any) -> str:
+    """P2-03: Normalize auth_required to a canonical gate-comparable value."""
+    if not isinstance(value, str):
+        return "unknown"
+    v = value.lower().strip()
+    if v in _VALID_AUTH:
+        return v
+    return _AUTH_NORMALIZE.get(v, "unknown")
+
+
+# P2-02: dismissed_signals — semgrep hits not surfaced in any finding
+def find_dismissed_signals(phase2_data: dict, semgrep_data: dict) -> List[dict]:
+    """Return semgrep results that do not appear in any Phase 2 finding (including FPs)."""
+    finding_locations: set = set()
+    for f in phase2_data.get("findings", []) or []:
+        fp = norm_path(str(f.get("source_file_path") or f.get("file_path") or ""))
+        fl = f.get("source_line_number") or f.get("line_number")
+        if fp and fl is not None:
+            finding_locations.add((fp, int(fl)))
+        sp = norm_path(str(f.get("sink_file_path") or ""))
+        sl = f.get("sink_line_number")
+        if sp and sl is not None:
+            finding_locations.add((sp, int(sl)))
+
+    dismissed: List[dict] = []
+    for result in semgrep_data.get("results", []) or []:
+        path = norm_path(str(result.get("path") or ""))
+        line = (result.get("start") or {}).get("line")
+        if not path or line is None:
+            continue
+        if (path, int(line)) not in finding_locations:
+            dismissed.append({
+                "file": path,
+                "line": int(line),
+                "rule": result.get("check_id"),
+            })
+    return dismissed
+
+
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Postprocess Phase 2 JSON for evidence binding")
     p.add_argument("slug", help="Plugin slug")
     p.add_argument("--reports-dir", default=str(_ROOT_DIR / "reports"))
     p.add_argument("--plugins-dir", default=str(_ROOT_DIR / "plugins"))
     p.add_argument("--phase2-path", default="", help="Override path to phase2 JSON file")
+    p.add_argument("--semgrep-report", default="", help="Path to semgrep JSON report (for dismissed_signals)")
     p.add_argument("--in-place", action="store_true", help="Overwrite reports/phase2/<slug>-phase2.json")
     return p.parse_args()
 
@@ -200,6 +260,10 @@ def main() -> int:
 
     for f in findings:
         issues: List[str] = []
+
+        # P2-03: normalize auth_required to canonical gate-comparable value
+        if "auth_required" in f:
+            f["auth_required"] = normalize_auth(f["auth_required"])
 
         # Normalize sink/source location fields.
         if not f.get("sink_file_path") and f.get("file_path"):
@@ -295,6 +359,16 @@ def main() -> int:
         "version": "v2-evidence-bind",
         "downgraded_tp_to_review": downgraded,
     }
+
+    # P2-02: compute dismissed_signals from semgrep report
+    if args.semgrep_report:
+        semgrep_data = load_json(args.semgrep_report)
+        if semgrep_data:
+            data["dismissed_signals"] = find_dismissed_signals(data, semgrep_data)
+        else:
+            data["dismissed_signals"] = []
+    else:
+        data.setdefault("dismissed_signals", [])
 
     # Recompute top-level counters for consistency (LLM may have provided stale counts).
     tp = sum(1 for f in findings if f.get("verdict") == "TP")
