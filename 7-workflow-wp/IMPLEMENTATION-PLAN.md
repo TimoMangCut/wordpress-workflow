@@ -103,7 +103,7 @@ WAVE 1     [x] Session 1  — IR-01, IR-06, IR-09
            [x] Session 6  — Wave 1 Validation → USER REVIEW ①         2026-04-03
 WAVE 2     [x] Session 7  — IR-03                                   2026-04-03
            [ ] Session 8  — IR-05, IR-10
-           [ ] Session 9  — P2-05, G-01, G-02
+           [x] Session 9  — P2-05, G-01, G-02   ← 2026-04-03
            [ ] Session 10 — A-02, L-01, L-02
            [ ] Session 11 — Wave 2 Validation → USER REVIEW ②
 WAVE 3     [ ] Session 12 — IR-02 (call chain depth=2) ← HARDEST

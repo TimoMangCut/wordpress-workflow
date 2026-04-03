@@ -1,0 +1,36 @@
+{
+  "session": 9,
+  "date": "2026-04-03",
+  "status": "COMPLETED",
+  "gaps_addressed": ["P2-05", "G-01", "G-02"],
+  "files_modified": [
+    {
+      "file": "tools/bin/phase2_postprocess.py",
+      "functions_changed": ["validate_findings_schema (new)", "main"],
+      "lines_affected": "18-34, 192-222, 290-294",
+      "behavior_before": "No schema validation — malformed phase2 fields (wrong types, wrong enums) silently propagated to gate.",
+      "behavior_after": "Soft jsonschema validation per finding after load. [WARN] printed to stderr on ValidationError. Pipeline never blocked. Graceful fallback if jsonschema not installed."
+    },
+    {
+      "file": "tools/bin/phase3_gate.py",
+      "functions_changed": ["_check_guard_consistency", "_assess_reasoning_quality"],
+      "lines_affected": "737-775, 970-1035",
+      "behavior_before": "_check_guard_consistency: binary truthy check `g.get('is_effective')` — treated is_effective=null (custom guards) same as False. Final neutral returned 0.7.\n_assess_reasoning_quality: +0.25 for any file:line presence, -0.15 if absent; +0.10 bonus for 'however'/'but' keywords (gameable).",
+      "behavior_after": "_check_guard_consistency: three-state is True/is None/is False (E4). Scores: effective→0.9, unknown(null)→0.6 with function names, broken→0.2, none→0.1.\n_assess_reasoning_quality: cross-reference file:line against finding's claimed locations (±10 lines). +0.25 if matched, -0.10 if mismatched, -0.15 if no refs. FP findings check fp_evidence location. Keyword bonus removed."
+    }
+  ],
+  "downstream_updated": [],
+  "deviations_from_spec": [
+    {
+      "gap": "G-02",
+      "session_card_spec": "Base 0.0; +0.3 if len>200; +0.2 if len>500; +0.2 if file:line pattern found; +0.15 if sink_file basename in reasoning; +up to 0.15 for refutation patterns.",
+      "source_ref": "gap-analysis-final.md:1021-1086",
+      "resolution": "source_ref wins (E1). Kept existing length scoring (unchanged). Replaced file:line presence check with cross-reference matching using paths_match() ±10 lines with FP/TP branching. Refutation pattern bonus from session card spec not in source_ref — not implemented. Keyword bonus removed per both sources."
+    }
+  ],
+  "test_command": "python3 benchmark/compare.py --all",
+  "test_result": "PASS: QS=1.0000 FP=0 (backwpup: QS=1.0 TP=2 FP=0, cartflows: N/A, pretty-link: N/A)",
+  "discovered_issues": [],
+  "next_session": "session_10",
+  "notes": "G-02 source_ref (gap-analysis-final.md:1021-1086) significantly more detailed than session card spec. Key differences: FP/TP branching for cross-ref, ±10 line tolerance via paths_match(), -0.10 penalty on mismatch vs simple presence. Session card's refutation_patterns bonus (+0.05 per pattern) absent from source_ref — not implemented. source_ref governs per E1."
+}
