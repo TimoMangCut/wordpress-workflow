@@ -1,0 +1,33 @@
+{
+  "session": 7,
+  "date": "2026-04-03",
+  "status": "COMPLETED",
+  "gaps_addressed": ["IR-03"],
+  "files_modified": [
+    {
+      "file": "tools/src/Extractor/Visitors/GuardVisitor.php",
+      "functions_changed": [
+        "enterNode",
+        "detectCustomGuard",
+        "ifBodyHasExitOrReturn",
+        "resolveCallDescription"
+      ],
+      "lines_affected": "57-69, 223-329",
+      "behavior_before": "GuardVisitor detected only 5 WordPress core functions (wp_verify_nonce, check_ajax_referer, check_admin_referer, current_user_can, is_admin). Custom method/static call guards silently missed.",
+      "behavior_after": "GuardVisitor now also detects MethodCall/StaticCall nodes via structural heuristic: call is direct if/elseif condition AND if-body contains wp_die()/wp_send_json_error()/exit()/die()/return. Detected with is_effective: null (?bool). Naming-based detection explicitly forbidden."
+    }
+  ],
+  "downstream_updated": [],
+  "deviations_from_spec": [],
+  "test_command": "php tools/bin/extract.php plugins/backwpup/ --json 2>/dev/null | python3 -c \"import json,sys; d=json.load(sys.stdin); guards=d.get('guards',[]); print('total guards:', len(guards)); [print(' -', g.get('type'), 'is_effective:', g.get('is_effective')) for g in guards]\"",
+  "test_result": "PASS: total guards: 10. custom_guard entries detected (is_effective: None/null). Existing nonce_check/capability_check/is_admin_check unchanged. Benchmark: backwpup QS=1.0 DR=1.0 TP=2 FP=0 FN=0. No regression.",
+  "discovered_issues": [
+    {
+      "description": "detectCustomGuard() fires on database utility methods (is_upgradeable, needs_upgrade, exists) in BerlinDB Table class because they use bare return in if-body. These are is_effective: null, NOT is_effective: true — so they do not affect gate logic or finding scores. Acceptable FP in guard list; no downstream impact.",
+      "severity": "low",
+      "action": "no action needed — is_effective: null means gate ignores them; document if Wave 2 QS changes"
+    }
+  ],
+  "next_session": "session_8",
+  "notes": "IR-03 complete. phase3_gate.py confirmed to treat is_effective: null (Python None) as falsy — custom_guard type not used in contradiction checks. QS=1.0 maintained. No naming-based detection introduced."
+}
