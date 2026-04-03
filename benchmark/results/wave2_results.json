@@ -1,11 +1,22 @@
 {
   "wave": 2,
   "run_timestamp": "2026-04-03T17:14:05Z",
-  "sessions_included": [7, 8, 9, 10],
+  "sessions_included": [
+    7,
+    8,
+    9,
+    10
+  ],
   "gaps_addressed": [
-    "IR-03", "IR-05",
-    "A-01", "A-02",
-    "L-01", "L-02"
+    "IR-03",
+    "IR-05",
+    "IR-10",
+    "P2-05",
+    "G-01",
+    "G-02",
+    "A-02",
+    "L-01",
+    "L-02"
   ],
   "plugins": [
     {
