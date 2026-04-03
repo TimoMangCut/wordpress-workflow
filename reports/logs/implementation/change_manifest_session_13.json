@@ -15,12 +15,12 @@
       "behavior_after": "IR['coverage_gaps'] is populated with entries for each file that contains security signals (wp_verify_nonce, check_ajax_referer, current_user_can, wp_die, $wpdb, sanitize_) but has no entry point callback. Each entry: {file, signals[], reason: 'has_security_functions_but_no_entry_point'}. String-level scan only — not AST. Field is informational, does not feed anomaly rules. backwpup: 67 gaps detected including 7 files with wp_verify_nonce."
     }
   ],
-  "downstream_updated": [],
+  "downstream_updated": ["tools/config/phase2-prompt-template.md (section 7 added: coverage_gaps triage)"],
   "deviations_from_spec": [
     {
       "spec_step": "session card source_ref points to gap-analysis-final.md:429-500 which is IR-03/IR-04, not A-01",
-      "actual": "A-01 spec is at gap-analysis-final.md:1253-1276. IMPLEMENTATION-PLAN.md:1090-1113 has the pseudocode. Both are consistent. Implemented from IMPLEMENTATION-PLAN.md pseudocode (flat array of gap entries).",
-      "risk": "NONE — content is correct, the source_ref line numbers in the session card were wrong"
+      "actual": "A-01 spec is at gap-analysis-final.md:1253-1276. IMPLEMENTATION-PLAN.md:1090-1113 has the pseudocode. Implemented from IMPLEMENTATION-PLAN.md pseudocode (flat array of gap entries: {file, signals[], reason}). gap-analysis-final.md:1265 shows a different shape — an object with sub-fields (unresolved_hooks, files_with_wp_functions_no_ep, suspicious_patterns) — which conflicts with the flat-array pseudocode. Session card states source_ref wins on conflicts; however, IMPLEMENTATION-PLAN.md pseudocode is internally consistent with Phase 5 IR assembly and downstream prompt usage. The gap-analysis example is treated as illustrative, not normative.",
+      "risk": "LOW — flat-array shape is correct and consistent with IMPLEMENTATION-PLAN.md pseudocode and IR artifacts. gap-analysis-final.md example was not used as the authoritative reference. No behavioral regression. Reopening condition: if Session 15 JSON Schema expansion finds the flat-array shape incompatible with a downstream consumer, revisit A-01 shape."
     }
   ],
   "test_command": "php tools/bin/extract.php plugins/backwpup/ --force --json | python3 -c \"import json,sys; ir=json.load(sys.stdin); print('coverage_gaps:', len(ir.get('coverage_gaps',[])))\" && python3 benchmark/compare.py --all",

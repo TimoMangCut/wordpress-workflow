@@ -1,9 +1,10 @@
 {
   "_comment": "TODO (Session 15): expand to full JSON Schema draft-07. Currently a stub listing required top-level fields, verified against actual IR artifacts (backwpup-ir.json, call-chain-test-ir.json).",
-  "required_fields": ["metadata", "entry_points", "guards", "sources", "sinks", "unresolved_hooks", "anomalies"],
+  "required_fields": ["metadata", "entry_points", "guards", "sources", "sinks", "unresolved_hooks", "anomalies", "coverage_gaps"],
   "entry_points_item_required": ["id", "type", "hook_name", "auth_level", "file", "line", "callback"],
   "guards_item_required": ["entry_point_id", "type", "function_called", "file", "line", "is_effective"],
   "sources_item_required": ["id", "entry_point_id", "type", "variable", "key", "file", "line"],
   "sinks_item_required": ["id", "entry_point_id", "category", "function_called", "uses_prepared_statement", "file", "line"],
-  "anomalies_item_required": ["id", "rule_id", "type", "severity", "cwe_id", "entry_point_id", "description", "evidence"]
+  "anomalies_item_required": ["id", "rule_id", "type", "severity", "cwe_id", "entry_point_id", "description", "evidence"],
+  "coverage_gaps_item_required": ["file", "signals", "reason"]
 }

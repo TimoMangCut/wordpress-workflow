@@ -26,6 +26,12 @@ Task:
      per wp-context (REST API = single most critically exploited surface; wp_ajax_nopriv = zero auth).
    - If the hook resolves to a security-relevant hook, attempt to trace its callback for missing nonce/cap checks.
    - If the hook name cannot be determined statically, note it in `negative_findings` with reason `dynamic_hook_unresolved`.
+7. Coverage Gaps: check `ir.coverage_gaps[]` for files that contain WP security signals but no discovered entry point.
+   - Each entry has: `file` (plugin-relative path), `signals[]` (list of detected signal strings), `reason` (`has_security_functions_but_no_entry_point`).
+   - For each gap entry, inspect the file at `file` to determine whether it is a missed entry point (e.g., a class loaded via `add_action` in a bootstrap file not yet traced) or a helper/utility file called from a known entry point.
+   - If the file appears to be a missed entry point (direct hook registration, direct AJAX handler, direct REST handler), attempt to trace its inputs for missing nonce/cap checks and add findings accordingly.
+   - If the file is a helper called from a known entry point already in IR, note it in `negative_findings` with reason `coverage_gap_helper_not_entry_point`.
+   - If the file's role cannot be determined statically, note it in `negative_findings` with reason `coverage_gap_unresolved`.
 
 Output format (strict):
 - Write JSON to: `{OUTPUT_PATH}`
