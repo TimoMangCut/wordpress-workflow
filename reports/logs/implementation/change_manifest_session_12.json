@@ -10,11 +10,11 @@
         "build (Phase 3 loop extended with resolveCallChain() call)",
         "resolveCallChain (new private method)",
         "extractMethodCalls (new private method)",
-        "extractCallbackBody (anonymous visitor: added currentClass tracking + class-aware method match — P1 fix)"
+        "extractCallbackBody (anonymous visitor: added FQCN-aware currentClass tracking + exact-equality class match — P1 fix, two-round review)"
       ],
-      "lines_affected": "137-430",
+      "lines_affected": "137-445",
       "behavior_before": "Phase 3 ran SourceSinkVisitor only on the direct callback body. Sinks in methods called via $this->method() were invisible — IR had source but no sink for delegated patterns.",
-      "behavior_after": "After SSV traversal of callback body, resolveCallChain() is called when callback has a class context. For each $this->method() call found: looks up method via SymbolTable::findMethod(), parses its body, runs SSV with inherited entry_point_id, recurses up to depth=2 with cycle detection via $visited[]. extractCallbackBody() now tracks current Class_ context during traversal and requires class name match when resolving methods — prevents wrong-class-same-name false match in multi-class files."
+      "behavior_after": "After SSV traversal of callback body, resolveCallChain() is called when callback has a class context. For each $this->method() call found: looks up method via SymbolTable::findMethod(), parses its body, runs SSV with inherited entry_point_id, recurses up to depth=2 with cycle detection via $visited[]. extractCallbackBody() now tracks the current Class_ node using the namespacedName attribute (same FQCN pattern as SymbolTable and EntryPointVisitor) and requires exact FQCN equality before matching a ClassMethod — prevents wrong-class-same-name false match in both non-namespaced and namespaced multi-class files."
     }
   ],
   "new_files_created": [
@@ -24,11 +24,15 @@
     },
     {
       "file": "plugins/multi-class-test/multi-class-test.php",
-      "description": "Repro fixture for P1 bug (multi-class same-name helper). FirstClass::helper() echoes; SecondClass::helper() executes $wpdb->query(). Entry point in SecondClass. Gitignored — not committed to repo."
+      "description": "Repro fixture for P1 bug (two classes in same file, same short helper name, no namespace). FirstClass::helper() echoes; SecondClass::helper() executes $wpdb->query(). Entry point in SecondClass. Gitignored — not committed to repo."
+    },
+    {
+      "file": "plugins/namespace-collision-test/namespace-collision-test.php",
+      "description": "Repro fixture for P1 bug round 2 (same short name under different namespaces: A\\Worker::helper echoes, B\\Worker::helper calls $wpdb->query). Entry point in B\\Worker. Verified fix requires FQCN exact match, not short-name suffix match. Gitignored — not committed to repo."
     },
     {
       "file": "contracts/ir.schema.json",
-      "description": "Stub contract for IR JSON required fields. Full JSON Schema deferred to Session 15 per IMPLEMENTATION-PLAN.md:176-178."
+      "description": "Stub contract for IR JSON required fields, verified against backwpup-ir.json and call-chain-test-ir.json. field name 'hook_name' confirmed. Full JSON Schema deferred to Session 15 per IMPLEMENTATION-PLAN.md:176-178."
     },
     {
       "file": "contracts/finding.schema.json",
@@ -63,21 +67,22 @@
     }
   ],
   "post_review_fix": {
-    "issue": "P1 — extractCallbackBody() matched ClassMethod by name only, ignoring class context. In a file with multiple classes sharing a helper name, resolveCallChain() could resolve the wrong class body.",
-    "fix_commit": "see git log",
-    "fix_description": "Added currentClass tracking in anonymous visitor (enterNode tracks Class_ node name; leaveNode resets to null). Method match now requires classMatches=true when $this->class is set, using short name and suffix match to handle namespaced classes.",
-    "verified_by": "plugins/multi-class-test: SQL sink correctly attached to SecondClass entry point (not file-level). FirstClass echo sink correctly file-level. Anomaly rule_04 fires. Happy-path call-chain-test unchanged. backwpup QS=1.0 FP=0."
+    "issue": "P1 — extractCallbackBody() matched ClassMethod by name only, ignoring class context. In a file with multiple classes sharing a helper name (with or without namespaces), resolveCallChain() could resolve the wrong class body.",
+    "fix_commits": ["e7f2404 (post-review 1: short-name tracking — insufficient)", "b09f2db (post-review 2: FQCN tracking — correct)"],
+    "fix_description": "Anonymous visitor in extractCallbackBody() now derives currentClass from Class_ node using isset($node->namespacedName) ? $node->namespacedName->toString() : $node->name->toString() — identical to the pattern in SymbolTable (line 125-126) and EntryPointVisitor (line 76-77). ClassMethod match uses exact string equality (currentClass === $this->class). Both sides are FQCN when NameResolver has run. leaveNode resets currentClass to null on Class_ exit.",
+    "post_review_1_error": "First fix used $node->name->toString() (short name) and str_ends_with() fallback. str_ends_with('A\\\\Worker', 'Worker') = true and str_ends_with('B\\\\Worker', 'Worker') = true — namespace collision still possible.",
+    "verified_by": "Three fixtures all pass: call-chain-test (depth-1, depth-2 SQL sinks correct ep), multi-class-test (non-namespace: SQL→entry-point, echo→file-level), namespace-collision-test (A\\Worker echo file-level, B\\Worker SQL→entry-point). Benchmark backwpup QS=1.0 FP=0 no regression."
   },
-  "test_command": "php tools/bin/extract.php plugins/call-chain-test/ --json && php tools/bin/extract.php plugins/multi-class-test/ --json && python3 benchmark/compare.py --all",
-  "test_result": "PASS: call-chain-test SQL sinks at depth-1 and depth-2 correct. multi-class-test SQL sink ep=SecondClass entry point (not file-level), echo sink file-level — P1 fix verified. backwpup QS=1.0 DR=1.0 TP=2 FP=0 FN=0.",
+  "test_command": "php tools/bin/extract.php plugins/call-chain-test/ --json && php tools/bin/extract.php plugins/multi-class-test/ --json && php tools/bin/extract.php plugins/namespace-collision-test/ --json && python3 benchmark/compare.py --all",
+  "test_result": "PASS: call-chain-test SQL sinks at depth-1 and depth-2 correct. multi-class-test SQL sink ep=SecondClass entry point (not file-level), echo sink file-level. namespace-collision-test SQL sink ep=B\\Worker entry point, A\\Worker echo sink file-level. backwpup QS=1.0 DR=1.0 TP=2 FP=0 FN=0.",
   "discovered_issues": [
     {
       "id": "SSV-DUPE-01",
-      "description": "SourceSinkVisitor emits duplicate source entries for $_POST['key'] expressions: once via ArrayDimFetch→detectSuperglobalAccess(), once via Variable check (lines 128-131). Pre-existing before Session 12. No benchmark impact (phase3_gate does not count source frequency). Logged for future fix — not in Session 12 or 13 scope.",
+      "description": "SourceSinkVisitor emits duplicate source entries for $_POST['key'] expressions: once via ArrayDimFetch→detectSuperglobalAccess(), once via bare Variable check (lines 128-131). Pre-existing before Session 12. No benchmark impact (phase3_gate does not count source frequency). Logged for future fix — not in Session 12 or 13 scope.",
       "severity": "low",
       "introduced_by": "pre-Session-12"
     }
   ],
   "next_session": "session_13",
-  "notes": "IR-02 implemented with P1 class-awareness fix applied post-review. resolveCallChain() only resolves $this->method() calls (Variable name === 'this'). $variable->method() where variable is not $this, and static calls, are out of scope for depth=2 fix. contracts/ stubs created per IMPLEMENTATION-PLAN pre-Session-12 checklist."
+  "notes": "IR-02 implemented with FQCN-aware P1 class-awareness fix. resolveCallChain() only resolves $this->method() calls (Variable name === 'this'). $variable->method() where variable is not $this, and static calls ($ClassName::method()), are out of scope for depth=2 fix. contracts/ stubs verified against actual IR artifacts and field names corrected (hook_name, not hook; id/variable/key in sources; id/function_called/uses_prepared_statement in sinks)."
 }
