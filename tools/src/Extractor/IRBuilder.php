@@ -133,6 +133,21 @@ class IRBuilder
             $st->traverse($callbackBody);
             $allSources = array_merge($allSources, $ssVisitor->getSources());
             $allSinks = array_merge($allSinks, $ssVisitor->getSinks());
+
+            // IR-02: Shallow call chain resolution (depth=2).
+            // When callback delegates to $this->method(), resolve that method body
+            // and run SourceSinkVisitor on it, inheriting the same entry_point_id.
+            $cbClass = $ep['callback']['class'] ?? null;
+            if ($cbClass !== null) {
+                $callNodes = $this->extractMethodCalls($callbackBody);
+                $visited = [];
+                [$chainSources, $chainSinks] = $this->resolveCallChain(
+                    $callNodes, $this->symbols, $cbClass, $ep['id'],
+                    $parser, $astCache, 0, 2, $visited
+                );
+                $allSources = array_merge($allSources, $chainSources);
+                $allSinks   = array_merge($allSinks, $chainSinks);
+            }
         }
 
         // Phase 4: Also collect file-level sources/sinks for files with NO entry points
@@ -186,6 +201,136 @@ class IRBuilder
         ];
 
         return $this->ir;
+    }
+
+    /**
+     * IR-02: Shallow call chain resolution.
+     *
+     * For each MethodCall node in $callExprNodes that targets $this->method(),
+     * look up the method body in the SymbolTable, run SourceSinkVisitor on it
+     * (inheriting $entryPointId), and recurse up to $maxDepth.
+     *
+     * Cycle detection uses $visited keyed by "ClassName::methodName".
+     *
+     * @param \PhpParser\Node[] $callExprNodes  Statement/expression nodes from callback body
+     * @param SymbolTable       $symbols
+     * @param string            $currentClass   Class context of the callback
+     * @param string            $entryPointId   Inherited from parent callback
+     * @param \PhpParser\Parser $parser         Re-use the parser instance
+     * @param array             $astCache       Map relPath → AST (populated by Phase 2)
+     * @param int               $depth          Current recursion depth (starts at 0)
+     * @param int               $maxDepth       Maximum depth before stopping (default 2)
+     * @param array             $visited        Passed by reference for cycle detection
+     * @return array{0: array, 1: array}        [sources[], sinks[]]
+     */
+    private function resolveCallChain(
+        array $callExprNodes,
+        SymbolTable $symbols,
+        string $currentClass,
+        string $entryPointId,
+        \PhpParser\Parser $parser,
+        array &$astCache,
+        int $depth = 0,
+        int $maxDepth = 2,
+        array &$visited = []
+    ): array {
+        if ($depth >= $maxDepth) return [[], []];
+
+        $additionalSources = [];
+        $additionalSinks   = [];
+
+        foreach ($callExprNodes as $callNode) {
+            if (!($callNode instanceof \PhpParser\Node\Expr\MethodCall)) continue;
+
+            // Only resolve $this->method() calls (Variable name === 'this')
+            if (!($callNode->var instanceof \PhpParser\Node\Expr\Variable)) continue;
+            if ($callNode->var->name !== 'this') continue;
+            if (!($callNode->name instanceof \PhpParser\Node\Identifier)) continue;
+
+            $methodName = $callNode->name->toString();
+            $key = "{$currentClass}::{$methodName}";
+            if (isset($visited[$key])) continue; // cycle detection
+            $visited[$key] = true;
+
+            $methodInfo = $symbols->findMethod($currentClass, $methodName);
+            if ($methodInfo === null) continue; // not resolvable → skip
+
+            // Get AST for the file containing this method
+            $relPath = $methodInfo['file'];
+            $methodAst = $astCache[$relPath] ?? null;
+            if ($methodAst === null) {
+                // File not yet parsed — load and cache it
+                $absPath = $this->pluginDir . '/' . $relPath;
+                if (!file_exists($absPath)) continue;
+                $code = file_get_contents($absPath);
+                if ($code === false) continue;
+                try {
+                    $methodAst = $parser->parse($code);
+                    if ($methodAst === null) continue;
+                    $nrt = new NodeTraverser();
+                    $nrt->addVisitor(new \PhpParser\NodeVisitor\NameResolver());
+                    $methodAst = $nrt->traverse($methodAst);
+                    $astCache[$relPath] = $methodAst;
+                } catch (\Throwable $e) {
+                    continue;
+                }
+            }
+
+            // Extract method body
+            $methodBody = $this->extractCallbackBody(
+                $methodAst,
+                ['type' => 'method', 'name' => $methodName, 'class' => $currentClass],
+                $methodInfo['line_start'],
+                $methodInfo['line_end']
+            );
+            if ($methodBody === null || $methodBody === []) continue;
+
+            // Run SourceSinkVisitor on resolved method body, inherit entry_point_id
+            $ssv = new SourceSinkVisitor($relPath, $entryPointId);
+            $ssvT = new NodeTraverser();
+            $ssvT->addVisitor($ssv);
+            $ssvT->traverse($methodBody);
+            $additionalSources = array_merge($additionalSources, $ssv->getSources());
+            $additionalSinks   = array_merge($additionalSinks,   $ssv->getSinks());
+
+            // Recurse into method body calls (depth+1)
+            $nestedCalls = $this->extractMethodCalls($methodBody);
+            [$nestedSrc, $nestedSink] = $this->resolveCallChain(
+                $nestedCalls, $symbols, $currentClass, $entryPointId,
+                $parser, $astCache, $depth + 1, $maxDepth, $visited
+            );
+            $additionalSources = array_merge($additionalSources, $nestedSrc);
+            $additionalSinks   = array_merge($additionalSinks,   $nestedSink);
+        }
+
+        return [$additionalSources, $additionalSinks];
+    }
+
+    /**
+     * IR-02: Walk a list of statement nodes and collect all MethodCall expression
+     * nodes at any nesting depth. Used to feed resolveCallChain() with the call
+     * sites present inside a callback or resolved method body.
+     *
+     * @param \PhpParser\Node[] $stmts
+     * @return \PhpParser\Node\Expr\MethodCall[]
+     */
+    private function extractMethodCalls(array $stmts): array
+    {
+        $calls = [];
+        $collector = new class extends \PhpParser\NodeVisitorAbstract {
+            public array $calls = [];
+            public function enterNode(\PhpParser\Node $node)
+            {
+                if ($node instanceof \PhpParser\Node\Expr\MethodCall) {
+                    $this->calls[] = $node;
+                }
+                return null;
+            }
+        };
+        $t = new NodeTraverser();
+        $t->addVisitor($collector);
+        $t->traverse($stmts);
+        return $collector->calls;
     }
 
     /**
