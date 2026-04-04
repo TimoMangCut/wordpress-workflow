@@ -150,6 +150,7 @@ class EPResolution:
     exact: bool
     suggested_entry_point_id: Optional[str]
     notes: str
+    store_ep: Optional[dict] = None  # G-05: write-leg EP for stored/cross-EP findings
 
 
 class SemanticValidator:
@@ -186,14 +187,21 @@ class SemanticValidator:
         semgrep: Optional[dict],
         plugin_dir: Optional[str],
         psalm_sarif: Optional[dict],
+        ir_supplement: Optional[dict] = None,
     ):
         self.ir = ir
         self.phase2 = phase2
         self.semgrep = semgrep or {}
         self.plugin_dir = plugin_dir
 
-        # ---- EP index ----
+        # ---- EP index (base IR + optional supplement for resolved_dynamic EPs) ----
         self.ep_by_id: Dict[str, dict] = {ep.get("id"): ep for ep in ir.get("entry_points", []) if ep.get("id")}
+        # G-05: merge supplement EPs (Agent D resolved_dynamic:<hash> entries)
+        if ir_supplement:
+            for ep in ir_supplement.get("entry_points", []):
+                ep_id = ep.get("id")
+                if ep_id and ep_id not in self.ep_by_id:
+                    self.ep_by_id[ep_id] = ep
 
         self.sources_by_ep: Dict[str, List[dict]] = {}
         self.sinks_by_ep: Dict[str, List[dict]] = {}
@@ -261,8 +269,25 @@ class SemanticValidator:
 
     def _resolve_entry_point(self, finding: dict) -> EPResolution:
         ep_id = (finding.get("entry_point_id") or "").strip()
+
+        # G-05: stored/cross-EP findings carry both store_entry_point_id (write-leg)
+        # and entry_point_id (load-leg, where the sink lives).
+        # Resolve BOTH legs so auth/guard checks can use each appropriately.
+        store_ep_id = (finding.get("store_entry_point_id") or "").strip()
+        store_ep: Optional[dict] = None
+        if store_ep_id:
+            store_ep = self.ep_by_id.get(store_ep_id)
+            # store_ep may be None if supplement not loaded yet; gate degrades gracefully
+
         if ep_id and ep_id in self.ep_by_id:
-            return EPResolution(ep=self.ep_by_id[ep_id], exact=True, suggested_entry_point_id=None, notes="entry_point_id exact")
+            return EPResolution(
+                ep=self.ep_by_id[ep_id],
+                exact=True,
+                suggested_entry_point_id=None,
+                notes="entry_point_id exact"
+                + (f"; store_entry_point_id={'resolved' if store_ep else 'unresolved'}" if store_ep_id else ""),
+                store_ep=store_ep,
+            )
 
         # Controlled fuzzy resolution: use file path + line proximity + sink match.
         f_file = normalize_plugin_rel_path(
@@ -318,10 +343,12 @@ class SemanticValidator:
                 ep=best[1],
                 exact=False,
                 suggested_entry_point_id=best[1].get("id"),
-                notes=f"fuzzy EP resolution (score={best[0]:.2f})",
+                notes=f"fuzzy EP resolution (score={best[0]:.2f})"
+                + (f"; store_entry_point_id={'resolved' if store_ep else 'unresolved'}" if store_ep_id else ""),
+                store_ep=store_ep,
             )
 
-        return EPResolution(ep=None, exact=False, suggested_entry_point_id=None, notes="no EP resolved")
+        return EPResolution(ep=None, exact=False, suggested_entry_point_id=None, notes="no EP resolved", store_ep=store_ep)
 
     # -----------------------------
     # Checks
@@ -682,7 +709,16 @@ class SemanticValidator:
         return 0.25, f"neither source nor sink matched in EP {ep_id}"
 
     def _check_auth_consistency(self, finding: dict, resolution: EPResolution) -> Tuple[Optional[float], str]:
-        ep = resolution.ep
+        # G-05: for stored/cross-EP findings, exploitability depends on write-leg auth.
+        # An unauthenticated store EP (ajax_nopriv) is far more severe than an admin-only one.
+        # Use store_ep (write-leg) when available; fall back to load-leg EP otherwise.
+        if resolution.store_ep is not None:
+            ep = resolution.store_ep
+            ep_source = "store_ep (write-leg)"
+        else:
+            ep = resolution.ep
+            ep_source = "ep (load-leg)"
+
         if ep is None:
             return 0.6, "EP unresolved → cannot disprove auth claim"
 
@@ -703,23 +739,29 @@ class SemanticValidator:
 
         expected = auth_map.get(ep_type)
         if expected is None:
-            return 0.8, f"EP type={ep_type} auth depends on permission_callback"
+            return 0.8, f"{ep_source}: EP type={ep_type} auth depends on permission_callback"
 
         if claimed == expected:
-            return 1.0, f"auth matches EP type ({ep_type} → {expected})"
+            return 1.0, f"auth matches {ep_source} type ({ep_type} → {expected})"
 
         # Conservative claims are okay: claiming more auth required than expected.
         order = ["none", "subscriber", "contributor", "author", "editor", "admin", "system"]
         try:
             if claimed in order and expected in order and order.index(claimed) > order.index(expected):
-                return 0.9, f"conservative auth claim ({claimed} > {expected})"
+                return 0.9, f"conservative auth claim ({claimed} > {expected}) [{ep_source}]"
         except Exception:
             pass
 
-        return 0.25, f"auth mismatch: EP type={ep_type} expects {expected}, finding claims {claimed}"
+        return 0.25, f"auth mismatch [{ep_source}]: EP type={ep_type} expects {expected}, finding claims {claimed}"
 
     def _check_guard_consistency(self, finding: dict, resolution: EPResolution) -> Tuple[Optional[float], str]:
-        """If finding claims missing guards, but IR sees effective guard, that's a contradiction."""
+        """If finding claims missing guards, but IR sees effective guard, that's a contradiction.
+
+        G-05: For stored/cross-EP findings, check guards on BOTH legs:
+        - Store-leg (write): needs nonce/capability guards (prevents unauthorized write)
+        - Load-leg (read+sink): needs output escaping guards (prevents XSS at render)
+        The most permissive leg determines the overall guard score.
+        """
         ep = resolution.ep
         if ep is None:
             return 0.6, "EP unresolved → cannot validate guards precisely"
@@ -728,22 +770,72 @@ class SemanticValidator:
         if not ep_id:
             return 0.6, "EP has no id"
 
-        guards = self.guards_by_ep.get(ep_id, [])
         reasoning = text_from_any(finding.get("reasoning")).lower()
-
         claims_no_nonce = ("no nonce" in reasoning) or ("missing nonce" in reasoning)
         claims_no_cap = ("no capability" in reasoning) or ("missing capability" in reasoning)
 
         # G-01: Three-state guard classification — is True / is None / is False (E4)
         # NEVER use truthy check: None and False are both falsy but have different semantics.
-        nonce_guards = [g for g in guards if g.get("type") == "nonce_check"]
-        cap_guards   = [g for g in guards if g.get("type") == "capability_check"]
-
         def _classify(guard_list):
             effective = [g for g in guard_list if g.get("is_effective") is True]
             unknown   = [g for g in guard_list if g.get("is_effective") is None]
             broken    = [g for g in guard_list if g.get("is_effective") is False]
             return effective, unknown, broken
+
+        def _score_guard_leg(leg_ep_id: str, leg_label: str) -> Tuple[float, str]:
+            """Score guard coverage for one EP leg."""
+            guards = self.guards_by_ep.get(leg_ep_id, [])
+            nonce_guards = [g for g in guards if g.get("type") == "nonce_check"]
+            cap_guards   = [g for g in guards if g.get("type") == "capability_check"]
+
+            nonce_eff, nonce_unk, nonce_brk = _classify(nonce_guards)
+            cap_eff,   cap_unk,   cap_brk   = _classify(cap_guards)
+
+            has_effective_nonce = bool(nonce_eff)
+            has_effective_cap   = bool(cap_eff)
+
+            if claims_no_nonce and has_effective_nonce:
+                return 0.0, f"contradiction [{leg_label}]: finding claims no nonce, IR has effective nonce guard"
+            if claims_no_cap and has_effective_cap:
+                return 0.0, f"contradiction [{leg_label}]: finding claims no capability, IR has effective cap guard"
+
+            if (not claims_no_nonce and not claims_no_cap) and (has_effective_nonce or has_effective_cap):
+                return 0.9, f"[{leg_label}] IR indicates guards present; finding does not claim missing guards"
+
+            all_effective = nonce_eff + cap_eff
+            all_unknown   = nonce_unk + cap_unk
+            all_broken    = nonce_brk + cap_brk
+
+            if all_effective:
+                return 0.9, f"[{leg_label}] confirmed effective guard"
+            if all_unknown:
+                funcs = [g.get("function_called", "?") for g in all_unknown]
+                return 0.6, f"[{leg_label}] potential custom guard (is_effective=null): {funcs}"
+            if all_broken:
+                return 0.2, f"[{leg_label}] guard detected but confirmed ineffective"
+            return 0.1, f"[{leg_label}] no guard detected"
+
+        # G-05: if store_ep resolved, check BOTH legs; take the minimum score
+        # (a finding is only as safe as its weakest leg)
+        if resolution.store_ep is not None:
+            store_ep_id = resolution.store_ep.get("id")
+            if store_ep_id:
+                store_score, store_note = _score_guard_leg(store_ep_id, "store-leg")
+                load_score,  load_note  = _score_guard_leg(ep_id, "load-leg")
+                # Contradiction on either leg is a hard failure
+                if store_score == 0.0:
+                    return 0.0, store_note
+                if load_score == 0.0:
+                    return 0.0, load_note
+                # Otherwise take minimum (worst-case leg determines overall guard score)
+                if store_score <= load_score:
+                    return store_score, f"stored/cross-EP — weakest leg: {store_note} | {load_note}"
+                return load_score, f"stored/cross-EP — weakest leg: {load_note} | {store_note}"
+
+        # Single-EP (non-stored) path — original logic
+        guards = self.guards_by_ep.get(ep_id, [])
+        nonce_guards = [g for g in guards if g.get("type") == "nonce_check"]
+        cap_guards   = [g for g in guards if g.get("type") == "capability_check"]
 
         nonce_eff, nonce_unk, nonce_brk = _classify(nonce_guards)
         cap_eff,   cap_unk,   cap_brk   = _classify(cap_guards)
@@ -756,11 +848,9 @@ class SemanticValidator:
         if claims_no_cap and has_effective_cap:
             return 0.0, "contradiction: finding claims no capability, IR has effective capability guard"
 
-        # If the finding claims a guard exists, but IR didn't detect, that's not a contradiction.
         if (not claims_no_nonce and not claims_no_cap) and (has_effective_nonce or has_effective_cap):
             return 0.9, "IR indicates guards present; finding does not claim missing guards"
 
-        # Three-state scoring for remaining cases
         all_effective = nonce_eff + cap_eff
         all_unknown   = nonce_unk + cap_unk
         all_broken    = nonce_brk + cap_brk
@@ -1162,7 +1252,16 @@ def main() -> int:
     psalm_sarif = load_json(str(psalm_path))
     plugin_dir = f"{plugins_dir}/{slug}" if os.path.isdir(f"{plugins_dir}/{slug}") else None
 
-    validator = SemanticValidator(ir, phase2, semgrep, plugin_dir, psalm_sarif)
+    # G-05: load optional IR supplement (Agent D resolved_dynamic EP entries).
+    # Supplement path: reports/phase1/<slug>-ir-supplement.json
+    # Gate functions normally if supplement is absent — Agent D may not be deployed yet.
+    ir_supplement_path = layout.phase1 / f"{slug}-ir-supplement.json"
+    ir_supplement = load_json(str(ir_supplement_path))
+    if ir_supplement:
+        supp_ep_count = len(ir_supplement.get("entry_points", []))
+        print(f"[INFO] IR supplement loaded: {ir_supplement_path} ({supp_ep_count} EPs)")
+
+    validator = SemanticValidator(ir, phase2, semgrep, plugin_dir, psalm_sarif, ir_supplement)
 
     findings = phase2.get("findings", []) or []
     validated = [validator.validate_finding(f) for f in findings]
