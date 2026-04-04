@@ -233,8 +233,13 @@ def main() -> None:
         "provider_map": {},
         # default_provider: used for any agent not listed in provider_map.
         # "codex" → Codex CLI (codex exec …)
-        # "claude" → Claude Code CLI (claude --print …)
+        # "claude" → Claude Code CLI (claude -p --dangerously-skip-permissions …)
         "default_provider": "codex",
+        # model_map: pin model per agent-id (only meaningful when provider="claude").
+        # Keys: agent-id.  Values: Claude model name (e.g. "claude-sonnet-4-5").
+        # Omit an agent to use the claude CLI's current default model.
+        # Example: {"agent-c": "claude-sonnet-4-5", "agent-d": "claude-sonnet-4-5"}
+        "model_map": {},
     }
     dispatch_out = os.path.join(args.output_dir, f"{slug}-dispatch.json")
     write_json(dispatch_out, dispatch)

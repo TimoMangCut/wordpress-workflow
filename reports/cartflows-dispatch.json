@@ -24,5 +24,6 @@
   "timeout_seconds": 600,
   "quota_account": "",
   "provider_map": {},
-  "default_provider": "codex"
+  "default_provider": "codex",
+  "model_map": {}
 }

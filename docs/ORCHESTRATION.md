@@ -7,10 +7,11 @@
 
 ## Overview
 
-The multi-agent pipeline distributes Phase 2 (LLM triage) across several Codex agents,
+The multi-agent pipeline distributes Phase 2 (LLM triage) across several agents,
 each responsible for a subset of entry-point groups (e.g., AJAX-unauth, AJAX-auth,
-shortcodes, REST, other). Outputs are merged by `merge_agent_outputs.py` and then
-consumed by the Phase 3 gate.
+shortcodes, REST, other). Provider is configurable per agent (Codex CLI or Claude
+Code CLI). Outputs are merged by `merge_agent_outputs.py` and then consumed by
+the Phase 3 gate.
 
 ```
 prepare_agent_inputs.py
@@ -19,17 +20,17 @@ prepare_agent_inputs.py
         ↓
 orchestrate-agents.sh <slug>
         ↓
-  codex run agent-a1 <slug>  ─┐
-  codex run agent-a2 <slug>   │  (up to --parallel-limit concurrent)
-  codex run agent-b  <slug>   │
-  codex run agent-c  <slug>  ─┘
+  agent-a1 [codex exec]  ─┐
+  agent-a2 [codex exec]   │  (serial by default; --parallel-limit N to increase)
+  agent-b  [codex exec]   │  (provider per-agent from dispatch provider_map)
+  agent-c  [claude -p]   ─┘
         ↓
-  <slug>-agent-*.json           (one file per agent)
+  <slug>-agent-*.json           (one file per agent, in reports/)
         ↓
 merge_agent_outputs.py <slug>
         ↓
-  <slug>-phase2-merged.json     (archive)
-  <slug>-phase2.json            (canonical — gate reads this)
+  reports/phase2/<slug>-phase2-merged.json     (archive)
+  reports/phase2/<slug>-phase2.json            (canonical — gate reads this)
         ↓
   <slug>-merge-ready            (sentinel, written by orchestrator)
         ↓
@@ -82,7 +83,7 @@ bash tools/bin/orchestrate-agents.sh <slug> --resume-missing-only # skip already
 
 **Step 4: Verify merge output**
 ```bash
-cat reports/<slug>-phase2.json | python3 -m json.tool > /dev/null && echo "Valid"
+cat reports/phase2/<slug>-phase2.json | python3 -m json.tool > /dev/null && echo "Valid"
 ```
 
 **Step 5: Gate + Report**
@@ -114,13 +115,18 @@ bash tools/bin/run-phase3.sh --slug <slug>
     "agent-c": "claude",
     "agent-d": "claude"
   },
-  "default_provider": "codex"
+  "default_provider": "codex",
+  "model_map": {
+    "agent-c": "claude-sonnet-4-5",
+    "agent-d": "claude-sonnet-4-5"
+  }
 }
 ```
 
 **Provider routing:**
 - `default_provider`: used for any agent not listed in `provider_map`. Values: `"codex"` (Codex CLI) | `"claude"` (Claude Code CLI).
 - `provider_map`: per-agent override. Leave empty (`{}`) to use `default_provider` for all agents.
+- `model_map`: optional per-agent model pin (only meaningful when provider is `"claude"`). If omitted for an agent, the Claude CLI's current default model is used. Recommended: set explicitly for reproducibility.
 - `quota_account`: optional string to tag which Codex account was used (for traceability across quota exhaustion events). Set via `CODEX_QUOTA_ACCOUNT` env var before running `prepare_agent_inputs.py`.
 
 ---
@@ -147,9 +153,9 @@ Options:
 
 | File | Description |
 |------|-------------|
-| `reports/<slug>-agent-{id}.json` | Raw output from each Codex agent |
-| `reports/<slug>-phase2-merged.json` | Merged archive (pre-verify) |
-| `reports/<slug>-phase2.json` | Canonical Phase 2 output (gate reads this) |
+| `reports/<slug>-agent-{id}.json` | Raw output from each agent |
+| `reports/phase2/<slug>-phase2-merged.json` | Merged archive (pre-verify) |
+| `reports/phase2/<slug>-phase2.json` | Canonical Phase 2 output (gate reads this) |
 | `reports/<slug>-merge-ready` | Sentinel — written after successful merge |
 | `reports/logs/<slug>-failures.json` | Failure log (see FAILURE-MODES.md) |
 | `reports/logs/<slug>-agent-{id}.log` | Per-agent stderr log |
@@ -162,8 +168,8 @@ After orchestration completes and `<slug>-merge-ready` is written, Claude Code
 may optionally review and correct the merged output:
 
 ```bash
-cp reports/<slug>-phase2.json reports/<slug>-phase2-pre-verify.json  # backup
-# Claude Code reviews and overwrites reports/<slug>-phase2.json
+cp reports/phase2/<slug>-phase2.json reports/phase2/<slug>-phase2-pre-verify.json  # backup
+# Claude Code reviews and overwrites reports/phase2/<slug>-phase2.json
 ```
 
 If verify fails or times out, the gate runs on the merged (unverified) output

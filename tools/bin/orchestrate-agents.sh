@@ -259,6 +259,23 @@ print(pm.get(sys.argv[2], default))
 }
 
 # ---------------------------------------------------------------------------
+# model_for_agent — reads agent-level model override from dispatch model_map
+# Dispatch format:
+#   "model_map": { "agent-c": "claude-sonnet-4-5", "agent-d": "claude-opus-4-5" }
+# Returns empty string if not set (caller uses provider CLI default).
+# Only meaningful for provider="claude".
+# ---------------------------------------------------------------------------
+model_for_agent() {
+  local agent="$1"
+  python3 -c "
+import json, sys
+d = json.load(open(sys.argv[1]))
+mm = d.get('model_map', {})
+print(mm.get(sys.argv[2], ''))
+" "$DISPATCH_FILE" "$agent"
+}
+
+# ---------------------------------------------------------------------------
 # Step 1: Read dispatch config
 # ---------------------------------------------------------------------------
 log_info "=== Multi-agent orchestrator starting for slug: $SLUG ==="
@@ -451,7 +468,7 @@ skill_set_file_for_agent() {
 # ---------------------------------------------------------------------------
 launch_agent() {
   local agent="$1"
-  local input_file out_file skill_set_file prompt_file agent_provider
+  local input_file out_file skill_set_file prompt_file agent_provider agent_model
 
   input_file=$(python3 -c "
 import json,sys
@@ -462,8 +479,9 @@ print(d.get('inputs',{}).get(sys.argv[2],''))
   out_file="$(agent_output_file "$agent")"
   skill_set_file="$(skill_set_file_for_agent "$agent")"
   agent_provider="$(provider_for_agent "$agent")"
+  agent_model="$(model_for_agent "$agent")"
 
-  log_info "Launching agent: $agent  provider=$agent_provider  input=$input_file  output=$out_file"
+  log_info "Launching agent: $agent  provider=$agent_provider  model=${agent_model:-<default>}  input=$input_file  output=$out_file"
 
   if [[ -z "$skill_set_file" || ! -f "$skill_set_file" ]]; then
     log_error "No SKILL SET file found for agent '$agent' (resolved: '$skill_set_file'). Skipping."
@@ -494,15 +512,46 @@ print(d.get('inputs',{}).get(sys.argv[2],''))
 
   # Launch via the appropriate provider CLI
   if [[ "$agent_provider" == "claude" ]]; then
+    # Claude Code CLI branch — hardened to match run-phase2.sh / phase3_llm_review.py contract:
+    #   -p / --print          non-interactive, print output
+    #   --dangerously-skip-permissions  bypass permission prompts
+    #   --output-format stream-json     machine-parseable streaming output
+    #   --model <model>       optional: pin model from dispatch model_map
+    # stdout is streamed through Python to extract final text content,
+    # matching the pattern established in run-phase2.sh:477-499.
+    local claude_cmd
+    claude_cmd=(claude -p --dangerously-skip-permissions --output-format stream-json)
+    if [[ -n "$agent_model" ]]; then
+      claude_cmd+=(--model "$agent_model")
+    fi
     AGENT_INPUT_FILE="$input_file" \
     AGENT_OUTPUT_FILE="$out_file" \
     AGENT_ID="$agent" \
     AGENT_SLUG="$SLUG" \
-    claude --print \
+    "${claude_cmd[@]}" \
       2>>"$LOGS_DIR/${SLUG}-${agent}.log" \
       < "$prompt_file" \
-      > "$LOGS_DIR/${SLUG}-${agent}-last-message.txt" \
-      &
+      | python3 -u - 2>>"$LOGS_DIR/${SLUG}-${agent}.log" \
+          > "$LOGS_DIR/${SLUG}-${agent}-last-message.txt" \
+<<'PYEOF' &
+import sys, json
+for raw in sys.stdin.buffer:
+    line = raw.decode("utf-8", errors="replace").rstrip("\n")
+    if not line:
+        continue
+    try:
+        obj = json.loads(line)
+    except Exception:
+        print(line, flush=True)
+        continue
+    t = obj.get("type", "")
+    if t == "content_block_delta":
+        delta = obj.get("delta", {})
+        if delta.get("type") == "text_delta":
+            print(delta.get("text", ""), end="", flush=True)
+    elif t == "message_stop":
+        print("", flush=True)
+PYEOF
   else
     # Default: codex exec
     AGENT_INPUT_FILE="$input_file" \
@@ -523,7 +572,8 @@ print(d.get('inputs',{}).get(sys.argv[2],''))
   state_set "$agent" "start"    "$(date +%s)"
   state_set "$agent" "status"   "running"
   state_set "$agent" "provider" "$agent_provider"
-  log_info "Agent '$agent' launched with PID $pid (provider=$agent_provider, prompt=$prompt_file)"
+  state_set "$agent" "model"    "$agent_model"
+  log_info "Agent '$agent' launched with PID $pid (provider=$agent_provider model=${agent_model:-<default>} prompt=$prompt_file)"
 }
 
 # ---------------------------------------------------------------------------
