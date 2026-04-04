@@ -81,17 +81,27 @@ For each anomaly in the IR:
 
 ## Output Rules
 
-### TP — required fields:
-- `entry_point_id` (from IR anomaly)
-- `anomaly_type` (the Rule code, e.g., `missing_nonce`)
-- `evidence_file` + `evidence_line` (from anomaly's `evidence` field)
-- `reasoning` — what was found in source, why exploitable, what defenses are absent
+> **Schema reference:** `contracts/agent-output.schema.json` — the merge script validates all findings against this schema. Fields listed here are what the schema enforces. Schema mismatch = merge rejection.
 
-### FP — required fields:
+### TP — required fields (schema-enforced via `allOf` conditional):
+- `entry_point_id` — from IR anomaly's `entry_point_id` field
+- `reasoning` — what was found in source, why exploitable, what defenses are absent (with `file:line` refs)
+- `source_file_path` — file where the user input enters (string)
+- `source_line_number` — line number of input source (integer)
+- `source_function` — function/variable at source point (string)
+- `sink_file_path` — file where input reaches dangerous operation (string)
+- `sink_line_number` — line number of sink (integer)
+- `sink_function` — function at sink (e.g., `echo`, `$wpdb->query`) (string)
+
+For anomaly findings, `source` = where user input is read; `sink` = where the anomaly's dangerous operation occurs. The anomaly's `evidence.file:evidence.line` is typically the **sink**. Trace back to find the **source**.
+
+`anomaly_type` (the Rule code, e.g., `missing_nonce`) — include in `reasoning`, not a schema field. Use `vuln_type` in the finding JSON to carry the anomaly class.
+
+### FP — required fields (schema-enforced):
 - `fp_reason` — what defense prevents exploitation
-- `fp_evidence` — `file:line` of the defense (must be verified in source, not inferred)
+- `fp_evidence` — object `{defense, file, line}` (must be verified in source, not inferred)
 
-### REVIEW — required fields:
+### REVIEW — required fields (schema-enforced):
 - `review_reason` — why uncertain AND what specific test or evidence would resolve this
 
 ---

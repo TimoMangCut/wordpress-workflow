@@ -138,10 +138,11 @@ For each unresolved hook in `unresolved_hooks[]`:
    - State confidence: `low`
    - Do NOT write to IR supplement (no resolved data to emit)
 
-5. **State confidence level** for every hook:
-   - `high` — found literal assignment; hook name is certain
-   - `medium` — inferred from naming convention or class structure; hook name is probable
-   - `low` — guessed from context; hook name is uncertain
+5. **State confidence level** for every hook (numeric `0.0–1.0` in JSON `confidence` field; explain in `reasoning`):
+   - `0.9` — found literal assignment; hook name is certain
+   - `0.6` — inferred from naming convention or class structure; hook name is probable
+   - `0.3` — guessed from context; hook name is uncertain
+   - `0.0` — cannot resolve
 
 ### Task 2: Coverage Gaps
 
@@ -177,20 +178,30 @@ For each entry in `coverage_gaps[]`:
 
 ## Output Rules
 
+> **Schema reference:** `contracts/agent-output.schema.json` — the merge script validates all findings against this. Fields listed here match schema enforcement.
+
 ### Resolved hook findings — required fields:
 - `entry_point_id`: `resolved_dynamic:<hash>` (computed per formula above)
-- `confidence`: `high` / `medium` / `low`
-- `resolved_hook_name`: the actual hook string after resolution
-- `resolution_trace`: how you traced the dynamic expression to the literal
-- Standard TP/FP/REVIEW fields depending on vulnerability verdict
+- `confidence`: numeric `0.0–1.0` per schema (`"type": "number", "minimum": 0, "maximum": 1`)
+  - Use `0.9` for high confidence (literal assignment found)
+  - Use `0.6` for medium confidence (inferred from naming/structure)
+  - Use `0.3` for low confidence (guessed from context)
+  - Include human-readable confidence assessment in `reasoning` (e.g., "Confidence: high — found literal assignment at constructor:14")
+- Standard TP/FP/REVIEW fields depending on vulnerability verdict (see TP requirements below)
+
+**TP resolved hook findings** additionally require (schema `allOf` conditional):
+- `source_file_path`, `source_line_number`, `source_function`
+- `sink_file_path`, `sink_line_number`, `sink_function`
+- `reasoning`
 
 ### Unresolved hook findings — required fields:
 - `entry_point_id`: can use `unresolved:<file>:<line>` format (no supplement entry)
-- `confidence`: `low`
+- `confidence`: `0.0` (cannot resolve = lowest confidence)
 - `review_reason`: "dynamic hook, resolution failed, manual trace required" + what was attempted
 
 ### Coverage gap findings:
 - Default verdict: **REVIEW**
+- `confidence`: numeric, typically `0.3`–`0.5` (lower confidence by nature)
 - Must include: why the gap exists, why code is (or might be) reachable, assumptions stated explicitly
 
 ---
@@ -199,7 +210,7 @@ For each entry in `coverage_gaps[]`:
 
 - [ ] Resolved hook ID uses `resolved_dynamic:<hash>` format with correct hash inputs?
 - [ ] IR supplement written with FULL format (entry_points + sources + sinks + guards)?
-- [ ] Confidence level stated (`high` / `medium` / `low`) for every hook?
+- [ ] Confidence is numeric `0.0–1.0` (not string labels: high=0.9, medium=0.6, low=0.3, unresolved=0.0)?
 - [ ] Unresolved hooks output REVIEW with `review_reason`?
 - [ ] Coverage gap findings default to REVIEW with explicit assumptions?
 - [ ] Sessions limited to 5-15 hooks (short and focused)?
