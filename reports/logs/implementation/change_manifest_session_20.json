@@ -44,6 +44,19 @@
   "test_command": "python3 -c \"import os; files=['tools/config/skill-set-agent-a.md','tools/config/skill-set-agent-b.md','tools/config/skill-set-agent-c.md','tools/config/skill-set-agent-d.md']; [print('OK:', f) if os.path.exists(f) else print('MISSING:', f) for f in files]\"",
   "test_result": "PASS: 4/4 files exist. 6/6 test cases verified: (1) skill-set-agent-a.md contains review_reason (5 occurrences). (2) skill-set-agent-b.md contains 'entry_point_id MUST = load_entry_point_id' (1 occurrence). (3) skill-set-agent-b.md contains store_entry_point_id (2 occurrences). (4) skill-set-agent-d.md contains resolved_dynamic:<hash> format (9 occurrences). (5) skill-set-agent-d.md contains ir-supplement path reference. (6) skill-set-agent-d.md contains confidence levels high/medium/low (2 occurrences).",
   "discovered_issues": [],
+  "post_review": {
+    "reviewer": "Codex",
+    "date": "2026-04-04",
+    "findings": [
+      "P1-A: Agent C TP output rules listed only entry_point_id + anomaly_type + evidence_file + evidence_line + reasoning. Schema allOf conditional for verdict=TP requires source_file_path, source_line_number, source_function, sink_file_path, sink_line_number, sink_function. Any Agent C TP output following old rules would fail jsonschema.validate() in merge script.",
+      "P1-B: Agent D confidence field specified as string labels (high/medium/low) in Output Rules and Tasks section. Schema defines confidence as numeric 0..1. String value 'low' fails with ''low' is not of type 'number''."
+    ],
+    "actions_taken": {
+      "P1-A": "FIXED — skill-set-agent-c.md Output Rules section rewritten to list all 8 schema-enforced TP fields. Added schema reference note at top of section. Clarified anomaly_type goes in reasoning/vuln_type.",
+      "P1-B": "FIXED — skill-set-agent-d.md: all string labels replaced with numeric equivalents (high=0.9, medium=0.6, low=0.3, unresolved=0.0) in Output Rules, Tasks section, and Quality Checklist. Prose description of confidence level remains in reasoning guidance."
+    },
+    "post_review_test_result": "PASS: jsonschema.validate() — (1) Agent C TP with source/sink fields validates OK. (2) Agent D REVIEW with confidence=0.6 validates OK. (3) confidence='low' correctly rejected: ''low' is not of type 'number''."
+  },
   "next_session": "session_21",
   "notes": "Docs-only session. No PHP, Python, or Bash files modified. 4 new Markdown files created in tools/config/. All spec constraints from critical_notes are embedded in respective SKILL SET files."
 }
