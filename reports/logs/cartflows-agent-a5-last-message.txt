@@ -1,0 +1,5 @@
+Wrote the A5 report to [cartflows-agent-a5.json](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/cartflows-agent-a5.json).
+
+Result: 5 `FP` entries, 0 `TP`, 0 `REVIEW`. The resolved signals were the Tutor/ LearnDash course redirects, the analytics local include path, the static step-taxonomy bootstrap, and the version-migration option writes. I also recorded 3 reviewed-safe coverage areas in `negative_findings`.
+
+Validation passed with `jq empty` plus a schema-oriented field check for all FP records. The runtime-referenced `reports/cartflows-threat-context.json` file was not present, so this pass relied on the project docs, IR slice, Semgrep slice, and source verification.

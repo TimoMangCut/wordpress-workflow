@@ -1,0 +1,7 @@
+Wrote [backwpup-agent-a2.json](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/backwpup-agent-a2.json). It passes JSON parsing and the schema in [agent-output.schema.json](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/contracts/agent-output.schema.json).
+
+Confirmed findings in the report:
+- `wp_ajax_backwpup_debug_info`: authenticated debug info disclosure to any logged-in user.
+- `admin_post_backwpup`: onboarding branch only checks `backwpup`, so low-privileged BackWPup roles can modify onboarding backup configuration while onboarding is active.
+
+The remaining AJAX routes were marked FP after source verification, and `admin_post_backwpup_support` remains REVIEW because the Pro callback body is not present in this source tree.

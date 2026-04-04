@@ -1,0 +1,5 @@
+Wrote the A4 output to [backwpup-agent-a4.json](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/backwpup-agent-a4.json).
+
+Result: no `shortcode_block` findings for BackWPup 5.6.7. The IR slice [backwpup-ir-slice-shortcode.json](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/backwpup-ir-slice-shortcode.json) has zero entry points, the semgrep slice [backwpup-semgrep-filtered-shortcode.json](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/backwpup-semgrep-filtered-shortcode.json) has zero results, and direct source searches found no `add_shortcode()`, `register_block_type()`, `render_callback`, `block-renderer`, or `ServerSideRender` registrations under `plugins/backwpup/`.
+
+The JSON validates against [agent-output.schema.json](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/contracts/agent-output.schema.json).

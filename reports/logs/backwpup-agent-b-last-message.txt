@@ -1,0 +1,3 @@
+Wrote [backwpup-agent-b.json](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/backwpup-agent-b.json).
+
+No Agent B stored/cross-EP finding was confirmed for `backwpup`. The report records secure coverage for site/user-meta flows, `backwpup_jobs` write→read flows, and the second-order SQLi pass. I verified the file parses as JSON with `jq`; I did not run a separate schema validator because this environment does not have Node installed.

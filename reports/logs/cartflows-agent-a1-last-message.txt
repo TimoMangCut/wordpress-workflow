@@ -1,0 +1,8 @@
+Wrote [cartflows-agent-a1.json](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/cartflows-agent-a1.json). It contains 2 TPs for this `ajax_nopriv` group: unauthenticated upload of whitelisted files via `wcf_upload_checkout_file`, and low-severity email enumeration via `wcf_check_email_exists`. The coupon/cart/login handlers were kept in `negative_findings` after refutation. I validated the output with `jq` and against [agent-output.schema.json](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/contracts/agent-output.schema.json).
+
+The referenced threat-context artifact was not present under `reports/`, so I kept the JSON focused on code-proven exploitability and did not force bounty-eligibility flags.
+
+Sources used for WordPress behavior verification:
+- `wp_send_json()` terminates AJAX execution: https://developer.wordpress.org/reference/functions/wp_send_json/
+- Guest nonces are shared for logged-out users and are not access control: https://developer.wordpress.org/apis/security/nonces/
+- `wp_check_filetype_and_ext()` behavior: https://developer.wordpress.org/reference/functions/wp_check_filetype_and_ext/

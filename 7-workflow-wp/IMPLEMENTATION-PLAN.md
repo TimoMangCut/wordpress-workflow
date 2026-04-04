@@ -119,7 +119,7 @@ INFRA      [x] Session 15 — Schema contracts (contracts/*.schema.json)   <- 20
 SKILL SETS [ ] Session 20 — SKILL SETs Agents A-D
            [ ] Session 21 — SKILL SET Claude Code Verify
 DEPLOY     [ ] Session 22 — Step 4 Benchmark → USER REVIEW ④
-           [ ] Session 23 — Open Decisions finalize + Wave 3 impact re-run
+           [x] Session 23 — First multi-agent pipeline run (Wave 4, S1+S2)   ← 2026-04-05
 ```
 
 ### Dependency graph (PHẢI đọc trước khi bắt đầu session)
@@ -1218,7 +1218,8 @@ Trong `phase3_gate.py`:
 [x] Session 20: SKILL SETs Agents A-D   ← 2026-04-04
 [x] Session 21: SKILL SET Claude Code Verify   ← 2026-04-04
 [x] Session 22: Step 4 Benchmark (→ USER REVIEW ④)   ← 2026-04-04
-Session 23: Open Decisions finalize + Wave 3 impact re-run + tuning
+[x] Session 23: First multi-agent pipeline run — Wave 4 S1+S2 for 3 benchmark plugins   ← 2026-04-05
+Session 24: Pipeline fixes + Open Decisions lock + Wave 4 agents C+D completion
 ```
 
 Details sẽ được spec-out khi đến thời điểm (sau Session 19).

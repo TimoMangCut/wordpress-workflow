@@ -1,0 +1,8 @@
+Wrote the A3 artifact to [cartflows-agent-a3.json](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/cartflows-agent-a3.json).
+
+This slice ended with 16 `FP` findings and no `TP`/`REVIEW`. The decisive refutations were:
+- every CartFlows REST route in this slice has an effective `permission_callback`
+- non-admin roles default to `no_access` for CartFlows capabilities unless an administrator explicitly delegates them
+- the unresolved NPS routes resolve to callbacks that require `manage_options` and a valid `wp_rest` nonce before any write or outbound request
+
+I validated the output with `jq` and against [agent-output.schema.json](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/contracts/agent-output.schema.json). `reports/cartflows-threat-context.json` was not present, so the conclusions are narrowed to source-visible evidence in the slice and referenced plugin code.
