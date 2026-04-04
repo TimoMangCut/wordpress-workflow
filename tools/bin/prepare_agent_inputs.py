@@ -236,9 +236,10 @@ def main() -> None:
         # "claude" → Claude Code CLI (claude -p --dangerously-skip-permissions …)
         "default_provider": "codex",
         # model_map: pin model per agent-id (only meaningful when provider="claude").
-        # Keys: agent-id.  Values: Claude model name (e.g. "claude-sonnet-4-5").
+        # Keys: agent-id.  Values: Claude model name.
+        # Source of truth: .claude/settings.local.json CLAUDE_MODEL = "claude-sonnet-4.6"
         # Omit an agent to use the claude CLI's current default model.
-        # Example: {"agent-c": "claude-sonnet-4-5", "agent-d": "claude-sonnet-4-5"}
+        # Example: {"agent-c": "claude-sonnet-4.6", "agent-d": "claude-sonnet-4.6"}
         "model_map": {},
     }
     dispatch_out = os.path.join(args.output_dir, f"{slug}-dispatch.json")

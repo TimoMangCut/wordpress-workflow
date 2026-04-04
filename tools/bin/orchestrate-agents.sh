@@ -262,9 +262,10 @@ print(pm.get(sys.argv[2], default))
 # ---------------------------------------------------------------------------
 # model_for_agent — reads agent-level model override from dispatch model_map
 # Dispatch format:
-#   "model_map": { "agent-c": "claude-sonnet-4-5", "agent-d": "claude-opus-4-5" }
+#   "model_map": { "agent-c": "claude-sonnet-4.6", "agent-d": "claude-sonnet-4.6" }
 # Returns empty string if not set (caller uses provider CLI default).
 # Only meaningful for provider="claude".
+# Source of truth: .claude/settings.local.json CLAUDE_MODEL = "claude-sonnet-4.6"
 # ---------------------------------------------------------------------------
 model_for_agent() {
   local agent="$1"

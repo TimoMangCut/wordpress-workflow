@@ -119,8 +119,8 @@ bash tools/bin/run-phase3.sh --slug <slug>
   },
   "default_provider": "codex",
   "model_map": {
-    "agent-c": "claude-sonnet-4-5",
-    "agent-d": "claude-sonnet-4-5"
+    "agent-c": "claude-sonnet-4.6",
+    "agent-d": "claude-sonnet-4.6"
   }
 }
 ```
