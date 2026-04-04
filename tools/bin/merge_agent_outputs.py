@@ -431,7 +431,8 @@ def _collect_input_files(args: argparse.Namespace, project_root: Path) -> list[P
     slug = args.slug or args.slug_flag
     if slug and not files:
         reports_dir = project_root / "reports"
-        for agent_id in ("a1", "a2", "b", "c", "d"):
+        # Enumerate a1-a9 to cover all Agent A sub-agents, plus b, c, d
+        for agent_id in ("a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "a9", "b", "c", "d"):
             candidate = reports_dir / f"{slug}-agent-{agent_id}.json"
             if candidate.exists():
                 files.append(candidate)

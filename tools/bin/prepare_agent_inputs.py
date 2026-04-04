@@ -215,12 +215,17 @@ def main() -> None:
 
     agents_list = agent_a_ids + ["agent-b", "agent-c", "agent-d"]
 
+    import os as _os
     dispatch = {
         "slug": slug,
         "agents": agents_list,
         "inputs": inputs,
         "source_dir": f"plugins/{slug}/",
         "timeout_seconds": 600,
+        # quota_account: set CODEX_QUOTA_ACCOUNT env var before running orchestrator
+        # to record which Codex account was used (helps debug cross-account quota issues).
+        # Leave empty string if not provided.
+        "quota_account": _os.environ.get("CODEX_QUOTA_ACCOUNT", ""),
     }
     dispatch_out = os.path.join(args.output_dir, f"{slug}-dispatch.json")
     write_json(dispatch_out, dispatch)

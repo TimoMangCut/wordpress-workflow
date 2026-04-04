@@ -219,10 +219,13 @@ log_info "Dispatch config valid. Parsing..."
 DISPATCH_SLUG=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(d['slug'])" "$DISPATCH_FILE")
 DISPATCH_TIMEOUT=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(d.get('timeout_seconds', 900))" "$DISPATCH_FILE")
 SOURCE_DIR=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(d.get('source_dir', ''))" "$DISPATCH_FILE")
+QUOTA_ACCOUNT=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(d.get('quota_account','') or '')" "$DISPATCH_FILE")
+# Runtime override: CODEX_QUOTA_ACCOUNT env var wins over dispatch value
+QUOTA_ACCOUNT="${CODEX_QUOTA_ACCOUNT:-$QUOTA_ACCOUNT}"
 TIMEOUT_SECONDS="${TIMEOUT_OVERRIDE:-$DISPATCH_TIMEOUT}"
 
 log_info "slug from dispatch: $DISPATCH_SLUG"
-log_info "timeout: ${TIMEOUT_SECONDS}s | parallel-limit: $PARALLEL_LIMIT | source_dir: $SOURCE_DIR"
+log_info "timeout: ${TIMEOUT_SECONDS}s | parallel-limit: $PARALLEL_LIMIT | source_dir: $SOURCE_DIR | quota_account: ${QUOTA_ACCOUNT:-(not set)}"
 
 if [[ "$DISPATCH_SLUG" != "$SLUG" ]]; then
   log_warn "Slug mismatch: CLI arg '$SLUG' vs dispatch config '$DISPATCH_SLUG'. Using CLI arg."
@@ -273,6 +276,40 @@ if [[ ${#AGENTS_TO_RUN[@]} -eq 0 ]]; then
   log_warn "No agents have valid inputs. Nothing to run."
   flush_failures
   exit 0
+fi
+
+# ---------------------------------------------------------------------------
+# Preflight: quota probe — single trivial codex exec before committing full run
+# Catches quota exhaustion early so all 8 agent slots are not wasted.
+# Skip by setting SKIP_QUOTA_PROBE=1 in environment.
+# ---------------------------------------------------------------------------
+if [[ "${SKIP_QUOTA_PROBE:-0}" != "1" ]]; then
+  log_info "Preflight: probing Codex quota before launching agents..."
+  PROBE_OUT=$(mktemp /tmp/orchestrate-probe-XXXXXX.json)
+  PROBE_ERR=$(mktemp /tmp/orchestrate-probe-err-XXXXXX.txt)
+  # Send minimal prompt — just ask for valid JSON output
+  echo '{"probe": true, "task": "reply only with: {\"ok\":true}"}' \
+    | codex exec \
+        --dangerously-bypass-approvals-and-sandbox \
+        -C "$REPO_ROOT" \
+        --output-last-message "$PROBE_OUT" \
+        2>"$PROBE_ERR" || true
+
+  # Check for quota-exhausted signal in stderr
+  if grep -qi "usage limit\|usage exhausted\|rate limit\|quota" "$PROBE_ERR" 2>/dev/null; then
+    PROBE_ERR_TEXT=$(cat "$PROBE_ERR")
+    log_error "Preflight FAILED: Codex quota exhausted."
+    log_error "Error output: $PROBE_ERR_TEXT"
+    log_error "Aborting — no agents launched. Retry after quota reset."
+    append_failure "phase2" "preflight" "quota_exhausted" "0" "aborted" \
+      "Codex quota probe failed before any agent launched: $PROBE_ERR_TEXT"
+    flush_failures
+    rm -f "$PROBE_OUT" "$PROBE_ERR"
+    exit 2
+  fi
+
+  log_info "Preflight quota probe: OK"
+  rm -f "$PROBE_OUT" "$PROBE_ERR"
 fi
 
 # ---------------------------------------------------------------------------
