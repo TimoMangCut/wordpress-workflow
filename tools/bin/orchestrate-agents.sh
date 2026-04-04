@@ -446,8 +446,23 @@ log_info "Failed:    ${#FAILED_AGENTS[@]} agent(s)"
 # ---------------------------------------------------------------------------
 if [[ ${#OUTPUT_FILES[@]} -eq 0 ]]; then
   log_error "All agents failed. Falling back to single-agent Phase 2 pipeline."
-  append_failure "phase2" "ALL" "all_agents_failed" "0" "fallback_single_agent" \
-    "All agents failed — invoking run-phase2.sh $SLUG (single-agent fallback). Set multi_agent_fallback=true in manifest."
+  # Write structured multi_agent_fallback field in failure log so downstream
+  # manifest tooling can detect it without text-parsing the impact string.
+  FAILURES_JSON_ARRAY=$(python3 -c "
+import json, sys
+arr = json.loads(sys.argv[1])
+arr.append({
+  'phase':                'phase2',
+  'agent':                'ALL',
+  'failure_type':         'all_agents_failed',
+  'timestamp':            __import__('datetime').datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
+  'retry_count':          0,
+  'resolution':           'fallback_single_agent',
+  'multi_agent_fallback': True,
+  'impact':               'All agents failed — invoking run-phase2.sh $SLUG (single-agent fallback).',
+})
+print(json.dumps(arr, indent=2))
+" "$FAILURES_JSON_ARRAY")
   flush_failures
 
   PHASE2_SCRIPT="$SCRIPT_DIR/run-phase2.sh"
@@ -456,8 +471,11 @@ if [[ ${#OUTPUT_FILES[@]} -eq 0 ]]; then
     exit 2
   fi
   log_info "Invoking fallback: bash $PHASE2_SCRIPT $SLUG"
+  # Disable set -e around the fallback call so we control the exit code ourselves.
+  set +e
   bash "$PHASE2_SCRIPT" "$SLUG"
   fallback_exit=$?
+  set -e
   if [[ $fallback_exit -ne 0 ]]; then
     log_error "Single-agent fallback failed (exit=$fallback_exit)."
     exit 2
@@ -467,7 +485,7 @@ if [[ ${#OUTPUT_FILES[@]} -eq 0 ]]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Step 4: Merge
+# Step 4: Merge — pass full expected-agents list so agents_missing is populated
 # ---------------------------------------------------------------------------
 log_info "=== Step 4: Calling merge script ==="
 if [[ ! -f "$MERGE_SCRIPT" ]]; then
@@ -475,8 +493,16 @@ if [[ ! -f "$MERGE_SCRIPT" ]]; then
   exit 1
 fi
 
-log_info "Running: python3 $MERGE_SCRIPT $SLUG"
-if ! python3 "$MERGE_SCRIPT" "$SLUG"; then
+# Build --expected-agents args from the full runnable agent list (includes failed ones).
+# merge_agent_outputs.py uses this to diff against agents_seen and populate agents_missing.
+EXPECTED_AGENTS_ARGS=""
+for agent in "${AGENTS_TO_RUN[@]}"; do
+  EXPECTED_AGENTS_ARGS="$EXPECTED_AGENTS_ARGS $agent"
+done
+
+log_info "Running: python3 $MERGE_SCRIPT $SLUG --expected-agents${EXPECTED_AGENTS_ARGS}"
+# shellcheck disable=SC2086
+if ! python3 "$MERGE_SCRIPT" "$SLUG" --expected-agents $EXPECTED_AGENTS_ARGS; then
   log_error "merge_agent_outputs.py failed for slug '$SLUG'."
   append_failure "phase2" "merge" "merge_failed" "0" "aborted" \
     "merge_agent_outputs.py returned non-zero exit code."
