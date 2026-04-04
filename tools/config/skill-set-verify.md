@@ -106,14 +106,21 @@ After resolution, output the corrected finding with the resolved `verdict`.
 
 For findings NOT in your spot-check or conflict set, scan for obvious errors:
 
+Hard errors → flag as `malformed` (schema violation, flag for re-run):
 - `verdict` field missing or not one of `TP`, `FP`, `REVIEW`
-- `entry_point_id` absent on a `TP` finding (schema requires it for TP; REVIEW and FP do not require it)
-- `reasoning` is empty or less than 20 characters on a `TP` or `REVIEW` finding
+- `entry_point_id` absent on a `TP` finding (schema requires it for TP)
+- `reasoning` absent or less than 20 characters on a `TP` finding (schema requires reasoning for TP)
+- `review_reason` absent on a `REVIEW` finding (schema requires review_reason for REVIEW)
+- `fp_reason` absent on a `FP` finding (schema requires fp_reason for FP)
 - `sink_file_path` or `source_file_path` is a non-PHP file in a context
   where PHP is expected (e.g., `.js`, `.css` as a sink for SQL injection)
 
-Flag these findings as `malformed`. Do not attempt to repair them — note them
-for re-run.
+Soft quality signals → note in `summary.notes`, do NOT flag as malformed:
+- `reasoning` absent or short on a `REVIEW` finding (schema does not require reasoning
+  for REVIEW — only review_reason is required; short/absent reasoning is acceptable
+  if review_reason is present and explains the uncertainty)
+
+Do not attempt to repair malformed findings — note them for re-run.
 
 ---
 
