@@ -145,7 +145,24 @@ Options:
   --dispatch-file PATH     Path to dispatch config JSON
   --resume-missing-only    Skip agents whose valid output file already exists
   --help                   Show usage message
+
+Environment variables:
+  SKIP_QUOTA_PROBE=1       Skip both preflight probes (Codex + Claude).
+                           Use only when quota/auth is confirmed healthy.
+  CODEX_QUOTA_ACCOUNT      Codex account identifier logged in failures/ledger.
 ```
+
+### Preflight probes
+
+The orchestrator runs two preflight checks before launching agents:
+
+| Probe | When active | What it checks |
+|-------|-------------|----------------|
+| **3a Codex** | Any pending agent has `provider=codex` | `codex exec` trivial prompt; catches quota exhaustion before first launch |
+| **3b Claude** | Any pending agent has `provider=claude` | `claude` CLI on PATH + auth OK + model accessible; aborts on failure |
+
+Both probes are skipped by `SKIP_QUOTA_PROBE=1`. Both use `cwd=$REPO_ROOT` and
+share the same failure log format.
 
 ---
 

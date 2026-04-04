@@ -18,7 +18,8 @@
 # Pipeline:
 #   1. Read reports/<slug>-dispatch.json
 #   2. [Optional] Skip agents with valid existing output (--resume-missing-only)
-#   3. Preflight quota probe (codex exec trivial prompt)
+#   3a. Preflight quota probe (codex exec trivial prompt) — Codex agents only
+#   3b. Preflight Claude probe (claude -p trivial prompt) — Claude agents only
 #   4. Launch agents serially by default (--parallel-limit 1), or in batches
 #   5. Poll each agent for output file existence + valid JSON
 #   6. Call python3 tools/bin/merge_agent_outputs.py <slug>
@@ -396,7 +397,7 @@ if [[ ${#AGENTS_PENDING[@]} -eq 0 ]]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Step 3: Preflight quota probe (Codex only)
+# Step 3a: Preflight quota probe (Codex only)
 # Runs a trivial codex exec to catch quota exhaustion before committing the run.
 # Skip by setting SKIP_QUOTA_PROBE=1.
 # If agent routing means no Codex agents in AGENTS_PENDING, skip probe automatically.
@@ -442,6 +443,76 @@ elif [[ "${SKIP_QUOTA_PROBE:-0}" == "1" ]]; then
   log_info "Preflight quota probe: SKIPPED (SKIP_QUOTA_PROBE=1)"
 else
   log_info "Preflight quota probe: SKIPPED (no Codex agents in pending list)"
+fi
+
+# ---------------------------------------------------------------------------
+# Step 3b: Preflight Claude check
+# If any pending agent uses provider=claude, verify:
+#   1. claude CLI is on PATH
+#   2. claude responds (auth OK, model accessible)
+# Runs claude -p --dangerously-skip-permissions with a trivial prompt.
+# If model_map has an entry for any claude agent, probe with that model.
+# cwd is pinned to $REPO_ROOT to match launch_agent() behaviour.
+# Skip by setting SKIP_QUOTA_PROBE=1 (same flag as Codex probe).
+# ---------------------------------------------------------------------------
+NEEDS_CLAUDE=0
+CLAUDE_PROBE_MODEL=""
+for _preflight_agent in "${AGENTS_PENDING[@]}"; do
+  _prov="$(provider_for_agent "$_preflight_agent")"
+  if [[ "$_prov" == "claude" ]]; then
+    NEEDS_CLAUDE=1
+    _m="$(model_for_agent "$_preflight_agent")"
+    if [[ -n "$_m" && -z "$CLAUDE_PROBE_MODEL" ]]; then
+      CLAUDE_PROBE_MODEL="$_m"
+    fi
+  fi
+done
+
+if [[ "${SKIP_QUOTA_PROBE:-0}" != "1" ]] && [[ "$NEEDS_CLAUDE" -eq 1 ]]; then
+  log_info "Preflight: probing Claude CLI (model=${CLAUDE_PROBE_MODEL:-<default>})..."
+
+  if ! command -v claude >/dev/null 2>&1; then
+    log_error "Preflight FAILED: 'claude' CLI not found on PATH."
+    append_failure "phase2" "preflight-claude" "claude_cli_missing" "0" "aborted" \
+      "claude CLI not found on PATH. Install Claude Code CLI." \
+      "claude" "$QUOTA_ACCOUNT" "127" ""
+    flush_failures
+    exit 2
+  fi
+
+  _CLAUDE_PROBE_ERR="$(mktemp /tmp/orchestrate-claude-probe-err-XXXXXX.txt)"
+  _CLAUDE_PROBE_OUT="$(mktemp /tmp/orchestrate-claude-probe-XXXXXX.txt)"
+  _CLAUDE_PROBE_EXIT=0
+  _CLAUDE_PROBE_CMD=(claude -p --dangerously-skip-permissions --output-format stream-json)
+  if [[ -n "$CLAUDE_PROBE_MODEL" ]]; then
+    _CLAUDE_PROBE_CMD+=(--model "$CLAUDE_PROBE_MODEL")
+  fi
+  (
+    cd "$REPO_ROOT"
+    echo 'Reply with exactly: {"ok":true}' \
+      | "${_CLAUDE_PROBE_CMD[@]}" >"$_CLAUDE_PROBE_OUT" 2>"$_CLAUDE_PROBE_ERR"
+  ) || _CLAUDE_PROBE_EXIT=$?
+
+  _CLAUDE_PROBE_ERR_TEXT="$(head -c 500 "$_CLAUDE_PROBE_ERR" 2>/dev/null || true)"
+
+  if [[ "$_CLAUDE_PROBE_EXIT" -ne 0 ]]; then
+    log_error "Preflight FAILED: Claude CLI probe exited $CLAUDE_PROBE_EXIT (model=${CLAUDE_PROBE_MODEL:-<default>})."
+    log_error "stderr: $_CLAUDE_PROBE_ERR_TEXT"
+    log_error "Aborting — fix Claude auth/model and retry."
+    append_failure "phase2" "preflight-claude" "claude_preflight_failed" "0" "aborted" \
+      "Claude CLI probe failed (exit=$_CLAUDE_PROBE_EXIT, model=${CLAUDE_PROBE_MODEL:-<default>}). Check auth and model access." \
+      "claude" "$QUOTA_ACCOUNT" "$_CLAUDE_PROBE_EXIT" "$_CLAUDE_PROBE_ERR_TEXT"
+    flush_failures
+    rm -f "$_CLAUDE_PROBE_OUT" "$_CLAUDE_PROBE_ERR"
+    exit 2
+  fi
+
+  log_info "Preflight Claude probe: OK (exit=$_CLAUDE_PROBE_EXIT model=${CLAUDE_PROBE_MODEL:-<default>})"
+  rm -f "$_CLAUDE_PROBE_OUT" "$_CLAUDE_PROBE_ERR"
+elif [[ "${SKIP_QUOTA_PROBE:-0}" == "1" ]]; then
+  log_info "Preflight Claude probe: SKIPPED (SKIP_QUOTA_PROBE=1)"
+else
+  log_info "Preflight Claude probe: SKIPPED (no Claude agents in pending list)"
 fi
 
 # ---------------------------------------------------------------------------
@@ -517,6 +588,8 @@ print(d.get('inputs',{}).get(sys.argv[2],''))
     #   --dangerously-skip-permissions  bypass permission prompts
     #   --output-format stream-json     machine-parseable streaming output
     #   --model <model>       optional: pin model from dispatch model_map
+    # cwd is pinned to $REPO_ROOT so relative paths in the prompt (e.g. reports/…)
+    # resolve correctly regardless of how the caller launched the script.
     # stdout is streamed through Python to extract final text content,
     # matching the pattern established in run-phase2.sh:477-499.
     local claude_cmd
@@ -524,16 +597,18 @@ print(d.get('inputs',{}).get(sys.argv[2],''))
     if [[ -n "$agent_model" ]]; then
       claude_cmd+=(--model "$agent_model")
     fi
-    AGENT_INPUT_FILE="$input_file" \
-    AGENT_OUTPUT_FILE="$out_file" \
-    AGENT_ID="$agent" \
-    AGENT_SLUG="$SLUG" \
-    "${claude_cmd[@]}" \
-      2>>"$LOGS_DIR/${SLUG}-${agent}.log" \
-      < "$prompt_file" \
-      | python3 -u - 2>>"$LOGS_DIR/${SLUG}-${agent}.log" \
-          > "$LOGS_DIR/${SLUG}-${agent}-last-message.txt" \
-<<'PYEOF' &
+    (
+      cd "$REPO_ROOT"
+      AGENT_INPUT_FILE="$input_file" \
+      AGENT_OUTPUT_FILE="$out_file" \
+      AGENT_ID="$agent" \
+      AGENT_SLUG="$SLUG" \
+      "${claude_cmd[@]}" \
+        2>>"$LOGS_DIR/${SLUG}-${agent}.log" \
+        < "$prompt_file" \
+        | python3 -u - 2>>"$LOGS_DIR/${SLUG}-${agent}.log" \
+            > "$LOGS_DIR/${SLUG}-${agent}-last-message.txt" \
+<<'PYEOF'
 import sys, json
 for raw in sys.stdin.buffer:
     line = raw.decode("utf-8", errors="replace").rstrip("\n")
@@ -552,6 +627,7 @@ for raw in sys.stdin.buffer:
     elif t == "message_stop":
         print("", flush=True)
 PYEOF
+    ) &
   else
     # Default: codex exec
     AGENT_INPUT_FILE="$input_file" \
