@@ -33,7 +33,7 @@
       "functions_changed": [],
       "lines_affected": "1-185",
       "behavior_before": "did not exist",
-      "behavior_after": "Per-condition failure handling reference: timeout (1x retry), invalid JSON (reject + continue), missing output (skip + continue), missing input/empty IR slice (skip at start), all agents failed (fallback to run-phase2.sh + exit 2 if fallback fails), merge failure (exit 1, no sentinel), high conflict rate (merge script responsibility), Claude Code verify fail (out of scope — Session 21)."
+      "behavior_after": "Per-condition failure handling reference: timeout (1x retry), invalid JSON (reject + continue), missing output (skip + continue), missing input/empty IR slice (skip at start), all agents failed (orchestrator auto-invokes run-phase2.sh fallback; multi_agent_fallback:true as JSON boolean in failure log; exit 0 if fallback ok, exit 2 if fallback fails), merge failure (exit 1, no sentinel), verify fail (out of scope — Session 21)."
     }
   ],
   "downstream_updated": [],
@@ -58,6 +58,13 @@
         "[P2] Fallback exit code leaked through set -e — wrapped fallback call with set +e / set -e for correct exit 2 on failure",
         "[P2b] multi_agent_fallback only in free-text impact string — added as structured boolean field in failure log JSON",
         "[P3] Manifest was pre-fix state — updated to reflect final post-review-2 implementation"
+      ]
+    },
+    {
+      "round": 3,
+      "reviewer": "Codex",
+      "findings_addressed": [
+        "[P3] FAILURE-MODES.md Section 5 still described pre-fix all-agents-fail behavior (exit 2, manual fallback). Synced to actual behavior: auto-invokes run-phase2.sh, writes multi_agent_fallback:true as structured JSON boolean, exits 0 on fallback success / 2 on fallback failure. Quick Reference table updated accordingly."
       ]
     }
   ],
