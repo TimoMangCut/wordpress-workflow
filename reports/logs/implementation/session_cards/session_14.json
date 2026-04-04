@@ -1,15 +1,21 @@
 {
   "session": 14,
   "title": "Wave 3 Validation",
-  "status": "PENDING",
+  "status": "COMPLETED",
   "created_by_session": 13,
   "wave": "Wave 3",
   "dependencies": [
-    {"session": 13, "reason": "A-01 must be COMPLETED — Wave 3 contains IR-02 + A-01 + A-03. A-03 is out of scope for this wave validate (not yet implemented). Wave 3 validate covers IR-02 + A-01 only."}
+    {
+      "session": 13,
+      "reason": "A-01 must be COMPLETED \u2014 Wave 3 contains IR-02 + A-01 + A-03. A-03 is out of scope for this wave validate (not yet implemented). Wave 3 validate covers IR-02 + A-01 only."
+    }
   ],
-  "gaps": ["IR-02", "A-01"],
+  "gaps": [
+    "IR-02",
+    "A-01"
+  ],
   "critical_notes": [
-    "This is a VALIDATE session — do NOT write source code.",
+    "This is a VALIDATE session \u2014 do NOT write source code.",
     "Read benchmark results and change manifests only. No IRBuilder.php reads.",
     "Wave 3 = IR-02 (Session 12) + A-01 (Session 13). A-03 is deferred.",
     "Create benchmark/results/wave3_results.json by running python3 benchmark/compare.py --all",
@@ -40,16 +46,16 @@
       "source_ref": "gap-analysis-final.md:1337-1340",
       "file": "benchmark/results/wave3_summary.json",
       "change": "Run python3 benchmark/compare.py --all, capture output as wave3_results.json. Then compare against baseline.json. Output wave3_summary.json with fields: wave, verdict, metrics_delta, sessions_covered, regressions[], approved_to_proceed.",
-      "note": "NẾUN spec ở đây mâu thuẫn với source_ref → source_ref thắng"
+      "note": "N\u1ebeUN spec \u1edf \u0111\u00e2y m\u00e2u thu\u1eabn v\u1edbi source_ref \u2192 source_ref th\u1eafng"
     }
   },
   "downstream_required": [],
   "test_command": "python3 benchmark/compare.py --all",
   "test_cases": [
-    "backwpup QS=1.0 DR=1.0 TP=2 FP=0 FN=0 — no regression vs baseline",
+    "backwpup QS=1.0 DR=1.0 TP=2 FP=0 FN=0 \u2014 no regression vs baseline",
     "coverage_gaps field present in backwpup IR (cat reports/phase1/backwpup-ir.json | python3 -c 'import json,sys; ir=json.load(sys.stdin); print(len(ir.get(\"coverage_gaps\",[])))') > 0",
     "wave3_summary.json verdict = APPROVED"
   ],
-  "commit_message": "Session 14: Wave 3 validation — IR-02 + A-01 APPROVED",
-  "next_session_preview": "Session 15 — Schema contracts. Files: contracts/*.json (stubs already exist from Session 12). Full JSON Schema for IR, finding, threat-context. Est. context ~20K."
+  "commit_message": "Session 14: Wave 3 validation \u2014 IR-02 + A-01 APPROVED",
+  "next_session_preview": "Session 15 \u2014 Schema contracts. Files: contracts/*.json (stubs already exist from Session 12). Full JSON Schema for IR, finding, threat-context. Est. context ~20K."
 }

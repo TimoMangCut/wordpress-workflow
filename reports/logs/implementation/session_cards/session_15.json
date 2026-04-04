@@ -1,0 +1,67 @@
+{
+  "session": 15,
+  "title": "Schema Contracts",
+  "status": "PENDING",
+  "created_by_session": 14,
+  "wave": "Wave 4",
+  "dependencies": [
+    {"session": 14, "reason": "Wave 3 validation must be APPROVED before schema contracts are written — contracts define interfaces for multi-agent pipeline built in subsequent sessions (16+)"}
+  ],
+  "gaps": ["SCHEMA-CONTRACTS"],
+  "critical_notes": [
+    "Output = 6 contract files + README.md in contracts/. NO Python or PHP source code changes in this session.",
+    "Existing stubs in contracts/ (ir.schema.json, finding.schema.json, threat-context.schema.json) were created in Session 12 — read them before writing new files to avoid duplication.",
+    "Canonical schema source = skill-sets-framework.md section 2.1 (lines 113-302). Do NOT invent schema fields not present there.",
+    "ir-output.schema.json: MUST include coverage_gaps field (A-01, Session 13) and unresolved_hooks (IR-01). If Session 12 stub already has these, extend it; do not overwrite with a stub.",
+    "agent-output.schema.json: full schema is in skill-sets-framework.md:189-300. Do not truncate.",
+    "phase3-gate-input.schema.json = same shape as merge-output.schema.json (skill-sets-framework.md:124). Use $ref or duplicate explicitly — note the decision in notes field.",
+    "README.md = versioning rules for contracts/. At minimum: how to bump version, what constitutes a breaking change, migration policy.",
+    "Do NOT implement jsonschema validation in Python scripts in this session. That is out of scope (Session 16+ work). Only create the contract JSON files."
+  ],
+  "files_to_read": [
+    {
+      "file": "7-workflow-wp/skill-sets-framework.md",
+      "line_range": "111-302",
+      "reason": "Section 2.1 Schema Contracts — canonical definitions for all 6 schema files. Primary source_ref for this session."
+    },
+    {
+      "file": "7-workflow-wp/multi-agent-plan.md",
+      "line_range": "228-275",
+      "reason": "Section 6 Phase 2 Prep: IR Slicing — defines ir-slice.schema.json shape (slice_ir_for_group output structure)"
+    },
+    {
+      "file": "contracts/ir.schema.json",
+      "line_range": "full",
+      "reason": "Existing Session 12 stub — extend, do not replace"
+    },
+    {
+      "file": "contracts/finding.schema.json",
+      "line_range": "full",
+      "reason": "Existing Session 12 stub — verify alignment with agent-output finding shape"
+    },
+    {
+      "file": "contracts/threat-context.schema.json",
+      "line_range": "full",
+      "reason": "Existing Session 12 stub — verify; threat-context is not one of the 6 new contracts but check for conflicts"
+    }
+  ],
+  "spec": {
+    "SCHEMA-CONTRACTS": {
+      "source_ref": "skill-sets-framework.md:113-302",
+      "file": "contracts/ (6 files + README.md)",
+      "change": "Create or extend the following files in contracts/: ir-output.schema.json (extend existing ir.schema.json stub OR create new; must include all IR fields: entry_points, sources, sinks, guards, anomalies, unresolved_hooks, coverage_gaps, metadata), ir-slice.schema.json (subset of ir-output for per-EP-group slices — spec in multi-agent-plan.md:228-275), agent-output.schema.json (per-agent findings output — full schema from skill-sets-framework.md:189-300), merge-output.schema.json (Python merge script output — findings + merge_stats), phase3-gate-input.schema.json (what gate expects = merge-output shape), contracts/README.md (versioning rules: semver, breaking vs non-breaking change policy, migration notes format).",
+      "note": "NẾUN spec ở đây mâu thuẫn với source_ref → source_ref thắng. skill-sets-framework.md:113-302 is authoritative. agent-output.schema.json full content is at skill-sets-framework.md:189-300 — do not truncate."
+    }
+  },
+  "downstream_required": [],
+  "test_command": "python3 -c \"import json; files=['contracts/ir-output.schema.json','contracts/ir-slice.schema.json','contracts/agent-output.schema.json','contracts/merge-output.schema.json','contracts/phase3-gate-input.schema.json']; [json.load(open(f)) and print('OK:', f) for f in files]\"",
+  "test_cases": [
+    "All 5 schema JSON files parse without error",
+    "ir-output.schema.json required array includes coverage_gaps",
+    "agent-output.schema.json required includes agent_id, plugin_slug, findings",
+    "contracts/README.md exists with versioning rules",
+    "No source code (PHP/Python) modified in this session"
+  ],
+  "commit_message": "Session 15: schema contracts — ir-output, ir-slice, agent-output, merge-output, phase3-gate-input, README",
+  "next_session_preview": "Session 16 — IR Slicing script. File: tools/bin/prepare_agent_inputs.py (new). Implement slice_ir_for_group() from multi-agent-plan.md section 6. Validate output against contracts/ir-slice.schema.json. Est. context ~18K."
+}

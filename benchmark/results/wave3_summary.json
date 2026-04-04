@@ -1,0 +1,37 @@
+{
+  "wave": "Wave 3",
+  "validation_date": "2026-04-04",
+  "verdict": "APPROVED",
+  "sessions_covered": [12, 13],
+  "gaps_covered": ["IR-02", "A-01"],
+  "metrics_delta": {
+    "backwpup": {
+      "baseline": {"qs": 1.0, "dr": 1.0, "tp": 2, "fp": 0, "fn": 0},
+      "wave3":    {"qs": 1.0, "dr": 1.0, "tp": 2, "fp": 0, "fn": 0},
+      "delta":    {"qs": 0.0, "dr": 0.0, "tp": 0, "fp": 0, "fn": 0}
+    },
+    "cartflows": {
+      "baseline": {"qs": null, "dr": null, "tp": 0, "fp": 0, "fn": 0},
+      "wave3":    {"qs": null, "dr": null, "tp": 0, "fp": 0, "fn": 0},
+      "delta":    {"qs": null, "dr": null, "tp": 0, "fp": 0, "fn": 0}
+    },
+    "pretty-link": {
+      "baseline": {"qs": null, "dr": null, "tp": 0, "fp": 0, "fn": 0},
+      "wave3":    {"qs": null, "dr": null, "tp": 0, "fp": 0, "fn": 0},
+      "delta":    {"qs": null, "dr": null, "tp": 0, "fp": 0, "fn": 0}
+    },
+    "aggregate": {
+      "baseline": {"qs": 1.0, "dr": 1.0, "total_tp": 2, "total_fp": 0, "total_fn": 0},
+      "wave3":    {"qs": 1.0, "dr": 1.0, "total_tp": 2, "total_fp": 0, "total_fn": 0},
+      "delta":    {"qs": 0.0, "dr": 0.0, "total_tp": 0, "total_fp": 0, "total_fn": 0}
+    }
+  },
+  "test_cases": {
+    "backwpup_qs_1_no_regression": "PASS — QS=1.0 DR=1.0 TP=2 FP=0 FN=0, identical to baseline",
+    "coverage_gaps_present": "PASS — coverage_gaps field present in backwpup IR with 67 entries (>0); 7 files contain wp_verify_nonce with no entry point",
+    "wave3_verdict_approved": "PASS"
+  },
+  "regressions": [],
+  "notes": "Wave 3 covers IR-02 (call-chain resolution, depth=2, $this->method() patterns, FQCN-aware class matching) and A-01 (coverage_gaps field: files with WP security signals but no discovered entry point). A-03 is deferred — not included in this wave. No benchmark regressions. call-chain-test fixture is gitignored; SQL sinks at depth-1 and depth-2 were verified during Session 12 and confirmed not regressed by Session 13 changes.",
+  "approved_to_proceed": true
+}

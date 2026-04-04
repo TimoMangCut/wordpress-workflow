@@ -109,8 +109,8 @@ WAVE 2     [x] Session 7  — IR-03                                   2026-04-03
            [x] Session 10 — A-02 (impl, not wired), L-01 (no-op), L-02   ← 2026-04-04
            [x] Session 11 — Wave 2 Validation → USER REVIEW ②   ← 2026-04-04
 WAVE 3     [x] Session 12 — IR-02 (call chain depth=2) ← HARDEST   ← 2026-04-04
-           [ ] Session 13 — A-01 (coverage gap report)
-           [ ] Session 14 — Wave 3 Validation → USER REVIEW ③
+           [x] Session 13 — A-01 (coverage gap report)   <- 2026-04-04
+           [x] Session 14 — Wave 3 Validation → USER REVIEW ③   <- 2026-04-04
 INFRA      [ ] Session 15 — Schema contracts (contracts/*.schema.json)
            [ ] Session 16 — IR Slicing script (prepare_agent_inputs.py)
            [ ] Session 17 — Deterministic Merge (merge_agent_outputs.py)
