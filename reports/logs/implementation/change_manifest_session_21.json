@@ -7,7 +7,7 @@
     {
       "file": "tools/config/skill-set-verify.md",
       "functions_changed": [],
-      "lines_affected": "1-261",
+      "lines_affected": "1-270",
       "behavior_before": "File did not exist.",
       "behavior_after": "Claude Code Verify SKILL SET (S5): meta-review layer, not re-analysis. Input: reports/<slug>-phase2-merged.json only (no raw source code by default). Tasks: (1) check merge stats + escalation conditions (conflict rate >50%, agent-b missing, schema errors); (2) spot-check top 3-5 highest-severity findings for reasoning coherence, reference plausibility, verdict support — source code read permitted only for suspicious findings (1 file, 10 total limit); (3) resolve conflicts by reading both agents' reasoning + source at reference location, evidence-based resolution (Tier 1/2 only, else REVIEW); (4) flag malformed findings (missing entry_point_id, empty reasoning, wrong verdict values). Output: verify session JSON with escalations, spot_checks, conflict_resolutions, malformed_findings, summary (overall_quality). File behavior: backup -phase2-merged.json → -phase2-pre-verify.json, overwrite -phase2.json with corrections. Rules: minimize tokens, one pass only, no re-analysis, R4 evidence-based conflict resolution, R5 escalation is not failure."
     }
@@ -28,13 +28,15 @@
     "date": "2026-04-04",
     "findings": [
       "P1: skill-set-verify.md referenced merge_stats.total_findings (does not exist at runtime). merge_agent_outputs.py:337-348 writes total_raw and total_deduplicated. Conflict rate formula 'conflicts_flagged / total_findings' would fail on real merged output.",
-      "P2: Task 4 stated entry_point_id is 'required for all findings'. Schema (agent-output.schema.json:64-73) only requires entry_point_id in allOf TP conditional. REVIEW and FP findings validated without it. S5 would falsely flag valid REVIEW findings as malformed."
+      "P2: Task 4 stated entry_point_id is 'required for all findings'. Schema (agent-output.schema.json:64-73) only requires entry_point_id in allOf TP conditional. REVIEW and FP findings validated without it. S5 would falsely flag valid REVIEW findings as malformed.",
+      "P3: Task 4 reasoned check 'reasoning empty or < 20 chars on TP or REVIEW' was wrong for REVIEW. Schema allOf REVIEW conditional (agent-output.schema.json:82-86) requires only review_reason — reasoning is not required for REVIEW. Treating absent reasoning as malformed on REVIEW would false-flag schema-valid findings."
     ],
     "actions_taken": {
       "P1": "FIXED — merge_stats field list updated to match runtime: total_raw, total_deduplicated (+ duplicates_merged, conflicts_flagged, agents_missing, schema_errors, tp_count, fp_count, review_count). Conflict rate formula changed to 'conflicts_flagged / total_deduplicated' in Task 1 and Escalation criteria table.",
-      "P2": "FIXED — Task 4 malformed check updated: entry_point_id absence flagged only for TP findings. Added explicit note that REVIEW and FP do not require it. reasoning check also scoped to TP/REVIEW only (FP requires fp_reason, not reasoning)."
+      "P2": "FIXED — Task 4 malformed check updated: entry_point_id absence flagged only for TP findings. Added explicit note that REVIEW and FP do not require it.",
+      "P3": "FIXED — Task 4 reasoning malformed check further corrected: reasoning absent/short is a hard malformed error only for TP (schema requires reasoning for TP). For REVIEW, schema requires review_reason only — reasoning is not required. Moved REVIEW reasoning check to 'Soft quality signals' section (note in summary.notes, not flagged as malformed). Added review_reason and fp_reason as explicit hard-error checks per schema allOf conditionals (agent-output.schema.json:82-86, 75-79)."
     },
-    "post_review_test_result": "PASS: (1) grep 'total_findings' tools/config/skill-set-verify.md → 0 matches. (2) total_raw and total_deduplicated present at lines 28-29 and 48. (3) entry_point_id rule at line 110 scoped to TP only, consistent with agent-output.schema.json:66-73."
+    "post_review_test_result": "PASS: (1) grep 'total_findings' tools/config/skill-set-verify.md → 0 matches. (2) total_raw and total_deduplicated present at lines 28-29 and 48. (3) entry_point_id rule scoped to TP only (line 110), consistent with agent-output.schema.json:66-73. (4) reasoning malformed check scoped to TP only (line 112); REVIEW reasoning is a soft quality signal (lines 118-121), not malformed. (5) review_reason absent on REVIEW and fp_reason absent on FP added as explicit hard-error checks (lines 113-114)."
   },
   "next_session": "session_22",
   "notes": "Docs-only session. No PHP, Python, or Bash files modified. 1 new Markdown file created in tools/config/. S5 is the final SKILL SET in the pipeline (A→B→C→D→S5). All spec constraints from critical_notes embedded: meta-review framing, agent disagreement protocol (Task 3 + R4), escalation criteria (Task 1 + Escalation table), minimize-tokens rule (R1 + 10-read hard limit)."
