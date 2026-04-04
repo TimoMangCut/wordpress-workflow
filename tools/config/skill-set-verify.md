@@ -25,11 +25,13 @@ the work. Your job is quality control.
 This file is the output of the deterministic merge script. It contains:
 - All findings from Agents A, B, C, D (deduplicated and conflict-flagged)
 - `merge_stats`:
-  - `total_findings` — total findings after merge
+  - `total_raw` — total findings across all agents before deduplication
+  - `total_deduplicated` — findings after deduplication (this is the working set)
   - `duplicates_merged` — how many duplicates were collapsed
   - `conflicts_flagged` — how many conflicts (agents disagreed on same finding)
   - `agents_missing` — which agents failed or were skipped
   - `schema_errors` — validation errors from merge
+  - `tp_count`, `fp_count`, `review_count` — verdict breakdown
 
 **You do NOT read raw source code by default.** Source code access is permitted
 ONLY for conflict resolution and suspicious high-severity findings (one file read,
@@ -43,7 +45,7 @@ minimal tokens).
 
 Read `merge_stats` and flag the following as **escalate-to-human** conditions:
 
-- `conflicts_flagged / total_findings > 0.5` (conflict rate over 50%)
+- `conflicts_flagged / total_deduplicated > 0.5` (conflict rate over 50% of working set)
 - `agents_missing` includes `agent-b` (stored flows agent — its absence means
   cross-EP findings are entirely absent; this is a coverage gap, not a normal run)
 - `schema_errors > 0` (output was partially malformed; findings may be missing)
@@ -105,8 +107,8 @@ After resolution, output the corrected finding with the resolved `verdict`.
 For findings NOT in your spot-check or conflict set, scan for obvious errors:
 
 - `verdict` field missing or not one of `TP`, `FP`, `REVIEW`
-- `entry_point_id` absent (required for all findings)
-- `reasoning` is empty or less than 20 characters
+- `entry_point_id` absent on a `TP` finding (schema requires it for TP; REVIEW and FP do not require it)
+- `reasoning` is empty or less than 20 characters on a `TP` or `REVIEW` finding
 - `sink_file_path` or `source_file_path` is a non-PHP file in a context
   where PHP is expected (e.g., `.js`, `.css` as a sink for SQL injection)
 
@@ -239,7 +241,7 @@ investigation than one pass allows → note it in `discovered_issues` and move o
 
 | Condition | Trigger | Recommended action |
 |---|---|---|
-| High conflict rate | `conflicts_flagged / total_findings > 0.5` | Re-run Agents A–D on conflicted EPs |
+| High conflict rate | `conflicts_flagged / total_deduplicated > 0.5` | Re-run Agents A–D on conflicted EPs |
 | Agent B missing | `agents_missing` includes `agent-b` | Re-run Agent B before proceeding |
 | Schema errors | `schema_errors > 0` | Investigate merge script; re-run affected agents |
 | Low confidence cluster | ≥ 3 findings with `confidence < 0.3` in top-5 | Manual review of those findings |
