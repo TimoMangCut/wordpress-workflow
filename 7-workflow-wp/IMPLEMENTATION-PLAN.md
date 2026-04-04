@@ -1215,7 +1215,7 @@ Trong `phase3_gate.py`:
 ### Sessions 20-23 — SKILL SETs, Benchmark, Tuning
 
 ```
-Session 20: SKILL SETs Agents A-D
+[x] Session 20: SKILL SETs Agents A-D   ← 2026-04-04
 Session 21: SKILL SET Claude Code Verify
 Session 22: Step 4 Benchmark (→ USER REVIEW ④)
 Session 23: Open Decisions finalize + Wave 3 impact re-run + tuning
