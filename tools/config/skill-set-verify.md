@@ -111,7 +111,7 @@ Hard errors → flag as `malformed` (schema violation, flag for re-run):
 - `entry_point_id` absent on a `TP` finding (schema requires it for TP)
 - `reasoning` absent or less than 20 characters on a `TP` finding (schema requires reasoning for TP)
 - `review_reason` absent on a `REVIEW` finding (schema requires review_reason for REVIEW)
-- `fp_reason` absent on a `FP` finding (schema requires fp_reason for FP)
+- `fp_reason` or `fp_evidence` absent on a `FP` finding (schema requires both for FP)
 - `sink_file_path` or `source_file_path` is a non-PHP file in a context
   where PHP is expected (e.g., `.js`, `.css` as a sink for SQL injection)
 
