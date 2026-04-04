@@ -1,6 +1,6 @@
 {
   "plugin_slug": "backwpup",
-  "merge_timestamp": "2026-04-04T16:35:40.776869Z",
+  "merge_timestamp": "2026-04-04T18:52:26.821200Z",
   "findings": [
     {
       "finding_id": "agent-a2-f001",
@@ -704,10 +704,7 @@
       "agent-a5",
       "agent-b"
     ],
-    "agents_missing": [
-      "agent-c",
-      "agent-d"
-    ],
+    "agents_missing": [],
     "tp_count": 17,
     "fp_count": 14,
     "review_count": 2,

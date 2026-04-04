@@ -540,18 +540,23 @@ def main(argv=None) -> int:
         return 1
 
     # Write output files
+    # archive: reports/<slug>-phase2-merged.json  (raw merge, for reference)
+    # canonical: reports/phase2/<slug>-phase2.json (gate reads this path via report_paths.py)
     output_dir.mkdir(parents=True, exist_ok=True)
     archive_path = output_dir / f"{slug}-phase2-merged.json"
-    canonical_path = output_dir / f"{slug}-phase2.json"
+
+    import shutil
+    from report_paths import build_report_layout
+    canonical_dir = build_report_layout(output_dir.parent if output_dir.name != "reports" else output_dir).phase2
+    canonical_dir.mkdir(parents=True, exist_ok=True)
+    canonical_path = canonical_dir / f"{slug}-phase2.json"
 
     with open(archive_path, "w") as f:
         json.dump(merged, f, indent=2)
     print(f"[OK] Archive written: {archive_path}")
 
-    # Copy to canonical (gate reads this)
-    import shutil
     shutil.copy2(archive_path, canonical_path)
-    print(f"[OK] Canonical written: {canonical_path}")
+    print(f"[OK] Canonical written: {canonical_path}  ← gate reads here")
 
     # Summary
     stats = merged["merge_stats"]

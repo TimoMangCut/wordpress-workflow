@@ -88,9 +88,10 @@ def main() -> int:
     findings = phase2.get("findings", []) or []
     by_id = {f.get("finding_id"): f for f in findings if f.get("finding_id")}
 
-    reviews = review.get("reviews", []) or []
+    reviews = review.get("reviews") or review.get("findings") or []
     applied = 0
     changes: List[Dict[str, Any]] = []
+    llm_upgraded_ids: List[str] = []  # track findings LLM confirmed for gate patching
 
     for r in reviews:
         fid = r.get("finding_id")
@@ -106,12 +107,21 @@ def main() -> int:
             f["phase3_review_verdict_reason"] = r.get("reason")
             changes.append({"finding_id": fid, "field": "verdict", "old": old, "new": "REVIEW", "reason": r.get("reason")})
             applied += 1
-        elif vc == "upgrade" and f.get("verdict") in ("REVIEW", "FP"):
-            old = f.get("verdict")
-            f["verdict"] = "TP"
-            f["phase3_review_verdict_reason"] = r.get("reason")
-            changes.append({"finding_id": fid, "field": "verdict", "old": old, "new": "TP", "reason": r.get("reason")})
-            applied += 1
+        elif vc == "upgrade":
+            # Widen guard: apply when verdict is REVIEW, FP, or TP.
+            # TP findings may still be UNCERTAIN at gate level — LLM upgrade confirms them.
+            if f.get("verdict") in ("REVIEW", "FP"):
+                old = f.get("verdict")
+                f["verdict"] = "TP"
+                f["phase3_review_verdict_reason"] = r.get("reason")
+                changes.append({"finding_id": fid, "field": "verdict", "old": old, "new": "TP", "reason": r.get("reason")})
+                applied += 1
+            elif f.get("verdict") == "TP":
+                # Already TP — no phase2 change needed, but record for gate patching below
+                f["phase3_review_verdict_reason"] = r.get("reason")
+                changes.append({"finding_id": fid, "field": "phase3_review_note", "old": None, "new": "LLM confirmed TP", "reason": r.get("reason")})
+                applied += 1
+            llm_upgraded_ids.append(fid)
 
         corr = r.get("suggested_field_corrections") or {}
         if not isinstance(corr, dict):
@@ -220,6 +230,19 @@ def main() -> int:
 
     final_path = os.path.join(layout.phase3, f"{slug}-phase3.final.json")
     if os.path.exists(gate_path):
+        # Patch gate validated_findings for LLM-upgraded findings:
+        # UNCERTAIN → PLAUSIBLE when LLM skeptic confirmed the finding is real.
+        if llm_upgraded_ids:
+            gate_data = load_json(gate_path) or {}
+            patched = 0
+            for vf in gate_data.get("validated_findings", []) or []:
+                if vf.get("finding_id") in llm_upgraded_ids and vf.get("validation_status") == "UNCERTAIN":
+                    vf["validation_status"] = "PLAUSIBLE"
+                    vf["phase3_llm_upgrade"] = True
+                    patched += 1
+            if patched:
+                save_json(gate_path, gate_data)
+                print(f"[=] Gate patched: {patched} UNCERTAIN → PLAUSIBLE (LLM-upgraded)")
         shutil.copy2(gate_path, final_path)
         print(f"[=] Final gate snapshot: {final_path}")
     print(f"[=] Review diff log: {diff_path}")

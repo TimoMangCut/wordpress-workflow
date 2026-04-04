@@ -1,6 +1,6 @@
 {
   "plugin_slug": "cartflows",
-  "merge_timestamp": "2026-04-04T17:29:45.342694Z",
+  "merge_timestamp": "2026-04-04T18:52:26.904937Z",
   "findings": [
     {
       "finding_id": "cartflows-a1-001",
@@ -853,5 +853,10 @@
     "duplicates_merged": 8,
     "conflicts_flagged": 0,
     "schema_errors": 0
+  },
+  "postprocess": {
+    "phase3_review_applied": {
+      "applied_edits": 0
+    }
   }
 }

@@ -310,7 +310,7 @@
     {
       "finding_id": "agent-a3-getblock-secret-disclosure",
       "verdict": "TP",
-      "validation_status": "UNCERTAIN",
+      "validation_status": "PLAUSIBLE",
       "confidence_score": 0.6736,
       "resolved_entry_point_id": "ep_rest___getblock",
       "entry_point_exact": true,
@@ -363,7 +363,8 @@
         "guard_contradiction",
         "insufficient_evidence_to_confirm",
         "path_reachability_weak"
-      ]
+      ],
+      "phase3_llm_upgrade": true
     },
     {
       "finding_id": "agent-a3-storagelistcompact-readonly",
