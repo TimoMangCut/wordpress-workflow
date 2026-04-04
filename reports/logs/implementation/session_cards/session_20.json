@@ -67,7 +67,7 @@
       "source_ref": "skill-sets-framework.md:663-706",
       "file": "tools/config/skill-set-agent-d.md",
       "change": "Create Agent D SKILL SET: context (unresolved_hooks + coverage_gaps, IR-01 logs but Agent D resolves), input (unresolved_hooks section + coverage_gaps + source + output schema), tasks (trace dynamic hook expressions → if resolved analyze like Agent A → write to IR supplement; for coverage gaps: classify reason → find vulnerability → output REVIEW by default). Rules: use resolved_dynamic:<hash> as entry_point_id. MUST write resolved EPs to reports/phase1/<slug>-ir-supplement.json. State confidence level (high/medium/low). Sessions short (5-15 hooks).",
-      "note": "If spec here conflicts with source_ref → source_ref wins. IR supplement format: {entry_points: [{id: 'resolved_dynamic:<hash>', type: <inferred>, file: ..., callback: {...}}]}. Hash = sha1(file+':'+line+':'+resolved_hook_literal)."
+      "note": "If spec here conflicts with source_ref → source_ref wins. IR supplement format (FULL — required for gate to validate normally per P1 post-review fix): {entry_points: [{id: 'resolved_dynamic:<hash>', type: <inferred>, file: ..., callback: {...}}], sources: [{entry_point_id: 'resolved_dynamic:<hash>', type: 'superglobal_post', ...}], sinks: [{entry_point_id: 'resolved_dynamic:<hash>', category: 'output', ...}], guards: [{entry_point_id: 'resolved_dynamic:<hash>', type: 'nonce_check', is_effective: true|false|null, ...}]}. Entry_points-only supplement is INSUFFICIENT — gate cannot run path_reachable or guard_consistent checks without sources/sinks/guards. Hash = sha1(file+':'+line+':'+resolved_hook_literal)."
     }
   },
   "downstream_required": [],

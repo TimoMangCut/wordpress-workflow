@@ -44,9 +44,26 @@
       "id": "DI-19-01",
       "description": "guards_by_ep index in __init__ only covers base IR guards, not supplement guards. If supplement entries have guards[] (unlikely for Agent D resolved EPs but possible), they will not appear in guards_by_ep. Impact: guard check for supplement EPs will show 'no guard detected' rather than actual guard state.",
       "suggested_session": "Any session that extends IR supplement schema",
-      "severity": "LOW — Agent D findings are expected to have no guards in IR supplement; this is a forward-compatibility note only."
+      "severity": "LOW — Agent D findings are expected to have no guards in IR supplement; this is a forward-compatibility note only.",
+      "resolution": "RESOLVED in post-review: supplement guards are now merged into guards_by_ep during __init__. DI-19-01 closed."
+    },
+    {
+      "id": "DI-19-02",
+      "description": "Load-leg output escaping validation not implemented. Docstring of _check_guard_consistency() claimed 'load-leg needs output escaping guards' but implementation only checks nonce_check and capability_check types for both legs. Phase 1 extractor does not emit 'output_escaping' guard type — proper load-leg escaping detection requires Phase 1 extractor change. Current proxy: _check_sanitizer_claim() uses finding.sanitizer_correct as partial signal for output escaping.",
+      "suggested_session": "Future session adding output_escaping guard type to Phase 1 extractor (AnomalyRules or SourceSinkVisitor)",
+      "severity": "MEDIUM — gate underscores stored XSS severity when load-leg has no explicit escaping guard in IR. Sanitizer check provides partial coverage via finding-level evidence."
     }
   ],
+  "post_review": {
+    "reviewer": "Codex",
+    "date": "2026-04-04",
+    "findings": ["P1: supplement merge incomplete — only ep_by_id populated, sources/sinks/guards not merged", "P2: _check_guard_consistency() docstring inconsistent with implementation — load-leg output escaping not actually checked"],
+    "actions_taken": {
+      "P1": "FIXED — __init__ now merges supplement sources[], sinks[], guards[] into sources_by_ep/sinks_by_ep/guards_by_ep after base IR build. Also extended ir_files and storage_writes_by_key/storage_reads_by_key for supplement data. Verified: path_reachable for supplement EP went from 0.25 (old) to 1.00 (new). Regression check passed.",
+      "P2": "DOCSTRING FIXED — _check_guard_consistency() now clearly states that load-leg output escaping is NOT implemented (IR lacks output_escaping guard type), and that _check_sanitizer_claim() provides partial proxy coverage. DI-19-02 added to discovered_issues."
+    },
+    "post_review_test_result": "PASS: P1 repro score 1.00 (vs Codex repro 0.25). P1 regression PASS. P2 docstring updated — no behavioral change required."
+  },
   "next_session": "session_20",
   "notes": "G-05 is deploy-gated behind Agent B (Step 4). Gate change is backward-compatible: existing single-EP findings process identically. IR supplement load is optional (no-op if absent). Session 19 implements the gate side; Agent B implementation (stored finding production) is a separate future session."
 }

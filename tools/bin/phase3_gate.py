@@ -219,10 +219,33 @@ class SemanticValidator:
             if ep:
                 self.guards_by_ep.setdefault(ep, []).append(guard)
 
+        # G-05 P1 post-review: also merge supplement sources/sinks/guards so that
+        # _check_path_reachable() and _check_guard_consistency() can validate
+        # resolved_dynamic EP findings fully, not just resolve the ID.
+        # Supplement format: {entry_points:[...], sources:[...], sinks:[...], guards:[...]}
+        if ir_supplement:
+            for src in ir_supplement.get("sources", []):
+                ep = src.get("entry_point_id")
+                if ep:
+                    self.sources_by_ep.setdefault(ep, []).append(src)
+            for sink in ir_supplement.get("sinks", []):
+                ep = sink.get("entry_point_id")
+                if ep:
+                    self.sinks_by_ep.setdefault(ep, []).append(sink)
+            for guard in ir_supplement.get("guards", []):
+                ep = guard.get("entry_point_id")
+                if ep:
+                    self.guards_by_ep.setdefault(ep, []).append(guard)
+
         # ---- IR file list ----
         self.ir_files = {_norm_path(s.get("file", "")) for s in ir.get("sources", [])}
         self.ir_files |= {_norm_path(s.get("file", "")) for s in ir.get("sinks", [])}
         self.ir_files |= {_norm_path(ep.get("file", "")) for ep in ir.get("entry_points", [])}
+        # Include supplement files so _detect_hallucination() doesn't penalize Agent D findings
+        if ir_supplement:
+            self.ir_files |= {_norm_path(s.get("file", "")) for s in ir_supplement.get("sources", [])}
+            self.ir_files |= {_norm_path(s.get("file", "")) for s in ir_supplement.get("sinks", [])}
+            self.ir_files |= {_norm_path(ep.get("file", "")) for ep in ir_supplement.get("entry_points", [])}
 
         # ---- Semgrep ----
         self.semgrep_results = []
@@ -262,6 +285,18 @@ class SemanticValidator:
                 key = src.get("key")
                 if isinstance(key, str) and key:
                     self.storage_reads_by_key.setdefault(key, []).append(src)
+        # Supplement storage entries (Agent D resolved EPs may have associated storage ops)
+        if ir_supplement:
+            for sink in ir_supplement.get("sinks", []):
+                if sink.get("category") in self.STORAGE_WRITE_CATEGORIES:
+                    key = sink.get("key")
+                    if isinstance(key, str) and key:
+                        self.storage_writes_by_key.setdefault(key, []).append(sink)
+            for src in ir_supplement.get("sources", []):
+                if src.get("type") in self.STORAGE_READ_TYPES:
+                    key = src.get("key")
+                    if isinstance(key, str) and key:
+                        self.storage_reads_by_key.setdefault(key, []).append(src)
 
     # -----------------------------
     # EP resolution
@@ -758,8 +793,15 @@ class SemanticValidator:
         """If finding claims missing guards, but IR sees effective guard, that's a contradiction.
 
         G-05: For stored/cross-EP findings, check guards on BOTH legs:
-        - Store-leg (write): needs nonce/capability guards (prevents unauthorized write)
-        - Load-leg (read+sink): needs output escaping guards (prevents XSS at render)
+        - Store-leg (write): checks nonce_check and capability_check guards in IR
+        - Load-leg (read+sink): checks nonce_check and capability_check guards in IR
+
+        NOTE: "load-leg needs output escaping" (gap-analysis-final.md:1126) refers to output
+        sanitization at the render point, NOT to nonce/cap guard types. The Phase 1 extractor
+        does not currently emit an 'output_escaping' guard type — proper load-leg escaping
+        validation requires a Phase 1 extractor change (tracked as DI-19-02). Until then,
+        load-leg is checked for nonce/cap only (same as store-leg). Output escaping is partially
+        reflected in the separate _check_sanitizer_claim() check via finding.sanitizer_correct.
         The most permissive leg determines the overall guard score.
         """
         ep = resolution.ep
