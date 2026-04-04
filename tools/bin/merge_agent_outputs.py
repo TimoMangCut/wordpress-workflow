@@ -82,18 +82,19 @@ def _validate(instance: dict, schema: dict, label: str) -> list[str]:
 _SINK_LINE_WINDOW = 5  # ±5 lines counts as "same sink"
 
 
-def _make_dedup_key(finding: dict) -> tuple:
+def _make_rough_key(finding: dict) -> tuple:
     """
-    Build a canonical dedup key.
+    Build a rough grouping key WITHOUT sink_line.
 
-    Single-EP:    (entry_point_id, sink_file, sink_line_bucket, vuln_type)
-    Stored/cross: (store_entry_point_id, load_entry_point_id, storage_key, vuln_type)
+    Single-EP:    (single, entry_point_id, sink_file_normalized, vuln_type)
+    Stored/cross: (stored, store_ep_id, load_ep_id, storage_key, vuln_type)
 
+    sink_line ±5 matching is handled in a second pass by _subgroup_by_line().
     Source: multi-agent-plan.md:353-354
     """
     store_ep = finding.get("store_entry_point_id")
     if store_ep:
-        # Stored / cross-EP flow (Agent B output)
+        # Stored / cross-EP flow (Agent B output) — no line-based proximity needed
         return (
             "stored",
             store_ep or "",
@@ -102,44 +103,86 @@ def _make_dedup_key(finding: dict) -> tuple:
             (finding.get("vuln_type") or "").lower(),
         )
     else:
-        # Single-EP flow
-        sink_line = finding.get("sink_line_number")
-        if sink_line is not None:
-            # Bucket to nearest _SINK_LINE_WINDOW boundary so ±5 lines match
-            sink_bucket = (int(sink_line) // _SINK_LINE_WINDOW) * _SINK_LINE_WINDOW
-        else:
-            sink_bucket = None
+        # Single-EP flow — line matching done separately via _subgroup_by_line()
         return (
             "single",
             finding.get("entry_point_id") or "",
             (finding.get("sink_file_path") or "").lower(),
-            sink_bucket,
             (finding.get("vuln_type") or "").lower(),
         )
+
+
+def _subgroup_by_line(
+    pairs: list[tuple[dict, str]],
+) -> list[list[tuple[dict, str]]]:
+    """
+    Within a rough group (same EP / file / vuln_type), sub-group findings by
+    sink_line proximity using pairwise ±5 connected-component sweep.
+
+    Algorithm:
+      1. All findings with sink_line=None → one common group.
+      2. Remaining findings sorted ascending by sink_line.
+      3. Sweep: if the next finding's line ≤ current_group_max + WINDOW,
+         it joins the current group; otherwise a new group starts.
+
+    This correctly handles cases like lines 9 and 11 (diff=2 ≤ 5 → same group),
+    fixing the floor-bucket boundary bug from the original implementation.
+    Chain merging (A→B→C where A-B ≤ 5 and B-C ≤ 5 but A-C > 5) is intentional:
+    they all describe the same vulnerability location.
+
+    For stored/cross-EP findings the caller does NOT call this function — their
+    rough key is already fully discriminating (no sink_line in the key).
+    """
+    none_line = [(f, a) for f, a in pairs if f.get("sink_line_number") is None]
+    with_line = [(f, a) for f, a in pairs if f.get("sink_line_number") is not None]
+
+    with_line.sort(key=lambda fa: int(fa[0]["sink_line_number"]))
+
+    subgroups: list[list[tuple[dict, str]]] = []
+    if none_line:
+        subgroups.append(none_line)
+
+    if not with_line:
+        return subgroups
+
+    current: list[tuple[dict, str]] = [with_line[0]]
+    current_max = int(with_line[0][0]["sink_line_number"])
+
+    for f, a in with_line[1:]:
+        line = int(f["sink_line_number"])
+        if line - current_max <= _SINK_LINE_WINDOW:
+            current.append((f, a))
+            if line > current_max:
+                current_max = line
+        else:
+            subgroups.append(current)
+            current = [(f, a)]
+            current_max = line
+
+    subgroups.append(current)
+    return subgroups
 
 
 # ---------------------------------------------------------------------------
 # Merge logic
 # ---------------------------------------------------------------------------
 
-_VERDICT_RANK = {"TP": 2, "REVIEW": 1, "FP": 0}
 
-
-def _merge_group(findings_with_agents: list[tuple[dict, str]]) -> dict:
+def _merge_group(findings_with_agents: list[tuple[dict, str]]) -> list[dict]:
     """
-    Merge a group of findings that share the same dedup key.
+    Merge a sub-group of findings that share the same dedup key (rough key +
+    within ±5 sink lines for single-EP).
 
     findings_with_agents: list of (finding_dict, agent_id)
 
-    Rules (multi-agent-plan.md:356-359):
-    - Single finding → keep as-is, add source_agents.
-    - Duplicates (same verdict) → merge evidence, keep highest confidence,
-      record agent_agreement count.
-    - Conflicts (different verdicts) → preserve BOTH findings, flag conflict=True,
-      include conflicting_verdicts list.
+    Returns a LIST of merged findings (usually 1; 2 on conflict).
 
-    Returns a single merged finding dict (conflicts result in a finding with
-    conflict=True and conflicting_verdicts=[...]).
+    Rules (multi-agent-plan.md:356-359):
+    - Single finding → keep as-is, add source_agents. → [finding]
+    - Duplicates (same verdict) → merge evidence, keep highest confidence,
+      record agent_agreement count. → [merged_finding]
+    - Conflicts (different verdicts) → PRESERVE BOTH as separate top-level
+      findings, each flagged conflict=True with conflicting_verdicts. → [f1, f2, ...]
     """
     assert findings_with_agents, "empty group"
 
@@ -147,7 +190,7 @@ def _merge_group(findings_with_agents: list[tuple[dict, str]]) -> dict:
         finding, agent_id = findings_with_agents[0]
         merged = copy.deepcopy(finding)
         merged["source_agents"] = [agent_id]
-        return merged
+        return [merged]
 
     # Partition by verdict
     by_verdict: dict[str, list[tuple[dict, str]]] = {}
@@ -158,21 +201,12 @@ def _merge_group(findings_with_agents: list[tuple[dict, str]]) -> dict:
     verdicts_present = list(by_verdict.keys())
 
     if len(verdicts_present) > 1:
-        # CONFLICT: different verdicts for the same dedup key
-        # Preserve the HIGHEST-ranked verdict's finding as the base,
-        # flag conflict=True, include full conflicting_verdicts.
-        best_verdict = max(verdicts_present, key=lambda v: _VERDICT_RANK.get(v, 0))
-        best_findings = by_verdict[best_verdict]
-        # Pick highest confidence among best-verdict group
-        base_f, base_agent = max(
-            best_findings,
-            key=lambda fa: fa[0].get("confidence") or 0.0,
-        )
-        merged = copy.deepcopy(base_f)
+        # CONFLICT: different verdicts for the same dedup key.
+        # Preserve BOTH (all unique verdicts as separate top-level findings),
+        # each flagged conflict=True with conflicting_verdicts showing all agents.
+        # Source: multi-agent-plan.md:358 — "preserve BOTH findings, flag conflict=True"
         all_agents = [aid for _, aid in findings_with_agents]
-        merged["source_agents"] = all_agents
-        merged["conflict"] = True
-        merged["conflicting_verdicts"] = [
+        conflicting_verdicts = [
             {
                 "agent_id": aid,
                 "verdict": f.get("verdict"),
@@ -181,7 +215,16 @@ def _merge_group(findings_with_agents: list[tuple[dict, str]]) -> dict:
             }
             for f, aid in findings_with_agents
         ]
-        return merged
+        results: list[dict] = []
+        for verdict, group in by_verdict.items():
+            # Pick the highest-confidence representative for this verdict
+            base_f, base_agent = max(group, key=lambda fa: fa[0].get("confidence") or 0.0)
+            merged = copy.deepcopy(base_f)
+            merged["source_agents"] = all_agents
+            merged["conflict"] = True
+            merged["conflicting_verdicts"] = conflicting_verdicts
+            results.append(merged)
+        return results
     else:
         # DUPLICATE: same verdict from multiple agents → merge evidence
         same_findings = by_verdict[verdicts_present[0]]
@@ -205,7 +248,7 @@ def _merge_group(findings_with_agents: list[tuple[dict, str]]) -> dict:
         if reasonings:
             merged["reasoning"] = "\n\n---\n\n".join(reasonings)
 
-        return merged
+        return [merged]
 
 
 def merge_agent_findings(agent_outputs: list[dict]) -> dict:
@@ -250,25 +293,34 @@ def merge_agent_findings(agent_outputs: list[dict]) -> dict:
 
     total_raw = len(all_pairs)
 
-    # Group by dedup key
-    groups: dict[tuple, list[tuple[dict, str]]] = {}
+    # Phase 1: rough grouping by (ep_id, sink_file, vuln_type) — no line
+    rough_groups: dict[tuple, list[tuple[dict, str]]] = {}
     for f, aid in all_pairs:
-        key = _make_dedup_key(f)
-        groups.setdefault(key, []).append((f, aid))
+        key = _make_rough_key(f)
+        rough_groups.setdefault(key, []).append((f, aid))
 
-    # Merge each group
+    # Phase 2: within each rough group, sub-group by sink_line ±5 (single-EP only)
+    # Stored/cross-EP findings already have a fully discriminating rough key → no sub-grouping.
+    all_subgroups: list[list[tuple[dict, str]]] = []
+    for key, group in rough_groups.items():
+        if key[0] == "single":
+            all_subgroups.extend(_subgroup_by_line(group))
+        else:
+            all_subgroups.append(group)
+
+    # Merge each sub-group
     merged_findings: list[dict] = []
     duplicates_merged = 0
     conflicts_flagged = 0
 
-    for key, group in groups.items():
-        merged = _merge_group(group)
-        merged_findings.append(merged)
-        if len(group) > 1:
-            if merged.get("conflict"):
+    for subgroup in all_subgroups:
+        result_list = _merge_group(subgroup)
+        merged_findings.extend(result_list)
+        if len(subgroup) > 1:
+            if any(m.get("conflict") for m in result_list):
                 conflicts_flagged += 1
             else:
-                duplicates_merged += len(group) - 1  # extra copies removed
+                duplicates_merged += len(subgroup) - 1  # extra copies removed
 
     # Compute verdict counts on merged findings
     tp_count = sum(1 for f in merged_findings if f.get("verdict") == "TP")
