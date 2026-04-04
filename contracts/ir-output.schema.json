@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "ir-output.schema.json",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "title": "IR Output Schema",
   "description": "Phase 1 extractor output (intermediate representation). Canonical source: skill-sets-framework.md:113-186.",
   "type": "object",
@@ -106,10 +106,13 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "entry_point_id", "type", "variable", "file", "line"],
+        "required": ["id", "type", "variable", "file", "line"],
         "properties": {
           "id":             { "type": "string" },
-          "entry_point_id": { "type": "string" },
+          "entry_point_id": {
+            "type": ["string", "null"],
+            "description": "null for file-level sources not tied to a specific entry point. Verified: 2096 null-entry_point_id sources across all IR artifacts."
+          },
           "type": {
             "enum": [
               "superglobal_get", "superglobal_post", "superglobal_request",
@@ -132,10 +135,13 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "entry_point_id", "category", "function_called", "file", "line"],
+        "required": ["id", "category", "function_called", "file", "line"],
         "properties": {
-          "id":                    { "type": "string" },
-          "entry_point_id":        { "type": "string" },
+          "id":             { "type": "string" },
+          "entry_point_id": {
+            "type": ["string", "null"],
+            "description": "null for file-level sinks not tied to a specific entry point. Verified: 25494 null-entry_point_id sinks across all IR artifacts."
+          },
           "category":              { "type": "string" },
           "function_called":       { "type": "string" },
           "uses_prepared_statement": { "type": ["boolean", "null"] },

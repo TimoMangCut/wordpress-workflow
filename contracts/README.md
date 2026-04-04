@@ -10,10 +10,10 @@ Schema mismatch is a hard error — silent degradation is prohibited.
 
 | File | Version | Produced by | Consumed by |
 |------|---------|-------------|-------------|
-| `ir-output.schema.json` | 2.2.0 | `tools/bin/extract.php` | `tools/bin/prepare_agent_inputs.py`, agents |
-| `ir-slice.schema.json` | 1.2.0 | `tools/bin/prepare_agent_inputs.py` | Agents A1–A5 |
+| `ir-output.schema.json` | 2.3.0 | `tools/bin/extract.php` | `tools/bin/prepare_agent_inputs.py`, agents |
+| `ir-slice.schema.json` | 1.3.0 | `tools/bin/prepare_agent_inputs.py` | Agents A1–A5 |
 | `agent-output.schema.json` | 1.0.0 | Agents A1–A5, B, C, D | merge script |
-| `phase2-finding.schema.json` | 1.0.0 | Phase 2 agents (item schema) | merge script, gate |
+| `phase2-finding.schema.json` | 1.1.0 | Phase 2 agents (item schema) | merge script, gate |
 | `merge-output.schema.json` | 1.0.0 | merge script | phase3 gate |
 | `phase3-gate-input.schema.json` | 1.0.0 | (same shape as merge-output) | `tools/bin/phase3_gate.py` |
 | `phase3-gate-output.schema.json` | 1.0.0 | `tools/bin/phase3_gate.py` | reporting, downstream |
@@ -104,6 +104,27 @@ not via this schema library. IR schema is the ground-truth reference.
 ---
 
 ## Migration Log
+
+### ir-output.schema.json 2.2.0 → 2.3.0
+
+Date: 2026-04-04 (Session 15 post-review round 3, Codex finding P1)
+Breaking: NO — MINOR bump. sources[].entry_point_id and sinks[].entry_point_id made nullable.
+- Both fields were `required: string`. Actual IR has 2096 sources and 25494 sinks with entry_point_id=null (file-level items not tied to any entry point). Verified across ALL reports/phase1/*-ir.json.
+- Guards and anomalies checked: 0 null entry_point_id — those fields remain required string.
+- entry_point_id removed from required[] for sources and sinks (it is still present as a nullable property).
+Migration: NO consumer existed yet.
+
+### ir-slice.schema.json 1.2.0 → 1.3.0
+
+Date: 2026-04-04 (Session 15 post-review round 3)
+Breaking: NO — MINOR bump. sources[].entry_point_id and sinks[].entry_point_id made nullable to match ir-output 2.3.0.
+Note: slice_ir_for_group() filters sources/sinks by entry_point_id membership, so in practice null-entry_point_id items will not appear in slices. Schema kept nullable for consistency and defensive validation.
+
+### phase2-finding.schema.json 1.0.0 → 1.1.0
+
+Date: 2026-04-04 (Session 15 post-review round 3, Codex finding P2)
+Breaking: NO — MINOR bump. Added stored/cross-EP allOf conditional.
+- phase2-finding claimed to mirror agent-output finding item schema but was missing the 4th allOf conditional (store_entry_point_id → require load_entry_point_id + storage_key + entry_point_id). Canonical source: skill-sets-framework.md:275-288.
 
 ### ir-output.schema.json 2.1.0 → 2.2.0
 

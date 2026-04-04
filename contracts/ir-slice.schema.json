@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "ir-slice.schema.json",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "title": "IR Slice Schema",
   "description": "Per-EP-group subset of ir-output, produced by slice_ir_for_group() in tools/bin/prepare_agent_inputs.py. Canonical source: multi-agent-plan.md:251-268.",
   "type": "object",
@@ -101,13 +101,13 @@
     },
     "sources": {
       "type": "array",
-      "description": "Sources whose entry_point_id appears in the filtered entry_points.",
+      "description": "Sources whose entry_point_id appears in the filtered entry_points. slice_ir_for_group() filters on entry_point_id membership — null-entry_point_id sources are excluded from slices by the filtering logic.",
       "items": {
         "type": "object",
-        "required": ["id", "entry_point_id", "type", "variable", "file", "line"],
+        "required": ["id", "type", "variable", "file", "line"],
         "properties": {
           "id":             { "type": "string" },
-          "entry_point_id": { "type": "string" },
+          "entry_point_id": { "type": ["string", "null"] },
           "type":           { "type": "string" },
           "variable":       { "type": "string" },
           "key":            { "type": ["string", "null"] },
@@ -118,13 +118,13 @@
     },
     "sinks": {
       "type": "array",
-      "description": "Sinks whose entry_point_id appears in the filtered entry_points.",
+      "description": "Sinks whose entry_point_id appears in the filtered entry_points. null-entry_point_id sinks are excluded from slices by the filtering logic.",
       "items": {
         "type": "object",
-        "required": ["id", "entry_point_id", "category", "function_called", "file", "line"],
+        "required": ["id", "category", "function_called", "file", "line"],
         "properties": {
           "id":                    { "type": "string" },
-          "entry_point_id":        { "type": "string" },
+          "entry_point_id":        { "type": ["string", "null"] },
           "category":              { "type": "string" },
           "function_called":       { "type": "string" },
           "uses_prepared_statement": { "type": ["boolean", "null"] },

@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "phase2-finding.schema.json",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "title": "Phase 2 Finding Schema",
   "description": "Per-finding output from Phase 2 agents. Referenced in contracts/README.md table and skill-sets-framework.md:121. This schema defines the shape of individual finding objects — it is the item schema for agent-output.schema.json findings[]. Kept as a standalone file so the gate and merge script can reference the finding shape independently. Canonical source: skill-sets-framework.md:189-300 (finding item within agent-output).",
   "type": "object",
@@ -55,6 +55,20 @@
     {
       "if": { "properties": { "verdict": { "const": "REVIEW" } } },
       "then": { "required": ["review_reason"] }
+    },
+    {
+      "if": {
+        "properties": { "store_entry_point_id": { "type": "string", "minLength": 1 } },
+        "required": ["store_entry_point_id"]
+      },
+      "then": {
+        "required": ["load_entry_point_id", "storage_key", "entry_point_id"],
+        "properties": {
+          "entry_point_id": {
+            "description": "MUST equal load_entry_point_id for stored/cross-EP flows"
+          }
+        }
+      }
     }
   ]
 }
