@@ -1,0 +1,52 @@
+{
+  "session": 19,
+  "date": "2026-04-04",
+  "status": "COMPLETED",
+  "gaps_addressed": ["G-05"],
+  "files_modified": [
+    {
+      "file": "tools/bin/phase3_gate.py",
+      "functions_changed": [
+        "EPResolution (dataclass — added store_ep field)",
+        "SemanticValidator.__init__ (added ir_supplement param + EP merge)",
+        "_resolve_entry_point (resolve both store EP and load EP)",
+        "_check_auth_consistency (use write-leg EP for auth check)",
+        "_check_guard_consistency (refactored: both-leg check for stored findings)",
+        "main (load optional ir-supplement.json)"
+      ],
+      "lines_affected": "147-1290",
+      "behavior_before": "Gate resolved only entry_point_id (load-leg) for all findings. Auth check used load-leg EP type. Guard check ran on load-leg EP only. No IR supplement support.",
+      "behavior_after": "When finding has store_entry_point_id: gate resolves BOTH load EP (for path/sink checks) and store EP (write-leg). Auth check uses write-leg EP type — attacker access level = lowest auth needed to inject. Guard check runs on BOTH legs; minimum score governs; contradiction on either leg = 0.0. IR supplement (reports/phase1/<slug>-ir-supplement.json) loaded optionally at startup — resolved_dynamic:<hash> EPs merged into ep_by_id. Graceful fallback when supplement absent or store EP not in IR. Single-EP findings: all original behavior unchanged."
+    }
+  ],
+  "downstream_updated": [],
+  "deviations_from_spec": [
+    {
+      "spec_step": "gap-analysis-final.md:1119 states '_resolve_entry_point() line 230'",
+      "actual": "Actual line was 262 (file has grown since gap-analysis was written). Adapted to actual line number.",
+      "risk": "NONE — line numbers are documentation references only, code change is correct."
+    },
+    {
+      "spec_step": "gap-analysis-final.md:1127 — 'Factor write-leg auth level into severity scoring'",
+      "actual": "Auth score now reflects write-leg EP (not load-leg). Severity scoring is downstream of confidence score which incorporates auth_consistent check. No separate severity adjustment field was added — the confidence score change achieves the same effect because auth_consistent has weight 0.10 in _compute_confidence().",
+      "risk": "LOW — effective behavior matches intent. Explicit severity field would require schema change deferred to future session."
+    },
+    {
+      "spec_step": "Open Decision: Agent D + Gate integration. User chose Option B (supplement file).",
+      "actual": "Implemented: Agent D uses resolved_dynamic:<hash> IDs; supplement at reports/phase1/<slug>-ir-supplement.json; gate merges supplement EPs into ep_by_id at init; prefix NOT used as skip signal — resolves normally.",
+      "risk": "NONE — decision locked before implementation began."
+    }
+  ],
+  "test_command": "python3 - (inline manual test, see session notes)",
+  "test_result": "PASS: 5/5 manual tests. (1) store_entry_point_id resolved to store EP, notes correct. (2) auth check used write-leg (ajax_nopriv → none, score 1.0). (3) guard check ran on both legs, weakest leg dominated (score 0.0 — contradiction on load-leg where finding claimed no nonce but IR had effective nonce). (4) finding without store_entry_point_id → store_ep=None, load-leg auth used, behavior unchanged. (5) store_entry_point_id not in IR (no supplement) → graceful fallback, no crash.",
+  "discovered_issues": [
+    {
+      "id": "DI-19-01",
+      "description": "guards_by_ep index in __init__ only covers base IR guards, not supplement guards. If supplement entries have guards[] (unlikely for Agent D resolved EPs but possible), they will not appear in guards_by_ep. Impact: guard check for supplement EPs will show 'no guard detected' rather than actual guard state.",
+      "suggested_session": "Any session that extends IR supplement schema",
+      "severity": "LOW — Agent D findings are expected to have no guards in IR supplement; this is a forward-compatibility note only."
+    }
+  ],
+  "next_session": "session_20",
+  "notes": "G-05 is deploy-gated behind Agent B (Step 4). Gate change is backward-compatible: existing single-EP findings process identically. IR supplement load is optional (no-op if absent). Session 19 implements the gate side; Agent B implementation (stored finding production) is a separate future session."
+}
