@@ -81,17 +81,29 @@ def slice_ir_for_group(ir: dict, ep_types: set) -> dict:
     }
 
 
-def filter_semgrep_for_group(semgrep: dict, ep_files: set) -> dict:
+def filter_semgrep_for_group(semgrep: dict, ep_files: set, slug: str) -> dict:
     """
     Filter semgrep results to only hits whose path falls within files
     referenced by EPs in this group.
 
-    ep_files: set of file paths (strings) from filtered entry_points.
-    If ep_files is empty, returns semgrep structure with empty results.
+    ep_files: set of plugin-relative file paths (e.g. 'inc/class-admin.php')
+              built from entry_points[].file AND entry_points[].callback.file.
+    slug:     plugin slug used to normalise semgrep absolute paths.
+
+    Semgrep artifacts store absolute paths (e.g.
+    '/…/plugins/backwpup/inc/class-admin.php') while IR uses plugin-relative
+    paths ('inc/class-admin.php').  We strip the 'plugins/<slug>/' prefix
+    before comparing so both sides are on the same footing.
     """
+    marker = f"plugins/{slug}/"
+
+    def to_relative(path: str) -> str:
+        idx = path.find(marker)
+        return path[idx + len(marker):] if idx != -1 else path
+
     filtered_results = [
         r for r in semgrep.get("results", [])
-        if r.get("path") in ep_files
+        if to_relative(r.get("path", "")) in ep_files
     ]
     return {**semgrep, "results": filtered_results}
 
@@ -158,10 +170,21 @@ def main() -> None:
         ir_out = os.path.join(args.output_dir, f"{slug}-ir-slice-{group_name}.json")
         write_json(ir_out, slice_data)
 
-        ep_files = {ep["file"] for ep in slice_data["entry_points"]}
+        # Build ep_files from BOTH registration file and callback file.
+        # The registration file (entry_points[].file) is where add_action/add_filter
+        # is called; the callback file (entry_points[].callback.file) is where the
+        # handler lives. Semgrep hits typically appear in the handler file, so both
+        # must be included to avoid false-zero filtering.
+        ep_files = set()
+        for ep in slice_data["entry_points"]:
+            if ep.get("file"):
+                ep_files.add(ep["file"])
+            cb = ep.get("callback") or {}
+            if cb.get("file"):
+                ep_files.add(cb["file"])
 
         # Semgrep slice
-        semgrep_slice = filter_semgrep_for_group(semgrep, ep_files)
+        semgrep_slice = filter_semgrep_for_group(semgrep, ep_files, slug)
         sg_out = os.path.join(args.output_dir, f"{slug}-semgrep-filtered-{group_name}.json")
         write_json(sg_out, semgrep_slice)
 
