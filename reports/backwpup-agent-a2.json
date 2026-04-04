@@ -1,0 +1,156 @@
+{
+  "agent_id": "agent-a2",
+  "plugin_slug": "backwpup",
+  "findings": [
+    {
+      "finding_id": "agent-a2-f001",
+      "verdict": "TP",
+      "vuln_type": "sensitive_information_disclosure",
+      "cwe_id": "CWE-200",
+      "severity": "low",
+      "auth_required": "subscriber",
+      "confidence": 0.96,
+      "entry_point_id": "ep_ajax_priv_wp_ajax_backwpup_debug_info",
+      "store_entry_point_id": null,
+      "load_entry_point_id": null,
+      "source_function": "{closure}",
+      "source_file_path": "inc/class-admin.php",
+      "source_line_number": 283,
+      "sink_function": "echo",
+      "sink_file_path": "inc/class-admin.php",
+      "sink_line_number": 287,
+      "reasoning": "Hypothesis: any authenticated user can call `admin-ajax.php?action=backwpup_debug_info` and read the plugin's debug report because the AJAX callback in `inc/class-admin.php:281-290` has no `check_ajax_referer()` or `current_user_can()` gate. Trace: the closure calls `BackWPup_Page_Settings::get_information()` and then echoes every collected label/value pair back to the requester at `inc/class-admin.php:284-289`. `get_information()` assembles environment details such as the WP-Cron URL (`inc/class-page-settings.php:109-111`), server self-connect response details (`inc/class-page-settings.php:117-168`), the document root (`inc/class-page-settings.php:175-178`), temp/log folder paths (`inc/class-page-settings.php:180-215`), the current PHP user (`inc/class-page-settings.php:232-238`), and loaded PHP extensions (`inc/class-page-settings.php:346-352`). Defenses analyzed: output is wrapped in `esc_html()`, so this path is not an XSS sink, and the feature is clearly intended as privileged support/debug output. REFUTATION ATTEMPT: I looked for a shared nonce/capability check in this closure or in the surrounding AJAX registration path and found none before the response is sent. Conclusion: this is a real authenticated information disclosure to any logged-in user, not just users allowed to access BackWPup settings/support data.",
+      "poc_description": "Log in as a low-privileged user and request `/wp-admin/admin-ajax.php?action=backwpup_debug_info`. The response contains the full debug-information page, including absolute paths and server/environment details.",
+      "patchstack_eligible": false,
+      "remediation": "Require both a nonce and an appropriate capability such as `backwpup_settings` before returning debug information."
+    },
+    {
+      "finding_id": "agent-a2-f002",
+      "verdict": "TP",
+      "vuln_type": "broken_access_control",
+      "cwe_id": "CWE-862",
+      "severity": "low",
+      "auth_required": "unknown",
+      "confidence": 0.93,
+      "entry_point_id": "ep_admin_post_admin_post_backwpup",
+      "store_entry_point_id": null,
+      "load_entry_point_id": null,
+      "source_function": "BackWPup_Admin::save_post_form",
+      "source_file_path": "inc/class-admin.php",
+      "source_line_number": 893,
+      "sink_function": "BackWPup_Option::update",
+      "sink_file_path": "inc/class-page-onboarding.php",
+      "sink_line_number": 127,
+      "reasoning": "Hypothesis: a low-privileged BackWPup role can modify onboarding backup jobs through `admin-post.php?action=backwpup` even though that role does not have job-edit or settings privileges. Trace: `BackWPup_Admin::save_post_form()` only checks the page nonce and `current_user_can('backwpup')` at `inc/class-admin.php:838-852`. When `$_POST['page'] === 'backwpup'` and `$_POST['onboarding'] === '1'`, it dispatches directly into `BackWPup_Page_Onboarding::save_post_form()` at `inc/class-admin.php:892-895`. The onboarding UI is reachable while `backwpup_onboarding` is true through a submenu that requires only `backwpup_backups` (`inc/class-admin.php:658-667`), and its form posts a `backwpup_page` nonce plus hidden `onboarding=1` to `admin-post.php` (`plugins/backwpup/pages/onboarding.php:14-20`, `plugins/backwpup/components/containers/form-start.php:40-46`). Inside `BackWPup_Page_Onboarding::save_post_form()`, there is no capability re-check; it updates job options (`inc/class-page-onboarding.php:119-148`, `inc/class-page-onboarding.php:170-171`), schedules cron events (`inc/class-page-onboarding.php:140-146`), and flips the onboarding state (`inc/class-page-onboarding.php:173-175`). Defenses analyzed: the shared handler is partially safe for other branches because edit-job re-checks `backwpup_jobs_edit` (`inc/class-page-editjob.php:44-49`) and settings re-checks `backwpup_settings` (`inc/class-page-settings.php:417-420`). REFUTATION ATTEMPT: I tried to disprove exploitability by finding an equivalent second capability check in the onboarding branch; none exists. The bundled `backwpup_check` role explicitly has `backwpup` and `backwpup_backups` but lacks `backwpup_jobs_edit` and `backwpup_settings` (`inc/class-install.php:142-158`), so the weaker top-level gate is materially broader than the intended privilege boundary. Conclusion: while onboarding is active, a low-privileged BackWPup role can alter backup scheduling/destination state beyond its assigned permissions.",
+      "poc_description": "Assign a user the `backwpup_check` role while `backwpup_onboarding` is still enabled. Visit the onboarding page to obtain the `backwpup_page` nonce, then submit `POST /wp-admin/admin-post.php` with `action=backwpup`, `page=backwpup`, `onboarding=1`, chosen frequency fields, and `onboarding_storage[]`. The request updates onboarding job options and marks onboarding complete even though the role lacks `backwpup_jobs_edit` and `backwpup_settings`.",
+      "patchstack_eligible": false,
+      "remediation": "Require a stronger capability such as `backwpup_jobs_edit` or `backwpup_settings` before calling `BackWPup_Page_Onboarding::save_post_form()`."
+    },
+    {
+      "finding_id": "agent-a2-f003",
+      "verdict": "FP",
+      "vuln_type": "path_traversal",
+      "cwe_id": "CWE-22",
+      "severity": "informational",
+      "auth_required": "unknown",
+      "confidence": 0.92,
+      "entry_point_id": "ep_ajax_priv_wp_ajax_backwpup_working",
+      "fp_reason": "`ajax_working()` is not an exploitable single-endpoint log-file traversal: it first requires one of the allowed BackWPup capabilities, then verifies `backwpupworking_ajax_nonce`, and finally reduces the attacker-controlled `logfile` parameter to a basename that must match the `backwpup_log_*.ext` pattern before appending it to the configured log folder.",
+      "fp_evidence": {
+        "defense": "Capability check, nonce check, and basename/regex validation in `get_logfile_path()` refute arbitrary file access.",
+        "file": "inc/class-page-jobs.php",
+        "line": 1086
+      }
+    },
+    {
+      "finding_id": "agent-a2-f004",
+      "verdict": "FP",
+      "vuln_type": "cross_site_scripting",
+      "cwe_id": "CWE-79",
+      "severity": "informational",
+      "auth_required": "unknown",
+      "confidence": 0.94,
+      "entry_point_id": "ep_ajax_priv_wp_ajax_backwpup_cron_text",
+      "fp_reason": "`ajax_cron_text()` is guarded by `current_user_can('backwpup_jobs_edit')` and `check_ajax_referer('backwpup_ajax_nonce')`. It sanitizes each submitted cron field with `sanitize_text_field()` and escapes the derived schedule text with `esc_html()`/`absint()` before echoing it, so the reflected HTML sink is not exploitable from this endpoint alone.",
+      "fp_evidence": {
+        "defense": "Job-edit capability plus nonce check precede the sanitized/escaped output path.",
+        "file": "inc/class-page-editjob.php",
+        "line": 986
+      }
+    },
+    {
+      "finding_id": "agent-a2-f005",
+      "verdict": "FP",
+      "vuln_type": "path_traversal",
+      "cwe_id": "CWE-22",
+      "severity": "informational",
+      "auth_required": "unknown",
+      "confidence": 0.93,
+      "entry_point_id": "ep_ajax_priv_wp_ajax_backwpup_view_log",
+      "fp_reason": "`ajax_view_log()` requires `backwpup_logs`, verifies a per-file nonce, sanitizes the requested log name with `sanitize_file_name()`, restricts it to names containing `backwpup_log_`, and only reads `basename($log)` from the configured log folder. The returned HTML is further constrained through `wp_kses()` with a narrow allowlist.",
+      "fp_evidence": {
+        "defense": "Capability check, per-file nonce, basename path construction, and `wp_kses()` filtering prevent a direct traversal/XSS issue here.",
+        "file": "inc/class-page-logs.php",
+        "line": 516
+      }
+    },
+    {
+      "finding_id": "agent-a2-f006",
+      "verdict": "FP",
+      "vuln_type": "arbitrary_file_read",
+      "cwe_id": "CWE-639",
+      "severity": "informational",
+      "auth_required": "unknown",
+      "confidence": 0.88,
+      "entry_point_id": "ep_ajax_priv_wp_ajax_download_backup_file",
+      "fp_reason": "Although `download_by_ajax()` accepts attacker-controlled `destination`, `file`, and `local_file`, the actual download path is gated by `BackWpup_Download_Handler::verify_request()`, which enforces the expected action value, `backwpup_action_nonce`, and `backwpup_backups_download` before the callback reaches the downloader. `BackWPup_Download_File::download()` also re-checks the same capability, so this endpoint does not create an unauthorized read primitive in this slice.",
+      "fp_evidence": {
+        "defense": "The downstream download handler enforces nonce + capability before the file callback executes.",
+        "file": "inc/class-download-handler.php",
+        "line": 73
+      }
+    },
+    {
+      "finding_id": "agent-a2-f007",
+      "verdict": "FP",
+      "vuln_type": "broken_access_control",
+      "cwe_id": "CWE-862",
+      "severity": "informational",
+      "auth_required": "unknown",
+      "confidence": 0.9,
+      "entry_point_id": "ep_ajax_priv_wp_ajax_encrypt_key_handler",
+      "fp_reason": "The IR entry is not reachable in this audited build. The real hook registration is inside `admin_init_pro()`, and `admin_init_pro()` only runs when `BackWPup::is_pro()` is true. `Plugin::init()` derives that flag from the presence of `inc/Pro/class-pro.php`; this tree does not include the Pro bootstrap, so `wp_ajax_encrypt_key_handler` is not registered here. The IR callback resolution to `BackWpup_Download_Handler::handle()` does not match the actual registration site.",
+      "fp_evidence": {
+        "defense": "Pro-only route registration is gated behind `BackWPup::is_pro()` before `admin_init_pro()` adds the AJAX hook.",
+        "file": "inc/class-admin.php",
+        "line": 267
+      }
+    },
+    {
+      "finding_id": "agent-a2-f008",
+      "verdict": "REVIEW",
+      "vuln_type": "broken_access_control",
+      "cwe_id": "CWE-862",
+      "severity": "informational",
+      "auth_required": "unknown",
+      "confidence": 0.37,
+      "entry_point_id": "ep_admin_post_admin_post_backwpup_support",
+      "store_entry_point_id": null,
+      "load_entry_point_id": null,
+      "source_function": "BackWPup_Pro_Page_Support::save_post_form",
+      "source_file_path": "inc/class-admin.php",
+      "source_line_number": 1177,
+      "sink_function": null,
+      "sink_file_path": null,
+      "sink_line_number": null,
+      "reasoning": "The slice flags `admin_post_backwpup_support` because the registration at `inc/class-admin.php:1177` has no adjacent nonce/capability check, but the actual callback body `BackWPup_Pro_Page_Support::save_post_form` is not present in the audited source tree. REFUTATION ATTEMPT: I searched the shipped BackWPup sources and found only the registration site, not an implementation I could trace to a sensitive sink or to its own internal guards. Without the real callback body, this slice cannot prove exploitability or safely dismiss it.",
+      "review_reason": "Obtain the actual `BackWPup_Pro_Page_Support::save_post_form()` implementation from the packaged build or Pro code and re-run the trace. This becomes actionable only if the real handler performs a state-changing operation without its own nonce/capability enforcement."
+    }
+  ],
+  "negative_findings": [
+    {
+      "area": "Shared `admin_post_backwpup` non-onboarding branches",
+      "reason": "The edit-job and settings branches add their own stronger capability checks (`backwpup_jobs_edit` and `backwpup_settings`), so the weak top-level `backwpup` gate did not expose those subpaths in this slice."
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "slug": "pretty-link",
+  "agents": [
+    "agent-a1",
+    "agent-a2",
+    "agent-a3",
+    "agent-a4",
+    "agent-a5",
+    "agent-b",
+    "agent-c",
+    "agent-d"
+  ],
+  "inputs": {
+    "agent-a1": "reports/pretty-link-ir-slice-ajax-unauth.json",
+    "agent-a2": "reports/pretty-link-ir-slice-ajax-auth.json",
+    "agent-a3": "reports/pretty-link-ir-slice-rest.json",
+    "agent-a4": "reports/pretty-link-ir-slice-shortcode.json",
+    "agent-a5": "reports/pretty-link-ir-slice-other.json",
+    "agent-b": "reports/phase1/pretty-link-ir.json",
+    "agent-c": "reports/phase1/pretty-link-ir.json",
+    "agent-d": "reports/phase1/pretty-link-ir.json"
+  },
+  "source_dir": "plugins/pretty-link/",
+  "timeout_seconds": 600
+}

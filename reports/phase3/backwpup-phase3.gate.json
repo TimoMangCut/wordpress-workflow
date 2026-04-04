@@ -1,0 +1,1460 @@
+{
+  "plugin_slug": "backwpup",
+  "phase1_summary": {
+    "entry_points": 61,
+    "anomalies": 13,
+    "sources": 544,
+    "sinks": 958
+  },
+  "phase2_summary": {
+    "total": 33,
+    "tp": 17,
+    "fp": 14,
+    "review": 2
+  },
+  "phase3_summary": {
+    "confirmed": 0,
+    "plausible": 0,
+    "uncertain": 19,
+    "likely_hallucination": 0
+  },
+  "validated_findings": [
+    {
+      "finding_id": "agent-a2-f001",
+      "verdict": "TP",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.7245,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_backwpup_debug_info",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "file_exists": true,
+        "path_reachable": true,
+        "auth_consistent": true,
+        "guard_consistent": false,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": true,
+        "code_evidence": true,
+        "reasoning_quality": true,
+        "cvss_plausible": true,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 1.0,
+        "path_reachable": 0.7,
+        "auth_consistent": 1.0,
+        "guard_consistent": 0.1,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 0.5,
+        "psalm_corroborates": 0.5,
+        "code_evidence": 0.7,
+        "reasoning_quality": 0.87,
+        "cvss_plausible": 0.8,
+        "patchstack_eligible": 1.0,
+        "no_hallucination": 1.0
+      },
+      "check_notes": {
+        "file_exists": "exists: inc/class-admin.php",
+        "path_reachable": "sink matched in EP ep_ajax_priv_wp_ajax_backwpup_debug_info, but source evidence weak/missing",
+        "auth_consistent": "auth matches ep (load-leg) type (ajax_priv \u2192 subscriber)",
+        "guard_consistent": "no guard detected",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
+        "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
+        "code_evidence": "sink evidence ok; source location provided but source token not found (verify)",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "cvss_vector omitted (allowed)",
+        "patchstack_eligible": "patchstack_eligible plausibility ok",
+        "no_hallucination": "no hallucination signals",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "guard_contradiction",
+        "insufficient_evidence_to_confirm"
+      ]
+    },
+    {
+      "finding_id": "agent-a2-f002",
+      "verdict": "TP",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.5636,
+      "resolved_entry_point_id": "ep_admin_post_admin_post_backwpup",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "file_exists": true,
+        "path_reachable": false,
+        "auth_consistent": false,
+        "guard_consistent": false,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": true,
+        "code_evidence": true,
+        "reasoning_quality": true,
+        "cvss_plausible": true,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 1.0,
+        "path_reachable": 0.25,
+        "auth_consistent": 0.25,
+        "guard_consistent": 0.0,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 0.5,
+        "psalm_corroborates": 0.5,
+        "code_evidence": 0.7,
+        "reasoning_quality": 0.87,
+        "cvss_plausible": 0.8,
+        "patchstack_eligible": 1.0,
+        "no_hallucination": 1.0
+      },
+      "check_notes": {
+        "file_exists": "exists: inc/class-page-onboarding.php",
+        "path_reachable": "neither source nor sink matched in EP ep_admin_post_admin_post_backwpup",
+        "auth_consistent": "auth mismatch [ep (load-leg)]: EP type=admin_post expects subscriber, finding claims unknown",
+        "guard_consistent": "contradiction: finding claims no capability, IR has effective capability guard",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
+        "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
+        "code_evidence": "sink evidence ok; source location provided but source token not found (verify)",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "cvss_vector omitted (allowed)",
+        "patchstack_eligible": "patchstack_eligible plausibility ok",
+        "no_hallucination": "no hallucination signals",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "guard_contradiction",
+        "insufficient_evidence_to_confirm",
+        "path_reachability_weak"
+      ]
+    },
+    {
+      "finding_id": "agent-a2-f003",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_backwpup_working",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: inc/class-page-jobs.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f004",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_backwpup_cron_text",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: inc/class-page-editjob.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f005",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_backwpup_view_log",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: inc/class-page-logs.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f006",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_download_backup_file",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: inc/class-download-handler.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f007",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_encrypt_key_handler",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: inc/class-admin.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f008",
+      "verdict": "REVIEW",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.5364,
+      "resolved_entry_point_id": "ep_admin_post_admin_post_backwpup_support",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "file_exists": true,
+        "path_reachable": true,
+        "auth_consistent": false,
+        "guard_consistent": false,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": true,
+        "code_evidence": false,
+        "reasoning_quality": true,
+        "cvss_plausible": true,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 1.0,
+        "path_reachable": 0.7,
+        "auth_consistent": 0.25,
+        "guard_consistent": 0.1,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 0.5,
+        "psalm_corroborates": 0.5,
+        "code_evidence": 0.0,
+        "reasoning_quality": 0.87,
+        "cvss_plausible": 0.8,
+        "patchstack_eligible": 0.8,
+        "no_hallucination": 1.0
+      },
+      "check_notes": {
+        "file_exists": "exists: inc/class-admin.php",
+        "path_reachable": "sink matched in EP ep_admin_post_admin_post_backwpup_support, but source evidence weak/missing",
+        "auth_consistent": "auth mismatch [ep (load-leg)]: EP type=admin_post expects subscriber, finding claims unknown",
+        "guard_consistent": "no guard detected",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep available but finding missing file path",
+        "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
+        "code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "cvss_vector omitted (allowed)",
+        "patchstack_eligible": "patchstack_eligible not provided (allowed)",
+        "no_hallucination": "no hallucination signals",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "code_evidence_missing_or_mismatch",
+        "guard_contradiction",
+        "insufficient_evidence_to_confirm"
+      ]
+    },
+    {
+      "finding_id": "agent-a3-getblock-secret-disclosure",
+      "verdict": "TP",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.6736,
+      "resolved_entry_point_id": "ep_rest___getblock",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "file_exists": true,
+        "path_reachable": false,
+        "auth_consistent": true,
+        "guard_consistent": false,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": true,
+        "code_evidence": true,
+        "reasoning_quality": true,
+        "cvss_plausible": true,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 1.0,
+        "path_reachable": 0.25,
+        "auth_consistent": 0.8,
+        "guard_consistent": 0.1,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 0.5,
+        "psalm_corroborates": 0.5,
+        "code_evidence": 1.0,
+        "reasoning_quality": 0.87,
+        "cvss_plausible": 0.8,
+        "patchstack_eligible": 1.0,
+        "no_hallucination": 1.0
+      },
+      "check_notes": {
+        "file_exists": "exists: parts/sidebar/storage-FTP.php",
+        "path_reachable": "neither source nor sink matched in EP ep_rest___getblock",
+        "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
+        "guard_consistent": "no guard detected",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
+        "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
+        "code_evidence": "sink evidence validated (and source evidence checked when available)",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "cvss_vector omitted (allowed)",
+        "patchstack_eligible": "patchstack_eligible plausibility ok",
+        "no_hallucination": "no hallucination signals",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "guard_contradiction",
+        "insufficient_evidence_to_confirm",
+        "path_reachability_weak"
+      ]
+    },
+    {
+      "finding_id": "agent-a3-storagelistcompact-readonly",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_rest_backwpup_v1__storagelistcompact",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: components/storage-list-compact.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a3-cloud-is-authenticated-readonly",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_rest___cloud_is_authenticated",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: src/StorageProviders/API/Rest.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a3-authenticate-cloud-bac",
+      "verdict": "TP",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.5736,
+      "resolved_entry_point_id": "ep_rest___authenticate_cloud",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "file_exists": true,
+        "path_reachable": false,
+        "auth_consistent": true,
+        "guard_consistent": false,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": true,
+        "code_evidence": false,
+        "reasoning_quality": true,
+        "cvss_plausible": true,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 1.0,
+        "path_reachable": 0.25,
+        "auth_consistent": 0.8,
+        "guard_consistent": 0.1,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 1.0,
+        "psalm_corroborates": 0.5,
+        "code_evidence": 0.25,
+        "reasoning_quality": 0.87,
+        "cvss_plausible": 0.8,
+        "patchstack_eligible": 1.0,
+        "no_hallucination": 1.0
+      },
+      "check_notes": {
+        "file_exists": "exists: src/StorageProviders/SugarSync/SugarSyncProvider.php",
+        "path_reachable": "neither source nor sink matched in EP ep_rest___authenticate_cloud",
+        "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
+        "guard_consistent": "no guard detected",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep corroborates (same file suffix, \u00b120 lines)",
+        "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
+        "code_evidence": "sink function 'optionadapter::update' not found near line 134",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "cvss_vector omitted (allowed)",
+        "patchstack_eligible": "patchstack_eligible plausibility ok",
+        "no_hallucination": "no hallucination signals",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "code_evidence_missing_or_mismatch",
+        "guard_contradiction",
+        "insufficient_evidence_to_confirm",
+        "path_reachability_weak"
+      ]
+    },
+    {
+      "finding_id": "agent-a3-delete-auth-cloud-bac",
+      "verdict": "TP",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.5736,
+      "resolved_entry_point_id": "ep_rest___delete_auth_cloud",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "file_exists": true,
+        "path_reachable": false,
+        "auth_consistent": true,
+        "guard_consistent": false,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": true,
+        "code_evidence": false,
+        "reasoning_quality": true,
+        "cvss_plausible": true,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 1.0,
+        "path_reachable": 0.25,
+        "auth_consistent": 0.8,
+        "guard_consistent": 0.1,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 1.0,
+        "psalm_corroborates": 0.5,
+        "code_evidence": 0.25,
+        "reasoning_quality": 0.87,
+        "cvss_plausible": 0.8,
+        "patchstack_eligible": 1.0,
+        "no_hallucination": 1.0
+      },
+      "check_notes": {
+        "file_exists": "exists: src/StorageProviders/Dropbox/DropboxProvider.php",
+        "path_reachable": "neither source nor sink matched in EP ep_rest___delete_auth_cloud",
+        "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
+        "guard_consistent": "no guard detected",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep corroborates (same file suffix, \u00b120 lines)",
+        "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
+        "code_evidence": "sink function 'optionadapter::delete' not found near line 100",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "cvss_vector omitted (allowed)",
+        "patchstack_eligible": "patchstack_eligible plausibility ok",
+        "no_hallucination": "no hallucination signals",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "code_evidence_missing_or_mismatch",
+        "guard_contradiction",
+        "insufficient_evidence_to_confirm",
+        "path_reachability_weak"
+      ]
+    },
+    {
+      "finding_id": "agent-a3-cloudsaveandtest-bac",
+      "verdict": "TP",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.6736,
+      "resolved_entry_point_id": "ep_rest___cloudsaveandtest",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "file_exists": true,
+        "path_reachable": false,
+        "auth_consistent": true,
+        "guard_consistent": false,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": true,
+        "code_evidence": true,
+        "reasoning_quality": true,
+        "cvss_plausible": true,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 1.0,
+        "path_reachable": 0.25,
+        "auth_consistent": 0.8,
+        "guard_consistent": 0.1,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 0.5,
+        "psalm_corroborates": 0.5,
+        "code_evidence": 1.0,
+        "reasoning_quality": 0.87,
+        "cvss_plausible": 0.8,
+        "patchstack_eligible": 1.0,
+        "no_hallucination": 1.0
+      },
+      "check_notes": {
+        "file_exists": "exists: inc/class-destination-ftp.php",
+        "path_reachable": "neither source nor sink matched in EP ep_rest___cloudsaveandtest",
+        "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
+        "guard_consistent": "no guard detected",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
+        "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
+        "code_evidence": "sink evidence validated (and source evidence checked when available)",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "cvss_vector omitted (allowed)",
+        "patchstack_eligible": "patchstack_eligible plausibility ok",
+        "no_hallucination": "no hallucination signals",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "guard_contradiction",
+        "insufficient_evidence_to_confirm",
+        "path_reachability_weak"
+      ]
+    },
+    {
+      "finding_id": "agent-a3-storages-bac",
+      "verdict": "TP",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.5736,
+      "resolved_entry_point_id": "ep_rest___storages",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "file_exists": true,
+        "path_reachable": false,
+        "auth_consistent": true,
+        "guard_consistent": false,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": true,
+        "code_evidence": false,
+        "reasoning_quality": true,
+        "cvss_plausible": true,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 1.0,
+        "path_reachable": 0.25,
+        "auth_consistent": 0.8,
+        "guard_consistent": 0.1,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 1.0,
+        "psalm_corroborates": 0.5,
+        "code_evidence": 0.25,
+        "reasoning_quality": 0.87,
+        "cvss_plausible": 0.8,
+        "patchstack_eligible": 1.0,
+        "no_hallucination": 1.0
+      },
+      "check_notes": {
+        "file_exists": "exists: src/StorageProviders/API/Rest.php",
+        "path_reachable": "neither source nor sink matched in EP ep_rest___storages",
+        "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
+        "guard_consistent": "no guard detected",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep corroborates (same file suffix, \u00b120 lines)",
+        "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
+        "code_evidence": "sink function 'optionadapter::update' not found near line 354",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "cvss_vector omitted (allowed)",
+        "patchstack_eligible": "patchstack_eligible plausibility ok",
+        "no_hallucination": "no hallucination signals",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "code_evidence_missing_or_mismatch",
+        "guard_contradiction",
+        "insufficient_evidence_to_confirm",
+        "path_reachability_weak"
+      ]
+    },
+    {
+      "finding_id": "agent-a3-messages-queue-readonly",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_rest___messages",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: src/Admin/Messages/API/Rest.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a3-chatbot-create-context-safe",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_rest___0",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: src/Admin/Chatbot/API/ChatbotRest.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a3-chatbot-get-context-token-gated",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_rest___1",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: src/Admin/Chatbot/API/ChatbotRest.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a3-getjobslist-readonly",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_rest_backwpup_v1__getjobslist",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: components/heading.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a3-updatejob-bac",
+      "verdict": "TP",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.5509,
+      "resolved_entry_point_id": "ep_rest___updatejob",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "file_exists": true,
+        "path_reachable": false,
+        "auth_consistent": true,
+        "guard_consistent": false,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": true,
+        "code_evidence": false,
+        "reasoning_quality": true,
+        "cvss_plausible": true,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 1.0,
+        "path_reachable": 0.25,
+        "auth_consistent": 0.8,
+        "guard_consistent": 0.1,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 0.5,
+        "psalm_corroborates": 0.5,
+        "code_evidence": 0.25,
+        "reasoning_quality": 0.87,
+        "cvss_plausible": 0.8,
+        "patchstack_eligible": 1.0,
+        "no_hallucination": 1.0
+      },
+      "check_notes": {
+        "file_exists": "exists: src/Jobs/API/Rest.php",
+        "path_reachable": "neither source nor sink matched in EP ep_rest___updatejob",
+        "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
+        "guard_consistent": "no guard detected",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
+        "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
+        "code_evidence": "sink function 'jobadapter::disable_job' not found near line 392",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "cvss_vector omitted (allowed)",
+        "patchstack_eligible": "patchstack_eligible plausibility ok",
+        "no_hallucination": "no hallucination signals",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "code_evidence_missing_or_mismatch",
+        "guard_contradiction",
+        "insufficient_evidence_to_confirm",
+        "path_reachability_weak"
+      ]
+    },
+    {
+      "finding_id": "agent-a3-update-job-title-bac",
+      "verdict": "TP",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.5736,
+      "resolved_entry_point_id": "ep_rest___update_job_title",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "file_exists": true,
+        "path_reachable": false,
+        "auth_consistent": true,
+        "guard_consistent": false,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": true,
+        "code_evidence": false,
+        "reasoning_quality": true,
+        "cvss_plausible": true,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 1.0,
+        "path_reachable": 0.25,
+        "auth_consistent": 0.8,
+        "guard_consistent": 0.1,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 1.0,
+        "psalm_corroborates": 0.5,
+        "code_evidence": 0.25,
+        "reasoning_quality": 0.87,
+        "cvss_plausible": 0.8,
+        "patchstack_eligible": 1.0,
+        "no_hallucination": 1.0
+      },
+      "check_notes": {
+        "file_exists": "exists: src/Jobs/API/Rest.php",
+        "path_reachable": "neither source nor sink matched in EP ep_rest___update_job_title",
+        "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
+        "guard_consistent": "no guard detected",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep corroborates (same file suffix, \u00b120 lines)",
+        "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
+        "code_evidence": "sink function 'jobadapter::rename_job' not found near line 473",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "cvss_vector omitted (allowed)",
+        "patchstack_eligible": "patchstack_eligible plausibility ok",
+        "no_hallucination": "no hallucination signals",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "code_evidence_missing_or_mismatch",
+        "guard_contradiction",
+        "insufficient_evidence_to_confirm",
+        "path_reachability_weak"
+      ]
+    },
+    {
+      "finding_id": "agent-a3-addjob-bac",
+      "verdict": "TP",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.5509,
+      "resolved_entry_point_id": "ep_rest___addjob",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "file_exists": true,
+        "path_reachable": false,
+        "auth_consistent": true,
+        "guard_consistent": false,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": true,
+        "code_evidence": false,
+        "reasoning_quality": true,
+        "cvss_plausible": true,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 1.0,
+        "path_reachable": 0.25,
+        "auth_consistent": 0.8,
+        "guard_consistent": 0.1,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 0.5,
+        "psalm_corroborates": 0.5,
+        "code_evidence": 0.25,
+        "reasoning_quality": 0.87,
+        "cvss_plausible": 0.8,
+        "patchstack_eligible": 1.0,
+        "no_hallucination": 1.0
+      },
+      "check_notes": {
+        "file_exists": "exists: src/Jobs/API/Rest.php",
+        "path_reachable": "neither source nor sink matched in EP ep_rest___addjob",
+        "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
+        "guard_consistent": "no guard detected",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
+        "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
+        "code_evidence": "sink function 'optionadapter::update' not found near line 524",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "cvss_vector omitted (allowed)",
+        "patchstack_eligible": "patchstack_eligible plausibility ok",
+        "no_hallucination": "no hallucination signals",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "code_evidence_missing_or_mismatch",
+        "guard_contradiction",
+        "insufficient_evidence_to_confirm",
+        "path_reachability_weak"
+      ]
+    },
+    {
+      "finding_id": "agent-a3-delete-job-bac",
+      "verdict": "TP",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.5509,
+      "resolved_entry_point_id": "ep_rest___delete_job",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "file_exists": true,
+        "path_reachable": false,
+        "auth_consistent": true,
+        "guard_consistent": false,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": true,
+        "code_evidence": false,
+        "reasoning_quality": true,
+        "cvss_plausible": true,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 1.0,
+        "path_reachable": 0.25,
+        "auth_consistent": 0.8,
+        "guard_consistent": 0.1,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 0.5,
+        "psalm_corroborates": 0.5,
+        "code_evidence": 0.25,
+        "reasoning_quality": 0.87,
+        "cvss_plausible": 0.8,
+        "patchstack_eligible": 1.0,
+        "no_hallucination": 1.0
+      },
+      "check_notes": {
+        "file_exists": "exists: src/Jobs/API/Rest.php",
+        "path_reachable": "neither source nor sink matched in EP ep_rest___delete_job",
+        "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
+        "guard_consistent": "no guard detected",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
+        "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
+        "code_evidence": "sink function 'jobadapter::delete_job' not found near line 570",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "cvss_vector omitted (allowed)",
+        "patchstack_eligible": "patchstack_eligible plausibility ok",
+        "no_hallucination": "no hallucination signals",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "code_evidence_missing_or_mismatch",
+        "guard_contradiction",
+        "insufficient_evidence_to_confirm",
+        "path_reachability_weak"
+      ]
+    },
+    {
+      "finding_id": "agent-a3-save-job-settings-bac",
+      "verdict": "TP",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.5191,
+      "resolved_entry_point_id": "ep_rest___save_job_settings",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "file_exists": true,
+        "path_reachable": false,
+        "auth_consistent": true,
+        "guard_consistent": false,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": true,
+        "code_evidence": false,
+        "reasoning_quality": true,
+        "cvss_plausible": true,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 1.0,
+        "path_reachable": 0.25,
+        "auth_consistent": 0.8,
+        "guard_consistent": 0.1,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 0.5,
+        "psalm_corroborates": 0.5,
+        "code_evidence": 0.25,
+        "reasoning_quality": 0.52,
+        "cvss_plausible": 0.8,
+        "patchstack_eligible": 1.0,
+        "no_hallucination": 1.0
+      },
+      "check_notes": {
+        "file_exists": "exists: src/Jobs/API/Rest.php",
+        "path_reachable": "neither source nor sink matched in EP ep_rest___save_job_settings",
+        "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
+        "guard_consistent": "no guard detected",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
+        "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
+        "code_evidence": "sink function 'optionadapter::update' not found near line 633",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "cvss_vector omitted (allowed)",
+        "patchstack_eligible": "patchstack_eligible plausibility ok",
+        "no_hallucination": "no hallucination signals",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "code_evidence_missing_or_mismatch",
+        "guard_contradiction",
+        "insufficient_evidence_to_confirm",
+        "path_reachability_weak"
+      ]
+    },
+    {
+      "finding_id": "agent-a3-save-job-format-bac",
+      "verdict": "TP",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.5509,
+      "resolved_entry_point_id": "ep_rest___save_job_format",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "file_exists": true,
+        "path_reachable": false,
+        "auth_consistent": true,
+        "guard_consistent": false,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": true,
+        "code_evidence": false,
+        "reasoning_quality": true,
+        "cvss_plausible": true,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 1.0,
+        "path_reachable": 0.25,
+        "auth_consistent": 0.8,
+        "guard_consistent": 0.1,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 0.5,
+        "psalm_corroborates": 0.5,
+        "code_evidence": 0.25,
+        "reasoning_quality": 0.87,
+        "cvss_plausible": 0.8,
+        "patchstack_eligible": 1.0,
+        "no_hallucination": 1.0
+      },
+      "check_notes": {
+        "file_exists": "exists: src/Jobs/API/Rest.php",
+        "path_reachable": "neither source nor sink matched in EP ep_rest___save_job_format",
+        "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
+        "guard_consistent": "no guard detected",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
+        "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
+        "code_evidence": "sink function 'optionadapter::update' not found near line 708",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "cvss_vector omitted (allowed)",
+        "patchstack_eligible": "patchstack_eligible plausibility ok",
+        "no_hallucination": "no hallucination signals",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "code_evidence_missing_or_mismatch",
+        "guard_contradiction",
+        "insufficient_evidence_to_confirm",
+        "path_reachability_weak"
+      ]
+    },
+    {
+      "finding_id": "agent-a3-save-files-exclusions-bac",
+      "verdict": "TP",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.6736,
+      "resolved_entry_point_id": "ep_rest___save_files_exclusions",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "file_exists": true,
+        "path_reachable": false,
+        "auth_consistent": true,
+        "guard_consistent": false,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": true,
+        "code_evidence": true,
+        "reasoning_quality": true,
+        "cvss_plausible": true,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 1.0,
+        "path_reachable": 0.25,
+        "auth_consistent": 0.8,
+        "guard_consistent": 0.1,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 0.5,
+        "psalm_corroborates": 0.5,
+        "code_evidence": 1.0,
+        "reasoning_quality": 0.87,
+        "cvss_plausible": 0.8,
+        "patchstack_eligible": 1.0,
+        "no_hallucination": 1.0
+      },
+      "check_notes": {
+        "file_exists": "exists: inc/class-jobtype-file.php",
+        "path_reachable": "neither source nor sink matched in EP ep_rest___save_files_exclusions",
+        "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
+        "guard_consistent": "no guard detected",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
+        "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
+        "code_evidence": "sink evidence validated (and source evidence checked when available)",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "cvss_vector omitted (allowed)",
+        "patchstack_eligible": "patchstack_eligible plausibility ok",
+        "no_hallucination": "no hallucination signals",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "guard_contradiction",
+        "insufficient_evidence_to_confirm",
+        "path_reachability_weak"
+      ]
+    },
+    {
+      "finding_id": "agent-a3-save-excluded-tables-bac",
+      "verdict": "TP",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.6736,
+      "resolved_entry_point_id": "ep_rest___save_excluded_tables",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "file_exists": true,
+        "path_reachable": false,
+        "auth_consistent": true,
+        "guard_consistent": false,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": true,
+        "code_evidence": true,
+        "reasoning_quality": true,
+        "cvss_plausible": true,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 1.0,
+        "path_reachable": 0.25,
+        "auth_consistent": 0.8,
+        "guard_consistent": 0.1,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 0.5,
+        "psalm_corroborates": 0.5,
+        "code_evidence": 1.0,
+        "reasoning_quality": 0.87,
+        "cvss_plausible": 0.8,
+        "patchstack_eligible": 1.0,
+        "no_hallucination": 1.0
+      },
+      "check_notes": {
+        "file_exists": "exists: inc/class-jobtype-dbdump.php",
+        "path_reachable": "neither source nor sink matched in EP ep_rest___save_excluded_tables",
+        "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
+        "guard_consistent": "no guard detected",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
+        "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
+        "code_evidence": "sink evidence validated (and source evidence checked when available)",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "cvss_vector omitted (allowed)",
+        "patchstack_eligible": "patchstack_eligible plausibility ok",
+        "no_hallucination": "no hallucination signals",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "guard_contradiction",
+        "insufficient_evidence_to_confirm",
+        "path_reachability_weak"
+      ]
+    },
+    {
+      "finding_id": "agent-a3-save-site-option-default-roles-safe",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_rest___save_site_option",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: inc/class-install.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a3-update-backup-type-bac",
+      "verdict": "TP",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.5509,
+      "resolved_entry_point_id": "ep_rest___backups___P_id__d___type",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "file_exists": true,
+        "path_reachable": false,
+        "auth_consistent": true,
+        "guard_consistent": false,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": true,
+        "code_evidence": false,
+        "reasoning_quality": true,
+        "cvss_plausible": true,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 1.0,
+        "path_reachable": 0.25,
+        "auth_consistent": 0.8,
+        "guard_consistent": 0.1,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 0.5,
+        "psalm_corroborates": 0.5,
+        "code_evidence": 0.25,
+        "reasoning_quality": 0.87,
+        "cvss_plausible": 0.8,
+        "patchstack_eligible": 1.0,
+        "no_hallucination": 1.0
+      },
+      "check_notes": {
+        "file_exists": "exists: src/Jobs/API/Rest.php",
+        "path_reachable": "neither source nor sink matched in EP ep_rest___backups___P_id__d___type",
+        "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
+        "guard_consistent": "no guard detected",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
+        "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
+        "code_evidence": "sink function 'optionadapter::update' not found near line 451",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "cvss_vector omitted (allowed)",
+        "patchstack_eligible": "patchstack_eligible plausibility ok",
+        "no_hallucination": "no hallucination signals",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "code_evidence_missing_or_mismatch",
+        "guard_contradiction",
+        "insufficient_evidence_to_confirm",
+        "path_reachability_weak"
+      ]
+    },
+    {
+      "finding_id": "agent-a3-backups-list-readonly",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_rest___backups",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: inc/Utils/BackWPupHelpers.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a3-pagination-readonly",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_rest___pagination",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: components/navigation/pagination.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a3-startbackup-bac",
+      "verdict": "TP",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.5191,
+      "resolved_entry_point_id": "ep_rest_backwpup_v1__startbackup",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "file_exists": true,
+        "path_reachable": false,
+        "auth_consistent": true,
+        "guard_consistent": false,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": true,
+        "code_evidence": false,
+        "reasoning_quality": true,
+        "cvss_plausible": true,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 1.0,
+        "path_reachable": 0.25,
+        "auth_consistent": 0.8,
+        "guard_consistent": 0.1,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 0.5,
+        "psalm_corroborates": 0.5,
+        "code_evidence": 0.25,
+        "reasoning_quality": 0.52,
+        "cvss_plausible": 0.8,
+        "patchstack_eligible": 1.0,
+        "no_hallucination": 1.0
+      },
+      "check_notes": {
+        "file_exists": "exists: src/Backups/API/Rest.php",
+        "path_reachable": "neither source nor sink matched in EP ep_rest_backwpup_v1__startbackup",
+        "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
+        "guard_consistent": "no guard detected",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
+        "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
+        "code_evidence": "sink function 'jobadapter::get_jobrun_url' not found near line 260",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "cvss_vector omitted (allowed)",
+        "patchstack_eligible": "patchstack_eligible plausibility ok",
+        "no_hallucination": "no hallucination signals",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "code_evidence_missing_or_mismatch",
+        "guard_contradiction",
+        "insufficient_evidence_to_confirm",
+        "path_reachability_weak"
+      ]
+    },
+    {
+      "finding_id": "agent-a3-process-bulk-actions-needs-proof",
+      "verdict": "REVIEW",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.5455,
+      "resolved_entry_point_id": "ep_rest_backwpup_v1__process_bulk_actions",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "file_exists": true,
+        "path_reachable": false,
+        "auth_consistent": true,
+        "guard_consistent": false,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": true,
+        "code_evidence": false,
+        "reasoning_quality": true,
+        "cvss_plausible": true,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 1.0,
+        "path_reachable": 0.25,
+        "auth_consistent": 0.8,
+        "guard_consistent": 0.1,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 0.5,
+        "psalm_corroborates": 0.5,
+        "code_evidence": 0.25,
+        "reasoning_quality": 0.87,
+        "cvss_plausible": 0.8,
+        "patchstack_eligible": 0.8,
+        "no_hallucination": 1.0
+      },
+      "check_notes": {
+        "file_exists": "exists: src/Backups/API/Rest.php",
+        "path_reachable": "neither source nor sink matched in EP ep_rest_backwpup_v1__process_bulk_actions",
+        "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
+        "guard_consistent": "no guard detected",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
+        "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
+        "code_evidence": "sink function 'backwpup_destinations::file_delete' not found near line 420",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "cvss_vector omitted (allowed)",
+        "patchstack_eligible": "patchstack_eligible not provided (allowed)",
+        "no_hallucination": "no hallucination signals",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "code_evidence_missing_or_mismatch",
+        "guard_contradiction",
+        "insufficient_evidence_to_confirm",
+        "path_reachability_weak"
+      ]
+    }
+  ],
+  "actionable_findings": [],
+  "actionable_not_patchstack": []
+}

@@ -1,4 +1,150 @@
 {
   "plugin_slug": "cartflows",
-  "reviews": []
+  "reviews": [
+    {
+      "finding_id": "cartflows-a1-001",
+      "original_status": "UNCERTAIN",
+      "verdict_change": "keep",
+      "suggested_field_corrections": {},
+      "reason": "The unauthenticated file upload path is fully confirmed in source: no capability check exists in upload_checkout_file(), the nonce is unconditionally emitted to every checkout page visitor at class-cartflows-checkout-markup.php:1776 regardless of whether a file field is configured, and when field_key/checkout_id are absent get_field_restrictions() returns an empty extension list causing a fall-through to the full master allowlist at :319-321. The endpoint is genuinely reachable by any unauthenticated visitor who loads a CartFlows checkout page.",
+      "counter_evidence": [
+        {
+          "type": "guard",
+          "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+          "line": 295,
+          "detail": "check_ajax_referer('wcf-file-upload', 'security', false) is present and the failure branch calls wp_send_json_error() which terminates execution. The nonce is effective as a CSRF guard but provides no access-control boundary because it is emitted unconditionally to all public checkout visitors (class-cartflows-checkout-markup.php:1776)."
+        },
+        {
+          "type": "sanitizer",
+          "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+          "line": 331,
+          "detail": "wp_check_filetype_and_ext() validates MIME type against declared extension, blocking MIME-type spoofing. Combined with the master allowlist at classes/class-cartflows-helper.php:1933-1934 (jpg, jpeg, png, gif, webp, ico, pdf, mp3, m4a, wav, mp4, m4v, mov), this prevents PHP/script RCE. The upload is still a real public file-hosting primitive."
+        },
+        {
+          "type": "guard",
+          "file": "modules/checkout/classes/class-cartflows-checkout-markup.php",
+          "line": 1804,
+          "detail": "has_file_field detection loop (lines 1804-1817) checks for enabled file fields and exposes this flag as cartflows.has_file_field in the localized script. However, this flag controls only the JavaScript UI (assets/js/checkout-template.js:885), not any server-side guard on the AJAX handler itself."
+        }
+      ],
+      "missing_evidence": [
+        "Confirmation that wp_handle_upload() with test_form:false does not impose its own capability check (it does not; wp_handle_upload only enforces MIME/extension when test_form is false).",
+        "Confirmation that the nonce returned by wp_create_nonce('wcf-file-upload') for a logged-out user is valid for check_ajax_referer on a subsequent request without cookies (WordPress nonces for logged-out users are keyed to session 0+IP+agent, so a fresh browser session from the same IP will produce the same nonce within the nonce lifetime; this is sufficient for exploitation).",
+        "Dynamic test of upload endpoint with omitted field_key and checkout_id to confirm the fallback to master allowlist at runtime."
+      ],
+      "dynamic_test_plan": [
+        "Step 1: Load any public CartFlows checkout page in a browser with no active WordPress session. Extract the value of cartflows.wcf_file_upload_nonce from the inline script block.",
+        "Step 2: Using curl or Burp Suite, send a multipart POST to /wp-admin/admin-ajax.php with: action=wcf_upload_checkout_file, security=<extracted_nonce>, wcf_checkout_file=@test.pdf (omit field_key and checkout_id entirely).",
+        "Step 3: Verify the response: a 200 JSON success response with data.url pointing to a wp-content/uploads/.../wcf_<uuid>.pdf URL confirms the finding. The file should be publicly accessible at that URL.",
+        "Step 4: Repeat Step 2 with a .jpg extension to confirm media file types are also accepted.",
+        "Step 5: Attempt Step 2 with a .php extension to confirm the master allowlist blocks PHP uploads and the endpoint does NOT provide RCE, only arbitrary media hosting."
+      ]
+    },
+    {
+      "finding_id": "cartflows-a1-002",
+      "original_status": "UNCERTAIN",
+      "verdict_change": "keep",
+      "suggested_field_corrections": {},
+      "reason": "The user enumeration path is directly confirmed in source: check_email_exists() at line 209-219 returns boolval($is_exist) as success plus distinct human-readable messages ('Email Exist.' vs 'Email not exist'), the nonce is unconditionally emitted at class-cartflows-checkout-markup.php:1772 to all checkout visitors, and the endpoint is registered for nopriv at line 54. No rate-limiting, no response normalization, and no additional access control exists in the handler.",
+      "counter_evidence": [
+        {
+          "type": "guard",
+          "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+          "line": 207,
+          "detail": "check_ajax_referer('check-email-exist', 'security') is present and dies on failure. The nonce name 'check-email-exist' matches the emitted nonce at class-cartflows-checkout-markup.php:1772. This prevents CSRF but does not limit who can call the endpoint, since the nonce is publicly accessible."
+        },
+        {
+          "type": "sanitizer",
+          "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+          "line": 209,
+          "detail": "sanitize_email() and wp_unslash() are applied to the input before passing to email_exists(). This is a proper sanitizer but does not address the disclosure: a sanitized address still produces a differentiable success/failure response."
+        }
+      ],
+      "missing_evidence": [
+        "Whether email_exists() performs any timing side-channel that could be measured independently of the boolean response (unlikely to matter given the explicit response differentiation).",
+        "Whether WooCommerce or another active plugin installs a rate-limiting middleware on wp-admin/admin-ajax.php that would limit enumeration velocity (this would not fix the vulnerability but would reduce impact).",
+        "Confirmation that the feature is intentional and documented (it appears to be: the frontend uses the response at assets/js/checkout-template.js:623-687 to show a login prompt for returning customers)."
+      ],
+      "dynamic_test_plan": [
+        "Step 1: Load a public CartFlows checkout page and extract cartflows.check_email_exist_nonce from the inline localized script.",
+        "Step 2: POST to /wp-admin/admin-ajax.php with: action=wcf_check_email_exists, security=<nonce>, email_address=<known_registered_email>. Verify response contains success:true and msg:'Email Exist.'",
+        "Step 3: Repeat Step 2 with email_address=<random_unregistered_email>. Verify response contains success:false and msg:'Email not exist'.",
+        "Step 4: Script a loop of 100+ requests with different email addresses to confirm no rate limiting is applied at the server (HTTP 200 returned each time without throttling).",
+        "Step 5: Confirm the nonce remains valid across requests without a new page load (expected: yes, WordPress nonces are valid for up to 12 hours by default)."
+      ]
+    },
+    {
+      "finding_id": "agent-a2-f22-upload-checkout-file",
+      "original_status": "UNCERTAIN",
+      "verdict_change": "keep",
+      "suggested_field_corrections": {
+        "auth_required": "subscriber"
+      },
+      "reason": "This finding targets the authenticated hook (wp_ajax_wcf_upload_checkout_file at line 57) of the same upload_checkout_file() handler as cartflows-a1-001. The handler has no capability check and the same fallback-to-master-allowlist behavior. The Phase 2 auth_required:none is incorrect — the ajax_priv hook requires a valid WordPress session (subscriber+), but the vulnerability is identical: any logged-in user regardless of role can upload arbitrary media files. The auth_required correction to 'subscriber' brings the finding into alignment with the entry point type.",
+      "counter_evidence": [
+        {
+          "type": "guard",
+          "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+          "line": 295,
+          "detail": "Same check_ajax_referer guard as cartflows-a1-001. Effective as CSRF guard, not as access-control boundary. The nonce (wcf-file-upload) is emitted unconditionally at class-cartflows-checkout-markup.php:1776, so any subscriber who has visited a checkout page holds a valid nonce."
+        }
+      ],
+      "missing_evidence": [
+        "Whether the authenticated hook (wp_ajax_wcf_upload_checkout_file) is triggered in a different context than the nopriv hook — e.g., does WordPress skip the nopriv hook when a logged-in user hits admin-ajax.php with a nopriv action? (Answer: WordPress fires wp_ajax_<action> for logged-in users and wp_ajax_nopriv_<action> for logged-out users; both hooks are registered in the constructor, so both entry points are live simultaneously.)",
+        "Dynamic confirmation that a subscriber-role account (no CartFlows-specific capabilities) can successfully upload a file via this endpoint."
+      ],
+      "dynamic_test_plan": [
+        "Step 1: Create a subscriber-role WordPress account. Log in as that subscriber.",
+        "Step 2: Load a public CartFlows checkout page while logged in as the subscriber. Extract cartflows.wcf_file_upload_nonce.",
+        "Step 3: POST to /wp-admin/admin-ajax.php with: action=wcf_upload_checkout_file, security=<nonce>, wcf_checkout_file=@test.jpg (omit field_key and checkout_id).",
+        "Step 4: Verify a 200 JSON success response with data.url confirming upload succeeded for an authenticated subscriber without CartFlows permissions.",
+        "Step 5: Compare behavior with cartflows-a1-001 (unauthenticated) to confirm both hooks are independently exploitable."
+      ]
+    },
+    {
+      "finding_id": "agent-a4-review-checkout-block-layout-include",
+      "original_status": "UNCERTAIN",
+      "verdict_change": "keep",
+      "suggested_field_corrections": {
+        "auth_required": "editor",
+        "source_line_number": 858
+      },
+      "reason": "The source-to-sink data flow from $attributes['layout'] through the cartflows_checkout_meta_wcf-checkout-layout filter to the unguarded include is confirmed in code. The AJAX preview path (class-cartflows-init-blocks.php:232) safely applies sanitize_title() to the layout POST parameter, which strips slashes and path separators. However, the Gutenberg block render_html() path (class-wcfb-checkout-form.php:858) registers the filter using the raw, unsanitized block attribute value from saved post_content, and there is no allowlist or path normalization before the file_exists()/include at class-cartflows-checkout-markup.php:532-533. The cartflows_checkout_layout_template filter has no registered callbacks in this plugin, so the value passes through unchanged. Minimum role to exploit is Editor: with capability_type:'post' and map_meta_cap:true, an Editor (who has edit_others_posts) can edit existing cartflows_step posts via the Gutenberg editor REST API (show_in_rest is true when current_user_can('edit_posts')). Phase 2 listed auth_required:unknown and source_line_number:856; corrected to 'editor' and line 858 (the add_filter() call).",
+      "counter_evidence": [
+        {
+          "type": "sanitizer",
+          "file": "modules/gutenberg/classes/class-cartflows-init-blocks.php",
+          "line": 232,
+          "detail": "In the AJAX preview path, $attributes['layout'] is set from sanitize_title(wp_unslash($_POST['layout'])). sanitize_title() converts to lowercase and strips non-alphanumeric characters including forward/backward slashes, neutralizing path traversal via this code path. This sanitizer is NOT present in the render_html() block render path."
+        },
+        {
+          "type": "guard",
+          "file": "modules/checkout/classes/class-cartflows-checkout-markup.php",
+          "line": 532,
+          "detail": "file_exists($template_layout) gates the include: if the attacker-supplied path does not exist on the filesystem, the default template is included instead. This prevents inclusion of non-existent paths but does not prevent LFI of any existing readable file (e.g., /etc/passwd on Linux, wp-config.php, other plugin files)."
+        },
+        {
+          "type": "guard",
+          "file": "modules/flow/classes/class-cartflows-step-post-type.php",
+          "line": 198,
+          "detail": "'create_posts' => 'do_not_allow' prevents any non-administrator from creating new cartflows_step posts. An Editor can edit existing steps but not create new ones. An attacker must find an existing step to edit."
+        }
+      ],
+      "missing_evidence": [
+        "Confirmation that an Editor-role user can save a cartflows_step post with an arbitrary string in the wcfb/checkout-form block's layout attribute via the Gutenberg block editor REST endpoint (POST /wp-json/wp/v2/cartflows_step/<id>) without server-side attribute sanitization.",
+        "Confirmation that the cartflows_step post type is accessible in the Gutenberg editor for Editor-role users in practice (show_in_rest:true is gated on current_user_can('edit_posts') at registration time, which may evaluate to true for the admin registering it but behaves as a static value stored in the CPT registration array).",
+        "Confirmation that the layout attribute value in saved block content is used verbatim at render time without any WordPress core block attribute coercion (WordPress does coerce registered block attributes by type but 'string' type coercion does not strip path characters).",
+        "Whether /etc/passwd or any sensitive server-side file (e.g., wp-config.php) is readable by the PHP process and passes file_exists(), confirming concrete file read impact beyond local .php inclusion."
+      ],
+      "dynamic_test_plan": [
+        "Step 1: Create an Editor-role user. Log in as that Editor in the WordPress admin.",
+        "Step 2: Using the REST API (or Gutenberg block editor UI), edit an existing cartflows_step post of type 'checkout'. Insert a wcfb/checkout-form block with the layout attribute set to '/etc/passwd' (or a known-existing server path).",
+        "Step 3: Save the post via REST API: PUT /wp-json/wp/v2/cartflows_step/<id> with post_content containing the serialized block <!-- wp:wcfb/checkout-form {\"layout\":\"/etc/passwd\"} /-->.",
+        "Step 4: Visit the frontend URL of the checkout step as an unauthenticated visitor.",
+        "Step 5: Inspect the rendered HTML for file contents (e.g., 'root:x:0:0' from /etc/passwd, or PHP error output if the file is not valid PHP). If contents appear, upgrade to CONFIRMED LFI.",
+        "Step 6: Alternatively, set layout to an absolute path to wp-config.php and verify whether database credentials are exposed in the rendered output (confirms high-severity information disclosure).",
+        "Step 7: If direct file read fails, attempt to set layout to a .php file within the WordPress installation (e.g., a known plugin file) to test for RCE via PHP include of an attacker-controlled file."
+      ]
+    }
+  ]
 }

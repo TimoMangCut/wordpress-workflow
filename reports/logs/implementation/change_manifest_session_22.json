@@ -26,9 +26,9 @@
   "discovered_issues": [
     {
       "id": "DI-22-01",
-      "description": "Session 19 (G-05: gate update for stored flows) has not been executed. phase3_gate.py does not yet validate store_entry_point_id write-leg auth. This means Agent B findings with stored flows will not be correctly gate-checked until G-05 is deployed. Session 19 was listed in IMPLEMENTATION-PLAN.md but its status was not [x] at time of Session 22.",
-      "severity": "deferred",
-      "action": "Flag for Session 23 planning. G-05 must be resolved before Agent B stored-flow findings can be production-trusted."
+      "description": "[CORRECTED — P2 fix] Session 19 (G-05) is COMPLETED per change_manifest_session_19.json (status=COMPLETED, gaps=['G-05']). Original DI-22-01 incorrectly claimed Session 19 had not been executed — this was a factual error. phase3_gate.py does validate store_entry_point_id write-leg auth as of Session 19. Agent B findings with stored flows are correctly gate-checked.",
+      "severity": "informational",
+      "action": "No action needed. G-05 is already deployed. This DI is kept for audit trail of the original error."
     },
     {
       "id": "DI-22-02",

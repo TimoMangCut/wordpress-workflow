@@ -118,6 +118,7 @@ DISPATCH_FILE="${DISPATCH_FILE_OVERRIDE:-$REPORTS_DIR/${SLUG}-dispatch.json}"
 FAILURES_LOG="$LOGS_DIR/${SLUG}-failures.json"
 MERGE_READY_SENTINEL="$REPORTS_DIR/${SLUG}-merge-ready"
 MERGE_SCRIPT="$SCRIPT_DIR/merge_agent_outputs.py"
+SKILL_SETS_DIR="$REPO_ROOT/tools/config"
 
 mkdir -p "$LOGS_DIR"
 
@@ -275,11 +276,25 @@ if [[ ${#AGENTS_TO_RUN[@]} -eq 0 ]]; then
 fi
 
 # ---------------------------------------------------------------------------
-# launch_agent — starts a single agent via Codex CLI in background
+# skill_set_file_for_agent — maps agent-id prefix to SKILL SET markdown file
+# ---------------------------------------------------------------------------
+skill_set_file_for_agent() {
+  local agent="$1"
+  case "$agent" in
+    agent-a*) echo "$SKILL_SETS_DIR/skill-set-agent-a.md" ;;
+    agent-b*)  echo "$SKILL_SETS_DIR/skill-set-agent-b.md" ;;
+    agent-c*)  echo "$SKILL_SETS_DIR/skill-set-agent-c.md" ;;
+    agent-d*)  echo "$SKILL_SETS_DIR/skill-set-agent-d.md" ;;
+    *)         echo "" ;;
+  esac
+}
+
+# ---------------------------------------------------------------------------
+# launch_agent — starts a single agent via Codex CLI (codex exec) in background
 # ---------------------------------------------------------------------------
 launch_agent() {
   local agent="$1"
-  local input_file out_file
+  local input_file out_file skill_set_file prompt_file
 
   input_file=$(python3 -c "
 import json,sys
@@ -288,24 +303,55 @@ print(d.get('inputs',{}).get(sys.argv[2],''))
 " "$DISPATCH_FILE" "$agent")
 
   out_file="$(agent_output_file "$agent")"
+  skill_set_file="$(skill_set_file_for_agent "$agent")"
 
-  log_info "Launching agent: $agent  input=$input_file  output=$out_file"
+  log_info "Launching agent: $agent  input=$input_file  output=$out_file  skill_set=$skill_set_file"
+
+  if [[ -z "$skill_set_file" || ! -f "$skill_set_file" ]]; then
+    log_error "No SKILL SET file found for agent '$agent' (resolved: '$skill_set_file'). Skipping."
+    append_failure "phase2" "$agent" "missing_skill_set" "0" "skipped" \
+      "No SKILL SET file found for agent '$agent'."
+    return 1
+  fi
+
+  # Build prompt file: SKILL SET content + runtime context block appended
+  prompt_file="$(mktemp /tmp/prompt-${SLUG}-${agent}-XXXXXX.md)"
+  {
+    cat "$skill_set_file"
+    echo ""
+    echo "---"
+    echo "## Runtime Context (injected by orchestrator)"
+    echo ""
+    echo "- **Plugin slug:** ${SLUG}"
+    echo "- **Input file:** ${input_file}"
+    echo "- **Output file:** ${out_file}"
+    echo "- **Agent ID:** ${agent}"
+    echo "- **Source directory:** $REPO_ROOT/plugins/${SLUG}/"
+    echo ""
+    echo "Write your JSON output to: \`${out_file}\`"
+    echo "The output must conform to the agent-output schema."
+  } > "$prompt_file"
 
   AGENT_INPUT_FILE="$input_file" \
   AGENT_OUTPUT_FILE="$out_file" \
   AGENT_ID="$agent" \
   AGENT_SLUG="$SLUG" \
-  codex run "$agent" "$SLUG" \
-    --input "$input_file" \
-    --output "$out_file" \
+  codex exec \
+    --dangerously-bypass-approvals-and-sandbox \
+    -C "$REPO_ROOT" \
+    --output-last-message "$LOGS_DIR/${SLUG}-${agent}-last-message.txt" \
     2>>"$LOGS_DIR/${SLUG}-${agent}.log" \
+    < "$prompt_file" \
     &
 
   local pid=$!
   state_set "$agent" "pid"    "$pid"
   state_set "$agent" "start"  "$(date +%s)"
   state_set "$agent" "status" "running"
-  log_info "Agent '$agent' launched with PID $pid"
+  # Note: prompt_file is NOT removed here; codex exec reads it via stdin.
+  # It lives in /tmp and will be cleaned up by the OS. The STATE_DIR cleanup
+  # (trap cleanup EXIT) does not touch /tmp prompt files — acceptable.
+  log_info "Agent '$agent' launched with PID $pid (prompt: $prompt_file)"
 }
 
 # ---------------------------------------------------------------------------

@@ -1,0 +1,27 @@
+{
+  "run_timestamp": "2026-04-04T17:30:53Z",
+  "plugins": [
+    {
+      "slug": "cartflows",
+      "tp": 0,
+      "fp": 3,
+      "fn": 0,
+      "review_hit": 0,
+      "review_miss": 1,
+      "quality_score": 0.0,
+      "decision_rate": 0.75,
+      "gt_findings_count": 0,
+      "pipeline_tp_count": 3,
+      "pipeline_review_count": 1
+    }
+  ],
+  "aggregate": {
+    "total_tp": 0,
+    "total_fp": 3,
+    "total_fn": 0,
+    "total_review_hit": 0,
+    "total_review_miss": 1,
+    "quality_score": 0.0,
+    "decision_rate": 0.75
+  }
+}

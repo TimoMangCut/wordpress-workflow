@@ -1,0 +1,53 @@
+{
+  "run_timestamp": "2026-04-04T17:32:27Z",
+  "plugins": [
+    {
+      "slug": "backwpup",
+      "tp": 0,
+      "fp": 17,
+      "fn": 2,
+      "review_hit": 0,
+      "review_miss": 2,
+      "quality_score": 0.0,
+      "decision_rate": 0.8947368421052632,
+      "gt_findings_count": 2,
+      "pipeline_tp_count": 17,
+      "pipeline_review_count": 2
+    },
+    {
+      "slug": "cartflows",
+      "tp": 0,
+      "fp": 3,
+      "fn": 0,
+      "review_hit": 0,
+      "review_miss": 1,
+      "quality_score": 0.0,
+      "decision_rate": 0.75,
+      "gt_findings_count": 0,
+      "pipeline_tp_count": 3,
+      "pipeline_review_count": 1
+    },
+    {
+      "slug": "pretty-link",
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "review_hit": 0,
+      "review_miss": 0,
+      "quality_score": null,
+      "decision_rate": null,
+      "gt_findings_count": 0,
+      "pipeline_tp_count": 0,
+      "pipeline_review_count": 0
+    }
+  ],
+  "aggregate": {
+    "total_tp": 0,
+    "total_fp": 20,
+    "total_fn": 2,
+    "total_review_hit": 0,
+    "total_review_miss": 3,
+    "quality_score": 0.0,
+    "decision_rate": 0.8695652173913043
+  }
+}

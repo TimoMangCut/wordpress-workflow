@@ -1,0 +1,102 @@
+{
+  "agent_id": "agent-a4",
+  "plugin_slug": "cartflows",
+  "findings": [
+    {
+      "finding_id": "agent-a4-fp-checkout-shortcode-demo-guard",
+      "verdict": "FP",
+      "vuln_type": "broken_access_control",
+      "cwe_id": "CWE-862",
+      "severity": "high",
+      "auth_required": "contributor",
+      "confidence": 0.93,
+      "entry_point_id": "ep_shortcode_cartflows_checkout",
+      "source_function": "checkout_shortcode_markup",
+      "source_file_path": "modules/checkout/classes/class-cartflows-checkout-markup.php",
+      "source_line_number": 492,
+      "sink_function": "include",
+      "sink_file_path": "modules/checkout/classes/class-cartflows-checkout-markup.php",
+      "sink_line_number": 533,
+      "fp_reason": "The flagged `is_admin()` branch only affects demo rendering. The plugin path that enables `cartflows_show_demo_checkout` is the Gutenberg preview AJAX handler, which enforces both a nonce and `current_user_can( 'cartflows_manage_flows_steps' )` before demo mode is turned on. The attacker-controlled `$_POST['id']` value is reduced to an integer before use, and ordinary non-checkout requests stop at the early error path instead of reaching the template include.",
+      "fp_evidence": {
+        "defense": "Preview/demo mode is gated by `check_ajax_referer()` and `current_user_can( 'cartflows_manage_flows_steps' )` before `cartflows_show_demo_checkout` is enabled.",
+        "file": "modules/gutenberg/classes/class-cartflows-init-blocks.php",
+        "line": 198
+      },
+      "patchstack_eligible": false
+    },
+    {
+      "finding_id": "agent-a4-fp-optin-shortcode-demo-guard",
+      "verdict": "FP",
+      "vuln_type": "broken_access_control",
+      "cwe_id": "CWE-862",
+      "severity": "high",
+      "auth_required": "contributor",
+      "confidence": 0.94,
+      "entry_point_id": "ep_shortcode_cartflows_optin",
+      "source_function": "optin_shortcode_markup",
+      "source_file_path": "modules/optin/classes/class-cartflows-optin-markup.php",
+      "source_line_number": 245,
+      "sink_function": "include",
+      "sink_file_path": "modules/optin/classes/class-cartflows-optin-markup.php",
+      "sink_line_number": 279,
+      "fp_reason": "The `is_admin()` checks are not acting as the security boundary for public users. Demo preview is only enabled through the Gutenberg preview AJAX handler, which requires a valid nonce and `cartflows_manage_flows_steps`; the preview `id` is cast with `intval()`. On normal frontend requests, the shortcode falls back to the current optin step or returns the fixed error message instead of exposing privileged behavior.",
+      "fp_evidence": {
+        "defense": "The preview path is protected by `check_ajax_referer()` and `current_user_can( 'cartflows_manage_flows_steps' )` before `cartflows_show_demo_optin_form` is set.",
+        "file": "modules/gutenberg/classes/class-cartflows-init-blocks.php",
+        "line": 308
+      },
+      "patchstack_eligible": false
+    },
+    {
+      "finding_id": "agent-a4-review-checkout-block-layout-include",
+      "verdict": "REVIEW",
+      "vuln_type": "local_file_inclusion",
+      "cwe_id": "CWE-98",
+      "severity": "high",
+      "auth_required": "unknown",
+      "confidence": 0.78,
+      "entry_point_id": "ep_block_wcfb_checkout_form",
+      "source_function": "render_html",
+      "source_file_path": "modules/gutenberg/dist/blocks/checkout-form/class-wcfb-checkout-form.php",
+      "source_line_number": 856,
+      "sink_function": "include",
+      "sink_file_path": "modules/checkout/classes/class-cartflows-checkout-markup.php",
+      "sink_line_number": 533,
+      "reasoning": "Hypothesis: the checkout block's `layout` attribute may reach a raw `include`, creating a local file inclusion or file-read path. Trace: `WCFB_Checkout_Form::render_html()` adds a `cartflows_checkout_meta_wcf-checkout-layout` filter and returns the raw block attribute when `layout` is non-empty (`modules/gutenberg/dist/blocks/checkout-form/class-wcfb-checkout-form.php:838`, `modules/gutenberg/dist/blocks/checkout-form/class-wcfb-checkout-form.php:856`). `Cartflows_Default_Meta::get_checkout_meta_value()` then returns filtered values verbatim (`classes/class-cartflows-default-meta.php:530`, `classes/class-cartflows-default-meta.php:546`). In `Cartflows_Checkout_Markup::checkout_shortcode_markup()`, that value is assigned to `$checkout_layout`, passed through `apply_filters( 'cartflows_checkout_layout_template', $checkout_layout )`, and included directly when `file_exists()` succeeds (`modules/checkout/classes/class-cartflows-checkout-markup.php:526`, `modules/checkout/classes/class-cartflows-checkout-markup.php:530`, `modules/checkout/classes/class-cartflows-checkout-markup.php:533`). Local verification confirmed the PHP include behavior needed for file disclosure: `php -r 'include \"/etc/hosts\";'` emitted the file contents. Defenses analyzed: the dedicated Gutenberg preview AJAX handler sanitizes `$_POST['layout']` with `sanitize_title()` and requires `check_ajax_referer()` plus `current_user_can( 'cartflows_manage_flows_steps' )` (`modules/gutenberg/classes/class-cartflows-init-blocks.php:198`, `modules/gutenberg/classes/class-cartflows-init-blocks.php:232`), and ordinary non-checkout requests hit the early return path before the include (`modules/checkout/classes/class-cartflows-checkout-markup.php:500`). Refutation attempt: I could not find any plugin callback that normalizes `cartflows_checkout_layout_template`, and the `render_html()` path itself does not sanitize `layout`; however, I also could not prove from source alone that a low-privileged user can force this block to render inside a real checkout-step context. The step CPT is REST-exposed to users with `edit_posts`, but step creation is disabled and capability resolution falls back to default post caps (`modules/flow/classes/class-cartflows-step-post-type.php:194`, `modules/flow/classes/class-cartflows-step-post-type.php:196`). Conclusion: the source-to-sink path is real, but exploitability remains uncertain until the reachable editor/render context is verified.",
+      "review_reason": "Resolve this by testing whether a non-admin content role can edit or preview a `cartflows_step` with `wcf-step-type=checkout`, or invoke the core block renderer against such a post, with a `wcfb/checkout-form` block whose `layout` attribute is an existing local path such as `/etc/hosts`. If the rendered response includes file contents, upgrade to TP; if only privileged `cartflows_manage_flows_steps` users can reach the render context, downgrade to FP or a non-reportable risk note.",
+      "poc_description": "Create or preview a checkout step containing a `wcfb/checkout-form` block with `layout` set to a known readable local file path, then request the rendered block output and inspect whether the file contents are returned.",
+      "remediation": "Do not feed block attributes directly into the template include path. Enforce an allowlist of layout slugs in `render_html()` or before `include`, then resolve those slugs to plugin-owned template paths server-side."
+    }
+  ],
+  "negative_findings": [
+    {
+      "area": "ep_shortcode_cartflows_product_title",
+      "reason": "Reviewed `modules/woo-dynamic-flow/classes/class-cartflows-wd-flow-shortcodes.php:81-98`. The shortcode only accepts an integer product ID (`intval()` at line 87), returns early if no product is found, and blocks unpublished products unless the caller has `read_private_products` at line 94."
+    },
+    {
+      "area": "ep_shortcode_cartflows_product_add_to_cart",
+      "reason": "Reviewed `modules/woo-dynamic-flow/classes/class-cartflows-wd-flow-shortcodes.php:106-191`. The product ID is normalized with `absint()` at line 121, custom button text is sanitized with `sanitize_text_field()` at line 127, and the shortcode only renders published products through a constrained `WP_Query`."
+    },
+    {
+      "area": "ep_shortcode_cartflows_order_details",
+      "reason": "Reviewed `modules/thankyou/classes/class-cartflows-thankyou-markup.php:213-339`. Public rendering is restricted to thank-you step context, the order ID is integer-cast at line 283, the order key is cleaned with `wc_clean( wp_unslash() )` at line 284, and the order is discarded if `get_order_key()` does not match at line 289. Direct thank-you page access is also gated earlier in `secure_thank_you_page()` at lines 169-184."
+    },
+    {
+      "area": "ep_block_wcfb_optin_form",
+      "reason": "Reviewed `modules/gutenberg/dist/blocks/optin-form/class-wcfb-optin-form.php:420-489` plus `modules/optin/templates/optin-template-simple.php:12-15`. `block_id` and `className` are emitted through `esc_attr()` at lines 480-481, and the only filter-backed setting in this path (`wcf-input-fields-skins`) is later used inside an escaped class attribute."
+    },
+    {
+      "area": "ep_block_wcfb_order_detail_form",
+      "reason": "Reviewed `modules/gutenberg/dist/blocks/order-detail-form/class-wcfb-order-detail-form.php:884-960` and `modules/thankyou/classes/class-cartflows-thankyou-markup.php:624-638`. Wrapper classes are escaped with `esc_attr()` at lines 910-911, custom thank-you text is sanitized with `wp_kses_post()` before `do_shortcode()` at line 637, and layout only reaches escaped class output in `woocommerce/template/checkout/thankyou.php:24`."
+    },
+    {
+      "area": "ep_shortcode_cartflows_optin potential XSS path",
+      "reason": "Reviewed `modules/optin/classes/class-cartflows-optin-markup.php:225-283` and `modules/optin/templates/optin-template-simple.php:12-15`. The shortcode only uses `id` after `intval()` at line 241, includes a fixed plugin template at line 279, and does not emit any shortcode attribute directly into HTML."
+    },
+    {
+      "area": "ep_block_wcfb_next_step_button",
+      "reason": "No security conclusion produced here because the IR marks the callback as unresolved in `modules/gutenberg/classes/class-cartflows-init-blocks.php:512-522`. Unresolved hook expansion belongs to Agent D per the scope rules."
+    }
+  ]
+}

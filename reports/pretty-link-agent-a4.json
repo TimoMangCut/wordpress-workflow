@@ -1,0 +1,11 @@
+{
+  "agent_id": "agent-a4",
+  "plugin_slug": "pretty-link",
+  "findings": [],
+  "negative_findings": [
+    {
+      "area": "shortcode and block entry-point surface",
+      "reason": "No runtime shortcode or block entry points were present for this group. The supplied slice `reports/pretty-link-ir-slice-shortcode.json` contains zero entry points, sources, sinks, guards, anomalies, coverage gaps, and unresolved hooks; the full IR `reports/phase1/pretty-link-ir.json` likewise contains no entry points whose type matches shortcode or block. Source review found no `add_shortcode()` or `register_block_type()` usage under `plugins/pretty-link/`. The only shortcode references are admin UI strings in `plugins/pretty-link/app/views/options/form.php:1071` and `plugins/pretty-link/app/views/options/form.php:1103`, not executable registrations."
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "agent_id": "agent-a5",
+  "plugin_slug": "backwpup",
+  "findings": [],
+  "negative_findings": [
+    {
+      "area": "misc init hook coverage",
+      "reason": "Reviewed the three init entry points in reports/backwpup-ir-slice-other.json. src/Plugin/Plugin.php:122 only conditionally registers BackWPup_Install::activate(), and inc/class-install.php:29-209 mutates fixed plugin options, roles, and schedules without reading request data. src/Plugin/Plugin.php:273 registers BackWPup_Adminbar::init(), and inc/class-adminbar.php:33-36 only wires internal hooks while the rendered admin-bar actions remain capability-gated at inc/class-adminbar.php:57-103. The sink-bearing init path comes from src/Common/Database/Tables/AbstractTable.php:27 into src/Dependencies/BerlinDB/Database/Table.php:221-240. I manually verified the IR guards at Table.php:224 and Table.php:229 are effective because both return before exists()/upgrade()/install(). The concrete subclass is src/Backup/Database/Tables/Backup.php:10-77, where the table name, schema, option key, and upgrade callback are hard-coded (bwpup_backups, bwpup_backups_version, add_backup_trigger_columns). exists() uses a prepared query at Table.php:362-365, and the unprepared DDL at Table.php:416-417 plus Backup.php:73 only interpolates fixed class properties, not user-controlled input. The only IR source for this EP is get_option() at Table.php:907, so no request-controlled source reaches SQL, update_option(), or call_user_func() within this single entry-point flow."
+    },
+    {
+      "area": "misc cron hook coverage",
+      "reason": "Reviewed the unresolved cron hooks in the IR and resolved them in source to BackWPup_Cron::run()/check_cleanup() via src/Plugin/Plugin.php:195-196, plus the Rackspace cleanup subscriber registered through inc/dependencies/wp-media/event-manager/EventManager.php:37-50 and src/StorageProviders/Rackspace/Subscriber.php:38-56. BackWPup_Cron::run() normalizes the scheduled argument to a positive integer at inc/class-cron.php:28-30, requires it to be an active wpcron job at inc/class-cron.php:33-37, and BackWPup_Job::start_http() re-checks the job ID at inc/class-job.php:223-230. The public wp-cron.php?backwpup_run path is handled by BackWPup_Cron::cron_active(), which whitelists run modes at inc/class-cron.php:199-205, verifies the nonce or external-run secret at inc/class-cron.php:239-256, and only allows unauthenticated runext execution for jobs explicitly configured with activetype=link at inc/class-cron.php:258-276. The external-run secret is initialized by inc/class-option.php:23-27 and settings changes are capability-gated by inc/class-admin.php:848-852 plus inc/class-page-settings.php:417-518. The Rackspace segment-delete event is internally scheduled from src/StorageProviders/Rackspace/RackspaceProvider.php:704-713, and the subscriber casts job_id to int before use at src/StorageProviders/Rackspace/Subscriber.php:52-56. Within this entry-point group I found no single-EP path from unauthenticated or low-privileged request data to file deletion, SQL, option writes, or arbitrary callback execution."
+    },
+    {
+      "area": "misc semgrep triage",
+      "reason": "Reviewed reports/backwpup-semgrep-filtered-other.json. inc/class-cron.php:509 is a loose in_array() over fixed cron-expression tokens inside parse_cron_expression(); it only affects frequency labeling and does not guard a sensitive sink. inc/class-job.php:257-265 intentionally calls wp_safe_redirect() without an immediate exit so the alternate-cron bootstrap can flush output and continue job startup; the destination is fixed to network_admin_url('admin.php?page=backwpupjobs'), so this is not an open redirect. inc/class-page-onboarding.php:202-216 returns sanitized $_POST data, and the reported return statement is not an output sink. None of the filtered Semgrep results produced a verifiable exploit path in the misc entry-point slice."
+    }
+  ]
+}

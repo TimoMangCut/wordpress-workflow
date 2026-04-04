@@ -1,7 +1,67 @@
 {
-  "run_timestamp": "2026-04-04T14:24:06Z",
+  "run_timestamp": "2026-04-05T00:35:00Z",
   "wave": "Wave 4",
-  "sessions_covered": [20, 21, 22],
+  "sessions_covered": [20, 21, 22, 23],
+  "session_23_actual_execution": {
+    "note": "Session 23 executed the first real multi-agent pipeline run (skill sets S1+S2 deployed for agents A1-A5 and B). Sections below marked [ACTUAL] reflect actual run data. Original pre-run plan preserved in legacy fields.",
+    "execution_date": "2026-04-05",
+    "execution_status": "PARTIAL — agents C+D blocked by Codex quota exhaustion (reset ~03:32 local)",
+    "plugins_processed": ["backwpup", "cartflows", "pretty-link"],
+    "agents_run_per_plugin": ["agent-a1","agent-a2","agent-a3","agent-a4","agent-a5","agent-b"],
+    "agents_blocked": ["agent-c","agent-d"],
+    "blocked_reason": "Codex API quota exhausted prior to Wave 4 run — no Claude fallback for agent-c (anomaly review) or agent-d (unresolved hook analysis)",
+    "phase3_llm_reviewer": "claude (substitute for Codex) — runs in progress for backwpup (19 uncertain) and cartflows (4 uncertain)",
+    "actual_benchmark": {
+      "backwpup": {"tp": 0, "fp": 17, "fn": 2, "review_hit": 0, "review_miss": 2, "quality_score": 0.0, "decision_rate": 0.8947, "regression_root_cause": "agents_cd_missing; phase3_gate_all_uncertain; benchmark_counts_uncertain_tp_claims_as_fp"},
+      "cartflows": {"tp": 0, "fp": 3, "fn": 0, "review_hit": 0, "review_miss": 1, "quality_score": 0.0, "decision_rate": 0.75, "regression_root_cause": "0_gt_findings; 3_phase2_tp_claims_counted_as_fp_vs_clean_gt"},
+      "pretty-link": {"tp": 0, "fp": 0, "fn": 0, "review_hit": 0, "review_miss": 0, "quality_score": null, "decision_rate": null, "notes": "CORRECT — gate rejected all 20 phase2 findings; pipeline output clean for clean plugin"}
+    },
+    "per_plugin_agent_stats": {
+      "backwpup": {
+        "agent-a1": {"findings": 0, "tp": 0, "fp": 0, "review": 0},
+        "agent-a2": {"findings": 8, "tp": 2, "fp": 5, "review": 1},
+        "agent-a3": {"findings": 25, "tp": 15, "fp": 9, "review": 1},
+        "agent-a4": {"findings": 0, "tp": 0, "fp": 0, "review": 0},
+        "agent-a5": {"findings": 0, "tp": 0, "fp": 0, "review": 0},
+        "agent-b":  {"findings": 0, "tp": 0, "fp": 0, "review": 0},
+        "agent-c":  "MISSING_QUOTA",
+        "agent-d":  "MISSING_QUOTA"
+      },
+      "cartflows": {
+        "agent-a1": {"findings": 2, "tp": 2, "fp": 0, "review": 0},
+        "agent-a2": {"findings": 22, "tp": 1, "fp": 21, "review": 0},
+        "agent-a3": {"findings": 16, "tp": 0, "fp": 16, "review": 0},
+        "agent-a4": {"findings": 3, "tp": 0, "fp": 2, "review": 1},
+        "agent-a5": {"findings": 5, "tp": 0, "fp": 5, "review": 0},
+        "agent-b":  {"findings": 0, "tp": 0, "fp": 0, "review": 0},
+        "agent-c":  "MISSING_QUOTA",
+        "agent-d":  "MISSING_QUOTA"
+      },
+      "pretty-link": {
+        "agent-a1": {"findings": 0, "tp": 0, "fp": 0, "review": 0},
+        "agent-a2": {"findings": 14, "tp": 0, "fp": 14, "review": 0},
+        "agent-a3": {"findings": 0, "tp": 0, "fp": 0, "review": 0},
+        "agent-a4": {"findings": 0, "tp": 0, "fp": 0, "review": 0},
+        "agent-a5": {"findings": 6, "tp": 0, "fp": 6, "review": 0},
+        "agent-b":  {"findings": 0, "tp": 0, "fp": 0, "review": 0},
+        "agent-c":  "MISSING_QUOTA",
+        "agent-d":  "MISSING_QUOTA"
+      }
+    },
+    "phase3_gate_summary": {
+      "backwpup":   {"confirmed": 0, "plausible": 0, "uncertain": 19, "hallucinated": 0, "accepted_fp": 14},
+      "cartflows":  {"confirmed": 0, "plausible": 0, "uncertain": 4,  "hallucinated": 0, "accepted_fp": 36},
+      "pretty-link":{"confirmed": 0, "plausible": 0, "uncertain": 0,  "hallucinated": 0, "accepted_fp": 20}
+    },
+    "infrastructure_validated": {
+      "prepare_agent_inputs.py": "PASS — dispatch.json emitted for all 3 plugins, IR slices created",
+      "orchestrate_agents_sh": "PASS — codex exec (not codex run) confirmed working",
+      "merge_agent_outputs.py": "PASS — 6-agent merge with dedup working correctly",
+      "phase3_gate.py": "PASS — deterministic gate running for all 3 plugins",
+      "phase3_llm_review.py": "PARTIAL — Codex provider quota blocked; Claude substitute works, 3600s timeout required for 19-finding reviews",
+      "benchmark_compare.py": "PASS — all 3 plugins benchmarked"
+    }
+  },
   "gaps_covered": ["SKILL-SET-S1", "SKILL-SET-S2", "SKILL-SET-S3", "SKILL-SET-S4", "SKILL-SET-S5", "BENCHMARK-WAVE4"],
   "benchmark_note": "Wave 4 benchmark validates SKILL SET deployment (S1-S5). Pipeline metrics reflect existing phase3 outputs (pre-SKILL-SET runs). Per-agent stats show single-agent Codex/Claude outputs that were produced before SKILL SETs were deployed. Future runs with SKILL SETs applied are expected in Session 23+.",
   "skill_sets_deployed": {
@@ -126,6 +186,6 @@
       "no_false_positives_in_output": "PASS — all 3 plugins: final pipeline FP=0",
       "skill_sets_all_deployed": "PASS — S1-S5 all deployed and post-reviewed"
     },
-    "verdict": "APPROVED — no regressions. SKILL SETs S1-S5 deployed and validated. Ready for USER REVIEW ④. Session 23 (tuning + G-05 + Session 19) to follow after user review."
+    "verdict": "PARTIAL — Session 23 multi-agent execution completed S1+S2 agents (A1-A5, B) for all 3 plugins. Agents C+D blocked by Codex quota. Infrastructure validated end-to-end. Metric regression vs baseline explained by missing C+D agents and phase3 gate treating all agent findings as UNCERTAIN. Re-run with quota restored and C+D agents expected to recover metrics. USER REVIEW ④ pending — see session_23_actual_execution section for actual run data."
   }
 }

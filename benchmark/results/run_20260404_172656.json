@@ -1,0 +1,27 @@
+{
+  "run_timestamp": "2026-04-04T17:26:56Z",
+  "plugins": [
+    {
+      "slug": "pretty-link",
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "review_hit": 0,
+      "review_miss": 0,
+      "quality_score": null,
+      "decision_rate": null,
+      "gt_findings_count": 0,
+      "pipeline_tp_count": 0,
+      "pipeline_review_count": 0
+    }
+  ],
+  "aggregate": {
+    "total_tp": 0,
+    "total_fp": 0,
+    "total_fn": 0,
+    "total_review_hit": 0,
+    "total_review_miss": 0,
+    "quality_score": null,
+    "decision_rate": null
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "agent_id": "agent-a1",
+  "plugin_slug": "cartflows",
+  "execution_time_ms": 0,
+  "findings": [
+    {
+      "finding_id": "cartflows-a1-001",
+      "verdict": "TP",
+      "vuln_type": "arbitrary_file_upload",
+      "cwe_id": "CWE-434",
+      "severity": "medium",
+      "auth_required": "none",
+      "confidence": 0.94,
+      "entry_point_id": "ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file",
+      "source_function": "upload_checkout_file",
+      "source_file_path": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "source_line_number": 311,
+      "sink_function": "wp_handle_upload",
+      "sink_file_path": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "sink_line_number": 425,
+      "reasoning": "Hypothesis: the unauthenticated AJAX upload endpoint allows arbitrary file write into the WordPress uploads directory. Trace: `wp_ajax_nopriv_wcf_upload_checkout_file` is registered at modules/checkout/classes/class-cartflows-checkout-ajax.php:58 and `upload_checkout_file()` reads attacker-controlled `$_FILES['wcf_checkout_file']` at :311, derives the extension at :313, and passes the file to `move_uploaded_file()` at :337, which calls `wp_handle_upload()` at :425 and returns the public URL in the JSON response at :339-344. Guard analysis: the IR marked the nonce ineffective because `check_ajax_referer(..., false)` is used at :295, but the failure branch immediately calls `wp_send_json_error()` at :296-298; WordPress terminates AJAX execution there, so the semgrep-style nonce-bypass hypothesis does not hold. Refutation attempt: I checked whether other defenses make the endpoint non-exploitable. The extension allowlist in classes/class-cartflows-helper.php:1933-1934 and the MIME validation at modules/checkout/classes/class-cartflows-checkout-ajax.php:331-335 prevent PHP/script uploads, so this is not RCE. I also checked whether uploads are bound to a real checkout file field; they are not. `get_field_restrictions()` returns the default 5MB limit and an empty extension list when `field_key` or `checkout_id` is missing or invalid at modules/checkout/classes/class-cartflows-checkout-ajax.php:360-365 and :370-379, and `upload_checkout_file()` interprets that empty restriction set as the full master allowlist at :319-321. The upload nonce is exposed to public checkout pages via `add_localize_vars()` at modules/checkout/classes/class-cartflows-checkout-markup.php:1765-1776, and WordPress guest nonces are not an access-control boundary for logged-out users. Conclusion: any unauthenticated visitor who can fetch a public checkout page can obtain a valid guest nonce and upload attacker-controlled media/document files to `wp-content/uploads` even when no checkout file field is configured, producing an attacker-controlled URL on the victim site.",
+      "poc_description": "1. Request any public CartFlows checkout page and extract `cartflows.wcf_file_upload_nonce` from the localized checkout script. 2. Send a multipart POST to `/wp-admin/admin-ajax.php` with `action=wcf_upload_checkout_file`, `security=<nonce>`, and a file part named `wcf_checkout_file`; omit `field_key` and `checkout_id` or send invalid values. 3. Use an allowed extension such as `.pdf` or `.jpg`. 4. The server stores the file in the uploads directory and returns its URL in `data.url`.",
+      "remediation": "Reject uploads unless the request is bound to a valid checkout context and an enabled file field for that checkout. Do not fall back to the master allowlist when `field_key` or `checkout_id` is absent. For guest flows, bind the upload token to a server-side guest session or other request-specific state instead of relying on the default logged-out WordPress nonce."
+    },
+    {
+      "finding_id": "cartflows-a1-002",
+      "verdict": "TP",
+      "vuln_type": "user_enumeration",
+      "cwe_id": "CWE-204",
+      "severity": "low",
+      "auth_required": "none",
+      "confidence": 0.9,
+      "entry_point_id": "ep_ajax_nopriv_wp_ajax_nopriv_wcf_check_email_exists",
+      "source_function": "check_email_exists",
+      "source_file_path": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "source_line_number": 209,
+      "sink_function": "wp_send_json_success",
+      "sink_file_path": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "sink_line_number": 219,
+      "reasoning": "Hypothesis: the public checkout email-check endpoint reveals whether an email address belongs to a registered account. Trace: `wp_ajax_nopriv_wcf_check_email_exists` is registered at modules/checkout/classes/class-cartflows-checkout-ajax.php:54. `check_email_exists()` reads attacker-controlled `$_POST['email_address']`, sanitizes it at :209, queries `email_exists()` at :211, and returns the result as `success => boolval( $is_exist )` plus distinct messages at :213-216 before sending the response with `wp_send_json_success()` at :219. Guard analysis: `check_ajax_referer()` at :207 is effective in the narrow sense that it dies on failure, but this does not provide meaningful access control here because the nonce is emitted into the public checkout script at modules/checkout/classes/class-cartflows-checkout-markup.php:1765-1774 and the endpoint is intentionally reachable by logged-out users. Refutation attempt: I checked whether the response was uniform enough to avoid disclosure or whether another control limited the caller. Neither is true. Existing emails return `success=true` with the \"Email Exist.\" message, while unknown emails return `success=false` with \"Email not exist\" at modules/checkout/classes/class-cartflows-checkout-ajax.php:214-216. The frontend consumes that distinction directly to reveal login UI state at assets/js/checkout-template.js:623-687. Conclusion: any unauthenticated visitor who can reach a CartFlows checkout can enumerate registered customer emails, which lowers the cost of credential-stuffing and targeted phishing against site accounts.",
+      "poc_description": "1. Load a public CartFlows checkout page and extract `cartflows.check_email_exist_nonce`. 2. POST to `/wp-admin/admin-ajax.php` with `action=wcf_check_email_exists`, `security=<nonce>`, and `email_address=<target>`. 3. Compare the JSON response: existing addresses return `data.success=true` and `msg=\"Email Exist.\"`; non-existing addresses return `data.success=false` and `msg=\"Email not exist\"`.",
+      "remediation": "Do not disclose account existence before authentication. Return the same response for both branches, or move the account lookup behind an authenticated flow. If the feature must remain, add rate limiting and telemetry to reduce enumeration abuse."
+    }
+  ],
+  "negative_findings": [
+    {
+      "area": "apply_coupon nonce handling",
+      "reason": "Reviewed modules/checkout/classes/class-cartflows-checkout-ajax.php:106-137. Although `check_ajax_referer( ..., false )` at line 109 matched semgrep, the failure branch immediately calls `wp_send_json_error()` at lines 110-114, which terminates AJAX execution. The remaining inputs are sanitized before use (`billing_email` at lines 239-249 and `coupon_code` at lines 122-123), so I did not confirm a nonce bypass or injection issue for this handler."
+    },
+    {
+      "area": "remove_coupon, remove_cart_product, and woocommerce_user_login",
+      "reason": "Reviewed modules/checkout/classes/class-cartflows-checkout-ajax.php:142-199 and :256-285. These handlers perform intended guest checkout operations behind effective nonce checks at lines 143, 160, and 258. `coupon_code`, `p_key`, `p_id`, and `email` are sanitized before use, `wp_signon()` at line 273 still requires valid credentials, and I did not find a source-to-impact path in this EP group beyond the confirmed findings above."
+    }
+  ]
+}

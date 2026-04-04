@@ -1,0 +1,25 @@
+{
+  "slug": "backwpup",
+  "agents": [
+    "agent-a1",
+    "agent-a2",
+    "agent-a3",
+    "agent-a4",
+    "agent-a5",
+    "agent-b",
+    "agent-c",
+    "agent-d"
+  ],
+  "inputs": {
+    "agent-a1": "reports/backwpup-ir-slice-ajax-unauth.json",
+    "agent-a2": "reports/backwpup-ir-slice-ajax-auth.json",
+    "agent-a3": "reports/backwpup-ir-slice-rest.json",
+    "agent-a4": "reports/backwpup-ir-slice-shortcode.json",
+    "agent-a5": "reports/backwpup-ir-slice-other.json",
+    "agent-b": "reports/phase1/backwpup-ir.json",
+    "agent-c": "reports/phase1/backwpup-ir.json",
+    "agent-d": "reports/phase1/backwpup-ir.json"
+  },
+  "source_dir": "plugins/backwpup/",
+  "timeout_seconds": 600
+}

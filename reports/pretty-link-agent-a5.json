@@ -1,0 +1,162 @@
+{
+  "agent_id": "agent-a5",
+  "plugin_slug": "pretty-link",
+  "findings": [
+    {
+      "finding_id": "agent-a5-fp-001",
+      "verdict": "FP",
+      "vuln_type": "ssrf",
+      "cwe_id": "CWE-918",
+      "severity": "informational",
+      "auth_required": "unknown",
+      "confidence": 0.97,
+      "entry_point_id": "ep_init_init",
+      "source_function": "process_connect",
+      "source_file_path": "app/controllers/PrliAuthenticatorController.php",
+      "source_line_number": 92,
+      "sink_function": "wp_remote_get",
+      "sink_file_path": "app/controllers/PrliAuthenticatorController.php",
+      "sink_line_number": 96,
+      "fp_reason": "False positive. `process_connect()` returns unless `$_GET['prli-connect'] === 'true'`, the `prli-connect` nonce verifies, and `PrliUtils::is_authorized()` passes at app/controllers/PrliAuthenticatorController.php:78-90. The request target at line 96 is a fixed service base (`PRLI_AUTH_SERVICE_URL`, defined as `https://auth.caseproof.com` unless pre-defined in code) plus a path segment; user input does not control the scheme or host, so this is not SSRF.",
+      "fp_evidence": {
+        "defense": "Fixed remote host after effective nonce and capability gating",
+        "file": "app/controllers/PrliAuthenticatorController.php",
+        "line": 96
+      },
+      "patchstack_eligible": false
+    },
+    {
+      "finding_id": "agent-a5-fp-002",
+      "verdict": "FP",
+      "vuln_type": "arbitrary_option_update",
+      "cwe_id": "CWE-269",
+      "severity": "informational",
+      "auth_required": "unknown",
+      "confidence": 0.96,
+      "entry_point_id": "ep_init_init",
+      "source_function": "process_connect",
+      "source_file_path": "app/controllers/PrliAuthenticatorController.php",
+      "source_line_number": 92,
+      "sink_function": "update_option",
+      "sink_file_path": "app/controllers/PrliAuthenticatorController.php",
+      "sink_line_number": 109,
+      "fp_reason": "False positive. The callback is gated by an effective nonce check and `PrliUtils::is_authorized()` before any write at app/controllers/PrliAuthenticatorController.php:83-90. The option names are hard-coded (`prli_authenticator_account_email`, `prli_authenticator_secret_token`, `prli_authenticator_user_uuid`, `prli_authenticator_site_uuid`) at lines 109-121, and the stored values are passed through `sanitize_text_field()` or taken from the already-sanitized `$site_uuid`, so user input does not provide arbitrary option key or unrestricted value control.",
+      "fp_evidence": {
+        "defense": "Fixed option keys with sanitized values inside a privileged connect flow",
+        "file": "app/controllers/PrliAuthenticatorController.php",
+        "line": 109
+      },
+      "patchstack_eligible": false
+    },
+    {
+      "finding_id": "agent-a5-fp-003",
+      "verdict": "FP",
+      "vuln_type": "open_redirect",
+      "cwe_id": "CWE-601",
+      "severity": "informational",
+      "auth_required": "unknown",
+      "confidence": 0.96,
+      "entry_point_id": "ep_init_init",
+      "source_function": "process_connect",
+      "source_file_path": "app/controllers/PrliAuthenticatorController.php",
+      "source_line_number": 124,
+      "sink_function": "wp_redirect",
+      "sink_file_path": "app/controllers/PrliAuthenticatorController.php",
+      "sink_line_number": 125,
+      "fp_reason": "False positive. The Stripe redirect branch still sits behind the same effective nonce and authorization checks at app/controllers/PrliAuthenticatorController.php:83-90. Its target comes from `PrliStripeConnect::get_stripe_connect_url()` at app/lib/PrliStripeConnect.php:26-61, which constructs a URL on the fixed `PRLI_STRIPE_SERVICE_URL` base and does not accept an arbitrary attacker-supplied destination.",
+      "fp_evidence": {
+        "defense": "Redirect destination is assembled from a fixed Stripe service base URL",
+        "file": "app/lib/PrliStripeConnect.php",
+        "line": 26
+      },
+      "patchstack_eligible": false
+    },
+    {
+      "finding_id": "agent-a5-fp-004",
+      "verdict": "FP",
+      "vuln_type": "ssrf",
+      "cwe_id": "CWE-918",
+      "severity": "informational",
+      "auth_required": "unknown",
+      "confidence": 0.97,
+      "entry_point_id": "ep_init_init",
+      "source_function": "process_disconnect",
+      "source_file_path": "app/controllers/PrliAuthenticatorController.php",
+      "source_line_number": 160,
+      "sink_function": "wp_remote_request",
+      "sink_file_path": "app/controllers/PrliAuthenticatorController.php",
+      "sink_line_number": 189,
+      "fp_reason": "False positive. `process_disconnect()` returns unless `$_GET['prli-disconnect'] === 'true'`, the `prli-disconnect` nonce verifies, and `PrliUtils::is_authorized()` passes at app/controllers/PrliAuthenticatorController.php:160-171. The DELETE request at line 189 is sent to the fixed `PRLI_AUTH_SERVICE_URL` host with stored site metadata; there is no attacker-controlled host or protocol selection.",
+      "fp_evidence": {
+        "defense": "Fixed remote host after effective nonce and capability gating",
+        "file": "app/controllers/PrliAuthenticatorController.php",
+        "line": 189
+      },
+      "patchstack_eligible": false
+    },
+    {
+      "finding_id": "agent-a5-fp-005",
+      "verdict": "FP",
+      "vuln_type": "open_redirect",
+      "cwe_id": "CWE-601",
+      "severity": "informational",
+      "auth_required": "unknown",
+      "confidence": 0.95,
+      "entry_point_id": "ep_init_init",
+      "source_function": "process_disconnect",
+      "source_file_path": "app/controllers/PrliAuthenticatorController.php",
+      "source_line_number": 160,
+      "sink_function": "wp_redirect",
+      "sink_file_path": "app/controllers/PrliAuthenticatorController.php",
+      "sink_line_number": 204,
+      "fp_reason": "False positive. After the effective nonce and authorization checks at app/controllers/PrliAuthenticatorController.php:165-171, the redirect target is `remove_query_arg(array('prli-disconnect', 'nonce'))` from the current request at line 204. That strips parameters from the existing URL instead of honoring an attacker-supplied external destination.",
+      "fp_evidence": {
+        "defense": "Same-origin cleanup redirect generated from the current request URL",
+        "file": "app/controllers/PrliAuthenticatorController.php",
+        "line": 204
+      },
+      "patchstack_eligible": false
+    },
+    {
+      "finding_id": "agent-a5-fp-006",
+      "verdict": "FP",
+      "vuln_type": "broken_access_control",
+      "cwe_id": "CWE-862",
+      "severity": "informational",
+      "auth_required": "unknown",
+      "confidence": 0.94,
+      "entry_point_id": "ep_init_init",
+      "source_function": "route_scripts",
+      "source_file_path": "app/controllers/PrliClicksController.php",
+      "source_line_number": 25,
+      "sink_function": "click_report",
+      "sink_file_path": "app/controllers/PrliClicksController.php",
+      "sink_line_number": 30,
+      "fp_reason": "False positive. The `init` export route only reaches `click_report()` if `_wpnonce` verifies at app/controllers/PrliClicksController.php:25-30; otherwise it returns HTTP 403 and dies. The corresponding nonce is emitted from the privileged Clicks submenu download view via `wp_nonce_url(..., 'prli-csv-nonce')` at app/views/clicks/csv_download.php:28, and that view is registered behind the plugin's minimum-role submenu at app/controllers/PrliAppController.php:182-248. Manual verification shows the previously `null` nonce guard is effective because `wp_die()` stops execution before the sink.",
+      "fp_evidence": {
+        "defense": "Effective nonce gate terminates invalid requests before `click_report()`",
+        "file": "app/controllers/PrliClicksController.php",
+        "line": 26
+      },
+      "patchstack_eligible": false
+    }
+  ],
+  "negative_findings": [
+    {
+      "area": "Legacy bookmarklet routing",
+      "reason": "Reviewed `PrliToolsController::standalone_route()` and `redirect()` at app/controllers/PrliToolsController.php:30-88. The legacy redirect rewrites only to a fixed same-origin `/index.php?action=prli_bookmarklet...` path, and bookmark creation requires the stored bookmarklet key plus `esc_url_raw(..., array('http','https'))` before link creation at line 53."
+    },
+    {
+      "area": "Standalone dispatch and install path",
+      "reason": "Reviewed `PrliAppController::parse_standalone_request()` and `install()` at app/controllers/PrliAppController.php:634-677. `standalone_route()` is a no-op at line 647, the bookmarklet branch delegates to the guarded Pretty Links tool route, and the installer only runs when `PrliDb::should_install()` detects a version mismatch at app/models/PrliDb.php:16-23."
+    },
+    {
+      "area": "Editor/UI initialization",
+      "reason": "Reviewed `PrliPostsController::add_tinymce_buttons()` at app/controllers/PrliPostsController.php:29-40 and `PrliLinksController::register_post_type()` at app/controllers/PrliLinksController.php:62-118. Both methods register editor integration or CPT metadata only, with authorization or capability mapping applied before any privileged UI exposure."
+    },
+    {
+      "area": "Public pretty-link redirect dispatch",
+      "reason": "Reviewed `PrliAppController::redirect()` and `link_redirect_from_slug()` at app/controllers/PrliAppController.php:717-750. The handler resolves the slug through `PrliLink::is_pretty_link()` and then looks up the stored link record before delegating to tracking; no direct attacker-controlled sink is reached in the reviewed dispatch layer."
+    }
+  ]
+}

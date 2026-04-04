@@ -1,0 +1,3662 @@
+{
+  "metadata": {
+    "plugin_slug": "pretty-link",
+    "plugin_name": "PrettyLinks",
+    "version": "3.6.21",
+    "active_installs": null,
+    "files_analyzed": 198,
+    "total_loc": 26953,
+    "extraction_time_ms": 434,
+    "extractor_version": "1.0.0"
+  },
+  "entry_points": [
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_stop_popup",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_stop_popup",
+      "callback": {
+        "type": "method",
+        "name": "ajax_stop_or_delay_popup",
+        "class": "PrliPopupController",
+        "file": "app/controllers/PrliPopupController.php",
+        "line_start": 90,
+        "line_end": 118
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliPopupController.php",
+      "line": 39
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_delay_popup",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_delay_popup",
+      "callback": {
+        "type": "method",
+        "name": "ajax_stop_or_delay_popup",
+        "class": "PrliPopupController",
+        "file": "app/controllers/PrliPopupController.php",
+        "line_start": 90,
+        "line_end": 118
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliPopupController.php",
+      "line": 40
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_stripe_connect_update_creds",
+      "callback": {
+        "type": "method",
+        "name": "process_update_creds",
+        "class": "PrliStripeConnectController",
+        "file": "app/controllers/PrliStripeConnectController.php",
+        "line_start": 96,
+        "line_end": 128
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 21
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_stripe_connect_refresh",
+      "callback": {
+        "type": "method",
+        "name": "process_refresh_tokens",
+        "class": "PrliStripeConnectController",
+        "file": "app/controllers/PrliStripeConnectController.php",
+        "line_start": 165,
+        "line_end": 218
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 22
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_disconnect",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_stripe_connect_disconnect",
+      "callback": {
+        "type": "method",
+        "name": "process_disconnect",
+        "class": "PrliStripeConnectController",
+        "file": "app/controllers/PrliStripeConnectController.php",
+        "line_start": 225,
+        "line_end": 253
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 23
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_search_stripe_prices",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_search_stripe_prices",
+      "callback": {
+        "type": "method",
+        "name": "search_stripe_prices",
+        "class": "PrliStripeController",
+        "file": "app/controllers/PrliStripeController.php",
+        "line_start": 601,
+        "line_end": 700
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliStripeController.php",
+      "line": 14
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_stripe_add_product",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_stripe_add_product",
+      "callback": {
+        "type": "method",
+        "name": "add_product",
+        "class": "PrliStripeController",
+        "file": "app/controllers/PrliStripeController.php",
+        "line_start": 738,
+        "line_end": 775
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliStripeController.php",
+      "line": 15
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_dismiss_customer_portal_notice",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_dismiss_customer_portal_notice",
+      "callback": {
+        "type": "method",
+        "name": "dismiss_customer_portal_notice",
+        "class": "PrliStripeController",
+        "file": "app/controllers/PrliStripeController.php",
+        "line_start": 1139,
+        "line_end": 1147
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliStripeController.php",
+      "line": 22
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_pl_dismiss_review_prompt",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_pl_dismiss_review_prompt",
+      "callback": {
+        "type": "method",
+        "name": "dismiss_review_prompt",
+        "class": "PrliReviewNoticeController",
+        "file": "app/controllers/PrliReviewNoticeController.php",
+        "line_start": 13,
+        "line_end": 39
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliReviewNoticeController.php",
+      "line": 10
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_tinymce_form",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_tinymce_form",
+      "callback": {
+        "type": "method",
+        "name": "display_tinymce_form",
+        "class": "PrliPostsController",
+        "file": "app/controllers/PrliPostsController.php",
+        "line_start": 82,
+        "line_end": 152
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 10
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_tinymce_validate_slug",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_tinymce_validate_slug",
+      "callback": {
+        "type": "method",
+        "name": "validate_tinymce_slug",
+        "class": "PrliPostsController",
+        "file": "app/controllers/PrliPostsController.php",
+        "line_start": 155,
+        "line_end": 180
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 11
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_create_pretty_link",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_create_pretty_link",
+      "callback": {
+        "type": "method",
+        "name": "create_pretty_link",
+        "class": "PrliPostsController",
+        "file": "app/controllers/PrliPostsController.php",
+        "line_start": 183,
+        "line_end": 220
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 12
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_search_for_links",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_search_for_links",
+      "callback": {
+        "type": "method",
+        "name": "search_results",
+        "class": "PrliPostsController",
+        "file": "app/controllers/PrliPostsController.php",
+        "line_start": 223,
+        "line_end": 271
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 13
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_validate_pretty_link",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_validate_pretty_link",
+      "callback": {
+        "type": "method",
+        "name": "ajax_validate_pretty_link",
+        "class": "PrliLinksController",
+        "file": "app/controllers/PrliLinksController.php",
+        "line_start": 464,
+        "line_end": 498
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 17
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_reset_pretty_link",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_reset_pretty_link",
+      "callback": {
+        "type": "method",
+        "name": "ajax_reset_pretty_link",
+        "class": "PrliLinksController",
+        "file": "app/controllers/PrliLinksController.php",
+        "line_start": 839,
+        "line_end": 859
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 18
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_quick_create",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_quick_create",
+      "callback": {
+        "type": "method",
+        "name": "ajax_quick_create",
+        "class": "PrliLinksController",
+        "file": "app/controllers/PrliLinksController.php",
+        "line_start": 861,
+        "line_end": 911
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 19
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_links_list_save_bulk_edit",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_links_list_save_bulk_edit",
+      "callback": {
+        "type": "method",
+        "name": "save_bulk_edit",
+        "class": "PrliLinksController",
+        "file": "app/controllers/PrliLinksController.php",
+        "line_start": 713,
+        "line_end": 753
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 46
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_addon_activate",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_addon_activate",
+      "callback": {
+        "type": "method",
+        "name": "ajax_addon_activate",
+        "class": "PrliAddonsController",
+        "file": "app/controllers/PrliAddonsController.php",
+        "line_start": 56,
+        "line_end": 85
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 9
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_addon_deactivate",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_addon_deactivate",
+      "callback": {
+        "type": "method",
+        "name": "ajax_addon_deactivate",
+        "class": "PrliAddonsController",
+        "file": "app/controllers/PrliAddonsController.php",
+        "line_start": 99,
+        "line_end": 120
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 10
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_addon_install",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_addon_install",
+      "callback": {
+        "type": "method",
+        "name": "ajax_addon_install",
+        "class": "PrliAddonsController",
+        "file": "app/controllers/PrliAddonsController.php",
+        "line_start": 122,
+        "line_end": 208
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 11
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_pl_dismiss_upgrade_header",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_pl_dismiss_upgrade_header",
+      "callback": {
+        "type": "method",
+        "name": "dismiss_upgrade_header",
+        "class": "PrliAppController",
+        "file": "app/controllers/PrliAppController.php",
+        "line_start": 66,
+        "line_end": 79
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliAppController.php",
+      "line": 51
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_dismiss_notice",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_dismiss_notice",
+      "callback": {
+        "type": "method",
+        "name": "dismiss_notice",
+        "class": "PrliAppController",
+        "file": "app/controllers/PrliAppController.php",
+        "line_start": 130,
+        "line_end": 142
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliAppController.php",
+      "line": 52
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_dismiss_daily_notice",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_dismiss_daily_notice",
+      "callback": {
+        "type": "method",
+        "name": "dismiss_daily_notice",
+        "class": "PrliAppController",
+        "file": "app/controllers/PrliAppController.php",
+        "line_start": 144,
+        "line_end": 156
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliAppController.php",
+      "line": 53
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_dismiss_monthly_notice",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_dismiss_monthly_notice",
+      "callback": {
+        "type": "method",
+        "name": "dismiss_monthly_notice",
+        "class": "PrliAppController",
+        "file": "app/controllers/PrliAppController.php",
+        "line_start": 158,
+        "line_end": 170
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliAppController.php",
+      "line": 54
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_onboarding_save_features",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_onboarding_save_features",
+      "callback": {
+        "type": "static_method",
+        "name": "save_features",
+        "class": "PrliOnboardingController",
+        "file": "app/controllers/PrliOnboardingController.php",
+        "line_start": 224,
+        "line_end": 292
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 9
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_onboarding_save_new_link",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_onboarding_save_new_link",
+      "callback": {
+        "type": "static_method",
+        "name": "save_new_link",
+        "class": "PrliOnboardingController",
+        "file": "app/controllers/PrliOnboardingController.php",
+        "line_start": 388,
+        "line_end": 435
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 10
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_onboarding_save_new_category",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_onboarding_save_new_category",
+      "callback": {
+        "type": "static_method",
+        "name": "save_new_category",
+        "class": "PrliOnboardingController",
+        "file": "app/controllers/PrliOnboardingController.php",
+        "line_start": 722,
+        "line_end": 766
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 11
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_onboarding_get_category",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_onboarding_get_category",
+      "callback": {
+        "type": "static_method",
+        "name": "get_category",
+        "class": "PrliOnboardingController",
+        "file": "app/controllers/PrliOnboardingController.php",
+        "line_start": 768,
+        "line_end": 783
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 12
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_onboarding_set_content",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_onboarding_set_content",
+      "callback": {
+        "type": "static_method",
+        "name": "set_content",
+        "class": "PrliOnboardingController",
+        "file": "app/controllers/PrliOnboardingController.php",
+        "line_start": 633,
+        "line_end": 661
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 13
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_onboarding_unset_content",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_onboarding_unset_content",
+      "callback": {
+        "type": "static_method",
+        "name": "unset_content",
+        "class": "PrliOnboardingController",
+        "file": "app/controllers/PrliOnboardingController.php",
+        "line_start": 681,
+        "line_end": 700
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 14
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_onboarding_import_links",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_onboarding_import_links",
+      "callback": {
+        "type": "static_method",
+        "name": "import_links",
+        "class": "PrliOnboardingController",
+        "file": "app/controllers/PrliOnboardingController.php",
+        "line_start": 663,
+        "line_end": 679
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 15
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_onboarding_mark_content_steps_skipped",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_onboarding_mark_content_steps_skipped",
+      "callback": {
+        "type": "static_method",
+        "name": "mark_content_steps_skipped",
+        "class": "PrliOnboardingController",
+        "file": "app/controllers/PrliOnboardingController.php",
+        "line_start": 711,
+        "line_end": 715
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 16
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_onboarding_mark_steps_complete",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_onboarding_mark_steps_complete",
+      "callback": {
+        "type": "static_method",
+        "name": "mark_steps_complete",
+        "class": "PrliOnboardingController",
+        "file": "app/controllers/PrliOnboardingController.php",
+        "line_start": 717,
+        "line_end": 720
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 17
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_onboarding_unset_category",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_onboarding_unset_category",
+      "callback": {
+        "type": "static_method",
+        "name": "unset_category",
+        "class": "PrliOnboardingController",
+        "file": "app/controllers/PrliOnboardingController.php",
+        "line_start": 702,
+        "line_end": 709
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 18
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_onboarding_install_correct_edition",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_onboarding_install_correct_edition",
+      "callback": {
+        "type": "static_method",
+        "name": "install_correct_edition",
+        "class": "PrliOnboardingController",
+        "file": "app/controllers/PrliOnboardingController.php",
+        "line_start": 785,
+        "line_end": 805
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 19
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_onboarding_install_addons",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_onboarding_install_addons",
+      "callback": {
+        "type": "static_method",
+        "name": "install_addons",
+        "class": "PrliOnboardingController",
+        "file": "app/controllers/PrliOnboardingController.php",
+        "line_start": 824,
+        "line_end": 874
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 20
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_onboarding_load_complete_step",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_onboarding_load_complete_step",
+      "callback": {
+        "type": "static_method",
+        "name": "load_complete_step",
+        "class": "PrliOnboardingController",
+        "file": "app/controllers/PrliOnboardingController.php",
+        "line_start": 876,
+        "line_end": 880
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 21
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_onboarding_load_create_new_content",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_onboarding_load_create_new_content",
+      "callback": {
+        "type": "static_method",
+        "name": "load_create_new_content",
+        "class": "PrliOnboardingController",
+        "file": "app/controllers/PrliOnboardingController.php",
+        "line_start": 882,
+        "line_end": 892
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 22
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_onboarding_load_link_step_content",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_onboarding_load_link_step_content",
+      "callback": {
+        "type": "static_method",
+        "name": "load_link_step_content",
+        "class": "PrliOnboardingController",
+        "file": "app/controllers/PrliOnboardingController.php",
+        "line_start": 894,
+        "line_end": 902
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 23
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_onboarding_re_render_links_list",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_onboarding_re_render_links_list",
+      "callback": {
+        "type": "static_method",
+        "name": "re_render_links_list",
+        "class": "PrliOnboardingController",
+        "file": "app/controllers/PrliOnboardingController.php",
+        "line_start": 904,
+        "line_end": 917
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 24
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_onboarding_load_finish_step",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_onboarding_load_finish_step",
+      "callback": {
+        "type": "static_method",
+        "name": "load_finish_step",
+        "class": "PrliOnboardingController",
+        "file": "app/controllers/PrliOnboardingController.php",
+        "line_start": 919,
+        "line_end": 927
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 25
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_onboarding_finish",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_onboarding_finish",
+      "callback": {
+        "type": "static_method",
+        "name": "finish",
+        "class": "PrliOnboardingController",
+        "file": "app/controllers/PrliOnboardingController.php",
+        "line_start": 929,
+        "line_end": 935
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 26
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_plp_edge_updates",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_plp_edge_updates",
+      "callback": {
+        "type": "method",
+        "name": "plp_edge_updates",
+        "class": "PrliUpdateController",
+        "file": "app/controllers/PrliUpdateController.php",
+        "line_start": 665,
+        "line_end": 680
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliUpdateController.php",
+      "line": 21
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_activate_license",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_activate_license",
+      "callback": {
+        "type": "method",
+        "name": "ajax_activate_license",
+        "class": "PrliUpdateController",
+        "file": "app/controllers/PrliUpdateController.php",
+        "line_start": 64,
+        "line_end": 157
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliUpdateController.php",
+      "line": 28
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_deactivate_license",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_deactivate_license",
+      "callback": {
+        "type": "method",
+        "name": "ajax_deactivate_license",
+        "class": "PrliUpdateController",
+        "file": "app/controllers/PrliUpdateController.php",
+        "line_start": 159,
+        "line_end": 183
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliUpdateController.php",
+      "line": 29
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_prli_install_license_edition",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_prli_install_license_edition",
+      "callback": {
+        "type": "method",
+        "name": "ajax_install_license_edition",
+        "class": "PrliUpdateController",
+        "file": "app/controllers/PrliUpdateController.php",
+        "line_start": 198,
+        "line_end": 229
+      },
+      "auth_level": "subscriber",
+      "file": "app/controllers/PrliUpdateController.php",
+      "line": 30
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_mosh_addon_activate",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_mosh_addon_activate",
+      "callback": {
+        "type": "unresolved",
+        "name": null,
+        "class": null,
+        "file": null,
+        "line_start": null,
+        "line_end": null
+      },
+      "auth_level": "subscriber",
+      "file": "vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php",
+      "line": 28
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_mosh_addon_deactivate",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_mosh_addon_deactivate",
+      "callback": {
+        "type": "unresolved",
+        "name": null,
+        "class": null,
+        "file": null,
+        "line_start": null,
+        "line_end": null
+      },
+      "auth_level": "subscriber",
+      "file": "vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php",
+      "line": 29
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_mosh_addon_install",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_mosh_addon_install",
+      "callback": {
+        "type": "unresolved",
+        "name": null,
+        "class": null,
+        "file": null,
+        "line_start": null,
+        "line_end": null
+      },
+      "auth_level": "subscriber",
+      "file": "vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php",
+      "line": 30
+    }
+  ],
+  "sources": [
+    {
+      "id": "src_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stop_popup",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "popup",
+      "file": "app/controllers/PrliPopupController.php",
+      "line": 98
+    },
+    {
+      "id": "src_2",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stop_popup",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliPopupController.php",
+      "line": 98
+    },
+    {
+      "id": "src_3",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stop_popup",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "popup",
+      "file": "app/controllers/PrliPopupController.php",
+      "line": 102
+    },
+    {
+      "id": "src_4",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stop_popup",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliPopupController.php",
+      "line": 102
+    },
+    {
+      "id": "src_5",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stop_popup",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "action",
+      "file": "app/controllers/PrliPopupController.php",
+      "line": 108
+    },
+    {
+      "id": "src_6",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stop_popup",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliPopupController.php",
+      "line": 108
+    },
+    {
+      "id": "src_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_delay_popup",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "popup",
+      "file": "app/controllers/PrliPopupController.php",
+      "line": 98
+    },
+    {
+      "id": "src_2",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_delay_popup",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliPopupController.php",
+      "line": 98
+    },
+    {
+      "id": "src_3",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_delay_popup",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "popup",
+      "file": "app/controllers/PrliPopupController.php",
+      "line": 102
+    },
+    {
+      "id": "src_4",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_delay_popup",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliPopupController.php",
+      "line": 102
+    },
+    {
+      "id": "src_5",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_delay_popup",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "action",
+      "file": "app/controllers/PrliPopupController.php",
+      "line": 108
+    },
+    {
+      "id": "src_6",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_delay_popup",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliPopupController.php",
+      "line": 108
+    },
+    {
+      "id": "src_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": "_wpnonce",
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 99
+    },
+    {
+      "id": "src_2",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": null,
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 99
+    },
+    {
+      "id": "src_3",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": "_wpnonce",
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 99
+    },
+    {
+      "id": "src_4",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": null,
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 99
+    },
+    {
+      "id": "src_5",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": "error",
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 104
+    },
+    {
+      "id": "src_6",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": null,
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 104
+    },
+    {
+      "id": "src_7",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": "error",
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 105
+    },
+    {
+      "id": "src_8",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": null,
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 105
+    },
+    {
+      "id": "src_9",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": "pmt",
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 109
+    },
+    {
+      "id": "src_10",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": null,
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 109
+    },
+    {
+      "id": "src_11",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": "stripe-action",
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 120
+    },
+    {
+      "id": "src_12",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": null,
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 120
+    },
+    {
+      "id": "src_13",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": "stripe-action",
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 120
+    },
+    {
+      "id": "src_14",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": null,
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 120
+    },
+    {
+      "id": "src_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": "_wpnonce",
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 168
+    },
+    {
+      "id": "src_2",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": null,
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 168
+    },
+    {
+      "id": "src_3",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": "_wpnonce",
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 168
+    },
+    {
+      "id": "src_4",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": null,
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 168
+    },
+    {
+      "id": "src_5",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": "method-id",
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 173
+    },
+    {
+      "id": "src_6",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": null,
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 173
+    },
+    {
+      "id": "src_7",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+      "type": "option_read",
+      "variable": "get_option()",
+      "key": null,
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 183
+    },
+    {
+      "id": "src_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_disconnect",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": "_wpnonce",
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 228
+    },
+    {
+      "id": "src_2",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_disconnect",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": null,
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 228
+    },
+    {
+      "id": "src_3",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_disconnect",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": "_wpnonce",
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 228
+    },
+    {
+      "id": "src_4",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_disconnect",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": null,
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 228
+    },
+    {
+      "id": "src_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_stripe_prices",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": "search",
+      "file": "app/controllers/PrliStripeController.php",
+      "line": 607
+    },
+    {
+      "id": "src_2",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_stripe_prices",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": null,
+      "file": "app/controllers/PrliStripeController.php",
+      "line": 607
+    },
+    {
+      "id": "src_3",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_stripe_prices",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": "search",
+      "file": "app/controllers/PrliStripeController.php",
+      "line": 607
+    },
+    {
+      "id": "src_4",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_stripe_prices",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": null,
+      "file": "app/controllers/PrliStripeController.php",
+      "line": 607
+    },
+    {
+      "id": "src_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_add_product",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "data",
+      "file": "app/controllers/PrliStripeController.php",
+      "line": 744
+    },
+    {
+      "id": "src_2",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_add_product",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliStripeController.php",
+      "line": 744
+    },
+    {
+      "id": "src_3",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_add_product",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "data",
+      "file": "app/controllers/PrliStripeController.php",
+      "line": 744
+    },
+    {
+      "id": "src_4",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_add_product",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliStripeController.php",
+      "line": 744
+    },
+    {
+      "id": "src_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_review_prompt",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "nonce",
+      "file": "app/controllers/PrliReviewNoticeController.php",
+      "line": 15
+    },
+    {
+      "id": "src_2",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_review_prompt",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliReviewNoticeController.php",
+      "line": 15
+    },
+    {
+      "id": "src_3",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_review_prompt",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "nonce",
+      "file": "app/controllers/PrliReviewNoticeController.php",
+      "line": 15
+    },
+    {
+      "id": "src_4",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_review_prompt",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliReviewNoticeController.php",
+      "line": 15
+    },
+    {
+      "id": "src_5",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_review_prompt",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "type",
+      "file": "app/controllers/PrliReviewNoticeController.php",
+      "line": 24
+    },
+    {
+      "id": "src_6",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_review_prompt",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliReviewNoticeController.php",
+      "line": 24
+    },
+    {
+      "id": "src_7",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_review_prompt",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "type",
+      "file": "app/controllers/PrliReviewNoticeController.php",
+      "line": 25
+    },
+    {
+      "id": "src_8",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_review_prompt",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliReviewNoticeController.php",
+      "line": 25
+    },
+    {
+      "id": "src_9",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_review_prompt",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "type",
+      "file": "app/controllers/PrliReviewNoticeController.php",
+      "line": 30
+    },
+    {
+      "id": "src_10",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_review_prompt",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliReviewNoticeController.php",
+      "line": 30
+    },
+    {
+      "id": "src_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_tinymce_validate_slug",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "slug",
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 165
+    },
+    {
+      "id": "src_2",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_tinymce_validate_slug",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 165
+    },
+    {
+      "id": "src_3",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_tinymce_validate_slug",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "slug",
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 165
+    },
+    {
+      "id": "src_4",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_tinymce_validate_slug",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 165
+    },
+    {
+      "id": "src_5",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_tinymce_validate_slug",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "slug",
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 170
+    },
+    {
+      "id": "src_6",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_tinymce_validate_slug",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 170
+    },
+    {
+      "id": "src_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_create_pretty_link",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 195
+    },
+    {
+      "id": "src_2",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_create_pretty_link",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 195
+    },
+    {
+      "id": "src_3",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_create_pretty_link",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "target",
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 202
+    },
+    {
+      "id": "src_4",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_create_pretty_link",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 202
+    },
+    {
+      "id": "src_5",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_create_pretty_link",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "slug",
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 203
+    },
+    {
+      "id": "src_6",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_create_pretty_link",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 203
+    },
+    {
+      "id": "src_7",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_create_pretty_link",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "tracking",
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 207
+    },
+    {
+      "id": "src_8",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_create_pretty_link",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 207
+    },
+    {
+      "id": "src_9",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_create_pretty_link",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "nofollow",
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 208
+    },
+    {
+      "id": "src_10",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_create_pretty_link",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 208
+    },
+    {
+      "id": "src_11",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_create_pretty_link",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "sponsored",
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 209
+    },
+    {
+      "id": "src_12",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_create_pretty_link",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 209
+    },
+    {
+      "id": "src_13",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_create_pretty_link",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "redirect",
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 210
+    },
+    {
+      "id": "src_14",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_create_pretty_link",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 210
+    },
+    {
+      "id": "src_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_for_links",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": "term",
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 226
+    },
+    {
+      "id": "src_2",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_for_links",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": null,
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 226
+    },
+    {
+      "id": "src_3",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_for_links",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": "term",
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 226
+    },
+    {
+      "id": "src_4",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_for_links",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": null,
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 226
+    },
+    {
+      "id": "src_5",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_for_links",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": "term",
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 234
+    },
+    {
+      "id": "src_6",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_for_links",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": null,
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 234
+    },
+    {
+      "id": "src_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_validate_pretty_link",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "id",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 477
+    },
+    {
+      "id": "src_2",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_validate_pretty_link",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 477
+    },
+    {
+      "id": "src_3",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_validate_pretty_link",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "id",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 477
+    },
+    {
+      "id": "src_4",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_validate_pretty_link",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 477
+    },
+    {
+      "id": "src_5",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_validate_pretty_link",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "url",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 478
+    },
+    {
+      "id": "src_6",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_validate_pretty_link",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 478
+    },
+    {
+      "id": "src_7",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_validate_pretty_link",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "prli_url",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 478
+    },
+    {
+      "id": "src_8",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_validate_pretty_link",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 478
+    },
+    {
+      "id": "src_9",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_validate_pretty_link",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "prli_url",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 478
+    },
+    {
+      "id": "src_10",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_validate_pretty_link",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 478
+    },
+    {
+      "id": "src_11",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_validate_pretty_link",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "prli_url",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 478
+    },
+    {
+      "id": "src_12",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_validate_pretty_link",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 478
+    },
+    {
+      "id": "src_13",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_validate_pretty_link",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 479
+    },
+    {
+      "id": "src_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_reset_pretty_link",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "id",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 852
+    },
+    {
+      "id": "src_2",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_reset_pretty_link",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 852
+    },
+    {
+      "id": "src_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_quick_create",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "url",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 862
+    },
+    {
+      "id": "src_2",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_quick_create",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 862
+    },
+    {
+      "id": "src_3",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_quick_create",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "slug",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 862
+    },
+    {
+      "id": "src_4",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_quick_create",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 862
+    },
+    {
+      "id": "src_5",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_quick_create",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "url",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 862
+    },
+    {
+      "id": "src_6",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_quick_create",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 862
+    },
+    {
+      "id": "src_7",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_quick_create",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "slug",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 862
+    },
+    {
+      "id": "src_8",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_quick_create",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 862
+    },
+    {
+      "id": "src_9",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_quick_create",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 876
+    },
+    {
+      "id": "src_10",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_quick_create",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "redirect_type",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 882
+    },
+    {
+      "id": "src_11",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_quick_create",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 882
+    },
+    {
+      "id": "src_12",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_quick_create",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "track_me",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 885
+    },
+    {
+      "id": "src_13",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_quick_create",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 885
+    },
+    {
+      "id": "src_14",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_quick_create",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "nofollow",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 889
+    },
+    {
+      "id": "src_15",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_quick_create",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 889
+    },
+    {
+      "id": "src_16",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_quick_create",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "sponsored",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 893
+    },
+    {
+      "id": "src_17",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_quick_create",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 893
+    },
+    {
+      "id": "src_18",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_quick_create",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 896
+    },
+    {
+      "id": "src_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_links_list_save_bulk_edit",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "post_ids",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 720
+    },
+    {
+      "id": "src_2",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_links_list_save_bulk_edit",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 720
+    },
+    {
+      "id": "src_3",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_links_list_save_bulk_edit",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "post_ids",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 720
+    },
+    {
+      "id": "src_4",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_links_list_save_bulk_edit",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 720
+    },
+    {
+      "id": "src_5",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_links_list_save_bulk_edit",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "post_ids",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 720
+    },
+    {
+      "id": "src_6",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_links_list_save_bulk_edit",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 720
+    },
+    {
+      "id": "src_7",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_links_list_save_bulk_edit",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "tracking",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 728
+    },
+    {
+      "id": "src_8",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_links_list_save_bulk_edit",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 728
+    },
+    {
+      "id": "src_9",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_links_list_save_bulk_edit",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "tracking",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 728
+    },
+    {
+      "id": "src_10",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_links_list_save_bulk_edit",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 728
+    },
+    {
+      "id": "src_11",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_links_list_save_bulk_edit",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "nofollow",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 729
+    },
+    {
+      "id": "src_12",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_links_list_save_bulk_edit",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 729
+    },
+    {
+      "id": "src_13",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_links_list_save_bulk_edit",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "nofollow",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 729
+    },
+    {
+      "id": "src_14",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_links_list_save_bulk_edit",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 729
+    },
+    {
+      "id": "src_15",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_links_list_save_bulk_edit",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "sponsored",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 730
+    },
+    {
+      "id": "src_16",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_links_list_save_bulk_edit",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 730
+    },
+    {
+      "id": "src_17",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_links_list_save_bulk_edit",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "sponsored",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 730
+    },
+    {
+      "id": "src_18",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_links_list_save_bulk_edit",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 730
+    },
+    {
+      "id": "src_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_activate",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "plugin",
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 57
+    },
+    {
+      "id": "src_2",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_activate",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 57
+    },
+    {
+      "id": "src_3",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_activate",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "plugin",
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 69
+    },
+    {
+      "id": "src_4",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_activate",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 69
+    },
+    {
+      "id": "src_5",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_activate",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "type",
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 70
+    },
+    {
+      "id": "src_6",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_activate",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 70
+    },
+    {
+      "id": "src_7",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_activate",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "type",
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 70
+    },
+    {
+      "id": "src_8",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_activate",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 70
+    },
+    {
+      "id": "src_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_deactivate",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "plugin",
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 100
+    },
+    {
+      "id": "src_2",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_deactivate",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 100
+    },
+    {
+      "id": "src_3",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_deactivate",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "plugin",
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 112
+    },
+    {
+      "id": "src_4",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_deactivate",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 112
+    },
+    {
+      "id": "src_5",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_deactivate",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "type",
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 113
+    },
+    {
+      "id": "src_6",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_deactivate",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 113
+    },
+    {
+      "id": "src_7",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_deactivate",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "type",
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 113
+    },
+    {
+      "id": "src_8",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_deactivate",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 113
+    },
+    {
+      "id": "src_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_install",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "plugin",
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 123
+    },
+    {
+      "id": "src_2",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_install",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 123
+    },
+    {
+      "id": "src_3",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_install",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "type",
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 135
+    },
+    {
+      "id": "src_4",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_install",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 135
+    },
+    {
+      "id": "src_5",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_install",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "type",
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 135
+    },
+    {
+      "id": "src_6",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_install",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 135
+    },
+    {
+      "id": "src_7",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_install",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "plugin",
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 176
+    },
+    {
+      "id": "src_8",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_install",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 176
+    },
+    {
+      "id": "src_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_upgrade_header",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "nonce",
+      "file": "app/controllers/PrliAppController.php",
+      "line": 69
+    },
+    {
+      "id": "src_2",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_upgrade_header",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliAppController.php",
+      "line": 69
+    },
+    {
+      "id": "src_3",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_upgrade_header",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "nonce",
+      "file": "app/controllers/PrliAppController.php",
+      "line": 69
+    },
+    {
+      "id": "src_4",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_upgrade_header",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliAppController.php",
+      "line": 69
+    },
+    {
+      "id": "src_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_notice",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "notice",
+      "file": "app/controllers/PrliAppController.php",
+      "line": 131
+    },
+    {
+      "id": "src_2",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_notice",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliAppController.php",
+      "line": 131
+    },
+    {
+      "id": "src_3",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_notice",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "notice",
+      "file": "app/controllers/PrliAppController.php",
+      "line": 131
+    },
+    {
+      "id": "src_4",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_notice",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliAppController.php",
+      "line": 131
+    },
+    {
+      "id": "src_5",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_notice",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "notice",
+      "file": "app/controllers/PrliAppController.php",
+      "line": 137
+    },
+    {
+      "id": "src_6",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_notice",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliAppController.php",
+      "line": 137
+    },
+    {
+      "id": "src_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_daily_notice",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "notice",
+      "file": "app/controllers/PrliAppController.php",
+      "line": 145
+    },
+    {
+      "id": "src_2",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_daily_notice",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliAppController.php",
+      "line": 145
+    },
+    {
+      "id": "src_3",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_daily_notice",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "notice",
+      "file": "app/controllers/PrliAppController.php",
+      "line": 145
+    },
+    {
+      "id": "src_4",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_daily_notice",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliAppController.php",
+      "line": 145
+    },
+    {
+      "id": "src_5",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_daily_notice",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "notice",
+      "file": "app/controllers/PrliAppController.php",
+      "line": 151
+    },
+    {
+      "id": "src_6",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_daily_notice",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliAppController.php",
+      "line": 151
+    },
+    {
+      "id": "src_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_monthly_notice",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "notice",
+      "file": "app/controllers/PrliAppController.php",
+      "line": 159
+    },
+    {
+      "id": "src_2",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_monthly_notice",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliAppController.php",
+      "line": 159
+    },
+    {
+      "id": "src_3",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_monthly_notice",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "notice",
+      "file": "app/controllers/PrliAppController.php",
+      "line": 159
+    },
+    {
+      "id": "src_4",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_monthly_notice",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliAppController.php",
+      "line": 159
+    },
+    {
+      "id": "src_5",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_monthly_notice",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "notice",
+      "file": "app/controllers/PrliAppController.php",
+      "line": 165
+    },
+    {
+      "id": "src_6",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_monthly_notice",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliAppController.php",
+      "line": 165
+    },
+    {
+      "id": "src_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_onboarding_import_links",
+      "type": "superglobal_files",
+      "variable": "$_FILES",
+      "key": "importedfile",
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 666
+    },
+    {
+      "id": "src_2",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_onboarding_import_links",
+      "type": "superglobal_files",
+      "variable": "$_FILES",
+      "key": null,
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 666
+    },
+    {
+      "id": "src_3",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_onboarding_import_links",
+      "type": "superglobal_files",
+      "variable": "$_FILES",
+      "key": "importedfile",
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 666
+    },
+    {
+      "id": "src_4",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_onboarding_import_links",
+      "type": "superglobal_files",
+      "variable": "$_FILES",
+      "key": null,
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 666
+    },
+    {
+      "id": "src_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_plp_edge_updates",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "wpnonce",
+      "file": "app/controllers/PrliUpdateController.php",
+      "line": 666
+    },
+    {
+      "id": "src_2",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_plp_edge_updates",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliUpdateController.php",
+      "line": 666
+    },
+    {
+      "id": "src_3",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_plp_edge_updates",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "edge",
+      "file": "app/controllers/PrliUpdateController.php",
+      "line": 670
+    },
+    {
+      "id": "src_4",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_plp_edge_updates",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliUpdateController.php",
+      "line": 670
+    },
+    {
+      "id": "src_5",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_plp_edge_updates",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "edge",
+      "file": "app/controllers/PrliUpdateController.php",
+      "line": 674
+    },
+    {
+      "id": "src_6",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_plp_edge_updates",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliUpdateController.php",
+      "line": 674
+    },
+    {
+      "id": "src_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_activate_license",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "key",
+      "file": "app/controllers/PrliUpdateController.php",
+      "line": 65
+    },
+    {
+      "id": "src_2",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_activate_license",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliUpdateController.php",
+      "line": 65
+    },
+    {
+      "id": "src_3",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_activate_license",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "key",
+      "file": "app/controllers/PrliUpdateController.php",
+      "line": 65
+    },
+    {
+      "id": "src_4",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_activate_license",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliUpdateController.php",
+      "line": 65
+    },
+    {
+      "id": "src_5",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_activate_license",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "key",
+      "file": "app/controllers/PrliUpdateController.php",
+      "line": 77
+    },
+    {
+      "id": "src_6",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_activate_license",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "app/controllers/PrliUpdateController.php",
+      "line": 77
+    }
+  ],
+  "sinks": [
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+      "category": "redirect",
+      "function_called": "wp_redirect",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 126
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+      "category": "remote_request",
+      "function_called": "wp_remote_post",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 192
+    },
+    {
+      "id": "sink_2",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+      "category": "option_update",
+      "function_called": "update_option",
+      "uses_prepared_statement": null,
+      "key": "prli_stripe_status",
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 202
+    },
+    {
+      "id": "sink_3",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+      "category": "option_update",
+      "function_called": "update_option",
+      "uses_prepared_statement": null,
+      "key": "prli_stripe_test_secret_key",
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 203
+    },
+    {
+      "id": "sink_4",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+      "category": "option_update",
+      "function_called": "update_option",
+      "uses_prepared_statement": null,
+      "key": "prli_stripe_test_publishable_key",
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 204
+    },
+    {
+      "id": "sink_5",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+      "category": "option_update",
+      "function_called": "update_option",
+      "uses_prepared_statement": null,
+      "key": "prli_stripe_live_secret_key",
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 205
+    },
+    {
+      "id": "sink_6",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+      "category": "option_update",
+      "function_called": "update_option",
+      "uses_prepared_statement": null,
+      "key": "prli_stripe_live_publishable_key",
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 206
+    },
+    {
+      "id": "sink_7",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+      "category": "option_update",
+      "function_called": "update_option",
+      "uses_prepared_statement": null,
+      "key": "prli_stripe_connect_status",
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 208
+    },
+    {
+      "id": "sink_8",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+      "category": "option_update",
+      "function_called": "update_option",
+      "uses_prepared_statement": null,
+      "key": "prli_stripe_service_account_id",
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 209
+    },
+    {
+      "id": "sink_9",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+      "category": "option_update",
+      "function_called": "update_option",
+      "uses_prepared_statement": null,
+      "key": "prli_stripe_service_account_name",
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 210
+    },
+    {
+      "id": "sink_10",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+      "category": "redirect",
+      "function_called": "wp_redirect",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 216
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_disconnect",
+      "category": "option_update",
+      "function_called": "update_option",
+      "uses_prepared_statement": null,
+      "key": "prli_stripe_connect_status",
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 243
+    },
+    {
+      "id": "sink_2",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_disconnect",
+      "category": "option_update",
+      "function_called": "update_option",
+      "uses_prepared_statement": null,
+      "key": "prli_stripe_status",
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 245
+    },
+    {
+      "id": "sink_3",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_disconnect",
+      "category": "redirect",
+      "function_called": "wp_redirect",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 251
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_customer_portal_notice",
+      "category": "option_update",
+      "function_called": "update_option",
+      "uses_prepared_statement": null,
+      "key": "prli_customer_portal_notice_dismissed",
+      "file": "app/controllers/PrliStripeController.php",
+      "line": 1144
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_review_prompt",
+      "category": "option_update",
+      "function_called": "update_option",
+      "uses_prepared_statement": null,
+      "key": "pl_review_prompt_removed",
+      "file": "app/controllers/PrliReviewNoticeController.php",
+      "line": 26
+    },
+    {
+      "id": "sink_2",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_review_prompt",
+      "category": "option_update",
+      "function_called": "update_option",
+      "uses_prepared_statement": null,
+      "key": "pl_review_prompt_delay",
+      "file": "app/controllers/PrliReviewNoticeController.php",
+      "line": 31
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_tinymce_form",
+      "category": "include",
+      "function_called": "require",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 150
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_tinymce_validate_slug",
+      "category": "output",
+      "function_called": "echo",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 166
+    },
+    {
+      "id": "sink_2",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_tinymce_validate_slug",
+      "category": "output",
+      "function_called": "echo",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 174
+    },
+    {
+      "id": "sink_3",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_tinymce_validate_slug",
+      "category": "output",
+      "function_called": "echo",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 178
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_create_pretty_link",
+      "category": "output",
+      "function_called": "echo",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 191
+    },
+    {
+      "id": "sink_2",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_create_pretty_link",
+      "category": "output",
+      "function_called": "echo",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 196
+    },
+    {
+      "id": "sink_3",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_create_pretty_link",
+      "category": "output",
+      "function_called": "echo",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 214
+    },
+    {
+      "id": "sink_4",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_create_pretty_link",
+      "category": "output",
+      "function_called": "echo",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 218
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_for_links",
+      "category": "sql",
+      "function_called": "get_results",
+      "uses_prepared_statement": true,
+      "key": null,
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 237
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_install",
+      "category": "include",
+      "function_called": "require_once",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 168
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_upgrade_header",
+      "category": "option_update",
+      "function_called": "update_option",
+      "uses_prepared_statement": null,
+      "key": "pl_dismiss_upgrade_header",
+      "file": "app/controllers/PrliAppController.php",
+      "line": 78
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_notice",
+      "category": "option_update",
+      "function_called": "update_option",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "app/controllers/PrliAppController.php",
+      "line": 138
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_onboarding_load_create_new_content",
+      "category": "include",
+      "function_called": "require",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 888
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_onboarding_load_link_step_content",
+      "category": "include",
+      "function_called": "require",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 898
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_onboarding_re_render_links_list",
+      "category": "include",
+      "function_called": "require",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 913
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_onboarding_load_finish_step",
+      "category": "include",
+      "function_called": "require",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 923
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_onboarding_finish",
+      "category": "option_update",
+      "function_called": "update_option",
+      "uses_prepared_statement": null,
+      "key": "prli_onboarding_complete",
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 932
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_activate_license",
+      "category": "include",
+      "function_called": "require",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "app/controllers/PrliUpdateController.php",
+      "line": 104
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_deactivate_license",
+      "category": "include",
+      "function_called": "require",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "app/controllers/PrliUpdateController.php",
+      "line": 179
+    }
+  ],
+  "guards": [
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+      "type": "nonce_check",
+      "function_called": "wp_verify_nonce",
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 99,
+      "is_effective": null,
+      "notes": null
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+      "type": "nonce_check",
+      "function_called": "wp_verify_nonce",
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 168,
+      "is_effective": null,
+      "notes": null
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_disconnect",
+      "type": "nonce_check",
+      "function_called": "wp_verify_nonce",
+      "file": "app/controllers/PrliStripeConnectController.php",
+      "line": 228,
+      "is_effective": null,
+      "notes": null
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_stripe_prices",
+      "type": "nonce_check",
+      "function_called": "check_ajax_referer",
+      "file": "app/controllers/PrliStripeController.php",
+      "line": 603,
+      "is_effective": false,
+      "notes": "check_ajax_referer with $die=false \u2014 code continues on failure"
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_add_product",
+      "type": "nonce_check",
+      "function_called": "check_ajax_referer",
+      "file": "app/controllers/PrliStripeController.php",
+      "line": 740,
+      "is_effective": false,
+      "notes": "check_ajax_referer with $die=false \u2014 code continues on failure"
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_customer_portal_notice",
+      "type": "nonce_check",
+      "function_called": "check_ajax_referer",
+      "file": "app/controllers/PrliStripeController.php",
+      "line": 1140,
+      "is_effective": false,
+      "notes": "check_ajax_referer with $die=false \u2014 code continues on failure"
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_review_prompt",
+      "type": "nonce_check",
+      "function_called": "wp_verify_nonce",
+      "file": "app/controllers/PrliReviewNoticeController.php",
+      "line": 15,
+      "is_effective": null,
+      "notes": null
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_tinymce_validate_slug",
+      "type": "nonce_check",
+      "function_called": "check_ajax_referer",
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 156,
+      "is_effective": false,
+      "notes": "check_ajax_referer with $die=false \u2014 code continues on failure"
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_create_pretty_link",
+      "type": "nonce_check",
+      "function_called": "check_ajax_referer",
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 184,
+      "is_effective": false,
+      "notes": "check_ajax_referer with $die=false \u2014 code continues on failure"
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_validate_pretty_link",
+      "type": "nonce_check",
+      "function_called": "check_ajax_referer",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 467,
+      "is_effective": true,
+      "notes": null
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_reset_pretty_link",
+      "type": "nonce_check",
+      "function_called": "check_ajax_referer",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 842,
+      "is_effective": true,
+      "notes": null
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_quick_create",
+      "type": "nonce_check",
+      "function_called": "check_ajax_referer",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 870,
+      "is_effective": false,
+      "notes": "check_ajax_referer with $die=false \u2014 code continues on failure; guard at line 870 after side-effect at line 863"
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_links_list_save_bulk_edit",
+      "type": "nonce_check",
+      "function_called": "check_ajax_referer",
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 714,
+      "is_effective": false,
+      "notes": "check_ajax_referer with $die=false \u2014 code continues on failure"
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_activate",
+      "type": "capability_check",
+      "function_called": "current_user_can('activate_plugins')",
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 61,
+      "is_effective": false,
+      "notes": "guard after side-effect at line 58"
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_activate",
+      "type": "nonce_check",
+      "function_called": "check_ajax_referer",
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 65,
+      "is_effective": false,
+      "notes": "check_ajax_referer with $die=false \u2014 code continues on failure; guard at line 65 after side-effect at line 58"
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_deactivate",
+      "type": "capability_check",
+      "function_called": "current_user_can('deactivate_plugins')",
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 104,
+      "is_effective": false,
+      "notes": "guard after side-effect at line 101"
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_deactivate",
+      "type": "nonce_check",
+      "function_called": "check_ajax_referer",
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 108,
+      "is_effective": false,
+      "notes": "check_ajax_referer with $die=false \u2014 code continues on failure; guard at line 108 after side-effect at line 101"
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_install",
+      "type": "capability_check",
+      "function_called": "current_user_can('install_plugins')",
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 127,
+      "is_effective": false,
+      "notes": "guard after side-effect at line 124"
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_install",
+      "type": "capability_check",
+      "function_called": "current_user_can('activate_plugins')",
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 127,
+      "is_effective": false,
+      "notes": "guard after side-effect at line 124"
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_install",
+      "type": "nonce_check",
+      "function_called": "check_ajax_referer",
+      "file": "app/controllers/PrliAddonsController.php",
+      "line": 131,
+      "is_effective": false,
+      "notes": "check_ajax_referer with $die=false \u2014 code continues on failure; guard at line 131 after side-effect at line 124"
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_upgrade_header",
+      "type": "nonce_check",
+      "function_called": "wp_verify_nonce",
+      "file": "app/controllers/PrliAppController.php",
+      "line": 69,
+      "is_effective": null,
+      "notes": null
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_notice",
+      "type": "nonce_check",
+      "function_called": "check_ajax_referer",
+      "file": "app/controllers/PrliAppController.php",
+      "line": 131,
+      "is_effective": false,
+      "notes": "check_ajax_referer with $die=false \u2014 code continues on failure"
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_daily_notice",
+      "type": "nonce_check",
+      "function_called": "check_ajax_referer",
+      "file": "app/controllers/PrliAppController.php",
+      "line": 145,
+      "is_effective": false,
+      "notes": "check_ajax_referer with $die=false \u2014 code continues on failure"
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_monthly_notice",
+      "type": "nonce_check",
+      "function_called": "check_ajax_referer",
+      "file": "app/controllers/PrliAppController.php",
+      "line": 159,
+      "is_effective": false,
+      "notes": "check_ajax_referer with $die=false \u2014 code continues on failure"
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_onboarding_save_new_link",
+      "type": "capability_check",
+      "function_called": "current_user_can('publish_posts')",
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 397,
+      "is_effective": false,
+      "notes": "guard after side-effect at line 394"
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_onboarding_save_new_category",
+      "type": "capability_check",
+      "function_called": "current_user_can('publish_posts')",
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 731,
+      "is_effective": false,
+      "notes": "guard after side-effect at line 728"
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_onboarding_get_category",
+      "type": "capability_check",
+      "function_called": "current_user_can('publish_posts')",
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 775,
+      "is_effective": false,
+      "notes": "guard after side-effect at line 772"
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_onboarding_set_content",
+      "type": "capability_check",
+      "function_called": "current_user_can('publish_posts')",
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 638,
+      "is_effective": true,
+      "notes": "publish_posts"
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_onboarding_install_addons",
+      "type": "capability_check",
+      "function_called": "current_user_can('publish_posts')",
+      "file": "app/controllers/PrliOnboardingController.php",
+      "line": 833,
+      "is_effective": false,
+      "notes": "guard after side-effect at line 830"
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_plp_edge_updates",
+      "type": "nonce_check",
+      "function_called": "wp_verify_nonce",
+      "file": "app/controllers/PrliUpdateController.php",
+      "line": 666,
+      "is_effective": null,
+      "notes": null
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_activate_license",
+      "type": "nonce_check",
+      "function_called": "check_ajax_referer",
+      "file": "app/controllers/PrliUpdateController.php",
+      "line": 73,
+      "is_effective": false,
+      "notes": "check_ajax_referer with $die=false \u2014 code continues on failure; guard at line 73 after side-effect at line 66"
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_deactivate_license",
+      "type": "nonce_check",
+      "function_called": "check_ajax_referer",
+      "file": "app/controllers/PrliUpdateController.php",
+      "line": 168,
+      "is_effective": false,
+      "notes": "check_ajax_referer with $die=false \u2014 code continues on failure; guard at line 168 after side-effect at line 161"
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_install_license_edition",
+      "type": "capability_check",
+      "function_called": "current_user_can('update_plugins')",
+      "file": "app/controllers/PrliUpdateController.php",
+      "line": 203,
+      "is_effective": false,
+      "notes": "guard after side-effect at line 200"
+    },
+    {
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_install_license_edition",
+      "type": "nonce_check",
+      "function_called": "check_ajax_referer",
+      "file": "app/controllers/PrliUpdateController.php",
+      "line": 207,
+      "is_effective": false,
+      "notes": "check_ajax_referer with $die=false \u2014 code continues on failure; guard at line 207 after side-effect at line 200"
+    }
+  ],
+  "anomalies": [
+    {
+      "id": "anom_2",
+      "rule_id": "rule_01",
+      "type": "missing_nonce",
+      "severity": "high",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+      "description": "Missing nonce check in ajax_priv handler 'wp_ajax_prli_stripe_connect_refresh'",
+      "evidence": {
+        "file": "app/controllers/PrliStripeConnectController.php",
+        "line": 22
+      }
+    },
+    {
+      "id": "anom_3",
+      "rule_id": "rule_01",
+      "type": "missing_nonce",
+      "severity": "high",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_disconnect",
+      "description": "Missing nonce check in ajax_priv handler 'wp_ajax_prli_stripe_connect_disconnect'",
+      "evidence": {
+        "file": "app/controllers/PrliStripeConnectController.php",
+        "line": 23
+      }
+    },
+    {
+      "id": "anom_4",
+      "rule_id": "rule_01",
+      "type": "missing_nonce",
+      "severity": "high",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_customer_portal_notice",
+      "description": "Missing nonce check in ajax_priv handler 'wp_ajax_prli_dismiss_customer_portal_notice'",
+      "evidence": {
+        "file": "app/controllers/PrliStripeController.php",
+        "line": 22
+      }
+    },
+    {
+      "id": "anom_5",
+      "rule_id": "rule_01",
+      "type": "missing_nonce",
+      "severity": "high",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_review_prompt",
+      "description": "Missing nonce check in ajax_priv handler 'wp_ajax_pl_dismiss_review_prompt'",
+      "evidence": {
+        "file": "app/controllers/PrliReviewNoticeController.php",
+        "line": 10
+      }
+    },
+    {
+      "id": "anom_7",
+      "rule_id": "rule_01",
+      "type": "missing_nonce",
+      "severity": "high",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_for_links",
+      "description": "Missing nonce check in ajax_priv handler 'wp_ajax_prli_search_for_links'",
+      "evidence": {
+        "file": "app/controllers/PrliPostsController.php",
+        "line": 13
+      }
+    },
+    {
+      "id": "anom_10",
+      "rule_id": "rule_01",
+      "type": "missing_nonce",
+      "severity": "high",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_upgrade_header",
+      "description": "Missing nonce check in ajax_priv handler 'wp_ajax_pl_dismiss_upgrade_header'",
+      "evidence": {
+        "file": "app/controllers/PrliAppController.php",
+        "line": 51
+      }
+    },
+    {
+      "id": "anom_11",
+      "rule_id": "rule_01",
+      "type": "missing_nonce",
+      "severity": "high",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_notice",
+      "description": "Missing nonce check in ajax_priv handler 'wp_ajax_prli_dismiss_notice'",
+      "evidence": {
+        "file": "app/controllers/PrliAppController.php",
+        "line": 52
+      }
+    },
+    {
+      "id": "anom_12",
+      "rule_id": "rule_01",
+      "type": "missing_nonce",
+      "severity": "high",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_onboarding_finish",
+      "description": "Missing nonce check in ajax_priv handler 'wp_ajax_prli_onboarding_finish'",
+      "evidence": {
+        "file": "app/controllers/PrliOnboardingController.php",
+        "line": 26
+      }
+    },
+    {
+      "id": "anom_15",
+      "rule_id": "rule_02",
+      "type": "missing_capability",
+      "severity": "high",
+      "cwe_id": "CWE-862",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+      "description": "Missing current_user_can() in ajax_priv handler 'wp_ajax_prli_stripe_connect_refresh' with admin-level operations",
+      "evidence": {
+        "file": "app/controllers/PrliStripeConnectController.php",
+        "line": 22
+      }
+    },
+    {
+      "id": "anom_16",
+      "rule_id": "rule_02",
+      "type": "missing_capability",
+      "severity": "high",
+      "cwe_id": "CWE-862",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_disconnect",
+      "description": "Missing current_user_can() in ajax_priv handler 'wp_ajax_prli_stripe_connect_disconnect' with admin-level operations",
+      "evidence": {
+        "file": "app/controllers/PrliStripeConnectController.php",
+        "line": 23
+      }
+    },
+    {
+      "id": "anom_17",
+      "rule_id": "rule_02",
+      "type": "missing_capability",
+      "severity": "high",
+      "cwe_id": "CWE-862",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_customer_portal_notice",
+      "description": "Missing current_user_can() in ajax_priv handler 'wp_ajax_prli_dismiss_customer_portal_notice' with admin-level operations",
+      "evidence": {
+        "file": "app/controllers/PrliStripeController.php",
+        "line": 22
+      }
+    },
+    {
+      "id": "anom_18",
+      "rule_id": "rule_02",
+      "type": "missing_capability",
+      "severity": "high",
+      "cwe_id": "CWE-862",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_review_prompt",
+      "description": "Missing current_user_can() in ajax_priv handler 'wp_ajax_pl_dismiss_review_prompt' with admin-level operations",
+      "evidence": {
+        "file": "app/controllers/PrliReviewNoticeController.php",
+        "line": 10
+      }
+    },
+    {
+      "id": "anom_19",
+      "rule_id": "rule_02",
+      "type": "missing_capability",
+      "severity": "high",
+      "cwe_id": "CWE-862",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_upgrade_header",
+      "description": "Missing current_user_can() in ajax_priv handler 'wp_ajax_pl_dismiss_upgrade_header' with admin-level operations",
+      "evidence": {
+        "file": "app/controllers/PrliAppController.php",
+        "line": 51
+      }
+    },
+    {
+      "id": "anom_20",
+      "rule_id": "rule_02",
+      "type": "missing_capability",
+      "severity": "high",
+      "cwe_id": "CWE-862",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_notice",
+      "description": "Missing current_user_can() in ajax_priv handler 'wp_ajax_prli_dismiss_notice' with admin-level operations",
+      "evidence": {
+        "file": "app/controllers/PrliAppController.php",
+        "line": 52
+      }
+    },
+    {
+      "id": "anom_21",
+      "rule_id": "rule_02",
+      "type": "missing_capability",
+      "severity": "high",
+      "cwe_id": "CWE-862",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_onboarding_finish",
+      "description": "Missing current_user_can() in ajax_priv handler 'wp_ajax_prli_onboarding_finish' with admin-level operations",
+      "evidence": {
+        "file": "app/controllers/PrliOnboardingController.php",
+        "line": 26
+      }
+    },
+    {
+      "id": "anom_22",
+      "rule_id": "rule_03",
+      "type": "flawed_nonce_pattern",
+      "severity": "medium",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_stripe_prices",
+      "description": "Flawed nonce check: check_ajax_referer with $die=false \u2014 code continues on failure",
+      "evidence": {
+        "file": "app/controllers/PrliStripeController.php",
+        "line": 603
+      }
+    },
+    {
+      "id": "anom_23",
+      "rule_id": "rule_03",
+      "type": "flawed_nonce_pattern",
+      "severity": "medium",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_add_product",
+      "description": "Flawed nonce check: check_ajax_referer with $die=false \u2014 code continues on failure",
+      "evidence": {
+        "file": "app/controllers/PrliStripeController.php",
+        "line": 740
+      }
+    },
+    {
+      "id": "anom_24",
+      "rule_id": "rule_03",
+      "type": "flawed_nonce_pattern",
+      "severity": "medium",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_customer_portal_notice",
+      "description": "Flawed nonce check: check_ajax_referer with $die=false \u2014 code continues on failure",
+      "evidence": {
+        "file": "app/controllers/PrliStripeController.php",
+        "line": 1140
+      }
+    },
+    {
+      "id": "anom_25",
+      "rule_id": "rule_03",
+      "type": "flawed_nonce_pattern",
+      "severity": "medium",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_tinymce_validate_slug",
+      "description": "Flawed nonce check: check_ajax_referer with $die=false \u2014 code continues on failure",
+      "evidence": {
+        "file": "app/controllers/PrliPostsController.php",
+        "line": 156
+      }
+    },
+    {
+      "id": "anom_26",
+      "rule_id": "rule_03",
+      "type": "flawed_nonce_pattern",
+      "severity": "medium",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_create_pretty_link",
+      "description": "Flawed nonce check: check_ajax_referer with $die=false \u2014 code continues on failure",
+      "evidence": {
+        "file": "app/controllers/PrliPostsController.php",
+        "line": 184
+      }
+    },
+    {
+      "id": "anom_27",
+      "rule_id": "rule_03",
+      "type": "flawed_nonce_pattern",
+      "severity": "medium",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_quick_create",
+      "description": "Flawed nonce check: check_ajax_referer with $die=false \u2014 code continues on failure; guard at line 870 after side-effect at line 863",
+      "evidence": {
+        "file": "app/controllers/PrliLinksController.php",
+        "line": 870
+      }
+    },
+    {
+      "id": "anom_28",
+      "rule_id": "rule_03",
+      "type": "flawed_nonce_pattern",
+      "severity": "medium",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_links_list_save_bulk_edit",
+      "description": "Flawed nonce check: check_ajax_referer with $die=false \u2014 code continues on failure",
+      "evidence": {
+        "file": "app/controllers/PrliLinksController.php",
+        "line": 714
+      }
+    },
+    {
+      "id": "anom_29",
+      "rule_id": "rule_03",
+      "type": "flawed_nonce_pattern",
+      "severity": "medium",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_activate",
+      "description": "Flawed nonce check: check_ajax_referer with $die=false \u2014 code continues on failure; guard at line 65 after side-effect at line 58",
+      "evidence": {
+        "file": "app/controllers/PrliAddonsController.php",
+        "line": 65
+      }
+    },
+    {
+      "id": "anom_30",
+      "rule_id": "rule_03",
+      "type": "flawed_nonce_pattern",
+      "severity": "medium",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_deactivate",
+      "description": "Flawed nonce check: check_ajax_referer with $die=false \u2014 code continues on failure; guard at line 108 after side-effect at line 101",
+      "evidence": {
+        "file": "app/controllers/PrliAddonsController.php",
+        "line": 108
+      }
+    },
+    {
+      "id": "anom_31",
+      "rule_id": "rule_03",
+      "type": "flawed_nonce_pattern",
+      "severity": "medium",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_install",
+      "description": "Flawed nonce check: check_ajax_referer with $die=false \u2014 code continues on failure; guard at line 131 after side-effect at line 124",
+      "evidence": {
+        "file": "app/controllers/PrliAddonsController.php",
+        "line": 131
+      }
+    },
+    {
+      "id": "anom_32",
+      "rule_id": "rule_03",
+      "type": "flawed_nonce_pattern",
+      "severity": "medium",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_notice",
+      "description": "Flawed nonce check: check_ajax_referer with $die=false \u2014 code continues on failure",
+      "evidence": {
+        "file": "app/controllers/PrliAppController.php",
+        "line": 131
+      }
+    },
+    {
+      "id": "anom_33",
+      "rule_id": "rule_03",
+      "type": "flawed_nonce_pattern",
+      "severity": "medium",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_daily_notice",
+      "description": "Flawed nonce check: check_ajax_referer with $die=false \u2014 code continues on failure",
+      "evidence": {
+        "file": "app/controllers/PrliAppController.php",
+        "line": 145
+      }
+    },
+    {
+      "id": "anom_34",
+      "rule_id": "rule_03",
+      "type": "flawed_nonce_pattern",
+      "severity": "medium",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_monthly_notice",
+      "description": "Flawed nonce check: check_ajax_referer with $die=false \u2014 code continues on failure",
+      "evidence": {
+        "file": "app/controllers/PrliAppController.php",
+        "line": 159
+      }
+    },
+    {
+      "id": "anom_35",
+      "rule_id": "rule_03",
+      "type": "flawed_nonce_pattern",
+      "severity": "medium",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_activate_license",
+      "description": "Flawed nonce check: check_ajax_referer with $die=false \u2014 code continues on failure; guard at line 73 after side-effect at line 66",
+      "evidence": {
+        "file": "app/controllers/PrliUpdateController.php",
+        "line": 73
+      }
+    },
+    {
+      "id": "anom_36",
+      "rule_id": "rule_03",
+      "type": "flawed_nonce_pattern",
+      "severity": "medium",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_deactivate_license",
+      "description": "Flawed nonce check: check_ajax_referer with $die=false \u2014 code continues on failure; guard at line 168 after side-effect at line 161",
+      "evidence": {
+        "file": "app/controllers/PrliUpdateController.php",
+        "line": 168
+      }
+    },
+    {
+      "id": "anom_37",
+      "rule_id": "rule_03",
+      "type": "flawed_nonce_pattern",
+      "severity": "medium",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_install_license_edition",
+      "description": "Flawed nonce check: check_ajax_referer with $die=false \u2014 code continues on failure; guard at line 207 after side-effect at line 200",
+      "evidence": {
+        "file": "app/controllers/PrliUpdateController.php",
+        "line": 207
+      }
+    },
+    {
+      "id": "anom_38",
+      "rule_id": "rule_09",
+      "type": "unsafe_redirect",
+      "severity": "medium",
+      "cwe_id": "CWE-601",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+      "description": "wp_redirect() used instead of wp_safe_redirect() with user input present",
+      "evidence": {
+        "file": "app/controllers/PrliStripeConnectController.php",
+        "line": 126
+      }
+    },
+    {
+      "id": "anom_39",
+      "rule_id": "rule_09",
+      "type": "unsafe_redirect",
+      "severity": "medium",
+      "cwe_id": "CWE-601",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+      "description": "wp_redirect() used instead of wp_safe_redirect() with user input present",
+      "evidence": {
+        "file": "app/controllers/PrliStripeConnectController.php",
+        "line": 216
+      }
+    },
+    {
+      "id": "anom_40",
+      "rule_id": "rule_09",
+      "type": "unsafe_redirect",
+      "severity": "medium",
+      "cwe_id": "CWE-601",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_disconnect",
+      "description": "wp_redirect() used instead of wp_safe_redirect() with user input present",
+      "evidence": {
+        "file": "app/controllers/PrliStripeConnectController.php",
+        "line": 251
+      }
+    }
+  ],
+  "unresolved_hooks": [],
+  "coverage_gaps": []
+}

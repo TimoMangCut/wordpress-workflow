@@ -199,6 +199,34 @@ def main() -> None:
     print()
     print(f"Done. Wrote {len(EP_GROUPS) * 2} files to {args.output_dir}")
 
+    # --- Generate dispatch.json ---
+    # Maps each agent-id to its input ir-slice file.
+    # Agent A (a1-a5): per-EP-group ir-slice files
+    # Agent B, C, D: full IR (they need cross-EP visibility)
+    group_names = [g[0] for g in EP_GROUPS]  # ["ajax-unauth", "ajax-auth", "rest", "shortcode", "other"]
+    agent_a_ids = [f"agent-a{i+1}" for i in range(len(group_names))]
+
+    inputs = {}
+    for i, gname in enumerate(group_names):
+        inputs[agent_a_ids[i]] = os.path.join(args.output_dir, f"{slug}-ir-slice-{gname}.json")
+    inputs["agent-b"] = args.ir
+    inputs["agent-c"] = args.ir
+    inputs["agent-d"] = args.ir
+
+    agents_list = agent_a_ids + ["agent-b", "agent-c", "agent-d"]
+
+    dispatch = {
+        "slug": slug,
+        "agents": agents_list,
+        "inputs": inputs,
+        "source_dir": f"plugins/{slug}/",
+        "timeout_seconds": 600,
+    }
+    dispatch_out = os.path.join(args.output_dir, f"{slug}-dispatch.json")
+    write_json(dispatch_out, dispatch)
+    print(f"Dispatch config written → {dispatch_out}")
+    print(f"  Agents ({len(agents_list)}): {', '.join(agents_list)}")
+
 
 if __name__ == "__main__":
     main()

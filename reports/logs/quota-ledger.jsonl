@@ -50,3 +50,6 @@
 {"ts":"2026-04-02T18:54:15Z","phase":"phase2","slug":"backwpup","mode":"deep","provider":"codex","model":"","status":"ok","duration_sec":941}
 {"ts":"2026-04-02T18:56:43Z","phase":"phase3","slug":"backwpup","mode":"llm_skeptic","provider":"claude","model":"claude-sonnet-4.6","status":"failed","duration_sec":148}
 {"ts":"2026-04-02T19:05:37Z","phase":"phase3","slug":"backwpup","mode":"llm_skeptic","provider":"codex","model":"","status":"failed","duration_sec":682}
+{"ts":"2026-04-04T16:43:35Z","phase":"phase3","slug":"backwpup","mode":"llm_skeptic","provider":"claude","model":"claude-sonnet-4.6","status":"failed","duration_sec":0}
+{"ts":"2026-04-04T17:05:36Z","phase":"phase3","slug":"backwpup","mode":"llm_skeptic","provider":"claude","model":"claude-sonnet-4.6","status":"failed","duration_sec":1280}
+{"ts":"2026-04-04T17:30:07Z","phase":"phase3","slug":"cartflows","mode":"llm_skeptic","provider":"codex","model":"","status":"failed","duration_sec":5}

@@ -1,0 +1,2572 @@
+{
+  "version": "1.136.0",
+  "results": [
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-nonce-check-ajax-referer-no-die",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/importer.php",
+      "start": {
+        "line": 98,
+        "col": 10,
+        "offset": 1686
+      },
+      "end": {
+        "line": 98,
+        "col": 79,
+        "offset": 1755
+      },
+      "extra": {
+        "metavars": {
+          "$ACTION": {
+            "start": {
+              "line": 98,
+              "col": 30,
+              "offset": 1706
+            },
+            "end": {
+              "line": 98,
+              "col": 58,
+              "offset": 1734
+            },
+            "abstract_content": "'cartflows_export_all_flows'"
+          },
+          "$QUERY": {
+            "start": {
+              "line": 98,
+              "col": 60,
+              "offset": 1736
+            },
+            "end": {
+              "line": 98,
+              "col": 70,
+              "offset": 1746
+            },
+            "abstract_content": "'security'"
+          }
+        },
+        "message": "Insecure Nonce Check: check_ajax_referer() with $stop=false does NOT halt on invalid nonce. Code continues executing. Check return value explicitly.",
+        "metadata": {
+          "cwe": [
+            "CWE-352"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "HIGH",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "b34115ccfb53e6fbd9fe7c00adccc252cf6ca83b67fcc9fb99d0692470146b1e929ef8f8520461ff25e40c48e3a7a33c95cb88bcf1f08488061d245033fca817_0",
+        "lines": "\t\tif ( ! check_ajax_referer( 'cartflows_export_all_flows', 'security', false ) ) {",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "engine_kind": "PRO"
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-nonce-check-ajax-referer-no-die",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/importer.php",
+      "start": {
+        "line": 142,
+        "col": 10,
+        "offset": 2770
+      },
+      "end": {
+        "line": 142,
+        "col": 79,
+        "offset": 2839
+      },
+      "extra": {
+        "metavars": {
+          "$ACTION": {
+            "start": {
+              "line": 142,
+              "col": 30,
+              "offset": 2790
+            },
+            "end": {
+              "line": 142,
+              "col": 58,
+              "offset": 2818
+            },
+            "abstract_content": "'cartflows_import_json_flow'"
+          },
+          "$QUERY": {
+            "start": {
+              "line": 142,
+              "col": 60,
+              "offset": 2820
+            },
+            "end": {
+              "line": 142,
+              "col": 70,
+              "offset": 2830
+            },
+            "abstract_content": "'security'"
+          }
+        },
+        "message": "Insecure Nonce Check: check_ajax_referer() with $stop=false does NOT halt on invalid nonce. Code continues executing. Check return value explicitly.",
+        "metadata": {
+          "cwe": [
+            "CWE-352"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "HIGH",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "6bc8606582807d0a64774c61a7859cbee2b68567dffc7e009b0c498c378a4f6b99e569649f200818766b3bf37ee8e0cd6c7a18136d0efa982acb537bf2c0d942_0",
+        "lines": "\t\tif ( ! check_ajax_referer( 'cartflows_import_json_flow', 'security', false ) ) {",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "engine_kind": "PRO"
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-nonce-check-ajax-referer-no-die",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/importer.php",
+      "start": {
+        "line": 215,
+        "col": 10,
+        "offset": 5678
+      },
+      "end": {
+        "line": 215,
+        "col": 74,
+        "offset": 5742
+      },
+      "extra": {
+        "metavars": {
+          "$ACTION": {
+            "start": {
+              "line": 215,
+              "col": 30,
+              "offset": 5698
+            },
+            "end": {
+              "line": 215,
+              "col": 53,
+              "offset": 5721
+            },
+            "abstract_content": "'cartflows_export_flow'"
+          },
+          "$QUERY": {
+            "start": {
+              "line": 215,
+              "col": 55,
+              "offset": 5723
+            },
+            "end": {
+              "line": 215,
+              "col": 65,
+              "offset": 5733
+            },
+            "abstract_content": "'security'"
+          }
+        },
+        "message": "Insecure Nonce Check: check_ajax_referer() with $stop=false does NOT halt on invalid nonce. Code continues executing. Check return value explicitly.",
+        "metadata": {
+          "cwe": [
+            "CWE-352"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "HIGH",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "77d0d5df3db52f34ba9e896643de1aeb73d8af90bd85f83c823927b9a810f166bc5dc95263ded63cf8268356d4b216fd054221fbbad0438a375c066bbdfeacec_0",
+        "lines": "\t\tif ( ! check_ajax_referer( 'cartflows_export_flow', 'security', false ) ) {",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "engine_kind": "PRO"
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-nonce-check-ajax-referer-no-die",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/importer.php",
+      "start": {
+        "line": 248,
+        "col": 10,
+        "offset": 6752
+      },
+      "end": {
+        "line": 248,
+        "col": 86,
+        "offset": 6828
+      },
+      "extra": {
+        "metavars": {
+          "$ACTION": {
+            "start": {
+              "line": 248,
+              "col": 30,
+              "offset": 6772
+            },
+            "end": {
+              "line": 248,
+              "col": 65,
+              "offset": 6807
+            },
+            "abstract_content": "'cartflows_update_library_complete'"
+          },
+          "$QUERY": {
+            "start": {
+              "line": 248,
+              "col": 67,
+              "offset": 6809
+            },
+            "end": {
+              "line": 248,
+              "col": 77,
+              "offset": 6819
+            },
+            "abstract_content": "'security'"
+          }
+        },
+        "message": "Insecure Nonce Check: check_ajax_referer() with $stop=false does NOT halt on invalid nonce. Code continues executing. Check return value explicitly.",
+        "metadata": {
+          "cwe": [
+            "CWE-352"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "HIGH",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "5a36a686af368e4a1b640c7e1b17fe00cb39a06af4a65ceb1e460eeacc469d3fcb8319aaa1db9e412cadd9cd00addb8f27810829eb3f92368eee9ef8e33bc843_0",
+        "lines": "\t\tif ( ! check_ajax_referer( 'cartflows_update_library_complete', 'security', false ) ) {",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "engine_kind": "PRO"
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-nonce-check-ajax-referer-no-die",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/importer.php",
+      "start": {
+        "line": 276,
+        "col": 10,
+        "offset": 7692
+      },
+      "end": {
+        "line": 276,
+        "col": 75,
+        "offset": 7757
+      },
+      "extra": {
+        "metavars": {
+          "$ACTION": {
+            "start": {
+              "line": 276,
+              "col": 30,
+              "offset": 7712
+            },
+            "end": {
+              "line": 276,
+              "col": 54,
+              "offset": 7736
+            },
+            "abstract_content": "'cartflows_import_sites'"
+          },
+          "$QUERY": {
+            "start": {
+              "line": 276,
+              "col": 56,
+              "offset": 7738
+            },
+            "end": {
+              "line": 276,
+              "col": 66,
+              "offset": 7748
+            },
+            "abstract_content": "'security'"
+          }
+        },
+        "message": "Insecure Nonce Check: check_ajax_referer() with $stop=false does NOT halt on invalid nonce. Code continues executing. Check return value explicitly.",
+        "metadata": {
+          "cwe": [
+            "CWE-352"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "HIGH",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "3ba4afa947bbd726492cfa343c3f362c9e81fec2d9650c45fad437da3049c288e35cbd05dfb4a46adc5c0e2aca5191ae9b3f4ff79630ff06380171a34bdea375_0",
+        "lines": "\t\tif ( ! check_ajax_referer( 'cartflows_import_sites', 'security', false ) ) {",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "engine_kind": "PRO"
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-nonce-check-ajax-referer-no-die",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/importer.php",
+      "start": {
+        "line": 312,
+        "col": 10,
+        "offset": 8754
+      },
+      "end": {
+        "line": 312,
+        "col": 75,
+        "offset": 8819
+      },
+      "extra": {
+        "metavars": {
+          "$ACTION": {
+            "start": {
+              "line": 312,
+              "col": 30,
+              "offset": 8774
+            },
+            "end": {
+              "line": 312,
+              "col": 54,
+              "offset": 8798
+            },
+            "abstract_content": "'cartflows_sync_library'"
+          },
+          "$QUERY": {
+            "start": {
+              "line": 312,
+              "col": 56,
+              "offset": 8800
+            },
+            "end": {
+              "line": 312,
+              "col": 66,
+              "offset": 8810
+            },
+            "abstract_content": "'security'"
+          }
+        },
+        "message": "Insecure Nonce Check: check_ajax_referer() with $stop=false does NOT halt on invalid nonce. Code continues executing. Check return value explicitly.",
+        "metadata": {
+          "cwe": [
+            "CWE-352"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "HIGH",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "9ecc0f063b38b801ce7340eb331d464ae52fa9ec4ec4f372d57aba846c202c56fad0ae4aa3aa1077b3040d0679ec4b9540e998347b8cc5e3a7605f5bab8179d0_0",
+        "lines": "\t\tif ( ! check_ajax_referer( 'cartflows_sync_library', 'security', false ) ) {",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "engine_kind": "PRO"
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-nonce-check-ajax-referer-no-die",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/importer.php",
+      "start": {
+        "line": 355,
+        "col": 10,
+        "offset": 9945
+      },
+      "end": {
+        "line": 355,
+        "col": 76,
+        "offset": 10011
+      },
+      "extra": {
+        "metavars": {
+          "$ACTION": {
+            "start": {
+              "line": 355,
+              "col": 30,
+              "offset": 9965
+            },
+            "end": {
+              "line": 355,
+              "col": 55,
+              "offset": 9990
+            },
+            "abstract_content": "'cartflows_request_count'"
+          },
+          "$QUERY": {
+            "start": {
+              "line": 355,
+              "col": 57,
+              "offset": 9992
+            },
+            "end": {
+              "line": 355,
+              "col": 67,
+              "offset": 10002
+            },
+            "abstract_content": "'security'"
+          }
+        },
+        "message": "Insecure Nonce Check: check_ajax_referer() with $stop=false does NOT halt on invalid nonce. Code continues executing. Check return value explicitly.",
+        "metadata": {
+          "cwe": [
+            "CWE-352"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "HIGH",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "26d9cc03918cec232a39f0ef9ba3959f4503caa1df23eed17a57cedb7dc0d9401ea4393a613b644e5d4689c8e679fd143fa020849a1c2e632da4d1558c18f710_0",
+        "lines": "\t\tif ( ! check_ajax_referer( 'cartflows_request_count', 'security', false ) ) {",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "engine_kind": "PRO"
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-nonce-check-ajax-referer-no-die",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/importer.php",
+      "start": {
+        "line": 394,
+        "col": 10,
+        "offset": 10942
+      },
+      "end": {
+        "line": 394,
+        "col": 74,
+        "offset": 11006
+      },
+      "extra": {
+        "metavars": {
+          "$ACTION": {
+            "start": {
+              "line": 394,
+              "col": 30,
+              "offset": 10962
+            },
+            "end": {
+              "line": 394,
+              "col": 53,
+              "offset": 10985
+            },
+            "abstract_content": "'cartflows_create_step'"
+          },
+          "$QUERY": {
+            "start": {
+              "line": 394,
+              "col": 55,
+              "offset": 10987
+            },
+            "end": {
+              "line": 394,
+              "col": 65,
+              "offset": 10997
+            },
+            "abstract_content": "'security'"
+          }
+        },
+        "message": "Insecure Nonce Check: check_ajax_referer() with $stop=false does NOT halt on invalid nonce. Code continues executing. Check return value explicitly.",
+        "metadata": {
+          "cwe": [
+            "CWE-352"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "HIGH",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "1ea70efee60b51d2a8b9f554c7735673d60baddd847f4db919cc5c11b42bbc3c8aa665d1185f23a74ceceee8a03817c34c42c334561010ff951c8f63979be15b_0",
+        "lines": "\t\tif ( ! check_ajax_referer( 'cartflows_create_step', 'security', false ) ) {",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "engine_kind": "PRO"
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-nonce-check-ajax-referer-no-die",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/importer.php",
+      "start": {
+        "line": 449,
+        "col": 10,
+        "offset": 12789
+      },
+      "end": {
+        "line": 449,
+        "col": 78,
+        "offset": 12857
+      },
+      "extra": {
+        "metavars": {
+          "$ACTION": {
+            "start": {
+              "line": 449,
+              "col": 30,
+              "offset": 12809
+            },
+            "end": {
+              "line": 449,
+              "col": 57,
+              "offset": 12836
+            },
+            "abstract_content": "'cartflows_activate_plugin'"
+          },
+          "$QUERY": {
+            "start": {
+              "line": 449,
+              "col": 59,
+              "offset": 12838
+            },
+            "end": {
+              "line": 449,
+              "col": 69,
+              "offset": 12848
+            },
+            "abstract_content": "'security'"
+          }
+        },
+        "message": "Insecure Nonce Check: check_ajax_referer() with $stop=false does NOT halt on invalid nonce. Code continues executing. Check return value explicitly.",
+        "metadata": {
+          "cwe": [
+            "CWE-352"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "HIGH",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "4a1a376b36be7f47f63363d5a9aa1d3f3acea2710ba51c3ae049855708cfa308c0ca956d88f960bc5d380024757dd1f62945fa0069821db9b2e6ee2067e580ea_0",
+        "lines": "\t\tif ( ! check_ajax_referer( 'cartflows_activate_plugin', 'security', false ) ) {",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "engine_kind": "PRO"
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-nonce-check-ajax-referer-no-die",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/importer.php",
+      "start": {
+        "line": 511,
+        "col": 10,
+        "offset": 14372
+      },
+      "end": {
+        "line": 511,
+        "col": 77,
+        "offset": 14439
+      },
+      "extra": {
+        "metavars": {
+          "$ACTION": {
+            "start": {
+              "line": 511,
+              "col": 30,
+              "offset": 14392
+            },
+            "end": {
+              "line": 511,
+              "col": 56,
+              "offset": 14418
+            },
+            "abstract_content": "'cartflows_activate_theme'"
+          },
+          "$QUERY": {
+            "start": {
+              "line": 511,
+              "col": 58,
+              "offset": 14420
+            },
+            "end": {
+              "line": 511,
+              "col": 68,
+              "offset": 14430
+            },
+            "abstract_content": "'security'"
+          }
+        },
+        "message": "Insecure Nonce Check: check_ajax_referer() with $stop=false does NOT halt on invalid nonce. Code continues executing. Check return value explicitly.",
+        "metadata": {
+          "cwe": [
+            "CWE-352"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "HIGH",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "41990b206545b3cf02a88aa6a3045aaf5b782754af1270ad82e13b285c969c2d240a6311a062749989041279bd40e69ea14978882caa30376a24f6a01a23ea75_0",
+        "lines": "\t\tif ( ! check_ajax_referer( 'cartflows_activate_theme', 'security', false ) ) {",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "engine_kind": "PRO"
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-nonce-check-ajax-referer-no-die",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/importer.php",
+      "start": {
+        "line": 550,
+        "col": 10,
+        "offset": 15444
+      },
+      "end": {
+        "line": 550,
+        "col": 74,
+        "offset": 15508
+      },
+      "extra": {
+        "metavars": {
+          "$ACTION": {
+            "start": {
+              "line": 550,
+              "col": 30,
+              "offset": 15464
+            },
+            "end": {
+              "line": 550,
+              "col": 53,
+              "offset": 15487
+            },
+            "abstract_content": "'cartflows_create_flow'"
+          },
+          "$QUERY": {
+            "start": {
+              "line": 550,
+              "col": 55,
+              "offset": 15489
+            },
+            "end": {
+              "line": 550,
+              "col": 65,
+              "offset": 15499
+            },
+            "abstract_content": "'security'"
+          }
+        },
+        "message": "Insecure Nonce Check: check_ajax_referer() with $stop=false does NOT halt on invalid nonce. Code continues executing. Check return value explicitly.",
+        "metadata": {
+          "cwe": [
+            "CWE-352"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "HIGH",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "8a776eeb32eefe8cb3f185021d84bb59ee6185a10336a615d8b0398059f28e8d61f426955d7ffe34891ddb4eb71d1df6c3855eee5d7c56eb38273864d7fa4f3a_0",
+        "lines": "\t\tif ( ! check_ajax_referer( 'cartflows_create_flow', 'security', false ) ) {",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "engine_kind": "PRO"
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-privesc-option-update",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/importer.php",
+      "start": {
+        "line": 574,
+        "col": 4,
+        "offset": 16317
+      },
+      "end": {
+        "line": 574,
+        "col": 58,
+        "offset": 16371
+      },
+      "extra": {
+        "metavars": {},
+        "message": "Privilege Escalation via Option Update: User input controls option key/value. Can set users_can_register=1 + default_role=administrator for account takeover.",
+        "metadata": {
+          "cwe": [
+            "CWE-269",
+            "CWE-862"
+          ],
+          "owasp": [
+            "A01:2021 - Broken Access Control"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "MEDIUM",
+          "likelihood": "MEDIUM",
+          "impact": "HIGH"
+        },
+        "severity": "ERROR",
+        "fingerprint": "cb6907e52917577a28cc20197b3889da0b5c8afb6a2f16d8bc71d8587bbc98288c15c322295ac0dfab1711249054aaf4587c2e566661371411c8b7b8a6d0b912_0",
+        "lines": "\t\t\tupdate_option( '_cartflows_store_checkout', $flow_id );",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "dataflow_trace": {
+          "taint_source": [
+            "CliLoc",
+            [
+              {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/importer.php",
+                "start": {
+                  "line": 557,
+                  "col": 86,
+                  "offset": 15770
+                },
+                "end": {
+                  "line": 557,
+                  "col": 105,
+                  "offset": 15789
+                }
+              },
+              "$_POST['flow_name']"
+            ]
+          ],
+          "intermediate_vars": [
+            {
+              "location": {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/importer.php",
+                "start": {
+                  "line": 556,
+                  "col": 3,
+                  "offset": 15661
+                },
+                "end": {
+                  "line": 556,
+                  "col": 17,
+                  "offset": 15675
+                }
+              },
+              "content": "$new_flow_post"
+            },
+            {
+              "location": {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/importer.php",
+                "start": {
+                  "line": 564,
+                  "col": 3,
+                  "offset": 15952
+                },
+                "end": {
+                  "line": 564,
+                  "col": 11,
+                  "offset": 15960
+                }
+              },
+              "content": "$flow_id"
+            }
+          ],
+          "taint_sink": [
+            "CliLoc",
+            [
+              {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/importer.php",
+                "start": {
+                  "line": 574,
+                  "col": 4,
+                  "offset": 16317
+                },
+                "end": {
+                  "line": 574,
+                  "col": 58,
+                  "offset": 16371
+                }
+              },
+              "update_option( '_cartflows_store_checkout', $flow_id )"
+            ]
+          ]
+        },
+        "engine_kind": "PRO"
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-nonce-check-ajax-referer-no-die",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/importer.php",
+      "start": {
+        "line": 703,
+        "col": 10,
+        "offset": 19940
+      },
+      "end": {
+        "line": 703,
+        "col": 74,
+        "offset": 20004
+      },
+      "extra": {
+        "metavars": {
+          "$ACTION": {
+            "start": {
+              "line": 703,
+              "col": 30,
+              "offset": 19960
+            },
+            "end": {
+              "line": 703,
+              "col": 53,
+              "offset": 19983
+            },
+            "abstract_content": "'cartflows_import_flow'"
+          },
+          "$QUERY": {
+            "start": {
+              "line": 703,
+              "col": 55,
+              "offset": 19985
+            },
+            "end": {
+              "line": 703,
+              "col": 65,
+              "offset": 19995
+            },
+            "abstract_content": "'security'"
+          }
+        },
+        "message": "Insecure Nonce Check: check_ajax_referer() with $stop=false does NOT halt on invalid nonce. Code continues executing. Check return value explicitly.",
+        "metadata": {
+          "cwe": [
+            "CWE-352"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "HIGH",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "7f3146a824179b6310d6a844f5572f445b397f31e5af333177ddb1fdfdd7934dcbfaeab122296629df0ff877885fddf33d8680447fa01f724e7942342df853c8_0",
+        "lines": "\t\tif ( ! check_ajax_referer( 'cartflows_import_flow', 'security', false ) ) {",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "engine_kind": "PRO"
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-privesc-option-update",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/importer.php",
+      "start": {
+        "line": 788,
+        "col": 4,
+        "offset": 24105
+      },
+      "end": {
+        "line": 788,
+        "col": 62,
+        "offset": 24163
+      },
+      "extra": {
+        "metavars": {},
+        "message": "Privilege Escalation via Option Update: User input controls option key/value. Can set users_can_register=1 + default_role=administrator for account takeover.",
+        "metadata": {
+          "cwe": [
+            "CWE-269",
+            "CWE-862"
+          ],
+          "owasp": [
+            "A01:2021 - Broken Access Control"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "MEDIUM",
+          "likelihood": "MEDIUM",
+          "impact": "HIGH"
+        },
+        "severity": "ERROR",
+        "fingerprint": "cb6907e52917577a28cc20197b3889da0b5c8afb6a2f16d8bc71d8587bbc98288c15c322295ac0dfab1711249054aaf4587c2e566661371411c8b7b8a6d0b912_1",
+        "lines": "\t\t\tupdate_option( '_cartflows_store_checkout', $new_flow_id );",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "dataflow_trace": {
+          "taint_source": [
+            "CliLoc",
+            [
+              {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/importer.php",
+                "start": {
+                  "line": 771,
+                  "col": 86,
+                  "offset": 23545
+                },
+                "end": {
+                  "line": 771,
+                  "col": 105,
+                  "offset": 23564
+                }
+              },
+              "$_POST['flow_name']"
+            ]
+          ],
+          "intermediate_vars": [
+            {
+              "location": {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/importer.php",
+                "start": {
+                  "line": 770,
+                  "col": 3,
+                  "offset": 23436
+                },
+                "end": {
+                  "line": 770,
+                  "col": 17,
+                  "offset": 23450
+                }
+              },
+              "content": "$new_flow_post"
+            },
+            {
+              "location": {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/importer.php",
+                "start": {
+                  "line": 778,
+                  "col": 3,
+                  "offset": 23727
+                },
+                "end": {
+                  "line": 778,
+                  "col": 15,
+                  "offset": 23739
+                }
+              },
+              "content": "$new_flow_id"
+            }
+          ],
+          "taint_sink": [
+            "CliLoc",
+            [
+              {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/importer.php",
+                "start": {
+                  "line": 788,
+                  "col": 4,
+                  "offset": 24105
+                },
+                "end": {
+                  "line": 788,
+                  "col": 62,
+                  "offset": 24163
+                }
+              },
+              "update_option( '_cartflows_store_checkout', $new_flow_id )"
+            ]
+          ]
+        },
+        "engine_kind": "PRO"
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-nonce-check-ajax-referer-no-die",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/importer.php",
+      "start": {
+        "line": 886,
+        "col": 10,
+        "offset": 27243
+      },
+      "end": {
+        "line": 886,
+        "col": 74,
+        "offset": 27307
+      },
+      "extra": {
+        "metavars": {
+          "$ACTION": {
+            "start": {
+              "line": 886,
+              "col": 30,
+              "offset": 27263
+            },
+            "end": {
+              "line": 886,
+              "col": 53,
+              "offset": 27286
+            },
+            "abstract_content": "'cartflows_import_step'"
+          },
+          "$QUERY": {
+            "start": {
+              "line": 886,
+              "col": 55,
+              "offset": 27288
+            },
+            "end": {
+              "line": 886,
+              "col": 65,
+              "offset": 27298
+            },
+            "abstract_content": "'security'"
+          }
+        },
+        "message": "Insecure Nonce Check: check_ajax_referer() with $stop=false does NOT halt on invalid nonce. Code continues executing. Check return value explicitly.",
+        "metadata": {
+          "cwe": [
+            "CWE-352"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "HIGH",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "5e0a8bcb7351ac9a6521c21d79da0f1ef5b5a43ca8223da120898579f84b543d32cc60df2b54217c707596717568b718c19dda729cfd7175e7f76285212f8486_0",
+        "lines": "\t\tif ( ! check_ajax_referer( 'cartflows_import_step', 'security', false ) ) {",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "engine_kind": "PRO"
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-nonce-check-ajax-referer-no-die",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/importer.php",
+      "start": {
+        "line": 1021,
+        "col": 10,
+        "offset": 32864
+      },
+      "end": {
+        "line": 1021,
+        "col": 74,
+        "offset": 32928
+      },
+      "extra": {
+        "metavars": {
+          "$ACTION": {
+            "start": {
+              "line": 1021,
+              "col": 30,
+              "offset": 32884
+            },
+            "end": {
+              "line": 1021,
+              "col": 53,
+              "offset": 32907
+            },
+            "abstract_content": "'cartflows_update_step'"
+          },
+          "$QUERY": {
+            "start": {
+              "line": 1021,
+              "col": 55,
+              "offset": 32909
+            },
+            "end": {
+              "line": 1021,
+              "col": 65,
+              "offset": 32919
+            },
+            "abstract_content": "'security'"
+          }
+        },
+        "message": "Insecure Nonce Check: check_ajax_referer() with $stop=false does NOT halt on invalid nonce. Code continues executing. Check return value explicitly.",
+        "metadata": {
+          "cwe": [
+            "CWE-352"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "HIGH",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "7c1c0d20ed6c282d4276281cd47c44ba3547492252296c4e0fa971efee674587a0d2b0714bc77c69df5704eb6c1c4212b457a6e617caac77ac9a0a38e393e315_0",
+        "lines": "\t\tif ( ! check_ajax_referer( 'cartflows_update_step', 'security', false ) ) {",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "engine_kind": "PRO"
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-nonce-check-ajax-referer-no-die",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/importer.php",
+      "start": {
+        "line": 1194,
+        "col": 10,
+        "offset": 39467
+      },
+      "end": {
+        "line": 1194,
+        "col": 58,
+        "offset": 39515
+      },
+      "extra": {
+        "metavars": {
+          "$ACTION": {
+            "start": {
+              "line": 1194,
+              "col": 30,
+              "offset": 39487
+            },
+            "end": {
+              "line": 1194,
+              "col": 37,
+              "offset": 39494
+            },
+            "abstract_content": "$action"
+          },
+          "$QUERY": {
+            "start": {
+              "line": 1194,
+              "col": 39,
+              "offset": 39496
+            },
+            "end": {
+              "line": 1194,
+              "col": 49,
+              "offset": 39506
+            },
+            "abstract_content": "'security'"
+          }
+        },
+        "message": "Insecure Nonce Check: check_ajax_referer() with $stop=false does NOT halt on invalid nonce. Code continues executing. Check return value explicitly.",
+        "metadata": {
+          "cwe": [
+            "CWE-352"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "HIGH",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "cae7165251cc7e86cd2c9ce1ffb83dedaef88bd6b37884341d206b958ea2f667aa607c988a661316060dc4b2ab0a84633d0bd8c80b4e4295973adaab3684b864_0",
+        "lines": "\t\tif ( ! check_ajax_referer( $action, 'security', false ) ) {",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "engine_kind": "PRO"
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-nonce-check-ajax-referer-no-die",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/importer.php",
+      "start": {
+        "line": 1481,
+        "col": 10,
+        "offset": 49320
+      },
+      "end": {
+        "line": 1481,
+        "col": 77,
+        "offset": 49387
+      },
+      "extra": {
+        "metavars": {
+          "$ACTION": {
+            "start": {
+              "line": 1481,
+              "col": 30,
+              "offset": 49340
+            },
+            "end": {
+              "line": 1481,
+              "col": 56,
+              "offset": 49366
+            },
+            "abstract_content": "'cartflows_get_flows_list'"
+          },
+          "$QUERY": {
+            "start": {
+              "line": 1481,
+              "col": 58,
+              "offset": 49368
+            },
+            "end": {
+              "line": 1481,
+              "col": 68,
+              "offset": 49378
+            },
+            "abstract_content": "'security'"
+          }
+        },
+        "message": "Insecure Nonce Check: check_ajax_referer() with $stop=false does NOT halt on invalid nonce. Code continues executing. Check return value explicitly.",
+        "metadata": {
+          "cwe": [
+            "CWE-352"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "HIGH",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "4da67bb353147c0c68d71e145781f4e1717deacaed39911803dbc8373808b18455e4c8b5a812ed4620906133c67963dde738fb06f6615f78613ff9b0364d9eb4_0",
+        "lines": "\t\tif ( ! check_ajax_referer( 'cartflows_get_flows_list', 'security', false ) ) {",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "engine_kind": "PRO"
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-arbitrary-file-read",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/inc/admin-menu.php",
+      "start": {
+        "line": 920,
+        "col": 32,
+        "offset": 31467
+      },
+      "end": {
+        "line": 920,
+        "col": 89,
+        "offset": 31524
+      },
+      "extra": {
+        "metavars": {
+          "$PATH": {
+            "start": {
+              "line": 920,
+              "col": 51,
+              "offset": 31486
+            },
+            "end": {
+              "line": 920,
+              "col": 87,
+              "offset": 31522
+            },
+            "abstract_content": "CARTFLOWS_LOG_DIR.$viewed_log_file"
+          }
+        },
+        "message": "Arbitrary File Read: User input controls file path in read operation. Can read wp-config.php, /etc/passwd, or other sensitive files. Use basename() + directory containment or allowlist validation.",
+        "metadata": {
+          "cwe": [
+            "CWE-22",
+            "CWE-200"
+          ],
+          "owasp": [
+            "A01:2021 - Broken Access Control"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "MEDIUM",
+          "likelihood": "MEDIUM",
+          "impact": "HIGH"
+        },
+        "severity": "ERROR",
+        "fingerprint": "15001207f0032566d100da50e78535ca58d88f84bf390d47b769cebd77ff265604f6d4be0413782bd6fc0f5663200e0fb5f1ff9f82dd698e8d5ad5b98b546212_0",
+        "lines": "\t\t\t$file_content             = file_get_contents( CARTFLOWS_LOG_DIR . $viewed_log_file );",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "dataflow_trace": {
+          "taint_source": [
+            "CliLoc",
+            [
+              {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/inc/admin-menu.php",
+                "start": {
+                  "line": 908,
+                  "col": 49,
+                  "offset": 31003
+                },
+                "end": {
+                  "line": 908,
+                  "col": 58,
+                  "offset": 31012
+                }
+              },
+              "$_REQUEST"
+            ]
+          ],
+          "intermediate_vars": [
+            {
+              "location": {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/inc/admin-menu.php",
+                "start": {
+                  "line": 908,
+                  "col": 4,
+                  "offset": 30958
+                },
+                "end": {
+                  "line": 908,
+                  "col": 13,
+                  "offset": 30967
+                }
+              },
+              "content": "$filename"
+            },
+            {
+              "location": {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/inc/admin-menu.php",
+                "start": {
+                  "line": 911,
+                  "col": 5,
+                  "offset": 31139
+                },
+                "end": {
+                  "line": 911,
+                  "col": 16,
+                  "offset": 31150
+                }
+              },
+              "content": "$viewed_log"
+            },
+            {
+              "location": {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/inc/admin-menu.php",
+                "start": {
+                  "line": 912,
+                  "col": 5,
+                  "offset": 31173
+                },
+                "end": {
+                  "line": 912,
+                  "col": 21,
+                  "offset": 31189
+                }
+              },
+              "content": "$viewed_log_file"
+            }
+          ],
+          "taint_sink": [
+            "CliLoc",
+            [
+              {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/inc/admin-menu.php",
+                "start": {
+                  "line": 920,
+                  "col": 32,
+                  "offset": 31467
+                },
+                "end": {
+                  "line": 920,
+                  "col": 89,
+                  "offset": 31524
+                }
+              },
+              "file_get_contents( CARTFLOWS_LOG_DIR . $viewed_log_file )"
+            ]
+          ]
+        },
+        "engine_kind": "PRO"
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-lfi-json-decode-file-read",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/inc/admin-menu.php",
+      "start": {
+        "line": 920,
+        "col": 32,
+        "offset": 31467
+      },
+      "end": {
+        "line": 920,
+        "col": 89,
+        "offset": 31524
+      },
+      "extra": {
+        "metavars": {
+          "$PATH": {
+            "start": {
+              "line": 920,
+              "col": 51,
+              "offset": 31486
+            },
+            "end": {
+              "line": 920,
+              "col": 87,
+              "offset": 31522
+            },
+            "abstract_content": "CARTFLOWS_LOG_DIR.$viewed_log_file"
+          }
+        },
+        "message": "Local File Inclusion via JSON input: User-controlled JSON data flows into file read operation without path validation. Attacker can read arbitrary files (wp-config.php, /etc/passwd). Use basename() and validate against whitelist.",
+        "metadata": {
+          "cwe": [
+            "CWE-98",
+            "CWE-22"
+          ],
+          "owasp": [
+            "A01:2021 - Broken Access Control",
+            "A03:2021 - Injection"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "HIGH",
+          "likelihood": "MEDIUM",
+          "impact": "HIGH",
+          "references": [
+            "https://owasp.org/www-community/attacks/Path_Traversal"
+          ]
+        },
+        "severity": "ERROR",
+        "fingerprint": "36eff4f3570096c3998fa18984cbd73d681ee3814bb74f168719f22524ed120d73e8093853cf02aeedf2900298a145f569bf7e1a1aceef462d0111a27861e203_0",
+        "lines": "\t\t\t$file_content             = file_get_contents( CARTFLOWS_LOG_DIR . $viewed_log_file );",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "dataflow_trace": {
+          "taint_source": [
+            "CliLoc",
+            [
+              {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/inc/admin-menu.php",
+                "start": {
+                  "line": 908,
+                  "col": 49,
+                  "offset": 31003
+                },
+                "end": {
+                  "line": 908,
+                  "col": 58,
+                  "offset": 31012
+                }
+              },
+              "$_REQUEST"
+            ]
+          ],
+          "intermediate_vars": [
+            {
+              "location": {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/inc/admin-menu.php",
+                "start": {
+                  "line": 908,
+                  "col": 4,
+                  "offset": 30958
+                },
+                "end": {
+                  "line": 908,
+                  "col": 13,
+                  "offset": 30967
+                }
+              },
+              "content": "$filename"
+            },
+            {
+              "location": {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/inc/admin-menu.php",
+                "start": {
+                  "line": 911,
+                  "col": 5,
+                  "offset": 31139
+                },
+                "end": {
+                  "line": 911,
+                  "col": 16,
+                  "offset": 31150
+                }
+              },
+              "content": "$viewed_log"
+            },
+            {
+              "location": {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/inc/admin-menu.php",
+                "start": {
+                  "line": 912,
+                  "col": 5,
+                  "offset": 31173
+                },
+                "end": {
+                  "line": 912,
+                  "col": 21,
+                  "offset": 31189
+                }
+              },
+              "content": "$viewed_log_file"
+            }
+          ],
+          "taint_sink": [
+            "CliLoc",
+            [
+              {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/inc/admin-menu.php",
+                "start": {
+                  "line": 920,
+                  "col": 32,
+                  "offset": 31467
+                },
+                "end": {
+                  "line": 920,
+                  "col": 89,
+                  "offset": 31524
+                }
+              },
+              "file_get_contents( CARTFLOWS_LOG_DIR . $viewed_log_file )"
+            ]
+          ]
+        },
+        "engine_kind": "PRO"
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-nonce-check-ajax-referer-no-die",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/class-cartflows-admin-notices.php",
+      "start": {
+        "line": 179,
+        "col": 10,
+        "offset": 5686
+      },
+      "end": {
+        "line": 179,
+        "col": 86,
+        "offset": 5762
+      },
+      "extra": {
+        "metavars": {
+          "$ACTION": {
+            "start": {
+              "line": 179,
+              "col": 30,
+              "offset": 5706
+            },
+            "end": {
+              "line": 179,
+              "col": 65,
+              "offset": 5741
+            },
+            "abstract_content": "'cartflows-snooze-script-migration'"
+          },
+          "$QUERY": {
+            "start": {
+              "line": 179,
+              "col": 67,
+              "offset": 5743
+            },
+            "end": {
+              "line": 179,
+              "col": 77,
+              "offset": 5753
+            },
+            "abstract_content": "'security'"
+          }
+        },
+        "message": "Insecure Nonce Check: check_ajax_referer() with $stop=false does NOT halt on invalid nonce. Code continues executing. Check return value explicitly.",
+        "metadata": {
+          "cwe": [
+            "CWE-352"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "HIGH",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "7bdef88b610b0073f36152b235df4507552ac0d91cbd493af72e78c5a3f19dddd9cb557c4dbda692496951cb9fd837e6fa65a12214d9b0b9393899dee7e5a579_0",
+        "lines": "\t\tif ( ! check_ajax_referer( 'cartflows-snooze-script-migration', 'security', false ) ) {",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "engine_kind": "PRO"
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-type-juggling-in-array-no-strict",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/class-cartflows-admin.php",
+      "start": {
+        "line": 291,
+        "col": 36,
+        "offset": 8664
+      },
+      "end": {
+        "line": 291,
+        "col": 135,
+        "offset": 8763
+      },
+      "extra": {
+        "metavars": {
+          "$VAL": {
+            "start": {
+              "line": 291,
+              "col": 46,
+              "offset": 8674
+            },
+            "end": {
+              "line": 291,
+              "col": 98,
+              "offset": 8726
+            },
+            "abstract_content": "sanitize_text_field(wp_unslash($_GET['action']))"
+          },
+          "$ARR": {
+            "start": {
+              "line": 291,
+              "col": 105,
+              "offset": 8733
+            },
+            "end": {
+              "line": 291,
+              "col": 133,
+              "offset": 8761
+            },
+            "abstract_content": "('wcf-log''wcf-license')"
+          }
+        },
+        "message": "Type Juggling: in_array() without strict=true uses loose comparison. Pass true as third argument: in_array($val, $arr, true).",
+        "fix": "in_array(sanitize_text_field( wp_unslash( $_GET['action'] ) ), ( 'wcf-log', 'wcf-license' ), true)",
+        "metadata": {
+          "cwe": [
+            "CWE-1025"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ]
+        },
+        "severity": "INFO",
+        "fingerprint": "c61553c261d159fc8796fb8620c8d4b8affb09a617361f27121c114fc1733d34bca26e5ebd14b6efe7378c17dea49ed969b97842449e2987f22be2ad95e75ad9_0",
+        "lines": "\t\tif ( isset( $_GET['action'] ) && in_array( sanitize_text_field( wp_unslash( $_GET['action'] ) ), array( 'wcf-log', 'wcf-license' ) ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "engine_kind": "PRO"
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-nonce-check-ajax-referer-no-die",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/compatibilities/plugins/class-cartflows-suretriggers-compatibility.php",
+      "start": {
+        "line": 127,
+        "col": 11,
+        "offset": 3439
+      },
+      "end": {
+        "line": 127,
+        "col": 85,
+        "offset": 3513
+      },
+      "extra": {
+        "metavars": {
+          "$ACTION": {
+            "start": {
+              "line": 127,
+              "col": 31,
+              "offset": 3459
+            },
+            "end": {
+              "line": 127,
+              "col": 64,
+              "offset": 3492
+            },
+            "abstract_content": "'cartflows_get_suretriggers_data'"
+          },
+          "$QUERY": {
+            "start": {
+              "line": 127,
+              "col": 66,
+              "offset": 3494
+            },
+            "end": {
+              "line": 127,
+              "col": 76,
+              "offset": 3504
+            },
+            "abstract_content": "'security'"
+          }
+        },
+        "message": "Insecure Nonce Check: check_ajax_referer() with $stop=false does NOT halt on invalid nonce. Code continues executing. Check return value explicitly.",
+        "metadata": {
+          "cwe": [
+            "CWE-352"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "HIGH",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "58b34b5660c9e3367cc4089b65a280fbfe2d30c43172b50abbff858bb554ed0bce6a94a11b575ca28a5e5c0c52675446030b9bf394b4c26b30cc3bc9b6415927_0",
+        "lines": "\t\t\tif ( ! check_ajax_referer( 'cartflows_get_suretriggers_data', 'security', false ) ) {",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "engine_kind": "PRO"
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-nonce-check-ajax-referer-no-die",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/bsf-analytics/modules/deactivation-survey/classes/class-deactivation-survey-feedback.php",
+      "start": {
+        "line": 241,
+        "col": 11,
+        "offset": 7989
+      },
+      "end": {
+        "line": 241,
+        "col": 84,
+        "offset": 8062
+      },
+      "extra": {
+        "metavars": {
+          "$ACTION": {
+            "start": {
+              "line": 241,
+              "col": 31,
+              "offset": 8009
+            },
+            "end": {
+              "line": 241,
+              "col": 63,
+              "offset": 8041
+            },
+            "abstract_content": "'uds_plugin_deactivate_feedback'"
+          },
+          "$QUERY": {
+            "start": {
+              "line": 241,
+              "col": 65,
+              "offset": 8043
+            },
+            "end": {
+              "line": 241,
+              "col": 75,
+              "offset": 8053
+            },
+            "abstract_content": "'security'"
+          }
+        },
+        "message": "Insecure Nonce Check: check_ajax_referer() with $stop=false does NOT halt on invalid nonce. Code continues executing. Check return value explicitly.",
+        "metadata": {
+          "cwe": [
+            "CWE-352"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "HIGH",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "8f9e92e4dfb9d2bc436c57450ade89c04ee28cbf13b1e875b15e82438065cd0786668380d468c716fed8fc4f9ee8710c776880374fcde5e61a8574178fb3b54b_0",
+        "lines": "\t\t\tif ( ! check_ajax_referer( 'uds_plugin_deactivate_feedback', 'security', false ) ) {",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "engine_kind": "PRO"
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-nonce-check-ajax-referer-no-die",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "start": {
+        "line": 109,
+        "col": 10,
+        "offset": 2622
+      },
+      "end": {
+        "line": 109,
+        "col": 69,
+        "offset": 2681
+      },
+      "extra": {
+        "metavars": {
+          "$ACTION": {
+            "start": {
+              "line": 109,
+              "col": 30,
+              "offset": 2642
+            },
+            "end": {
+              "line": 109,
+              "col": 48,
+              "offset": 2660
+            },
+            "abstract_content": "'wcf-apply-coupon'"
+          },
+          "$QUERY": {
+            "start": {
+              "line": 109,
+              "col": 50,
+              "offset": 2662
+            },
+            "end": {
+              "line": 109,
+              "col": 60,
+              "offset": 2672
+            },
+            "abstract_content": "'security'"
+          }
+        },
+        "message": "Insecure Nonce Check: check_ajax_referer() with $stop=false does NOT halt on invalid nonce. Code continues executing. Check return value explicitly.",
+        "metadata": {
+          "cwe": [
+            "CWE-352"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "HIGH",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "8fab99a57e57dacd27f6d5d9a1b60a8cf8152aa0f17536ccea173fe09b9451b9d5bfaa076f9af4b6492d32f75d38005e0c6a9a4836274ee9a9990cfd20010673_0",
+        "lines": "\t\tif ( ! check_ajax_referer( 'wcf-apply-coupon', 'security', false ) ) {",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "engine_kind": "PRO"
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-nonce-check-ajax-referer-no-die",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "start": {
+        "line": 295,
+        "col": 10,
+        "offset": 7989
+      },
+      "end": {
+        "line": 295,
+        "col": 68,
+        "offset": 8047
+      },
+      "extra": {
+        "metavars": {
+          "$ACTION": {
+            "start": {
+              "line": 295,
+              "col": 30,
+              "offset": 8009
+            },
+            "end": {
+              "line": 295,
+              "col": 47,
+              "offset": 8026
+            },
+            "abstract_content": "'wcf-file-upload'"
+          },
+          "$QUERY": {
+            "start": {
+              "line": 295,
+              "col": 49,
+              "offset": 8028
+            },
+            "end": {
+              "line": 295,
+              "col": 59,
+              "offset": 8038
+            },
+            "abstract_content": "'security'"
+          }
+        },
+        "message": "Insecure Nonce Check: check_ajax_referer() with $stop=false does NOT halt on invalid nonce. Code continues executing. Check return value explicitly.",
+        "metadata": {
+          "cwe": [
+            "CWE-352"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "HIGH",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "74dd2a46913b4ff0ae660d77c204180da4120fa4387ed0dbfcf9fa17eb563dcdfd1056503d4b4d430ff98cde663f71e7b69b287f3aaf61253def925b12e17238_0",
+        "lines": "\t\tif ( ! check_ajax_referer( 'wcf-file-upload', 'security', false ) ) {",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "engine_kind": "PRO"
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-upload-test-form-false",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "start": {
+        "line": 425,
+        "col": 13,
+        "offset": 12507
+      },
+      "end": {
+        "line": 431,
+        "col": 4,
+        "offset": 12619
+      },
+      "extra": {
+        "metavars": {},
+        "message": "Insecure Upload: wp_handle_upload() with test_form=false skips form  verification. Combined with test_type=false, all checks are disabled.",
+        "metadata": {
+          "cwe": [
+            "CWE-434"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "MEDIUM",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "2bdb82dc5dbb1f7f11580fcb0bbb073dc3acbe1d92d3fe1fc854724eb2fd2ef422994dbb15716e2c9b18495d63804707c786347bc622f3df012892e5fd21ea98_0",
+        "lines": "\t\t$result = wp_handle_upload(\n\t\t\t$file,\n\t\t\tarray(\n\t\t\t\t'test_form' => false,\n\t\t\t\t'mimes'     => wp_get_mime_types(),\n\t\t\t)\n\t\t);",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "engine_kind": "PRO"
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-xss-echo-no-escape",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/gutenberg/classes/class-cartflows-init-blocks.php",
+      "start": {
+        "line": 282,
+        "col": 8,
+        "offset": 11279
+      },
+      "end": {
+        "line": 282,
+        "col": 21,
+        "offset": 11292
+      },
+      "extra": {
+        "metavars": {
+          "$EXPR": {
+            "start": {
+              "line": 282,
+              "col": 15,
+              "offset": 11286
+            },
+            "end": {
+              "line": 282,
+              "col": 21,
+              "offset": 11292
+            },
+            "abstract_content": "$value",
+            "propagated_value": {
+              "svalue_start": {
+                "line": 280,
+                "col": 17,
+                "offset": 11241
+              },
+              "svalue_end": {
+                "line": 280,
+                "col": 45,
+                "offset": 11269
+              },
+              "svalue_abstract_content": "$attributes[$setting_name]"
+            }
+          }
+        },
+        "message": "Cross-Site Scripting: User input flows into HTML output without context-appropriate escaping. Use esc_html() for HTML body, esc_attr() for attributes, esc_url() for URLs.",
+        "metadata": {
+          "cwe": [
+            "CWE-79"
+          ],
+          "owasp": [
+            "A03:2021 - Injection"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "MEDIUM",
+          "likelihood": "MEDIUM",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "87770dacc3d2c4766111ac04030ebf62cb046596562b46185c093677f0cdc1ae10c5bc8192f2b4641424468725b5d02f07b425f32002c9c51b0732d556bf94c1_0",
+        "lines": "\t\t\t\t\t\t\treturn $value;",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "dataflow_trace": {
+          "taint_source": [
+            "CliLoc",
+            [
+              {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/gutenberg/classes/class-cartflows-init-blocks.php",
+                "start": {
+                  "line": 280,
+                  "col": 17,
+                  "offset": 11241
+                },
+                "end": {
+                  "line": 280,
+                  "col": 28,
+                  "offset": 11252
+                }
+              },
+              "$attributes"
+            ]
+          ],
+          "intermediate_vars": [
+            {
+              "location": {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/gutenberg/classes/class-cartflows-init-blocks.php",
+                "start": {
+                  "line": 280,
+                  "col": 8,
+                  "offset": 11232
+                },
+                "end": {
+                  "line": 280,
+                  "col": 14,
+                  "offset": 11238
+                }
+              },
+              "content": "$value"
+            }
+          ],
+          "taint_sink": [
+            "CliLoc",
+            [
+              {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/gutenberg/classes/class-cartflows-init-blocks.php",
+                "start": {
+                  "line": 282,
+                  "col": 8,
+                  "offset": 11279
+                },
+                "end": {
+                  "line": 282,
+                  "col": 21,
+                  "offset": 11292
+                }
+              },
+              "return $value"
+            ]
+          ]
+        },
+        "engine_kind": "PRO"
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-xss-echo-no-escape",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/gutenberg/classes/class-cartflows-init-blocks.php",
+      "start": {
+        "line": 354,
+        "col": 7,
+        "offset": 13099
+      },
+      "end": {
+        "line": 354,
+        "col": 20,
+        "offset": 13112
+      },
+      "extra": {
+        "metavars": {
+          "$EXPR": {
+            "start": {
+              "line": 354,
+              "col": 14,
+              "offset": 13106
+            },
+            "end": {
+              "line": 354,
+              "col": 20,
+              "offset": 13112
+            },
+            "abstract_content": "$value",
+            "propagated_value": {
+              "svalue_start": {
+                "line": 352,
+                "col": 16,
+                "offset": 13062
+              },
+              "svalue_end": {
+                "line": 352,
+                "col": 44,
+                "offset": 13090
+              },
+              "svalue_abstract_content": "$attributes[$setting_name]"
+            }
+          }
+        },
+        "message": "Cross-Site Scripting: User input flows into HTML output without context-appropriate escaping. Use esc_html() for HTML body, esc_attr() for attributes, esc_url() for URLs.",
+        "metadata": {
+          "cwe": [
+            "CWE-79"
+          ],
+          "owasp": [
+            "A03:2021 - Injection"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "MEDIUM",
+          "likelihood": "MEDIUM",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "87770dacc3d2c4766111ac04030ebf62cb046596562b46185c093677f0cdc1ae10c5bc8192f2b4641424468725b5d02f07b425f32002c9c51b0732d556bf94c1_1",
+        "lines": "\t\t\t\t\t\treturn $value;",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "dataflow_trace": {
+          "taint_source": [
+            "CliLoc",
+            [
+              {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/gutenberg/classes/class-cartflows-init-blocks.php",
+                "start": {
+                  "line": 352,
+                  "col": 16,
+                  "offset": 13062
+                },
+                "end": {
+                  "line": 352,
+                  "col": 27,
+                  "offset": 13073
+                }
+              },
+              "$attributes"
+            ]
+          ],
+          "intermediate_vars": [
+            {
+              "location": {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/gutenberg/classes/class-cartflows-init-blocks.php",
+                "start": {
+                  "line": 352,
+                  "col": 7,
+                  "offset": 13053
+                },
+                "end": {
+                  "line": 352,
+                  "col": 13,
+                  "offset": 13059
+                }
+              },
+              "content": "$value"
+            }
+          ],
+          "taint_sink": [
+            "CliLoc",
+            [
+              {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/gutenberg/classes/class-cartflows-init-blocks.php",
+                "start": {
+                  "line": 354,
+                  "col": 7,
+                  "offset": 13099
+                },
+                "end": {
+                  "line": 354,
+                  "col": 20,
+                  "offset": 13112
+                }
+              },
+              "return $value"
+            ]
+          ]
+        },
+        "engine_kind": "PRO"
+      }
+    }
+  ],
+  "errors": [],
+  "paths": {
+    "scanned": [
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/abilities/class-cartflows-abilities-loader.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/abilities/class-cartflows-ability-config.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/abilities/class-cartflows-ability-runtime.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/ab-steps.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/ajax-base.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/ajax-errors.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/ajax-init.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/common-settings.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/debugger.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/flows-stats.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/flows.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/importer.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/learn.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/meta-data.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/ajax/steps.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/api/api-base.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/api/api-init.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/api/common-settings.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/api/flow-data.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/api/flows.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/api/home-page.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/api/learn.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/api/product/product-data.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/api/step-data.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/api/webhooks.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/inc/admin-helper.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/inc/admin-menu.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/inc/flow-meta.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/inc/global-settings.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/inc/log-status.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/inc/meta-ops.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/inc/step-meta.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/inc/store-checkout.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/inc/wp-cli.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/views/404-error.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/views/admin-base.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/views/editor-app.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/views/header.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-core/views/settings-app.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/admin-loader.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/cartflows.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/class-cartflows-admin-notices.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/class-cartflows-admin.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/class-cartflows-default-meta.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/class-cartflows-flow-frontend.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/class-cartflows-frontend.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/class-cartflows-functions.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/class-cartflows-helper.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/class-cartflows-loader.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/class-cartflows-logger.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/class-cartflows-rollback.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/class-cartflows-step-factory.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/class-cartflows-tracking.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/class-cartflows-update.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/class-cartflows-utils.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/class-cartflows-woo-hooks.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/deprecated/deprecated-hooks.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/fields/typography/class-cartflows-font-families.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/fields/typography/google-fonts.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/importer/batch-process/class-cartflows-batch-process.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/importer/batch-process/class-cartflows-batch-processing-sync-library.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/importer/batch-process/class-cartflows-change-template-batch.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/importer/batch-process/class-cartflows-importer-beaver-builder-batch.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/importer/batch-process/class-cartflows-importer-beaver-builder.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/importer/batch-process/class-cartflows-importer-divi-batch.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/importer/batch-process/class-cartflows-importer-divi.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/importer/batch-process/class-cartflows-importer-elementor-batch.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/importer/batch-process/class-cartflows-importer-elementor.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/importer/batch-process/class-cartflows-importer-gutenberg-batch.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/importer/batch-process/class-cartflows-importer-gutenberg.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/importer/batch-process/helpers/class-cartflows-importer-image.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/importer/batch-process/helpers/class-wp-async-request.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/importer/batch-process/helpers/class-wp-background-process-cartflows-sync-library.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/importer/batch-process/helpers/class-wp-background-process.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/importer/class-cartflows-api.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/importer/class-cartflows-importer-core.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/importer/class-cartflows-importer-loader.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/importer/class-cartflows-importer.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/index.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/logger/class-cartflows-log-handler-file.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/logger/class-cartflows-log-handler-interface.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/logger/class-cartflows-log-handler.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/logger/class-cartflows-log-levels.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/logger/class-cartflows-logger-interface.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/classes/logger/class-cartflows-wc-logger.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/compatibilities/class-cartflows-compatibility.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/compatibilities/plugins/class-cartflows-astra-addon-compatibility.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/compatibilities/plugins/class-cartflows-bb-compatibility.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/compatibilities/plugins/class-cartflows-divi-compatibility.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/compatibilities/plugins/class-cartflows-dpd-baltic-compatibility.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/compatibilities/plugins/class-cartflows-elementor-compatibility.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/compatibilities/plugins/class-cartflows-learndash-compatibility.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/compatibilities/plugins/class-cartflows-postnl-for-woocommerce-compatibility.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/compatibilities/plugins/class-cartflows-smart-coupons-compatibility.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/compatibilities/plugins/class-cartflows-suretriggers-compatibility.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/compatibilities/plugins/class-cartflows-thrive-compatibility.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/compatibilities/plugins/gateways/class-cartflows-wc-stripe-compatibility.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/compatibilities/themes/astra/class-cartflows-astra-compatibility.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/compatibilities/themes/bricks/class-cartflows-bricks-compatibility.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/action-scheduler.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/ActionScheduler_ActionClaim.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/ActionScheduler_ActionFactory.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/ActionScheduler_AdminView.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/ActionScheduler_AsyncRequest_QueueRunner.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/ActionScheduler_Compatibility.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/ActionScheduler_DataController.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/ActionScheduler_DateTime.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/ActionScheduler_Exception.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/ActionScheduler_FatalErrorMonitor.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/ActionScheduler_InvalidActionException.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/ActionScheduler_ListTable.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/ActionScheduler_LogEntry.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/ActionScheduler_NullLogEntry.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/ActionScheduler_OptionLock.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/ActionScheduler_QueueCleaner.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/ActionScheduler_QueueRunner.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/ActionScheduler_Versions.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/ActionScheduler_WPCommentCleaner.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/ActionScheduler_wcSystemStatus.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/WP_CLI/ActionScheduler_WPCLI_Clean_Command.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/WP_CLI/ActionScheduler_WPCLI_QueueRunner.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/WP_CLI/ActionScheduler_WPCLI_Scheduler_command.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/WP_CLI/Migration_Command.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/WP_CLI/ProgressBar.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/abstracts/ActionScheduler.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/abstracts/ActionScheduler_Abstract_ListTable.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/abstracts/ActionScheduler_Abstract_QueueRunner.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/abstracts/ActionScheduler_Abstract_RecurringSchedule.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/abstracts/ActionScheduler_Abstract_Schedule.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/abstracts/ActionScheduler_Abstract_Schema.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/abstracts/ActionScheduler_Lock.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/abstracts/ActionScheduler_Logger.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/abstracts/ActionScheduler_Store.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/abstracts/ActionScheduler_TimezoneHelper.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/actions/ActionScheduler_Action.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/actions/ActionScheduler_CanceledAction.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/actions/ActionScheduler_FinishedAction.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/actions/ActionScheduler_NullAction.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/data-stores/ActionScheduler_DBLogger.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/data-stores/ActionScheduler_DBStore.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/data-stores/ActionScheduler_HybridStore.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/data-stores/ActionScheduler_wpCommentLogger.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/data-stores/ActionScheduler_wpPostStore.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/data-stores/ActionScheduler_wpPostStore_PostStatusRegistrar.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/data-stores/ActionScheduler_wpPostStore_PostTypeRegistrar.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/data-stores/ActionScheduler_wpPostStore_TaxonomyRegistrar.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/migration/ActionMigrator.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/migration/ActionScheduler_DBStoreMigrator.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/migration/BatchFetcher.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/migration/Config.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/migration/Controller.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/migration/DryRun_ActionMigrator.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/migration/DryRun_LogMigrator.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/migration/LogMigrator.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/migration/Runner.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/migration/Scheduler.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/schedules/ActionScheduler_CanceledSchedule.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/schedules/ActionScheduler_CronSchedule.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/schedules/ActionScheduler_IntervalSchedule.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/schedules/ActionScheduler_NullSchedule.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/schedules/ActionScheduler_Schedule.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/schedules/ActionScheduler_SimpleSchedule.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/schema/ActionScheduler_LoggerSchema.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/classes/schema/ActionScheduler_StoreSchema.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/deprecated/ActionScheduler_Abstract_QueueRunner_Deprecated.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/deprecated/ActionScheduler_AdminView_Deprecated.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/deprecated/ActionScheduler_Schedule_Deprecated.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/deprecated/ActionScheduler_Store_Deprecated.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/deprecated/functions.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/functions.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/lib/WP_Async_Request.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/lib/cron-expression/CronExpression.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/lib/cron-expression/CronExpression_AbstractField.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/lib/cron-expression/CronExpression_DayOfMonthField.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/lib/cron-expression/CronExpression_DayOfWeekField.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/lib/cron-expression/CronExpression_FieldFactory.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/lib/cron-expression/CronExpression_FieldInterface.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/lib/cron-expression/CronExpression_HoursField.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/lib/cron-expression/CronExpression_MinutesField.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/lib/cron-expression/CronExpression_MonthField.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/action-scheduler/lib/cron-expression/CronExpression_YearField.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/astra-notices/class-astra-notices.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/bsf-analytics/class-bsf-analytics-loader.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/bsf-analytics/class-bsf-analytics-stats.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/bsf-analytics/class-bsf-analytics.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/bsf-analytics/classes/class-bsf-analytics-helper.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/bsf-analytics/modules/deactivation-survey/classes/class-deactivation-survey-feedback.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/bsf-analytics/modules/utm-analytics.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/cartflows-plugin-update-notifications/class-cartflows-plugin-update-notifications.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/cartflows-pointer/class-cartflows-pointer.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/class-cartflows-nps-survey.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/nps-survey/classes/nps-survey-script.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/nps-survey/nps-survey-plugin-loader.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/libraries/nps-survey/nps-survey.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/beaver-builder/cartflows-bb-checkout-form/cartflows-bb-checkout-form.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/beaver-builder/cartflows-bb-checkout-form/includes/frontend.css.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/beaver-builder/cartflows-bb-checkout-form/includes/frontend.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/beaver-builder/cartflows-bb-checkout-form/js/settings-js.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/beaver-builder/cartflows-bb-next-step/cartflows-bb-next-step.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/beaver-builder/cartflows-bb-next-step/includes/frontend.css.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/beaver-builder/cartflows-bb-next-step/includes/frontend.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/beaver-builder/cartflows-bb-optin-form/cartflows-bb-optin-form.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/beaver-builder/cartflows-bb-optin-form/includes/frontend.css.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/beaver-builder/cartflows-bb-optin-form/includes/frontend.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/beaver-builder/cartflows-bb-order-details/cartflows-bb-order-details.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/beaver-builder/cartflows-bb-order-details/includes/frontend.css.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/beaver-builder/cartflows-bb-order-details/includes/frontend.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/beaver-builder/class-cartflows-bb-modules-loader.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/beaver-builder/classes/class-cartflows-bb-editor.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/beaver-builder/classes/class-cartflows-bb-helper.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/bricks/class-cartflows-bricks-dynamic-data.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/bricks/class-cartflows-bricks-elements-loader.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/bricks/elements/class-cartflows-bricks-checkout-form.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/bricks/elements/class-cartflows-bricks-optin-form.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/bricks/elements/class-cartflows-bricks-order-details-form.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/checkout/class-cartflows-checkout.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-fields.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-markup.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/checkout/classes/class-cartflows-checkout-meta-data.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/checkout/classes/class-cartflows-global-checkout.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/checkout/classes/layouts/class-cartflows-instant-checkout.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/checkout/classes/layouts/class-cartflows-modern-checkout.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/checkout/includes/checkout-dynamic-css.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/checkout/includes/checkout-dynamic-divi-css.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/checkout/templates/checkout/collapsed-order-summary.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/checkout/templates/checkout/instant-checkout-review-order.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/checkout/templates/checkout/order-review-table.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/checkout/templates/checkout/page-template/wcf-ic-header-template.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/checkout/templates/checkout/page-template/wcf-ic-template.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/checkout/templates/checkout/shipping-methods.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/checkout/templates/embed/checkout-template-simple.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/checkout/templates/wcf-template.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/elementor/class-cartflows-el-widgets-loader.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/elementor/classes/class-cartflows-elementor-editor.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/elementor/widgets/class-cartflows-el-checkout-form.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/elementor/widgets/class-cartflows-el-next-step-button.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/elementor/widgets/class-cartflows-el-optin-form.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/elementor/widgets/class-cartflows-el-order-details-form.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/elementor/widgets/index.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/email-report/class-cartflows-admin-report-emails.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/email-report/templates/email-body.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/email-report/templates/email-cf-pro-block.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/email-report/templates/email-content-section.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/email-report/templates/email-footer.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/email-report/templates/email-header.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/email-report/templates/email-other-product-block.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/email-report/templates/email-stat-content.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/flow/class-cartflows-flow.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/flow/classes/class-cartflows-flow-loader.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/flow/classes/class-cartflows-flow-post-type.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/flow/classes/class-cartflows-permalink.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/flow/classes/class-cartflows-step-meta-base.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/flow/classes/class-cartflows-step-post-type.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/flow/templates/index.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/flow/templates/template-canvas.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/flow/templates/template-default.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/gutenberg/classes/class-cartflows-block-config.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/gutenberg/classes/class-cartflows-block-helper.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/gutenberg/classes/class-cartflows-block-js.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/gutenberg/classes/class-cartflows-block-loader.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/gutenberg/classes/class-cartflows-gb-helper.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/gutenberg/classes/class-cartflows-gutenberg-editor.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/gutenberg/classes/class-cartflows-init-blocks.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/gutenberg/classes/class-cartflows-spectra-compatibility.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/index.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/landing/class-cartflows-landing.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/landing/classes/class-cartflows-landing-markup.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/landing/classes/class-cartflows-landing-meta-data.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/optin/class-cartflows-optin.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/optin/classes/class-cartflows-optin-fields.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/optin/classes/class-cartflows-optin-markup.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/optin/classes/class-cartflows-optin-meta-data.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/optin/includes/optin-dynamic-css.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/optin/includes/optin-dynamic-divi-css.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/optin/templates/optin-template-simple.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/thankyou/class-cartflows-thankyou.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/thankyou/classes/class-cartflows-thankyou-markup.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/thankyou/classes/class-cartflows-thankyou-meta-data.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/thankyou/includes/thankyou-dynamic-css.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/thankyou/includes/thankyou-dynamic-divi-css.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/thankyou/templates/instant-thankyou-collapsed-order-summary.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/thankyou/templates/instant-thankyou-order-details.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/thankyou/templates/instant-thankyou-your-product.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/thankyou/templates/instant-thankyou.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/thankyou/templates/page-template/wcf-ic-thankyou-template.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/webhook/class-cartflows-webhook-loader.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/webhook/classes/class-cartflows-webhook-dispatcher.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/webhook/classes/class-cartflows-webhook-events.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/webhook/classes/class-cartflows-webhook-manager.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/webhook/classes/class-cartflows-webhook-payload.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/woo-dynamic-flow/class-cartflows-woo-dynamic-flow.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/woo-dynamic-flow/classes/class-cartflows-wd-flow-actions.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/woo-dynamic-flow/classes/class-cartflows-wd-flow-loader.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/woo-dynamic-flow/classes/class-cartflows-wd-flow-product-actions.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/woo-dynamic-flow/classes/class-cartflows-wd-flow-product-meta.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/modules/woo-dynamic-flow/classes/class-cartflows-wd-flow-shortcodes.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/uninstall.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/wizard/ajax/ajax-base.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/wizard/ajax/ajax-errors.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/wizard/ajax/wizard-ajax-init.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/wizard/ajax/wizard.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/wizard/inc/wizard-core.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/wizard/inc/wizard-helper.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/wizard/views/wizard-base.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/woocommerce/template/cart/cart-shipping.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/woocommerce/template/checkout/form-billing.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/woocommerce/template/checkout/form-checkout.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/woocommerce/template/checkout/form-coupon.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/woocommerce/template/checkout/form-login.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/woocommerce/template/checkout/form-pay.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/woocommerce/template/checkout/form-shipping.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/woocommerce/template/checkout/payment-method.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/woocommerce/template/checkout/payment.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/woocommerce/template/checkout/review-order.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/woocommerce/template/checkout/thankyou.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/woocommerce/template/global/form-login.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/woocommerce/template/notices/error.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/woocommerce/template/notices/notice.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/woocommerce/template/notices/success.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/woocommerce/template/order/order-details-customer.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/cartflows/woocommerce/template/order/order-details.php"
+    ]
+  },
+  "time": {
+    "rules": [],
+    "rules_parse_time": 0.044909000396728516,
+    "profiling_times": {
+      "config_time": 0.7388010025024414,
+      "core_time": 9.828538179397583,
+      "ignores_time": 0.0018041133880615234,
+      "total_time": 10.569511890411377
+    },
+    "parsing_time": {
+      "total_time": 0.0,
+      "per_file_time": {
+        "mean": 0.0,
+        "std_dev": 0.0
+      },
+      "very_slow_stats": {
+        "time_ratio": 0.0,
+        "count_ratio": 0.0
+      },
+      "very_slow_files": []
+    },
+    "scanning_time": {
+      "total_time": 8.409023761749268,
+      "per_file_time": {
+        "mean": 0.026034129293341396,
+        "std_dev": 0.004991875655751765
+      },
+      "very_slow_stats": {
+        "time_ratio": 0.0,
+        "count_ratio": 0.0
+      },
+      "very_slow_files": []
+    },
+    "matching_time": {
+      "total_time": 0.0,
+      "per_file_and_rule_time": {
+        "mean": 0.0,
+        "std_dev": 0.0
+      },
+      "very_slow_stats": {
+        "time_ratio": 0.0,
+        "count_ratio": 0.0
+      },
+      "very_slow_rules_on_files": []
+    },
+    "tainting_time": {
+      "total_time": 0.0,
+      "per_def_and_rule_time": {
+        "mean": 0.0,
+        "std_dev": 0.0
+      },
+      "very_slow_stats": {
+        "time_ratio": 0.0,
+        "count_ratio": 0.0
+      },
+      "very_slow_rules_on_defs": []
+    },
+    "fixpoint_timeouts": [],
+    "prefiltering": {
+      "project_level_time": 0.0,
+      "file_level_time": 0.0,
+      "rules_with_project_prefilters_ratio": 0.0,
+      "rules_with_file_prefilters_ratio": 0.0,
+      "rules_selected_ratio": 0.0,
+      "rules_matched_ratio": 0.0
+    },
+    "targets": [],
+    "total_bytes": 0,
+    "max_memory_bytes": 314388544
+  },
+  "engine_requested": "PRO",
+  "interfile_languages_used": [],
+  "skipped_rules": []
+}

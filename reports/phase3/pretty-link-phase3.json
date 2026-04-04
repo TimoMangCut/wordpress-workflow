@@ -1,15 +1,15 @@
 {
   "plugin_slug": "pretty-link",
   "phase1_summary": {
-    "entry_points": 68,
-    "anomalies": 33,
-    "sources": 572,
-    "sinks": 1514
+    "entry_points": 69,
+    "anomalies": 43,
+    "sources": 689,
+    "sinks": 779
   },
   "phase2_summary": {
-    "total": 0,
+    "total": 20,
     "tp": 0,
-    "fp": 0,
+    "fp": 20,
     "review": 0
   },
   "phase3_summary": {
@@ -18,6 +18,468 @@
     "uncertain": 0,
     "likely_hallucination": 0
   },
-  "validated_findings": [],
-  "actionable_findings": []
+  "validated_findings": [
+    {
+      "finding_id": "agent-a2-f001",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_for_links",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: app/controllers/PrliAppController.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f002",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: app/controllers/PrliStripeConnectController.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f003",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_stripe_prices",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: app/controllers/PrliStripeController.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f004",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_customer_portal_notice",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: app/controllers/PrliStripeController.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f005",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_review_prompt",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: app/controllers/PrliReviewNoticeController.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f006",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_upgrade_header",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: app/controllers/PrliAppController.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f007",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_create_pretty_link",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: app/controllers/PrliPostsController.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f008",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_quick_create",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: app/controllers/PrliLinksController.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f009",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_install",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: app/controllers/PrliAddonsController.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f010",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_notice",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: app/controllers/PrliAppController.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f011",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_onboarding_finish",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: app/controllers/PrliOnboardingController.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f012",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_install_license_edition",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: app/controllers/PrliUpdateController.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f013",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_plp_edge_updates",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: app/controllers/PrliUpdateController.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f014",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_mosh_addon_install",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a5-fp-001",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_init_init",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.7
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.7
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: app/controllers/PrliAuthenticatorController.php",
+        "fp_code_evidence": "sink evidence ok; source location provided but source token not found (verify)"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a5-fp-004",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_init_init",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 1.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 1.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: app/controllers/PrliAuthenticatorController.php",
+        "fp_code_evidence": "sink evidence validated (and source evidence checked when available)"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a5-fp-002",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_init_init",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.7
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.7
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: app/controllers/PrliAuthenticatorController.php",
+        "fp_code_evidence": "sink evidence ok; source location provided but source token not found (verify)"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a5-fp-003",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_init_init",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.7
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.7
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: app/lib/PrliStripeConnect.php",
+        "fp_code_evidence": "sink evidence ok; source location provided but source token not found (verify)"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a5-fp-005",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_init_init",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 1.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 1.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: app/controllers/PrliAuthenticatorController.php",
+        "fp_code_evidence": "sink evidence validated (and source evidence checked when available)"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a5-fp-006",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_init_init",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 1.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 1.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: app/controllers/PrliClicksController.php",
+        "fp_code_evidence": "sink evidence validated (and source evidence checked when available)"
+      },
+      "issues": []
+    }
+  ],
+  "actionable_findings": [],
+  "actionable_not_patchstack": []
 }

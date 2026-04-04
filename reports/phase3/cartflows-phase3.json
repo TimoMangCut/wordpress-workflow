@@ -7,17 +7,1080 @@
     "sinks": 3397
   },
   "phase2_summary": {
-    "total": 0,
-    "tp": 0,
-    "fp": 0,
-    "review": 0
+    "total": 40,
+    "tp": 3,
+    "fp": 36,
+    "review": 1
   },
   "phase3_summary": {
     "confirmed": 0,
     "plausible": 0,
-    "uncertain": 0,
+    "uncertain": 4,
     "likely_hallucination": 0
   },
-  "validated_findings": [],
-  "actionable_findings": []
+  "validated_findings": [
+    {
+      "finding_id": "cartflows-a1-001",
+      "verdict": "TP",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.6457,
+      "resolved_entry_point_id": "ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "file_exists": true,
+        "path_reachable": false,
+        "auth_consistent": true,
+        "guard_consistent": false,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": false,
+        "code_evidence": true,
+        "reasoning_quality": true,
+        "cvss_plausible": true,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 1.0,
+        "path_reachable": 0.25,
+        "auth_consistent": 1.0,
+        "guard_consistent": 0.2,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 1.0,
+        "psalm_corroborates": null,
+        "code_evidence": 0.7,
+        "reasoning_quality": 0.52,
+        "cvss_plausible": 0.8,
+        "patchstack_eligible": 0.8,
+        "no_hallucination": 1.0
+      },
+      "check_notes": {
+        "file_exists": "exists: modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "path_reachable": "neither source nor sink matched in EP ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file",
+        "auth_consistent": "auth matches ep (load-leg) type (ajax_nopriv \u2192 none)",
+        "guard_consistent": "guard detected but confirmed ineffective",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep corroborates (same file suffix, \u00b120 lines)",
+        "psalm_corroborates": "Psalm SARIF not available/valid (N/A)",
+        "code_evidence": "sink evidence ok; source location provided but source token not found (verify)",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "cvss_vector omitted (allowed)",
+        "patchstack_eligible": "patchstack_eligible not provided (allowed)",
+        "no_hallucination": "no hallucination signals",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "guard_contradiction",
+        "insufficient_evidence_to_confirm",
+        "path_reachability_weak"
+      ]
+    },
+    {
+      "finding_id": "cartflows-a1-002",
+      "verdict": "TP",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.7867,
+      "resolved_entry_point_id": "ep_ajax_nopriv_wp_ajax_nopriv_wcf_check_email_exists",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "file_exists": true,
+        "path_reachable": false,
+        "auth_consistent": true,
+        "guard_consistent": true,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": false,
+        "code_evidence": true,
+        "reasoning_quality": true,
+        "cvss_plausible": true,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 1.0,
+        "path_reachable": 0.25,
+        "auth_consistent": 1.0,
+        "guard_consistent": 0.9,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 0.5,
+        "psalm_corroborates": null,
+        "code_evidence": 1.0,
+        "reasoning_quality": 0.87,
+        "cvss_plausible": 0.8,
+        "patchstack_eligible": 0.8,
+        "no_hallucination": 1.0
+      },
+      "check_notes": {
+        "file_exists": "exists: modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "path_reachable": "neither source nor sink matched in EP ep_ajax_nopriv_wp_ajax_nopriv_wcf_check_email_exists",
+        "auth_consistent": "auth matches ep (load-leg) type (ajax_nopriv \u2192 none)",
+        "guard_consistent": "IR indicates guards present; finding does not claim missing guards",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
+        "psalm_corroborates": "Psalm SARIF not available/valid (N/A)",
+        "code_evidence": "sink evidence validated (and source evidence checked when available)",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "cvss_vector omitted (allowed)",
+        "patchstack_eligible": "patchstack_eligible not provided (allowed)",
+        "no_hallucination": "no hallucination signals",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "insufficient_evidence_to_confirm",
+        "path_reachability_weak"
+      ]
+    },
+    {
+      "finding_id": "agent-a2-f01-rollback",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_admin_post_admin_post_cartflows_rollback",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: classes/class-cartflows-admin.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f02-ignore-gb-notice",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_cartflows_ignore_gutenberg_notice",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: classes/class-cartflows-admin-notices.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f03-disable-weekly-report-notice",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_cartflows_disable_weekly_report_email_notice",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: classes/class-cartflows-admin-notices.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f04-snooze-script-migration",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_cartflows_snooze_script_migration",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: classes/class-cartflows-admin-notices.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f05-dismiss-script-migration-complete",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_cartflows_dismiss_script_migration_complete_notice",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: classes/class-cartflows-admin-notices.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f06-save-tutor-course-template",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_cartflows_save_tutor_course_template",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f07-get-suretriggers-data",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_cartflows_get_suretriggers_data",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: compatibilities/plugins/class-cartflows-suretriggers-compatibility.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f08-fetch-whats-new-data",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_cartflows_fetch_whats_new_data",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: admin-core/inc/admin-menu.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f09-install-plugin",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_cartflows_install_plugin",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 0.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 0.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "file not found in plugin_dir",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": [
+        "fp_evidence_file_not_found: wp-admin/includes/ajax-actions.php"
+      ]
+    },
+    {
+      "finding_id": "agent-a2-f10-pointer-should-show",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_cartflows_pointer_should_show",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: libraries/cartflows-pointer/class-cartflows-pointer.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f11-pointer-dismiss",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_cartflows_pointer_dismiss",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: libraries/cartflows-pointer/class-cartflows-pointer.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f12-pointer-accept",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_cartflows_pointer_accept",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: libraries/cartflows-pointer/class-cartflows-pointer.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f13-plugin-deactivate-feedback",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_uds_plugin_deactivate_feedback",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: libraries/bsf-analytics/modules/deactivation-survey/classes/class-deactivation-survey-feedback.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f14-astra-notice-dismiss",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_astra_notice_dismiss",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: libraries/astra-notices/class-astra-notices.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f15-json-search-flows",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_wcf_json_search_flows",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: modules/woo-dynamic-flow/classes/class-cartflows-wd-flow-product-meta.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f16-order-detail-preview",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_wpcf_order_detail_form_shortcode",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: modules/gutenberg/classes/class-cartflows-init-blocks.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f17-order-checkout-preview",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_wpcf_order_checkout_form_shortcode",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: modules/gutenberg/classes/class-cartflows-init-blocks.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f18-optin-preview",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_wpcf_optin_form_shortcode",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: modules/gutenberg/classes/class-cartflows-init-blocks.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f19-apply-coupon",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_wcf_woo_apply_coupon",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f20-remove-coupon",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_wcf_woo_remove_coupon",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f21-remove-cart-product",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_wcf_woo_remove_cart_product",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a2-f22-upload-checkout-file",
+      "verdict": "TP",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.6133,
+      "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_wcf_upload_checkout_file",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "file_exists": true,
+        "path_reachable": false,
+        "auth_consistent": false,
+        "guard_consistent": false,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": false,
+        "code_evidence": true,
+        "reasoning_quality": true,
+        "cvss_plausible": true,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 1.0,
+        "path_reachable": 0.25,
+        "auth_consistent": 0.25,
+        "guard_consistent": 0.2,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 1.0,
+        "psalm_corroborates": null,
+        "code_evidence": 0.7,
+        "reasoning_quality": 0.87,
+        "cvss_plausible": 0.8,
+        "patchstack_eligible": 1.0,
+        "no_hallucination": 1.0
+      },
+      "check_notes": {
+        "file_exists": "exists: modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "path_reachable": "neither source nor sink matched in EP ep_ajax_priv_wp_ajax_wcf_upload_checkout_file",
+        "auth_consistent": "auth mismatch [ep (load-leg)]: EP type=ajax_priv expects subscriber, finding claims none",
+        "guard_consistent": "guard detected but confirmed ineffective",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep corroborates (same file suffix, \u00b120 lines)",
+        "psalm_corroborates": "Psalm SARIF not available/valid (N/A)",
+        "code_evidence": "sink evidence ok; source location provided but source token not found (verify)",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "cvss_vector omitted (allowed)",
+        "patchstack_eligible": "patchstack_eligible plausibility ok",
+        "no_hallucination": "no hallucination signals",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "guard_contradiction",
+        "insufficient_evidence_to_confirm",
+        "path_reachability_weak"
+      ]
+    },
+    {
+      "finding_id": "agent-a3-homepage-get-home-page-settings",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_rest___0",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: admin-core/api/home-page.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a3-homepage-get-setup-details",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_rest___0",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: admin-core/api/home-page.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a3-step-data-get-item",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_rest___0",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: admin-core/api/step-data.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a3-webhooks-delete-webhook",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_rest___1",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: admin-core/api/webhooks.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a3-webhooks-update-webhook",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_rest___0",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: admin-core/api/webhooks.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a3-webhooks-test-webhook",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_rest___0",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: admin-core/api/webhooks.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a3-nps-submit-rating",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_rest___rating__0",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: libraries/nps-survey/classes/nps-survey-script.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a3-nps-dismiss-survey",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_rest___dismiss_nps_survey__0",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: libraries/nps-survey/classes/nps-survey-script.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a4-fp-checkout-shortcode-demo-guard",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_shortcode_cartflows_checkout",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.7
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.7
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: modules/gutenberg/classes/class-cartflows-init-blocks.php",
+        "fp_code_evidence": "sink evidence ok; source location provided but source token not found (verify)"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a4-fp-optin-shortcode-demo-guard",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_shortcode_cartflows_optin",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.7
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.7
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: modules/gutenberg/classes/class-cartflows-init-blocks.php",
+        "fp_code_evidence": "sink evidence ok; source location provided but source token not found (verify)"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a4-review-checkout-block-layout-include",
+      "verdict": "REVIEW",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.5962,
+      "resolved_entry_point_id": "ep_block_wcfb_checkout_form",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "file_exists": true,
+        "path_reachable": false,
+        "auth_consistent": false,
+        "guard_consistent": false,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": false,
+        "code_evidence": true,
+        "reasoning_quality": true,
+        "cvss_plausible": true,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 1.0,
+        "path_reachable": 0.25,
+        "auth_consistent": 0.25,
+        "guard_consistent": 0.1,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 1.0,
+        "psalm_corroborates": null,
+        "code_evidence": 0.7,
+        "reasoning_quality": 0.87,
+        "cvss_plausible": 0.8,
+        "patchstack_eligible": 0.8,
+        "no_hallucination": 1.0
+      },
+      "check_notes": {
+        "file_exists": "exists: modules/checkout/classes/class-cartflows-checkout-markup.php",
+        "path_reachable": "neither source nor sink matched in EP ep_block_wcfb_checkout_form",
+        "auth_consistent": "auth mismatch [ep (load-leg)]: EP type=block expects contributor, finding claims unknown",
+        "guard_consistent": "no guard detected",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep corroborates (same file suffix, \u00b120 lines)",
+        "psalm_corroborates": "Psalm SARIF not available/valid (N/A)",
+        "code_evidence": "sink evidence ok; source location provided but source token not found (verify)",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "cvss_vector omitted (allowed)",
+        "patchstack_eligible": "patchstack_eligible not provided (allowed)",
+        "no_hallucination": "no hallucination signals",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "guard_contradiction",
+        "insufficient_evidence_to_confirm",
+        "path_reachability_weak"
+      ]
+    },
+    {
+      "finding_id": "agent-a5-fp-tutor-course-template-redirect",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_template_redirect_template_redirect",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 1.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 1.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php",
+        "fp_code_evidence": "sink evidence validated (and source evidence checked when available)"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a5-fp-learndash-course-template-redirect",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_template_redirect_template_redirect",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 1.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 1.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: compatibilities/plugins/class-cartflows-learndash-compatibility.php",
+        "fp_code_evidence": "sink evidence validated (and source evidence checked when available)"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a5-fp-analytics-loader-fixed-path-include",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_init_init",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 1.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 1.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: classes/class-cartflows-loader.php",
+        "fp_code_evidence": "sink evidence validated (and source evidence checked when available)"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a5-fp-step-taxonomy-bootstrap",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_init_init",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 1.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 1.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: modules/flow/classes/class-cartflows-step-post-type.php",
+        "fp_code_evidence": "sink evidence validated (and source evidence checked when available)"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-a5-fp-version-migration-option-updates",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_init_init",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 1.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 1.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: classes/class-cartflows-update.php",
+        "fp_code_evidence": "sink evidence validated (and source evidence checked when available)"
+      },
+      "issues": []
+    }
+  ],
+  "actionable_findings": [],
+  "actionable_not_patchstack": []
 }

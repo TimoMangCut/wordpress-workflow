@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "plugin_slug": "backwpup",
+    "plugin_name": "BackWPup",
+    "version": "5.6.7",
+    "active_installs": null,
+    "files_analyzed": 511,
+    "total_loc": 70114,
+    "extraction_time_ms": 4301,
+    "extractor_version": "1.0.0"
+  },
+  "entry_points": [],
+  "sources": [],
+  "sinks": [],
+  "guards": [],
+  "anomalies": [],
+  "unresolved_hooks": [],
+  "coverage_gaps": []
+}

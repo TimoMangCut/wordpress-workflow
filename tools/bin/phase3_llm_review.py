@@ -503,6 +503,7 @@ def main() -> int:
                     cmd = [
                         claude_bin,
                         "-p",
+                        "--verbose",
                         "--dangerously-skip-permissions",
                         "--output-format",
                         "stream-json",
