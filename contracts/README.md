@@ -10,8 +10,8 @@ Schema mismatch is a hard error — silent degradation is prohibited.
 
 | File | Version | Produced by | Consumed by |
 |------|---------|-------------|-------------|
-| `ir-output.schema.json` | 2.1.0 | `tools/bin/extract.php` | `tools/bin/prepare_agent_inputs.py`, agents |
-| `ir-slice.schema.json` | 1.1.0 | `tools/bin/prepare_agent_inputs.py` | Agents A1–A5 |
+| `ir-output.schema.json` | 2.2.0 | `tools/bin/extract.php` | `tools/bin/prepare_agent_inputs.py`, agents |
+| `ir-slice.schema.json` | 1.2.0 | `tools/bin/prepare_agent_inputs.py` | Agents A1–A5 |
 | `agent-output.schema.json` | 1.0.0 | Agents A1–A5, B, C, D | merge script |
 | `phase2-finding.schema.json` | 1.0.0 | Phase 2 agents (item schema) | merge script, gate |
 | `merge-output.schema.json` | 1.0.0 | merge script | phase3 gate |
@@ -104,6 +104,20 @@ not via this schema library. IR schema is the ground-truth reference.
 ---
 
 ## Migration Log
+
+### ir-output.schema.json 2.1.0 → 2.2.0
+
+Date: 2026-04-04 (Session 15 post-review round 2, Codex finding P1)
+Breaking: NO — MINOR bump. Added `static_method` and `function` callback types.
+- Previous fix (2.1.0) only surveyed 2 artifacts (backwpup, call-chain-test), missing `function` in cartflows-ir.json and `static_method` in pretty-link-ir.json.
+- Full survey of ALL reports/phase1/*-ir.json confirmed 5 types: method, static_method, function, closure, unresolved.
+- `function` type: file/line_start/line_end nullable (built-in WP functions have no source file in repo).
+Migration: NO consumer existed yet.
+
+### ir-slice.schema.json 1.1.0 → 1.2.0
+
+Date: 2026-04-04 (Session 15 post-review round 2)
+Breaking: NO — MINOR bump. Added `static_method` and `function` callback types to match ir-output 2.2.0.
 
 ### ir-output.schema.json 2.0.0 → 2.1.0
 

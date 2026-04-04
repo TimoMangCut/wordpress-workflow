@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "ir-output.schema.json",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "title": "IR Output Schema",
   "description": "Phase 1 extractor output (intermediate representation). Canonical source: skill-sets-framework.md:113-186.",
   "type": "object",
@@ -34,19 +34,45 @@
           "file":       { "type": "string" },
           "line":       { "type": "integer" },
           "callback": {
-            "description": "Extractor-resolved callback descriptor. Shape depends on 'type' discriminator. Verified against backwpup-ir.json and call-chain-test-ir.json artifacts.",
+            "description": "Extractor-resolved callback descriptor. Shape depends on 'type' discriminator. Verified against ALL reports/phase1/*-ir.json artifacts. 5 types observed: method, static_method, function, closure, unresolved.",
             "oneOf": [
               {
-                "description": "Resolved method or function callback",
+                "description": "Instance method callback",
                 "type": "object",
-                "required": ["type", "name", "file", "line_start", "line_end"],
+                "required": ["type", "name", "class", "file", "line_start", "line_end"],
                 "properties": {
                   "type":       { "const": "method" },
                   "name":       { "type": ["string", "null"] },
                   "class":      { "type": ["string", "null"] },
-                  "file":       { "type": "string" },
-                  "line_start": { "type": "integer" },
-                  "line_end":   { "type": "integer" }
+                  "file":       { "type": ["string", "null"] },
+                  "line_start": { "type": ["integer", "null"] },
+                  "line_end":   { "type": ["integer", "null"] }
+                }
+              },
+              {
+                "description": "Static method callback",
+                "type": "object",
+                "required": ["type", "name", "class", "file", "line_start", "line_end"],
+                "properties": {
+                  "type":       { "const": "static_method" },
+                  "name":       { "type": ["string", "null"] },
+                  "class":      { "type": ["string", "null"] },
+                  "file":       { "type": ["string", "null"] },
+                  "line_start": { "type": ["integer", "null"] },
+                  "line_end":   { "type": ["integer", "null"] }
+                }
+              },
+              {
+                "description": "Named function callback. file/line_start/line_end nullable for built-in/external functions (e.g. wp_ajax_install_plugin has no source file in repo).",
+                "type": "object",
+                "required": ["type", "name"],
+                "properties": {
+                  "type":       { "const": "function" },
+                  "name":       { "type": ["string", "null"] },
+                  "class":      { "type": ["string", "null"] },
+                  "file":       { "type": ["string", "null"] },
+                  "line_start": { "type": ["integer", "null"] },
+                  "line_end":   { "type": ["integer", "null"] }
                 }
               },
               {

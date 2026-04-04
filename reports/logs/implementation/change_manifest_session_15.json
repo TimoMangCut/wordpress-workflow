@@ -7,15 +7,19 @@
   "new_files_created": [
     {
       "file": "contracts/ir-output.schema.json",
-      "description": "Full draft-07 JSON Schema for Phase 1 IR output. Extends Session 12 stub (ir.schema.json). All top-level fields required: metadata, entry_points, sources, sinks, guards, anomalies, unresolved_hooks (IR-01), coverage_gaps (A-01). source.type enum: 21 values. guards.is_effective: nullable bool. sinks.key: nullable string for stored 2-hop. version: 2.0.0."
+      "description": "Full draft-07 JSON Schema for Phase 1 IR output. Extends Session 12 stub (ir.schema.json). All top-level fields required: metadata, entry_points, sources, sinks, guards, anomalies, unresolved_hooks (IR-01), coverage_gaps (A-01). source.type enum: 21 values. guards.is_effective: nullable bool. sinks.key: nullable string for stored 2-hop. entry_points[].callback: oneOf discriminated union with 5 types (method, static_method, function, closure, unresolved) — verified against ALL reports/phase1/*-ir.json artifacts. unresolved_hooks items: {file, line, function, hook_arg_type} — verified against backwpup-ir.json (36 items). final version: 2.2.0."
     },
     {
       "file": "contracts/ir-slice.schema.json",
-      "description": "Per-EP-group IR subset produced by slice_ir_for_group(). Derived from multi-agent-plan.md:251-268. unresolved_hooks and coverage_gaps are maxItems:0 (empty arrays in slices — handled by Agent D receiving full IR). version: 1.0.0."
+      "description": "Per-EP-group IR subset produced by slice_ir_for_group(). Derived from multi-agent-plan.md:251-268. unresolved_hooks and coverage_gaps are maxItems:0 (empty arrays in slices — handled by Agent D receiving full IR). entry_points[].callback: same 5-type oneOf as ir-output 2.2.0. final version: 1.2.0."
     },
     {
       "file": "contracts/agent-output.schema.json",
       "description": "Per-agent findings output schema. Canonical from skill-sets-framework.md:189-300. Full allOf conditional blocks: TP requires entry_point_id + reasoning + source/sink file/line/function; FP requires fp_reason + fp_evidence; REVIEW requires review_reason; cross-EP stored flows require load_entry_point_id + storage_key + entry_point_id=load_entry_point_id. version: 1.0.0."
+    },
+    {
+      "file": "contracts/phase2-finding.schema.json",
+      "description": "Standalone finding item schema per skill-sets-framework.md:121. Same finding shape as agent-output findings[] items, kept as independent file so gate and merge script can reference the finding shape without importing the full agent-output schema. allOf conditionals for TP/FP/REVIEW. version: 1.0.0. Added in post-review after Codex P2 finding (missing from initial Session 15 output)."
     },
     {
       "file": "contracts/merge-output.schema.json",
@@ -26,8 +30,12 @@
       "description": "Phase 3 gate input schema. Identical shape to merge-output.schema.json, duplicated explicitly (not $ref) for standalone gate validation without resolver. Decision documented in schema description. version: 1.0.0."
     },
     {
+      "file": "contracts/phase3-gate-output.schema.json",
+      "description": "Gate output contract per skill-sets-framework.md:125. Per-finding gate verdicts (CONFIRMED/DOWNGRADED/UPGRADED/UNCHANGED/UNCERTAIN) plus gate_verdict summary (PASS/FAIL/REVIEW_REQUIRED) and gate_stats. version: 1.0.0. Added in post-review after Codex P2 finding (missing from initial Session 15 output)."
+    },
+    {
       "file": "contracts/README.md",
-      "description": "Schema versioning rules: semver (MAJOR/MINOR/PATCH), breaking vs non-breaking policy, migration note format, migration log for ir-output 2.0.0 and finding.schema.json stub clarification, validation code snippet, full schema-file table with producer/consumer."
+      "description": "Schema versioning rules: semver (MAJOR/MINOR/PATCH), breaking vs non-breaking policy, migration note format, validation code snippet, full schema-file table with producer/consumer. Migration log covers all version bumps including post-review fixes (2.0.0→2.1.0→2.2.0 for ir-output, 1.0.0→1.1.0→1.2.0 for ir-slice, addition of phase2-finding and phase3-gate-output)."
     }
   ],
   "downstream_updated": [],
@@ -38,20 +46,19 @@
       "risk": "LOW — both files are identical at v1.0.0. If they diverge, the README versioning rules govern both independently."
     },
     {
-      "spec_step": "Session card lists 6 contract files; skill-sets-framework.md:117-127 lists 7 (includes phase3-gate-output.schema.json)",
-      "actual": "phase3-gate-output.schema.json was NOT created. Session card spec (the 6-file list) does not include it. source_ref (skill-sets-framework.md:113-302) is authoritative — however the session card spec explicitly lists only 5 schema files + README. Per protocol: session card spec lists files in 'change' field as the explicit scope; phase3-gate-output.schema.json is absent from that list. Not created in this session.",
-      "risk": "LOW — gate-output schema is needed for Session 16+ gate implementation. Added to discovered_issues for next session planning."
+      "spec_step": "Session card lists 6 contract files; skill-sets-framework.md:117-127 (source_ref authoritative) lists 7 including phase3-gate-output.schema.json and phase2-finding.schema.json",
+      "actual": "Initial Session 15 output created only 5 schemas + README, omitting both files. Post-review (Codex P2) confirmed source_ref wins — both missing files were created in post-review commit 5a6b300.",
+      "risk": "RESOLVED — both files now present."
+    },
+    {
+      "spec_step": "ir-output callback field — initial schema declared callback as string",
+      "actual": "Extractor emits callback objects, never strings. Initial fix (2.1.0, Codex P1 round 1) added 3 types based on 2-artifact survey. Second fix (2.2.0, Codex P1 round 2) completed to 5 types after full survey of ALL reports/phase1/*-ir.json. Types confirmed: method, static_method (from pretty-link-ir.json), function (from cartflows-ir.json, nullable file/line for built-in WP functions), closure, unresolved.",
+      "risk": "RESOLVED — schema now matches all observed IR artifacts."
     }
   ],
-  "test_command": "python3 -c \"import json; files=['contracts/ir-output.schema.json','contracts/ir-slice.schema.json','contracts/agent-output.schema.json','contracts/merge-output.schema.json','contracts/phase3-gate-input.schema.json']; [json.load(open(f)) and print('OK:', f) for f in files]\"",
-  "test_result": "PASS: all 5 schema JSON files parse without error. ir-output required includes coverage_gaps and unresolved_hooks. agent-output required includes agent_id, plugin_slug, findings. contracts/README.md exists. No PHP or Python source files modified.",
+  "test_command": "python3 -c \"import json, glob; files=sorted(glob.glob('contracts/*.json')); [json.load(open(f)) and print('OK:', f) for f in files]\"",
+  "test_result": "PASS: all 10 contracts/*.json files parse without error. ir-output.schema.json v2.2.0 — required includes coverage_gaps and unresolved_hooks; callback oneOf has 5 types (method, static_method, function, closure, unresolved) verified against ALL IR artifacts. agent-output.schema.json required includes agent_id, plugin_slug, findings. phase2-finding.schema.json and phase3-gate-output.schema.json present. contracts/README.md exists with full migration log. No PHP or Python source files modified.",
   "discovered_issues": [
-    {
-      "id": "DI-15-01",
-      "description": "phase3-gate-output.schema.json not created in Session 15. Listed in skill-sets-framework.md:117-127 as part of contracts/ but absent from session card spec scope. Needed before gate script (Session 17+) is written.",
-      "suggested_session": "16 or 17 (before phase3_gate.py is implemented)",
-      "severity": "LOW — no blocker for Session 16 IR Slicing"
-    },
     {
       "id": "DI-15-02",
       "description": "finding.schema.json (Session 12 stub) uses AppSec reviewer verdict enum (CONFIRMED/UNCERTAIN/RISK_NOTE/REJECTED) while agent-output.schema.json uses pipeline verdict enum (TP/FP/REVIEW). These are intentionally different schemas for different audiences but the distinction is not documented anywhere except contracts/README.md migration log. Consider adding cross-reference comment to both stubs.",
@@ -60,5 +67,5 @@
     }
   ],
   "next_session": "session_16",
-  "notes": "Session 15 is documentation/contracts-only — zero PHP or Python source changes. Pre-session cleanup: committed leftover call-chain-test-ir.json modification (extraction_time_ms + coverage_gaps: [] field added by Session 13/14 extractor re-runs). All 5 new schema files pass JSON parse. ir-output.schema.json supersedes contracts/ir.schema.json stub — old stub is retained for historical reference but should be considered deprecated."
+  "notes": "Session 15 is documentation/contracts-only — zero PHP or Python source changes. Pre-session cleanup: committed leftover call-chain-test-ir.json modification. Final contracts/ state after 2 post-review rounds: 7 new schema files + README (plus 3 pre-existing stubs from Session 12). ir-output.schema.json supersedes contracts/ir.schema.json stub — old stub retained for historical reference. Post-review P1 lesson: always survey ALL IR artifacts when modeling extractor output shapes, not a 2-artifact sample."
 }
