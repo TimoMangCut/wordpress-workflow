@@ -1,0 +1,64 @@
+{
+  "session": 15,
+  "date": "2026-04-04",
+  "status": "COMPLETED",
+  "gaps_addressed": ["SCHEMA-CONTRACTS"],
+  "files_modified": [],
+  "new_files_created": [
+    {
+      "file": "contracts/ir-output.schema.json",
+      "description": "Full draft-07 JSON Schema for Phase 1 IR output. Extends Session 12 stub (ir.schema.json). All top-level fields required: metadata, entry_points, sources, sinks, guards, anomalies, unresolved_hooks (IR-01), coverage_gaps (A-01). source.type enum: 21 values. guards.is_effective: nullable bool. sinks.key: nullable string for stored 2-hop. version: 2.0.0."
+    },
+    {
+      "file": "contracts/ir-slice.schema.json",
+      "description": "Per-EP-group IR subset produced by slice_ir_for_group(). Derived from multi-agent-plan.md:251-268. unresolved_hooks and coverage_gaps are maxItems:0 (empty arrays in slices — handled by Agent D receiving full IR). version: 1.0.0."
+    },
+    {
+      "file": "contracts/agent-output.schema.json",
+      "description": "Per-agent findings output schema. Canonical from skill-sets-framework.md:189-300. Full allOf conditional blocks: TP requires entry_point_id + reasoning + source/sink file/line/function; FP requires fp_reason + fp_evidence; REVIEW requires review_reason; cross-EP stored flows require load_entry_point_id + storage_key + entry_point_id=load_entry_point_id. version: 1.0.0."
+    },
+    {
+      "file": "contracts/merge-output.schema.json",
+      "description": "Merge script output: deduplicated findings + merge_stats (total_raw, total_deduplicated, agents_included, agents_missing, tp/fp/review counts). Each finding has source_agents array tracking dedup provenance. version: 1.0.0."
+    },
+    {
+      "file": "contracts/phase3-gate-input.schema.json",
+      "description": "Phase 3 gate input schema. Identical shape to merge-output.schema.json, duplicated explicitly (not $ref) for standalone gate validation without resolver. Decision documented in schema description. version: 1.0.0."
+    },
+    {
+      "file": "contracts/README.md",
+      "description": "Schema versioning rules: semver (MAJOR/MINOR/PATCH), breaking vs non-breaking policy, migration note format, migration log for ir-output 2.0.0 and finding.schema.json stub clarification, validation code snippet, full schema-file table with producer/consumer."
+    }
+  ],
+  "downstream_updated": [],
+  "deviations_from_spec": [
+    {
+      "spec_step": "phase3-gate-input.schema.json: session card says 'Use $ref or duplicate explicitly — note the decision in notes field'",
+      "actual": "Chose explicit duplication over $ref. Reason: gate script must validate standalone without a JSON schema $ref resolver; drift between merge-output and gate-input is a deliberate future option (pre-processing before gate). Decision documented in schema $id description field.",
+      "risk": "LOW — both files are identical at v1.0.0. If they diverge, the README versioning rules govern both independently."
+    },
+    {
+      "spec_step": "Session card lists 6 contract files; skill-sets-framework.md:117-127 lists 7 (includes phase3-gate-output.schema.json)",
+      "actual": "phase3-gate-output.schema.json was NOT created. Session card spec (the 6-file list) does not include it. source_ref (skill-sets-framework.md:113-302) is authoritative — however the session card spec explicitly lists only 5 schema files + README. Per protocol: session card spec lists files in 'change' field as the explicit scope; phase3-gate-output.schema.json is absent from that list. Not created in this session.",
+      "risk": "LOW — gate-output schema is needed for Session 16+ gate implementation. Added to discovered_issues for next session planning."
+    }
+  ],
+  "test_command": "python3 -c \"import json; files=['contracts/ir-output.schema.json','contracts/ir-slice.schema.json','contracts/agent-output.schema.json','contracts/merge-output.schema.json','contracts/phase3-gate-input.schema.json']; [json.load(open(f)) and print('OK:', f) for f in files]\"",
+  "test_result": "PASS: all 5 schema JSON files parse without error. ir-output required includes coverage_gaps and unresolved_hooks. agent-output required includes agent_id, plugin_slug, findings. contracts/README.md exists. No PHP or Python source files modified.",
+  "discovered_issues": [
+    {
+      "id": "DI-15-01",
+      "description": "phase3-gate-output.schema.json not created in Session 15. Listed in skill-sets-framework.md:117-127 as part of contracts/ but absent from session card spec scope. Needed before gate script (Session 17+) is written.",
+      "suggested_session": "16 or 17 (before phase3_gate.py is implemented)",
+      "severity": "LOW — no blocker for Session 16 IR Slicing"
+    },
+    {
+      "id": "DI-15-02",
+      "description": "finding.schema.json (Session 12 stub) uses AppSec reviewer verdict enum (CONFIRMED/UNCERTAIN/RISK_NOTE/REJECTED) while agent-output.schema.json uses pipeline verdict enum (TP/FP/REVIEW). These are intentionally different schemas for different audiences but the distinction is not documented anywhere except contracts/README.md migration log. Consider adding cross-reference comment to both stubs.",
+      "suggested_session": "Any session that touches finding.schema.json",
+      "severity": "LOW — informational, no current consumer conflict"
+    }
+  ],
+  "next_session": "session_16",
+  "notes": "Session 15 is documentation/contracts-only — zero PHP or Python source changes. Pre-session cleanup: committed leftover call-chain-test-ir.json modification (extraction_time_ms + coverage_gaps: [] field added by Session 13/14 extractor re-runs). All 5 new schema files pass JSON parse. ir-output.schema.json supersedes contracts/ir.schema.json stub — old stub is retained for historical reference but should be considered deprecated."
+}

@@ -1,0 +1,62 @@
+{
+  "session": 16,
+  "title": "IR Slicing Script",
+  "status": "PENDING",
+  "created_by_session": 15,
+  "wave": "Wave 4",
+  "dependencies": [
+    {
+      "session": 15,
+      "reason": "ir-slice.schema.json must exist before IR slicing script can be written — script output validates against it"
+    }
+  ],
+  "gaps": ["IR-SLICING"],
+  "critical_notes": [
+    "New file only: tools/bin/prepare_agent_inputs.py. Do NOT modify any existing PHP or Python files.",
+    "Slicing logic is fully specified in multi-agent-plan.md:251-268 — implement exactly. Function signature: slice_ir_for_group(ir: dict, ep_types: set) -> dict.",
+    "Output shape MUST validate against contracts/ir-slice.schema.json (Session 15). Use jsonschema.validate() — hard error on mismatch, no silent degradation.",
+    "EP group mapping (from multi-agent-plan.md:238-247): A1=ajax_nopriv+admin_post_nopriv, A2=ajax_priv+admin_post, A3=rest_route, A4=shortcode+block, A5=cron+init+template_redirect+filters. Agents B/D receive full IR, Agent C receives anomalies section only.",
+    "Output filenames: reports/<slug>-ir-slice-ajax-unauth.json, -ajax-auth.json, -rest.json, -shortcode.json, -other.json. Plus reports/<slug>-semgrep-filtered-{group}.json for semgrep hits.",
+    "unresolved_hooks and coverage_gaps in slices = always [] per ir-slice.schema.json maxItems:0 constraint (Agent D handles these from full IR).",
+    "Script should accept CLI args: --ir <path> --semgrep <path> --output-dir <dir>. Fail fast with descriptive error if input files missing.",
+    "Do NOT implement jsonschema validation of agent OUTPUT schemas in this session — that is the merge script's job (Session 17+). Only validate the IR slice output shape.",
+    "DI-15-01 reminder: phase3-gate-output.schema.json still missing. If < 5 lines to stub it, create stub; otherwise add to discovered_issues."
+  ],
+  "files_to_read": [
+    {
+      "file": "7-workflow-wp/multi-agent-plan.md",
+      "line_range": "228-275",
+      "reason": "Section 6 Phase 2 Prep: IR Slicing — complete spec for slice_ir_for_group() and output file naming"
+    },
+    {
+      "file": "contracts/ir-slice.schema.json",
+      "line_range": "full",
+      "reason": "Session 15 output — must validate slice output against this schema"
+    },
+    {
+      "file": "contracts/ir-output.schema.json",
+      "line_range": "full",
+      "reason": "Input shape reference — verify slice preserves required input fields correctly"
+    }
+  ],
+  "spec": {
+    "IR-SLICING": {
+      "source_ref": "multi-agent-plan.md:228-275",
+      "file": "tools/bin/prepare_agent_inputs.py (new)",
+      "change": "Implement slice_ir_for_group(ir, ep_types) per multi-agent-plan.md:251-268. Script entry point takes --ir, --semgrep, --output-dir CLI args. Produces 5 IR slice files (one per agent group) + 5 semgrep-filtered files. Validates each slice against contracts/ir-slice.schema.json before writing. Exits non-zero on validation failure.",
+      "note": "NẾUN spec ở đây mâu thuẫn với source_ref → source_ref thắng. multi-agent-plan.md:228-275 is authoritative."
+    }
+  },
+  "downstream_required": [],
+  "test_command": "python3 tools/bin/prepare_agent_inputs.py --ir reports/phase1/call-chain-test-ir.json --semgrep reports/phase1/call-chain-test-semgrep.json --output-dir /tmp/slice-test && python3 -c \"import json; [json.load(open(f)) and print('OK:', f) for f in __import__('glob').glob('/tmp/slice-test/*.json')]\"",
+  "test_cases": [
+    "Script runs without error on call-chain-test IR",
+    "Produces 5 ir-slice JSON files (one per agent group)",
+    "Each slice passes jsonschema validation against contracts/ir-slice.schema.json",
+    "Slices contain only EPs matching the group's ep_types",
+    "unresolved_hooks and coverage_gaps are [] in all slices",
+    "No existing PHP or Python files modified"
+  ],
+  "commit_message": "Session 16: IR slicing script — tools/bin/prepare_agent_inputs.py",
+  "next_session_preview": "Session 17 — Merge script. File: tools/bin/merge_agent_outputs.py (new). Merges per-agent output files, deduplicates findings, validates against contracts/agent-output.schema.json, produces merge-output.schema.json-compliant JSON. Spec in multi-agent-plan.md section 8 (approximate). Est. context ~20K."
+}
