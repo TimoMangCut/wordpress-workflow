@@ -114,7 +114,7 @@ WAVE 3     [x] Session 12 — IR-02 (call chain depth=2) ← HARDEST   ← 2026-
 INFRA      [x] Session 15 — Schema contracts (contracts/*.schema.json)   <- 2026-04-04
            [x] Session 16 — IR Slicing script (prepare_agent_inputs.py)   <- 2026-04-04
            [x] Session 17 — Deterministic Merge (merge_agent_outputs.py)   ← 2026-04-04
-           [ ] Session 18 — Orchestration (orchestrate-agents.sh + docs)
+           [x] Session 18 — Orchestration (orchestrate-agents.sh + docs)   ← 2026-04-04
            [ ] Session 19 — G-05: Gate update cho stored flows
 SKILL SETS [ ] Session 20 — SKILL SETs Agents A-D
            [ ] Session 21 — SKILL SET Claude Code Verify

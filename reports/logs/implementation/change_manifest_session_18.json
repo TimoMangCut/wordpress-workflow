@@ -1,0 +1,38 @@
+{
+  "session": 18,
+  "date": "2026-04-04",
+  "status": "COMPLETED",
+  "gaps_addressed": ["ORCHESTRATION"],
+  "files_modified": [
+    {
+      "file": "tools/bin/orchestrate-agents.sh",
+      "functions_changed": ["main orchestration loop", "launch_agent", "is_valid_json", "append_failure", "flush_failures"],
+      "lines_affected": "1-357",
+      "behavior_before": "did not exist",
+      "behavior_after": "Reads reports/<slug>-dispatch.json, launches Codex CLI agents (up to --parallel-limit, default 2), polls for valid JSON output per agent (POLL_INTERVAL=15s), retries timed-out agents once, calls merge_agent_outputs.py <slug>, writes reports/<slug>-merge-ready sentinel. Logs all failures to reports/logs/<slug>-failures.json."
+    },
+    {
+      "file": "docs/ORCHESTRATION.md",
+      "functions_changed": [],
+      "lines_affected": "1-112",
+      "behavior_before": "did not exist",
+      "behavior_after": "Pipeline usage guide: automation mode, manual mode, dispatch config format, option reference, output file table, parallel limit guidance, monitoring commands."
+    },
+    {
+      "file": "docs/FAILURE-MODES.md",
+      "functions_changed": [],
+      "lines_affected": "1-185",
+      "behavior_before": "did not exist",
+      "behavior_after": "Per-condition failure handling reference: timeout (1x retry), invalid JSON (reject + continue), missing output (skip + continue), missing input/empty IR slice (skip at start), all agents failed (exit 2, no merge), merge failure (exit 1, no sentinel), high conflict rate (merge script responsibility), Claude Code verify fail (out of scope — Session 21)."
+    }
+  ],
+  "downstream_updated": [],
+  "deviations_from_spec": [
+    "spec says 'Codex CLI' launch syntax — exact codex CLI invocation flags not specified in multi-agent-plan.md:400-520. Script uses `codex run <agent> <slug> --input <file> --output <file>` as a reasonable default. Adjust to actual Codex CLI interface when known."
+  ],
+  "test_command": "bash tools/bin/orchestrate-agents.sh --help && echo 'CLI OK'",
+  "test_result": "PASS: --help outputs usage without error. CLI OK.",
+  "discovered_issues": [],
+  "next_session": "session_19",
+  "notes": "New files only. No existing Python or PHP files modified. Codex CLI invocation flags are placeholder — exact CLI interface should be verified against actual Codex CLI documentation before production use."
+}
