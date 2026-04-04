@@ -308,7 +308,7 @@ PY
 render_phase2_quick_prompt() {
     local slug="$1"
     local output_rel="$2"
-    printf 'Quick triage mode for plugin `%s`.\nInputs:\n- Phase 1 IR: `reports/phase1/%s-ir.json`\n- Semgrep: `reports/phase1/%s-semgrep.json` (if exists)\n- Psalm SARIF: `reports/phase1/%s-psalm.sarif` (if exists; corroboration only)\n- Source: `plugins/%s/`\n\nTask:\n1) Read IR (AST-derived) and spot-check only high-risk code paths in source.\n2) Focus on meaningful security impact only (Patchstack-eligible first).\n3) If nothing meaningful, return empty findings with concise negative_findings.\n4) Keep reasoning concise, but evidence-bound.\n\nSchema requirements (critical):\n- Every TP/REVIEW MUST include: entry_point_id, source_file_path+source_line_number, sink_file_path+sink_line_number, source_function, sink_function.\n- All path fields must be relative to the plugin root. Never prefix them with `plugins/%s/`.\n- Keep backcompat aliases: file_path = sink_file_path, line_number = sink_line_number.\n- Stored/second-order: include storage_key when literal; otherwise mark REVIEW and explain.\n\nOutput strictly to `%s`.' "$slug" "$slug" "$slug" "$slug" "$slug" "$slug" "$output_rel"
+    printf 'Quick triage mode for plugin `%s`.\nInputs:\n- Phase 1 IR: `reports/phase1/%s-ir.json`\n- Semgrep: `reports/phase1/%s-semgrep.json` (if exists)\n- Psalm SARIF: `reports/phase1/%s-psalm.sarif` (if exists; corroboration only)\n- Source: `plugins/%s/`\n\nTask:\n1) Read IR (AST-derived) and spot-check only high-risk code paths in source.\n2) Focus on meaningful security impact only (Patchstack-eligible first).\n3) If nothing meaningful, return empty findings with concise negative_findings.\n4) Check `ir.coverage_gaps[]` for files with WP security signals but no discovered entry point. If any gap file appears to be a missed entry point, note it — do not ignore it.\n5) Keep reasoning concise, but evidence-bound.\n\nSchema requirements (critical):\n- Every TP/REVIEW MUST include: entry_point_id, source_file_path+source_line_number, sink_file_path+sink_line_number, source_function, sink_function.\n- All path fields must be relative to the plugin root. Never prefix them with `plugins/%s/`.\n- Keep backcompat aliases: file_path = sink_file_path, line_number = sink_line_number.\n- Stored/second-order: include storage_key when literal; otherwise mark REVIEW and explain.\n\nOutput strictly to `%s`.' "$slug" "$slug" "$slug" "$slug" "$slug" "$slug" "$output_rel"
 }
 
 append_quota_log() {
@@ -757,8 +757,11 @@ run_one() {
     providers_for_deep=()
     successful_providers=()
 
+    local coverage_gaps_count
+    coverage_gaps_count=$(python3 -c "import json; print(len(json.load(open('${ir_file}')).get('coverage_gaps', [])))" 2>/dev/null || echo "0")
+
     mode="deep"
-    if [ "$FORCE_DEEP" != true ] && [ "$anom_count" = "0" ] && [ "$unauth_ep" = "0" ] && [ "$sensitive_sinks" = "0" ] && [ "$sql_sinks" = "0" ] && [ "$rest_json_sources" = "0" ]; then
+    if [ "$FORCE_DEEP" != true ] && [ "$anom_count" = "0" ] && [ "$unauth_ep" = "0" ] && [ "$sensitive_sinks" = "0" ] && [ "$sql_sinks" = "0" ] && [ "$rest_json_sources" = "0" ] && [ "$coverage_gaps_count" = "0" ]; then
         mode="quick"
     fi
 
@@ -787,8 +790,10 @@ run_one() {
             IFS='|' read -r q_tp q_fp q_rv q_total q_risk <<< "$quick_counts"
             echo "  ${provider} quick results: ${q_tp} TP, ${q_fp} FP, ${q_rv} REVIEW | Risk: ${q_risk}"
             # P2-04: also escalate when IR has unresolved hooks (dynamic callbacks IR-01 can't trace)
+            # A-01: also escalate when IR has coverage gaps (files with WP security signals but no discovered EP)
             unresolved_count=$(python3 -c "import json,sys; d=json.load(open('${ir_file}')); print(len(d.get('unresolved_hooks',[]))) " 2>/dev/null || echo "0")
-            if [ "$q_tp" -gt 0 ] || [ "$q_rv" -gt 0 ] || [ "$unresolved_count" -gt 0 ]; then
+            gap_count=$(python3 -c "import json; print(len(json.load(open('${ir_file}')).get('coverage_gaps', [])))" 2>/dev/null || echo "0")
+            if [ "$q_tp" -gt 0 ] || [ "$q_rv" -gt 0 ] || [ "$unresolved_count" -gt 0 ] || [ "$gap_count" -gt 0 ]; then
                 providers_for_deep+=("$provider")
             fi
         done

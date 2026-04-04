@@ -15,7 +15,10 @@
       "behavior_after": "IR['coverage_gaps'] is populated with entries for each file that contains security signals (wp_verify_nonce, check_ajax_referer, current_user_can, wp_die, $wpdb, sanitize_) but has no entry point callback. Each entry: {file, signals[], reason: 'has_security_functions_but_no_entry_point'}. String-level scan only — not AST. Field is informational, does not feed anomaly rules. backwpup: 67 gaps detected including 7 files with wp_verify_nonce."
     }
   ],
-  "downstream_updated": ["tools/config/phase2-prompt-template.md (section 7 added: coverage_gaps triage)"],
+  "downstream_updated": [
+    "tools/config/phase2-prompt-template.md (section 7 added: coverage_gaps triage)",
+    "tools/bin/run-phase2.sh (3 changes: gating condition adds coverage_gaps_count; quick→deep escalation adds gap_count alongside unresolved_count; quick prompt adds coverage_gaps check as task step 4)"
+  ],
   "deviations_from_spec": [
     {
       "spec_step": "session card source_ref points to gap-analysis-final.md:429-500 which is IR-03/IR-04, not A-01",
