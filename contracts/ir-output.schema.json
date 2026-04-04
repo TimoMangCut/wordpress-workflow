@@ -1,0 +1,151 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "ir-output.schema.json",
+  "version": "2.0.0",
+  "title": "IR Output Schema",
+  "description": "Phase 1 extractor output (intermediate representation). Canonical source: skill-sets-framework.md:113-186.",
+  "type": "object",
+  "required": ["metadata", "entry_points", "sources", "sinks", "guards", "anomalies", "unresolved_hooks", "coverage_gaps"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["plugin_slug"],
+      "properties": {
+        "plugin_slug":        { "type": "string" },
+        "active_installs":    { "type": ["integer", "null"] },
+        "files_analyzed":     { "type": "integer" },
+        "total_loc":          { "type": "integer" },
+        "extraction_time_ms": { "type": "integer" },
+        "extractor_version":  { "type": "string" }
+      }
+    },
+    "entry_points": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "hook_name", "auth_level", "file", "line", "callback"],
+        "properties": {
+          "id":         { "type": "string" },
+          "type":       { "type": "string" },
+          "hook_name":  { "type": "string" },
+          "auth_level": {
+            "enum": ["none", "subscriber", "contributor", "author", "editor", "admin", "system", "unknown"]
+          },
+          "file":       { "type": "string" },
+          "line":       { "type": "integer" },
+          "callback":   { "type": "string" },
+          "nonce_verified": { "type": ["boolean", "null"] }
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "entry_point_id", "type", "variable", "file", "line"],
+        "properties": {
+          "id":             { "type": "string" },
+          "entry_point_id": { "type": "string" },
+          "type": {
+            "enum": [
+              "superglobal_get", "superglobal_post", "superglobal_request",
+              "superglobal_cookie", "superglobal_files", "superglobal_server",
+              "rest_param", "rest_params", "rest_json", "rest_body",
+              "rest_body_params", "rest_query_params", "rest_url_params",
+              "rest_header", "rest_headers", "rest_array_access",
+              "shortcode_attr", "block_attr",
+              "option_read", "meta_read"
+            ]
+          },
+          "variable": { "type": "string" },
+          "key":      { "type": ["string", "null"] },
+          "file":     { "type": "string" },
+          "line":     { "type": "integer" }
+        }
+      }
+    },
+    "sinks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "entry_point_id", "category", "function_called", "file", "line"],
+        "properties": {
+          "id":                    { "type": "string" },
+          "entry_point_id":        { "type": "string" },
+          "category":              { "type": "string" },
+          "function_called":       { "type": "string" },
+          "uses_prepared_statement": { "type": ["boolean", "null"] },
+          "file":                  { "type": "string" },
+          "line":                  { "type": "integer" },
+          "key": {
+            "type": ["string", "null"],
+            "description": "Storage key for option_update/meta_update. Required for stored 2-hop."
+          }
+        }
+      }
+    },
+    "guards": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["entry_point_id", "type", "function_called", "file", "line", "is_effective"],
+        "properties": {
+          "entry_point_id":  { "type": "string" },
+          "type":            { "type": "string" },
+          "function_called": { "type": "string" },
+          "file":            { "type": "string" },
+          "line":            { "type": "integer" },
+          "is_effective": {
+            "type": ["boolean", "null"],
+            "description": "true=confirmed effective, false=confirmed ineffective, null=unknown"
+          }
+        }
+      }
+    },
+    "anomalies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "rule_id", "type", "severity", "cwe_id", "entry_point_id", "description", "evidence"],
+        "properties": {
+          "id":             { "type": "string" },
+          "rule_id":        { "type": "string" },
+          "type":           { "type": "string" },
+          "severity":       { "enum": ["critical", "high", "medium", "low", "informational"] },
+          "cwe_id":         { "type": ["string", "null"] },
+          "entry_point_id": { "type": ["string", "null"] },
+          "description":    { "type": "string" },
+          "evidence":       { "type": "object" }
+        }
+      }
+    },
+    "unresolved_hooks": {
+      "type": "array",
+      "description": "Hooks registered but not analyzed (IR-01). Each item describes an unresolved callback.",
+      "items": {
+        "type": "object",
+        "required": ["hook_name", "callback", "file", "line"],
+        "properties": {
+          "hook_name": { "type": "string" },
+          "callback":  { "type": "string" },
+          "file":      { "type": "string" },
+          "line":      { "type": "integer" },
+          "reason":    { "type": ["string", "null"] }
+        }
+      }
+    },
+    "coverage_gaps": {
+      "type": "array",
+      "description": "Files/signals not fully analyzed (A-01, Session 13).",
+      "items": {
+        "type": "object",
+        "required": ["file", "signals", "reason"],
+        "properties": {
+          "file":    { "type": "string" },
+          "signals": { "type": "array", "items": { "type": "string" } },
+          "reason":  { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "merge-output.schema.json",
+  "version": "1.0.0",
+  "title": "Merge Output Schema",
+  "description": "Output of the Python merge script that combines per-agent outputs. Contains deduplicated findings plus merge statistics. This schema is also the shape expected by phase3-gate-input.schema.json.",
+  "type": "object",
+  "required": ["plugin_slug", "findings", "merge_stats"],
+  "properties": {
+    "plugin_slug": { "type": "string" },
+    "merge_timestamp": { "type": ["string", "null"], "description": "ISO 8601 timestamp of merge run" },
+    "findings": {
+      "type": "array",
+      "description": "Deduplicated findings from all agents. Each item conforms to the finding shape in agent-output.schema.json, with an additional 'source_agents' field.",
+      "items": {
+        "type": "object",
+        "required": ["finding_id", "verdict", "vuln_type", "severity"],
+        "properties": {
+          "finding_id": { "type": "string" },
+          "verdict":    { "enum": ["TP", "FP", "REVIEW"] },
+          "vuln_type":  { "type": "string" },
+          "cwe_id":     { "type": ["string", "null"] },
+          "severity":   { "enum": ["critical", "high", "medium", "low", "informational"] },
+          "auth_required": {
+            "enum": ["none", "subscriber", "contributor", "author", "editor", "admin", "system", "unknown"]
+          },
+          "confidence":           { "type": "number", "minimum": 0, "maximum": 1 },
+          "entry_point_id":       { "type": ["string", "null"] },
+          "store_entry_point_id": { "type": ["string", "null"] },
+          "load_entry_point_id":  { "type": ["string", "null"] },
+          "source_function":      { "type": ["string", "null"] },
+          "source_file_path":     { "type": ["string", "null"] },
+          "source_line_number":   { "type": ["integer", "null"] },
+          "sink_function":        { "type": ["string", "null"] },
+          "sink_file_path":       { "type": ["string", "null"] },
+          "sink_line_number":     { "type": ["integer", "null"] },
+          "reasoning":            { "type": ["string", "null"] },
+          "fp_reason":            { "type": ["string", "null"] },
+          "fp_evidence":          { "type": ["object", "null"] },
+          "review_reason":        { "type": ["string", "null"] },
+          "poc_description":      { "type": ["string", "null"] },
+          "storage_key":          { "type": ["string", "null"] },
+          "patchstack_eligible":  { "type": ["boolean", "null"] },
+          "remediation":          { "type": ["string", "null"] },
+          "source_agents": {
+            "type": "array",
+            "description": "Agent IDs that reported this finding (may have duplicates deduplicated).",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "merge_stats": {
+      "type": "object",
+      "description": "Statistics about the merge run.",
+      "required": ["total_raw", "total_deduplicated", "agents_included"],
+      "properties": {
+        "total_raw":          { "type": "integer", "description": "Total findings across all agents before dedup" },
+        "total_deduplicated": { "type": "integer", "description": "Findings after deduplication" },
+        "agents_included":    { "type": "array", "items": { "type": "string" }, "description": "agent_id values of all agents merged" },
+        "agents_missing":     { "type": "array", "items": { "type": "string" }, "description": "Expected agents with no output file present" },
+        "tp_count":           { "type": "integer" },
+        "fp_count":           { "type": "integer" },
+        "review_count":       { "type": "integer" }
+      }
+    }
+  }
+}

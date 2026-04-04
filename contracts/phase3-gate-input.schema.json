@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "phase3-gate-input.schema.json",
+  "version": "1.0.0",
+  "title": "Phase 3 Gate Input Schema",
+  "description": "What the Phase 3 gate expects as input. Shape is identical to merge-output.schema.json — duplicated explicitly here (not via $ref) to keep gate validation self-contained and avoid resolver dependencies. Decision note: chose explicit duplication over $ref because (1) gate script must validate standalone without a schema resolver, (2) schema drift between merge-output and gate-input is a deliberate future option if gate gains pre-processing. Canonical source: skill-sets-framework.md:124.",
+  "type": "object",
+  "required": ["plugin_slug", "findings", "merge_stats"],
+  "properties": {
+    "plugin_slug": { "type": "string" },
+    "merge_timestamp": { "type": ["string", "null"] },
+    "findings": {
+      "type": "array",
+      "description": "Deduplicated findings from merge script. Gate iterates these and produces per-finding verdicts.",
+      "items": {
+        "type": "object",
+        "required": ["finding_id", "verdict", "vuln_type", "severity"],
+        "properties": {
+          "finding_id": { "type": "string" },
+          "verdict":    { "enum": ["TP", "FP", "REVIEW"] },
+          "vuln_type":  { "type": "string" },
+          "cwe_id":     { "type": ["string", "null"] },
+          "severity":   { "enum": ["critical", "high", "medium", "low", "informational"] },
+          "auth_required": {
+            "enum": ["none", "subscriber", "contributor", "author", "editor", "admin", "system", "unknown"]
+          },
+          "confidence":           { "type": "number", "minimum": 0, "maximum": 1 },
+          "entry_point_id":       { "type": ["string", "null"] },
+          "store_entry_point_id": { "type": ["string", "null"] },
+          "load_entry_point_id":  { "type": ["string", "null"] },
+          "source_function":      { "type": ["string", "null"] },
+          "source_file_path":     { "type": ["string", "null"] },
+          "source_line_number":   { "type": ["integer", "null"] },
+          "sink_function":        { "type": ["string", "null"] },
+          "sink_file_path":       { "type": ["string", "null"] },
+          "sink_line_number":     { "type": ["integer", "null"] },
+          "reasoning":            { "type": ["string", "null"] },
+          "fp_reason":            { "type": ["string", "null"] },
+          "fp_evidence":          { "type": ["object", "null"] },
+          "review_reason":        { "type": ["string", "null"] },
+          "poc_description":      { "type": ["string", "null"] },
+          "storage_key":          { "type": ["string", "null"] },
+          "patchstack_eligible":  { "type": ["boolean", "null"] },
+          "remediation":          { "type": ["string", "null"] },
+          "source_agents":        { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "merge_stats": {
+      "type": "object",
+      "required": ["total_raw", "total_deduplicated", "agents_included"],
+      "properties": {
+        "total_raw":          { "type": "integer" },
+        "total_deduplicated": { "type": "integer" },
+        "agents_included":    { "type": "array", "items": { "type": "string" } },
+        "agents_missing":     { "type": "array", "items": { "type": "string" } },
+        "tp_count":           { "type": "integer" },
+        "fp_count":           { "type": "integer" },
+        "review_count":       { "type": "integer" }
+      }
+    }
+  }
+}

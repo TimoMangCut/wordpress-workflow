@@ -1,0 +1,116 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "agent-output.schema.json",
+  "version": "1.0.0",
+  "title": "Agent Output Schema",
+  "description": "Per-agent findings output. Merge script validates against this before passing downstream — schema mismatch is a hard error. Canonical source: skill-sets-framework.md:189-300.",
+  "type": "object",
+  "required": ["agent_id", "plugin_slug", "findings"],
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "Agent identifier: agent-a1, agent-a2, agent-b, agent-c, agent-d"
+    },
+    "plugin_slug": { "type": "string" },
+    "execution_time_ms": { "type": "integer" },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["finding_id", "verdict", "vuln_type", "severity"],
+        "properties": {
+          "finding_id": { "type": "string" },
+          "verdict": { "enum": ["TP", "FP", "REVIEW"] },
+          "vuln_type": { "type": "string" },
+          "cwe_id": { "type": ["string", "null"] },
+          "severity": { "enum": ["critical", "high", "medium", "low", "informational"] },
+          "auth_required": {
+            "enum": ["none", "subscriber", "contributor", "author", "editor", "admin", "system", "unknown"]
+          },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "entry_point_id": {
+            "type": ["string", "null"],
+            "description": "Primary EP for gate resolution. For single-EP findings: the EP. For stored/cross-EP flows: MUST = load_entry_point_id (load-leg has the sink). Gate uses this for file/path/guard checks."
+          },
+          "store_entry_point_id": {
+            "type": ["string", "null"],
+            "description": "For stored/cross-EP flows (Agent B): EP that writes to storage with user input. Null for single-EP. Gate needs this for write-leg auth validation (see GAP G-05)."
+          },
+          "load_entry_point_id": {
+            "type": ["string", "null"],
+            "description": "For stored/cross-EP flows (Agent B): EP that reads from storage and hits sink. Null for single-EP. Must equal entry_point_id when present."
+          },
+          "source_function":    { "type": ["string", "null"] },
+          "source_file_path":   { "type": ["string", "null"] },
+          "source_line_number": { "type": ["integer", "null"] },
+          "sink_function":      { "type": ["string", "null"] },
+          "sink_file_path":     { "type": ["string", "null"] },
+          "sink_line_number":   { "type": ["integer", "null"] },
+          "reasoning": {
+            "type": ["string", "null"],
+            "description": "Required for TP and REVIEW. Must contain traced data-flow reasoning with code references (file:line) per AppSec methodology."
+          },
+          "fp_reason":   { "type": ["string", "null"], "description": "Required for FP" },
+          "fp_evidence": { "type": ["object", "null"], "description": "Required for FP: {defense, file, line}" },
+          "review_reason": {
+            "type": ["string", "null"],
+            "description": "Required for REVIEW: why uncertain + what additional evidence or test would resolve"
+          },
+          "poc_description":      { "type": ["string", "null"] },
+          "storage_key":          { "type": ["string", "null"], "description": "For stored/second-order flows" },
+          "patchstack_eligible":  { "type": ["boolean", "null"] },
+          "remediation":          { "type": ["string", "null"] }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "verdict": { "const": "TP" } } },
+            "then": {
+              "required": [
+                "entry_point_id", "reasoning",
+                "source_file_path", "source_line_number", "source_function",
+                "sink_file_path", "sink_line_number", "sink_function"
+              ]
+            }
+          },
+          {
+            "if": { "properties": { "verdict": { "const": "FP" } } },
+            "then": {
+              "required": ["fp_reason", "fp_evidence"]
+            }
+          },
+          {
+            "if": { "properties": { "verdict": { "const": "REVIEW" } } },
+            "then": {
+              "required": ["review_reason"]
+            }
+          },
+          {
+            "if": {
+              "properties": { "store_entry_point_id": { "type": "string", "minLength": 1 } },
+              "required": ["store_entry_point_id"]
+            },
+            "then": {
+              "required": ["load_entry_point_id", "storage_key", "entry_point_id"],
+              "properties": {
+                "entry_point_id": {
+                  "description": "MUST equal load_entry_point_id for stored/cross-EP flows"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "negative_findings": {
+      "type": "array",
+      "description": "Areas reviewed and found secure",
+      "items": {
+        "type": "object",
+        "properties": {
+          "area":   { "type": "string" },
+          "reason": { "type": "string" }
+        }
+      }
+    }
+  }
+}
