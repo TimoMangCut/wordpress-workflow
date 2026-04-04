@@ -187,10 +187,10 @@ Nếu không kịp hoàn thành contract minimum trước Session 12:
 |---|---------|-----------------|----------|
 | 1 | Orchestration: file-based handoff vs direct CLI? | File-based (plan) | Session 18 |
 | 2 | Agent A: 5 EP groups hay consolidate? | 5 groups (plan) | Session 15 |
-| 3 | Claude Code verify: top-3 hay top-5? | TBD | Session 19 |
-| 4 | Agent prompts: reuse phase2 hay write new? | TBD | Session 20 |
+| 3 | Claude Code verify: top-3 hay top-5? | **top-3** ✅ (locked Session 24 — context budget, S5 skill set design) | Session 19 |
+| 4 | Agent prompts: reuse phase2 hay write new? | **write new** ✅ (locked Session 24 — SKILL SETs S1-S5 are purpose-built, implemented Sessions 20-21) | Session 20 |
 | **5** | **Codex accounts:** | **4-8 (confirmed)** | ✅ |
-| **6** | **Parallel limit:** | **Chưa rõ — cần test** | Session 18 |
+| **6** | **Parallel limit:** | **1 (serial-by-default)** ✅ (locked Session 24 — quota safety; use --parallel-limit N to override) | Session 18 |
 
 > **Action cần làm trước Session 18:** Test chạy 2 Codex agents song song, measure quota hit rate. Quyết định concurrency ceiling từ kết quả thực tế.
 
@@ -1219,7 +1219,8 @@ Trong `phase3_gate.py`:
 [x] Session 21: SKILL SET Claude Code Verify   ← 2026-04-04
 [x] Session 22: Step 4 Benchmark (→ USER REVIEW ④)   ← 2026-04-04
 [x] Session 23: First multi-agent pipeline run — Wave 4 S1+S2 for 3 benchmark plugins   ← 2026-04-05
-Session 24: Pipeline fixes + Open Decisions lock + Wave 4 agents C+D completion
+[x] Session 24: Pipeline fixes (DI-23-01-03) + Open Decisions lock + Codex Round 3 (quota safety, provider routing, resume flag)   ← 2026-04-05
+Session 25: Agents C+D completion + wave_4_results.json finalize + S5 (Claude Code Verify) runs
 ```
 
 Details sẽ được spec-out khi đến thời điểm (sau Session 19).

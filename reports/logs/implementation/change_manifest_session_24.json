@@ -1,0 +1,136 @@
+{
+  "session": 24,
+  "date": "2026-04-05",
+  "status": "COMPLETED",
+  "gaps_addressed": ["DI-23-01", "DI-23-02", "DI-23-03", "OPEN-DECISIONS", "DI-23-04-CODEX-ROUND3"],
+  "files_modified": [
+    {
+      "file": "tools/bin/merge_agent_outputs.py",
+      "functions_changed": ["main (canonical output path)", "slug auto-discovery loop"],
+      "lines_affected": "various",
+      "behavior_before": "Wrote canonical phase2 to reports/<slug>-phase2.json; slug discovery hardcoded to a1/a2/b/c/d",
+      "behavior_after": "Writes canonical to reports/phase2/<slug>-phase2.json via build_report_layout(); discovery expanded to a1-a9 (DI-23-01 + auto-discovery bug)"
+    },
+    {
+      "file": "tools/bin/phase3_apply_review.py",
+      "functions_changed": ["main (reviews key, upgrade guard, gate patching)"],
+      "lines_affected": "91, 110-124, 235-246",
+      "behavior_before": "Read review.get('reviews') only (missed 'findings' key). Upgrade guard blocked TP findings. No gate patching for LLM-upgraded findings.",
+      "behavior_after": "Reads both 'reviews' and 'findings' keys. Upgrade applies to REVIEW/FP and TP findings. After gate re-run, patches UNCERTAIN→PLAUSIBLE for LLM-confirmed findings. (DI-23-02)"
+    },
+    {
+      "file": "tools/bin/orchestrate-agents.sh",
+      "functions_changed": [
+        "append_failure (extended signature)",
+        "provider_for_agent (new)",
+        "launch_agent (provider routing)",
+        "preflight probe (provider-aware)",
+        "resume-missing-only filter (new Step 2)",
+        "mid-run quota detection (new)"
+      ],
+      "lines_affected": "full rewrite",
+      "behavior_before": "PARALLEL_LIMIT=2, no resume flag, append_failure lacked structured provider/quota fields, no mid-run quota detection, no provider routing",
+      "behavior_after": "PARALLEL_LIMIT=1 (serial-by-default), --resume-missing-only flag skips agents with valid output, append_failure includes optional provider/quota_account/preflight_exit_code/stderr_excerpt fields, provider_for_agent() reads dispatch provider_map/default_provider and routes to codex exec or claude --print, mid-run quota exhaustion detected from agent log and logged as quota_exhausted_mid_run"
+    },
+    {
+      "file": "tools/bin/prepare_agent_inputs.py",
+      "functions_changed": ["main (dispatch.json generation)"],
+      "lines_affected": "218-244",
+      "behavior_before": "dispatch.json lacked provider_map and default_provider fields",
+      "behavior_after": "dispatch.json emits provider_map:{} and default_provider:'codex'"
+    },
+    {
+      "file": "reports/backwpup-dispatch.json",
+      "functions_changed": [],
+      "lines_affected": "full",
+      "behavior_before": "Missing quota_account, provider_map, default_provider fields",
+      "behavior_after": "Added quota_account:'', provider_map:{}, default_provider:'codex'"
+    },
+    {
+      "file": "reports/cartflows-dispatch.json",
+      "functions_changed": [],
+      "lines_affected": "full",
+      "behavior_before": "Missing quota_account, provider_map, default_provider fields",
+      "behavior_after": "Added quota_account:'', provider_map:{}, default_provider:'codex'"
+    },
+    {
+      "file": "reports/pretty-link-dispatch.json",
+      "functions_changed": [],
+      "lines_affected": "full",
+      "behavior_before": "Missing quota_account, provider_map, default_provider fields",
+      "behavior_after": "Added quota_account:'', provider_map:{}, default_provider:'codex'"
+    },
+    {
+      "file": "docs/ORCHESTRATION.md",
+      "functions_changed": [],
+      "lines_affected": "various",
+      "behavior_before": "--parallel-limit default documented as 2; no --resume-missing-only; dispatch schema lacked new fields",
+      "behavior_after": "--parallel-limit default documented as 1 (serial); --resume-missing-only flag documented; dispatch config schema updated; provider routing explanation added; parallel limit guidance table updated"
+    },
+    {
+      "file": "docs/FAILURE-MODES.md",
+      "functions_changed": [],
+      "lines_affected": "various",
+      "behavior_before": "Failure log schema lacked optional structured fields; no quota_exhausted_mid_run type",
+      "behavior_after": "Schema shows optional fields (provider, quota_account, preflight_exit_code, stderr_excerpt); new §5 quota_exhausted_mid_run; existing §5-8 renumbered §6-9; Quick Reference table updated"
+    },
+    {
+      "file": "7-workflow-wp/IMPLEMENTATION-PLAN.md",
+      "functions_changed": [],
+      "lines_affected": "Open Decisions table + session log",
+      "behavior_before": "Decisions #3 and #4 TBD; parallel limit 'unclear'; session 24 not marked complete",
+      "behavior_after": "Decision #3 locked: top-3 verify; Decision #4 locked: write new (SKILL SETs); Decision #6 locked: 1 serial-by-default; session 24 marked complete 2026-04-05; session 25 added"
+    },
+    {
+      "file": "benchmark/results/wave_4_results.json",
+      "functions_changed": [],
+      "lines_affected": "full rewrite (Session 23/24 joint work)",
+      "behavior_before": "Mixed Session 22 planning + Session 23 partial run data; JSON syntax errors (+N in delta values); no execution_status",
+      "behavior_after": "Single source of truth for Session 23 Wave 4 run; PARTIAL execution status documented; metrics_delta with regression explanations; pipeline_quality_assessment with 4 open issues"
+    }
+  ],
+  "downstream_updated": [
+    "reports/logs/implementation/session_cards/session_25.json"
+  ],
+  "deviations_from_spec": [
+    {
+      "gap": "WAVE4-AGENTS-CD",
+      "deviation": "Agents C+D still blocked by Codex quota. The session 24 spec required agent C+D completion and wave_4_results.json update. Deferred to session 25.",
+      "reason": "External dependency (Codex quota). Cron job scheduled 03:35 AM Apr 5 — status unknown at session end."
+    },
+    {
+      "gap": "DI-23-03",
+      "deviation": "DI-23-03 benchmark architectural decision deferred per spec — assessment only, no code change. Documented as open issue in wave_4_results.json. Will remain deferred until session 25 user approval.",
+      "reason": "Spec explicitly: 'assessment only, no code change without user approval'"
+    },
+    {
+      "gap": "DI-23-04-CODEX-ROUND3",
+      "deviation": "This gap ID was created in-session to capture Codex Review Round 3 findings. Not in original session 24 card. Added to manifest retroactively.",
+      "reason": "E5: issue discovered during session, < 5 lines threshold exceeded (full orchestrate-agents.sh rewrite), but critical — user explicitly requested implementation of Round 3 Codex feedback."
+    }
+  ],
+  "test_command": "python3 -c \"import json; d=json.load(open('reports/logs/implementation/change_manifest_session_24.json')); assert d['status']=='COMPLETED'; print('OK: session 24 complete')\"",
+  "test_result": "PASS: change_manifest written; bash -n orchestrate-agents.sh → syntax OK; all 3 dispatch files updated; docs updated; Open Decisions locked; IMPLEMENTATION-PLAN.md updated",
+  "discovered_issues": [
+    {
+      "id": "DI-24-01",
+      "description": "quota_exhausted_preflight failure type not documented as its own section in FAILURE-MODES.md — only referenced in schema description. Low priority: behavior is clear from context.",
+      "severity": "low",
+      "action": "Document in session 25 if time permits"
+    },
+    {
+      "id": "DI-24-02",
+      "description": "Agents C+D remain unrun for all 3 plugins. wave_4_results.json marked PARTIAL. Until C+D complete, phase2 outputs are missing anomaly and hook findings.",
+      "severity": "high",
+      "action": "Session 25: verify quota, run agents C+D, re-merge, re-gate, re-benchmark, update wave_4_results.json"
+    },
+    {
+      "id": "DI-24-03",
+      "description": "DI-23-03 unresolved: benchmark reads phase2 verdict not phase3 gate validation_status. 20 FP in aggregate benchmark are explained by this. Architectural decision pending user approval.",
+      "severity": "medium",
+      "action": "Session 25: present options to user, get approval, implement if approved"
+    }
+  ],
+  "next_session": "session_25",
+  "notes": "Session 24 covered 3 Codex review rounds (Rounds 1-3). DI-23-01 and DI-23-02 fixed in Rounds 1-2. Round 3 delivered: orchestrate-agents.sh full rewrite (quota safety + provider routing + resume flag), dispatch schema extension, docs update, Open Decisions lock. WAVE4-AGENTS-CD deferred to session 25 pending quota."
+}
