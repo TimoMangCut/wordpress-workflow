@@ -29,7 +29,17 @@
     }
   ],
   "test_command": "python3 tools/bin/prepare_agent_inputs.py --ir reports/phase1/call-chain-test-ir.json --semgrep reports/phase1/call-chain-test-semgrep.json --output-dir /tmp/slice-test && python3 -c \"import json; [json.load(open(f)) and print('OK:', f) for f in __import__('glob').glob('/tmp/slice-test/*.json')]\"",
-  "test_result": "PASS: 10 files produced (5 IR slices + 5 semgrep-filtered). All files parse as valid JSON. All IR slices validated against ir-slice.schema.json. EP type filtering correct (ajax-unauth group: 2 eps, all others: 0 eps — test IR only has ajax_nopriv EPs). unresolved_hooks=[] and coverage_gaps=[] in all slices.",
+  "test_result": "PASS (post-fix): 10 files produced (5 IR slices + 5 semgrep-filtered). All schema-valid. backwpup: 47 semgrep results → rest=15, other=9 hits (correct). cartflows: 324 semgrep results → ajax-auth=29, other=72, rest=22, shortcode=19, ajax-unauth=3 (correct). call-chain-test stub: 0 hits (correct, stub is empty).",
+  "post_session_fix": {
+    "reported_by": "Codex post-review",
+    "issue": "filter_semgrep_for_group() matched r['path'] (absolute) against ep_files (plugin-relative), producing semgrep_hits=0 on ALL real artifacts. backwpup: 47 results → 0 hits. cartflows: 324 results → 0 hits.",
+    "root_causes": [
+      "Path mismatch: semgrep uses absolute paths (e.g. '/Volumes/.../plugins/backwpup/inc/class-admin.php'), IR uses plugin-relative paths ('inc/class-admin.php')",
+      "ep_files only included entry_points[].file (registration file), missing callback.file (handler file where semgrep hits actually appear)"
+    ],
+    "fix": "1. Normalise semgrep absolute paths to plugin-relative using 'plugins/<slug>/' marker before comparison. 2. Build ep_files from entry_points[].file AND entry_points[].callback.file.",
+    "verified_on": ["backwpup (47 results → 24 hits across groups)", "cartflows (324 results → 145 hits across groups)"]
+  },
   "discovered_issues": [
     {
       "id": "DI-16-01",
@@ -39,5 +49,5 @@
     }
   ],
   "next_session": "session_17",
-  "notes": "phase3-gate-output.schema.json already existed (DI-15-01 resolved). No stub creation needed."
+  "notes": "phase3-gate-output.schema.json already existed (DI-15-01 resolved). No stub creation needed. Semgrep fix committed separately (43c0707) after Codex post-review on benchmark artifacts."
 }
