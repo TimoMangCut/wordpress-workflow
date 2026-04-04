@@ -1,0 +1,35 @@
+{
+  "session": 17,
+  "date": "2026-04-04",
+  "status": "COMPLETED",
+  "gaps_addressed": ["MERGE-AGENT-OUTPUTS"],
+  "files_modified": [
+    {
+      "file": "tools/bin/merge_agent_outputs.py",
+      "functions_changed": [
+        "_make_dedup_key",
+        "_merge_group",
+        "merge_agent_findings",
+        "_collect_input_files",
+        "main"
+      ],
+      "lines_affected": "1-520",
+      "behavior_before": "File did not exist.",
+      "behavior_after": "New script. Phase 2.5 Deterministic Merge. Accepts per-agent JSON files via --agent-{a1,a2,b,c,d} flags, --agents glob, or positional slug. Validates each agent output against contracts/agent-output.schema.json (reject malformed, continue). Merges findings by dedup key: Single-EP=(single, ep_id, sink_file, sink_line_bucket±5, vuln_type), Stored/cross-EP=(stored, store_ep_id, load_ep_id, storage_key, vuln_type). Same-verdict duplicates: merge evidence, keep highest confidence, record agent_agreement. Conflicts (different verdict same key): preserve merged finding with conflict=True, conflicting_verdicts list. Validates merged output against contracts/merge-output.schema.json (hard error on mismatch). Writes reports/<slug>-phase2-merged.json (archive) and reports/<slug>-phase2.json (canonical for gate)."
+    }
+  ],
+  "downstream_updated": [],
+  "deviations_from_spec": [
+    {
+      "location": "merge_stats field names",
+      "spec_says": "session card critical_notes: merge_stats required fields include 'total_findings'",
+      "source_ref_says": "contracts/merge-output.schema.json requires 'total_raw' and 'total_deduplicated' (not 'total_findings')",
+      "resolution": "Used total_raw + total_deduplicated per E1 (schema is authoritative contract). Also included duplicates_merged, conflicts_flagged, schema_errors, tp_count, fp_count, review_count as additional stats not prohibited by schema."
+    }
+  ],
+  "test_command": "python3 tools/bin/merge_agent_outputs.py --help && echo 'CLI OK'",
+  "test_result": "PASS: CLI OK. All 8 test cases verified: (T1) --help exits cleanly; (T2) same-verdict dedup → 1 finding, agent_agreement=2, duplicates_merged=1; (T3) conflict → conflict=True, conflicting_verdicts present, conflicts_flagged=1; (T4) malformed agent skipped (schema_errors=1), valid agent processed; (T5) merged output validates against merge-output.schema.json; (T6) merge_stats has all required fields + agents_missing populated; (T7) -phase2-merged.json and -phase2.json both written; (T8) no existing files modified.",
+  "discovered_issues": [],
+  "next_session": "session_18",
+  "notes": "T7 in test harness initially showed false FAIL due to slug mismatch in test fixture ('myplugin' vs 'test-plugin'). Script behavior confirmed correct with explicit re-run. No code change needed."
+}

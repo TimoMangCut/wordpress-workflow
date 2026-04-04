@@ -1,0 +1,62 @@
+{
+  "session": 18,
+  "title": "Orchestration Shell Script + Docs",
+  "status": "PENDING",
+  "created_by_session": 17,
+  "wave": "Wave 4",
+  "dependencies": [
+    {
+      "session": 17,
+      "reason": "merge_agent_outputs.py must exist — orchestrate-agents.sh calls it as step 5 in the pipeline"
+    },
+    {
+      "session": 16,
+      "reason": "prepare_agent_inputs.py must exist — orchestration pipeline starts with IR slicing"
+    }
+  ],
+  "gaps": ["ORCHESTRATION"],
+  "critical_notes": [
+    "New files only: tools/bin/orchestrate-agents.sh, docs/ORCHESTRATION.md, docs/FAILURE-MODES.md. Do NOT modify existing Python or PHP files.",
+    "Architecture: file-based handoff (Open Decision 1, confirmed). Bash script reads dispatch config, launches Codex CLI per agent, polls for completion, calls merge script.",
+    "Open Decision 6 (parallel limit) default: parallel_limit=2 (conservative). Script should accept --parallel-limit N override.",
+    "Pipeline steps per multi-agent-plan.md:419-444: (1) Read dispatch config → (2) Launch agents (parallel up to limit) → (3) Poll for output files + valid JSON → (4) Call merge_agent_outputs.py → (5) touch <slug>-merge-ready sentinel.",
+    "Dispatch config shape: reports/<slug>-dispatch.json — slug, agents[], inputs{}, source_dir, timeout_seconds. See multi-agent-plan.md:406-417.",
+    "Each agent writes: reports/<slug>-agent-{id}.json. Polling: check file exists AND is valid JSON (python3 -c 'import json,sys; json.load(open(sys.argv[1]))' or jq).",
+    "Failure modes to document: agent timeout, quota rejection, invalid JSON output, missing output file. Script must handle each gracefully (log + continue or abort with clear message).",
+    "Do NOT implement Phase 2.9 Claude Code Verify step — separate concern (Session 21)."
+  ],
+  "files_to_read": [
+    {
+      "file": "7-workflow-wp/multi-agent-plan.md",
+      "line_range": "400-445",
+      "reason": "Section 11 Orchestration — file-based handoff steps, dispatch config shape, polling, merge call, sentinel file"
+    },
+    {
+      "file": "7-workflow-wp/multi-agent-plan.md",
+      "line_range": "446-520",
+      "reason": "Section 12 Failure modes — timeouts, quota, invalid output, missing output"
+    }
+  ],
+  "spec": {
+    "ORCHESTRATION": {
+      "source_ref": "multi-agent-plan.md:400-520",
+      "file": "tools/bin/orchestrate-agents.sh (new), docs/ORCHESTRATION.md (new), docs/FAILURE-MODES.md (new)",
+      "change": "Bash orchestrator: reads reports/<slug>-dispatch.json, launches Codex CLI agents (up to --parallel-limit N, default 2), polls for output files, calls python3 tools/bin/merge_agent_outputs.py <slug>, writes reports/<slug>-merge-ready sentinel. ORCHESTRATION.md: pipeline usage guide. FAILURE-MODES.md: handling for timeout, quota, invalid JSON, missing output.",
+      "note": "If spec here conflicts with source_ref → source_ref wins. multi-agent-plan.md:400-520 is authoritative."
+    }
+  },
+  "downstream_required": [],
+  "test_command": "bash tools/bin/orchestrate-agents.sh --help && echo 'CLI OK'",
+  "test_cases": [
+    "Script accepts --help without error",
+    "Script reads dispatch config correctly (can parse reports/<slug>-dispatch.json)",
+    "Script launches at most --parallel-limit agents concurrently",
+    "Script polls for output files and detects valid JSON",
+    "Script calls merge_agent_outputs.py after agents complete",
+    "Script writes <slug>-merge-ready sentinel on success",
+    "Script handles missing agent output gracefully (logs error, continues or aborts per spec)",
+    "No existing PHP or Python files modified"
+  ],
+  "commit_message": "Session 18: orchestration script — tools/bin/orchestrate-agents.sh + docs",
+  "next_session_preview": "Session 19 — G-05: Gate update for stored/cross-EP flows in phase3_gate.py. Spec in gap-analysis-final.md G-05 and multi-agent-plan.md section 10. Dependencies: Session 3 (IR-07), Session 15 (contracts). Deploy together with multi-agent Step 4."
+}
