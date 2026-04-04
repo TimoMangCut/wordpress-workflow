@@ -1,0 +1,43 @@
+{
+  "session": 16,
+  "date": "2026-04-04",
+  "status": "COMPLETED",
+  "gaps_addressed": ["IR-SLICING"],
+  "files_modified": [
+    {
+      "file": "tools/bin/prepare_agent_inputs.py",
+      "functions_changed": ["slice_ir_for_group", "filter_semgrep_for_group", "validate_slice", "write_json", "main"],
+      "lines_affected": "1-191",
+      "behavior_before": "File did not exist.",
+      "behavior_after": "New script. Accepts --ir, --semgrep, --output-dir CLI args. Produces 5 IR slice JSON files (one per EP group) + 5 semgrep-filtered JSON files. Validates each IR slice against contracts/ir-slice.schema.json via jsonschema.validate() — exits non-zero on validation failure."
+    },
+    {
+      "file": "reports/phase1/call-chain-test-semgrep.json",
+      "functions_changed": [],
+      "lines_affected": "1-9",
+      "behavior_before": "File did not exist (test fixture missing).",
+      "behavior_after": "Stub semgrep file for call-chain-test plugin — empty results array, valid semgrep output shape."
+    }
+  ],
+  "downstream_updated": [],
+  "deviations_from_spec": [
+    {
+      "location": "slice_ir_for_group() — coverage_gaps return value",
+      "spec_says": "multi-agent-plan.md:268 shows coverage_gaps: {} (empty dict)",
+      "source_ref_says": "contracts/ir-slice.schema.json type:array maxItems:0 — must be []",
+      "resolution": "Returned [] per E1 (source_ref wins). Schema is the authoritative contract."
+    }
+  ],
+  "test_command": "python3 tools/bin/prepare_agent_inputs.py --ir reports/phase1/call-chain-test-ir.json --semgrep reports/phase1/call-chain-test-semgrep.json --output-dir /tmp/slice-test && python3 -c \"import json; [json.load(open(f)) and print('OK:', f) for f in __import__('glob').glob('/tmp/slice-test/*.json')]\"",
+  "test_result": "PASS: 10 files produced (5 IR slices + 5 semgrep-filtered). All files parse as valid JSON. All IR slices validated against ir-slice.schema.json. EP type filtering correct (ajax-unauth group: 2 eps, all others: 0 eps — test IR only has ajax_nopriv EPs). unresolved_hooks=[] and coverage_gaps=[] in all slices.",
+  "discovered_issues": [
+    {
+      "id": "DI-16-01",
+      "description": "call-chain-test-semgrep.json stub was missing — test command would have failed without it. Created minimal stub (empty results) to enable test. A real semgrep scan output for this test plugin would improve coverage.",
+      "severity": "low",
+      "action": "none-blocking"
+    }
+  ],
+  "next_session": "session_17",
+  "notes": "phase3-gate-output.schema.json already existed (DI-15-01 resolved). No stub creation needed."
+}
