@@ -1,0 +1,55 @@
+{
+  "session": 22,
+  "title": "Step 4 Benchmark — End-to-End Pipeline Run",
+  "status": "PENDING",
+  "created_by_session": 21,
+  "wave": "Wave 4",
+  "dependencies": [
+    {
+      "session": 21,
+      "reason": "S5 (Claude Code Verify) SKILL SET must exist — benchmark run includes the full pipeline through verify step"
+    },
+    {
+      "session": 20,
+      "reason": "Agent A-D SKILL SETs must exist and pass post-review — benchmark uses these as execution instructions"
+    }
+  ],
+  "gaps": ["BENCHMARK-WAVE4"],
+  "critical_notes": [
+    "This is Step 4 Benchmark: run the end-to-end multi-agent pipeline on benchmark plugins with all SKILL SETs (S1-S5) deployed. Compare outputs vs ground truth. Generate wave_4_results.json.",
+    "Benchmark plugins are the standard set used in previous waves — check benchmark/ directory for existing baseline.json and plugin slugs.",
+    "Output artifact: benchmark/results/wave_4_results.json. This is required for session 22 → validate-wave 4 call.",
+    "USER REVIEW ④ follows this session — see IMPLEMENTATION-PLAN.md:1221. Generate results and wait for user review before session 23.",
+    "Do not modify SKILL SET files during benchmark run — if issues found, note in discovered_issues for session 23 tuning."
+  ],
+  "files_to_read": [
+    {
+      "file": "7-workflow-wp/IMPLEMENTATION-PLAN.md",
+      "line_range": "1215-1230",
+      "reason": "Session 22 scope: Step 4 Benchmark description and USER REVIEW ④ gate"
+    },
+    {
+      "file": "benchmark/results/baseline.json",
+      "line_range": "full",
+      "reason": "Baseline metrics to compare against wave 4 results"
+    }
+  ],
+  "spec": {
+    "BENCHMARK-WAVE4": {
+      "source_ref": "IMPLEMENTATION-PLAN.md:1220-1221",
+      "file": "benchmark/results/wave_4_results.json",
+      "change": "Run end-to-end multi-agent pipeline (Agents A, B, C, D + S5 Verify) on benchmark plugins. Compare results against baseline.json. Generate wave_4_results.json with metrics delta, per-agent stats, and overall pipeline quality assessment.",
+      "note": "If spec here conflicts with source_ref → source_ref wins."
+    }
+  },
+  "downstream_required": [],
+  "test_command": "python3 -c \"import os; f='benchmark/results/wave_4_results.json'; print('OK:', f) if os.path.exists(f) else print('MISSING:', f)\"",
+  "test_cases": [
+    "benchmark/results/wave_4_results.json exists",
+    "wave_4_results.json contains metrics_delta vs baseline",
+    "wave_4_results.json covers all benchmark plugins",
+    "wave_4_results.json documents per-agent output quality"
+  ],
+  "commit_message": "Session 22: Wave 4 benchmark results — end-to-end pipeline run",
+  "next_session_preview": "Session 23 — Open Decisions finalize + Wave 3 impact re-run + tuning. Fix any issues discovered during benchmark. Update SKILL SETs if needed based on benchmark results."
+}
