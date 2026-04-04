@@ -75,8 +75,9 @@ python3 tools/bin/prepare_agent_inputs.py <slug>
 ```bash
 bash tools/bin/orchestrate-agents.sh <slug>
 # Optional overrides:
-bash tools/bin/orchestrate-agents.sh <slug> --parallel-limit 1   # quota-limited
+bash tools/bin/orchestrate-agents.sh <slug> --parallel-limit 2   # parallel (quota-permitting)
 bash tools/bin/orchestrate-agents.sh <slug> --timeout 1200        # longer timeout
+bash tools/bin/orchestrate-agents.sh <slug> --resume-missing-only # skip already-completed agents
 ```
 
 **Step 4: Verify merge output**
@@ -103,13 +104,24 @@ bash tools/bin/run-phase3.sh --slug <slug>
     "agent-a1": "reports/<slug>-ir-slice-ajax-unauth.json",
     "agent-a2": "reports/<slug>-ir-slice-ajax-auth.json",
     "agent-b":  "reports/<slug>-ir.json",
-    "agent-c":  "reports/<slug>-ir-slice-shortcode.json",
-    "agent-d":  "reports/<slug>-ir-slice-rest.json"
+    "agent-c":  "reports/<slug>-ir.json",
+    "agent-d":  "reports/<slug>-ir.json"
   },
   "source_dir": "plugins/<slug>/",
-  "timeout_seconds": 900
+  "timeout_seconds": 600,
+  "quota_account": "",
+  "provider_map": {
+    "agent-c": "claude",
+    "agent-d": "claude"
+  },
+  "default_provider": "codex"
 }
 ```
+
+**Provider routing:**
+- `default_provider`: used for any agent not listed in `provider_map`. Values: `"codex"` (Codex CLI) | `"claude"` (Claude Code CLI).
+- `provider_map`: per-agent override. Leave empty (`{}`) to use `default_provider` for all agents.
+- `quota_account`: optional string to tag which Codex account was used (for traceability across quota exhaustion events). Set via `CODEX_QUOTA_ACCOUNT` env var before running `prepare_agent_inputs.py`.
 
 ---
 
@@ -122,10 +134,11 @@ Arguments:
   <slug>                Plugin slug (e.g. woocommerce)
 
 Options:
-  --parallel-limit N    Max agents running concurrently (default: 2)
-  --timeout N           Timeout in seconds per agent (overrides dispatch config)
-  --dispatch-file PATH  Path to dispatch config JSON
-  --help                Show usage message
+  --parallel-limit N       Max agents running concurrently (default: 1, serial)
+  --timeout N              Timeout in seconds per agent (overrides dispatch config)
+  --dispatch-file PATH     Path to dispatch config JSON
+  --resume-missing-only    Skip agents whose valid output file already exists
+  --help                   Show usage message
 ```
 
 ---
@@ -164,10 +177,21 @@ from merge_agent_outputs.py. See `multi-agent-plan.md:439-444`.
 
 | Scenario | Recommended --parallel-limit |
 |----------|-------------------------------|
-| Normal quota | 2 (default) |
-| High quota / fast run needed | 3–4 |
+| Normal quota | 1 (default, serial) |
+| High quota / fast run needed | 2–4 |
 | Quota-limited / shared account | 1 |
 | Single-agent debug | 1 |
+
+**Why serial-by-default:** Codex quota is metered per request. Running agents in
+parallel risks exhausting quota mid-run, leaving partial output that must be
+resumed. Use `--parallel-limit 2` or higher only when quota is confirmed available.
+
+**Resuming after quota exhaustion:**
+```bash
+bash tools/bin/orchestrate-agents.sh <slug> --resume-missing-only
+```
+This skips any agent whose output file already exists and is valid JSON, then
+runs the remaining agents serially.
 
 ---
 

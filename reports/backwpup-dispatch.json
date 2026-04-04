@@ -21,5 +21,8 @@
     "agent-d": "reports/phase1/backwpup-ir.json"
   },
   "source_dir": "plugins/backwpup/",
-  "timeout_seconds": 600
+  "timeout_seconds": 600,
+  "quota_account": "",
+  "provider_map": {},
+  "default_provider": "codex"
 }

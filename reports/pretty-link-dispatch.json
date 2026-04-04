@@ -21,5 +21,8 @@
     "agent-d": "reports/phase1/pretty-link-ir.json"
   },
   "source_dir": "plugins/pretty-link/",
-  "timeout_seconds": 600
+  "timeout_seconds": 600,
+  "quota_account": "",
+  "provider_map": {},
+  "default_provider": "codex"
 }

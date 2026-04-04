@@ -26,11 +26,21 @@ Format:
       "timestamp": "2025-01-15T10:30:00Z",
       "retry_count": 1,
       "resolution": "skipped",
-      "impact": "AJAX auth findings may be incomplete"
+      "impact": "AJAX auth findings may be incomplete",
+      "provider": "codex",
+      "quota_account": "acct-abc123",
+      "preflight_exit_code": 0,
+      "stderr_excerpt": "…first 500 chars of agent stderr…"
     }
   ]
 }
 ```
+
+**Optional fields** (present only when non-empty):
+- `provider` — which CLI ran the agent: `"codex"` or `"claude"`
+- `quota_account` — value of `CODEX_QUOTA_ACCOUNT` env var at run time (traceability)
+- `preflight_exit_code` — exit code from pre-run quota probe (quota_exhausted_preflight only)
+- `stderr_excerpt` — first 500 chars of agent stderr (quota_exhausted_mid_run, timeout)
 
 The file is written at the end of every orchestration run, even on success (empty `failures` array).
 
@@ -149,7 +159,45 @@ This is expected behavior, not an error.
 
 ---
 
-### 5. All Agents Fail
+### 5. Quota Exhausted (Mid-Run)
+
+**Condition:** An agent process exits early (non-zero exit, no output file) and
+its stderr contains keywords `usage limit`, `usage exhausted`, `rate limit`, or
+`quota`.
+
+**Action:**
+1. Log `failure_type: "quota_exhausted_mid_run"`, `resolution: "skipped"`.
+2. Include `provider`, `quota_account`, and `stderr_excerpt` (first 500 chars)
+   in the failure entry for traceability.
+3. Emit a `log_warn` with resume instructions.
+4. Remaining pending agents in the current run are still launched (do not abort).
+
+**Downstream impact:** Findings for this agent's EP group absent from merge.
+Other agents are unaffected.
+
+**Log entry example:**
+```json
+{
+  "failure_type": "quota_exhausted_mid_run",
+  "agent": "agent-c",
+  "retry_count": 0,
+  "resolution": "skipped",
+  "impact": "Agent-C (anomaly scan) absent — anomaly findings missing from phase2",
+  "provider": "codex",
+  "quota_account": "acct-abc123",
+  "stderr_excerpt": "Error: usage exhausted for this account. Please try again…"
+}
+```
+
+**Recovery:**
+```bash
+# After quota resets:
+bash tools/bin/orchestrate-agents.sh <slug> --resume-missing-only
+```
+
+---
+
+### 6. All Agents Fail
 
 **Condition:** Every agent in the dispatch config either times out, writes no
 output, or writes malformed JSON.
@@ -179,7 +227,7 @@ bash tools/bin/run-phase2.sh <slug>
 
 ---
 
-### 6. Merge Script Failure
+### 7. Merge Script Failure
 
 **Condition:** `merge_agent_outputs.py` returns a non-zero exit code.
 
@@ -196,7 +244,7 @@ python3 tools/bin/merge_agent_outputs.py <slug>
 
 ---
 
-### 7. Claude Code Verify Fail / Timeout (Phase 2.9)
+### 8. Claude Code Verify Fail / Timeout (Phase 2.9)
 
 **Condition:** The optional Claude Code verify step (Session 21) fails or times out.
 
@@ -211,7 +259,7 @@ the gate still has the merged output to work with.
 
 ---
 
-### 8. High Conflict Rate in Merge
+### 9. High Conflict Rate in Merge
 
 **Condition (detected by merge_agent_outputs.py):** More than 50% of findings
 have conflicting verdicts across agents.
@@ -236,6 +284,7 @@ handles conflict detection and escalation flagging.
 | invalid_json | No | Yes (if others ok) | Yes (if merge ok) | 0 |
 | missing_output | No | Yes (if others ok) | Yes (if merge ok) | 0 |
 | missing_input_file | No (skip at start) | Yes | Yes (if merge ok) | 0 |
+| quota_exhausted_mid_run | No | Yes (if others ok) | Yes (if merge ok) | 0 |
 | all_agents_failed | — | No (fallback invoked) | **No** | **0** (fallback ok) / **2** (fallback fails) |
 | merge_failed | No | — | **No** | **1** |
 

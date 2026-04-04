@@ -226,6 +226,15 @@ def main() -> None:
         # to record which Codex account was used (helps debug cross-account quota issues).
         # Leave empty string if not provided.
         "quota_account": _os.environ.get("CODEX_QUOTA_ACCOUNT", ""),
+        # provider_map: override provider per agent-id.
+        # Keys: agent-a1 … agent-d.  Values: "codex" | "claude".
+        # Omit an agent to use default_provider.
+        # Example: {"agent-c": "claude", "agent-d": "claude"}
+        "provider_map": {},
+        # default_provider: used for any agent not listed in provider_map.
+        # "codex" → Codex CLI (codex exec …)
+        # "claude" → Claude Code CLI (claude --print …)
+        "default_provider": "codex",
     }
     dispatch_out = os.path.join(args.output_dir, f"{slug}-dispatch.json")
     write_json(dispatch_out, dispatch)
