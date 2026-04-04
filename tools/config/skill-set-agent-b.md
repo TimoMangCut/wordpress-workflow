@@ -40,6 +40,41 @@ After IR-07 fix, the IR contains:
 
 ---
 
+## Gate Validation Coverage — What the Gate Does and Does NOT Check
+
+The Phase 3 gate independently validates your findings. Understanding its limits
+prevents you from overclaiming.
+
+**Gate WILL validate:**
+- Write-leg auth level (nonce + capability checks on store EP)
+- Load-leg nonce/capability guards (same check as store leg)
+- Key matching between store EP and load EP
+- Schema compliance of your output
+
+**Gate WILL NOT validate (current limitation — DI-19-02):**
+- Load-leg **output escaping** at the sink render point. The Phase 1 extractor
+  does not emit an `output_escaping` guard type. Gate checks nonce/cap on the
+  load leg only. Output escaping is partially reflected in a sanitizer claim
+  check but is NOT a deterministic gate check.
+  *(Source: `phase3_gate.py:799-804` docstring)*
+
+**Implication for your output:**
+
+If your stored XSS finding depends on the load leg being unescaped as the
+critical evidence, you must assess this yourself — the gate will not catch a
+wrong claim here. Apply this standard:
+
+- **Strong evidence of missing escaping** (e.g., `echo $value` with no
+  `esc_html`/`esc_attr` wrapper, verified at `file:line`) → TP is defensible.
+  State the evidence explicitly in `reasoning`.
+- **Ambiguous or inferred escaping** (e.g., you can see a sink but not confirm
+  whether escaping exists elsewhere in the render path) → verdict REVIEW,
+  lower confidence (≤ 0.5), `review_reason` must state what escaping
+  evidence is missing and what would resolve it.
+- **Do not assume the gate will catch a wrong escaping claim.** It will not.
+
+---
+
 ## Input Files
 
 | File | Path |
