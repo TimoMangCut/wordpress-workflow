@@ -10,11 +10,13 @@ Schema mismatch is a hard error — silent degradation is prohibited.
 
 | File | Version | Produced by | Consumed by |
 |------|---------|-------------|-------------|
-| `ir-output.schema.json` | 2.0.0 | `tools/bin/extract.php` | `tools/bin/prepare_agent_inputs.py`, agents |
-| `ir-slice.schema.json` | 1.0.0 | `tools/bin/prepare_agent_inputs.py` | Agents A1–A5 |
+| `ir-output.schema.json` | 2.1.0 | `tools/bin/extract.php` | `tools/bin/prepare_agent_inputs.py`, agents |
+| `ir-slice.schema.json` | 1.1.0 | `tools/bin/prepare_agent_inputs.py` | Agents A1–A5 |
 | `agent-output.schema.json` | 1.0.0 | Agents A1–A5, B, C, D | merge script |
+| `phase2-finding.schema.json` | 1.0.0 | Phase 2 agents (item schema) | merge script, gate |
 | `merge-output.schema.json` | 1.0.0 | merge script | phase3 gate |
 | `phase3-gate-input.schema.json` | 1.0.0 | (same shape as merge-output) | `tools/bin/phase3_gate.py` |
+| `phase3-gate-output.schema.json` | 1.0.0 | `tools/bin/phase3_gate.py` | reporting, downstream |
 | `finding.schema.json` | stub | AppSec reviewer | manual review |
 | `threat-context.schema.json` | stub | threat-context script | phase2 agents |
 
@@ -102,6 +104,26 @@ not via this schema library. IR schema is the ground-truth reference.
 ---
 
 ## Migration Log
+
+### ir-output.schema.json 2.0.0 → 2.1.0
+
+Date: 2026-04-04 (Session 15 post-review, Codex findings P1)
+Breaking: NO — MINOR bump. callback was changed from `string` to `oneOf` discriminated union; unresolved_hooks item shape corrected to match actual extractor output.
+- `entry_points[].callback`: changed from `{"type":"string"}` to `oneOf[method|closure|unresolved]` object. Verified against backwpup-ir.json and call-chain-test-ir.json artifacts. Session 15 schema was wrong — extractor emits callback objects, never strings.
+- `unresolved_hooks[]` items: changed required fields from `[hook_name, callback]` to `[file, line, function, hook_arg_type]`. Matches actual extractor output (backwpup-ir.json, 36 items). Old schema required fields that do not exist in any artifact.
+Migration: NO consumer existed yet (Session 16 IR slicing not yet written). No migration steps needed.
+
+### ir-slice.schema.json 1.0.0 → 1.1.0
+
+Date: 2026-04-04 (Session 15 post-review)
+Breaking: NO — MINOR bump. callback field in entry_points corrected to match ir-output 2.1.0 shape.
+
+### Session 15 post-review additions
+
+Date: 2026-04-04
+Added: `phase2-finding.schema.json` (v1.0.0) — standalone finding item schema per skill-sets-framework.md:121.
+Added: `phase3-gate-output.schema.json` (v1.0.0) — gate output contract per skill-sets-framework.md:125.
+These were listed in source_ref but omitted from Session 15 initial output.
 
 ### ir-output.schema.json stub → 2.0.0
 

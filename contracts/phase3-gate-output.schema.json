@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "phase3-gate-output.schema.json",
+  "version": "1.0.0",
+  "title": "Phase 3 Gate Output Schema",
+  "description": "Output produced by the Phase 3 gate (tools/bin/phase3_gate.py). Contains per-finding validation results plus gate-level summary. Referenced in skill-sets-framework.md:125. Gate implementation is Session 17+ work — this schema is the contract the gate must satisfy.",
+  "type": "object",
+  "required": ["plugin_slug", "gate_verdict", "findings_evaluated", "findings"],
+  "properties": {
+    "plugin_slug":    { "type": "string" },
+    "gate_timestamp": { "type": ["string", "null"], "description": "ISO 8601 timestamp of gate run" },
+    "gate_verdict": {
+      "enum": ["PASS", "FAIL", "REVIEW_REQUIRED"],
+      "description": "PASS = all TPs confirmed by gate, no blocking issues. FAIL = gate found contradicting evidence. REVIEW_REQUIRED = uncertain findings remain."
+    },
+    "findings_evaluated": { "type": "integer", "description": "Total number of findings processed by gate" },
+    "findings": {
+      "type": "array",
+      "description": "Gate verdict per finding from phase3-gate-input.",
+      "items": {
+        "type": "object",
+        "required": ["finding_id", "agent_verdict", "gate_verdict"],
+        "properties": {
+          "finding_id":    { "type": "string" },
+          "agent_verdict": { "enum": ["TP", "FP", "REVIEW"] },
+          "gate_verdict": {
+            "enum": ["CONFIRMED", "DOWNGRADED", "UPGRADED", "UNCHANGED", "UNCERTAIN"],
+            "description": "Gate's assessment vs agent verdict. CONFIRMED=agrees with TP. DOWNGRADED=TP→FP or TP→REVIEW. UPGRADED=REVIEW→TP. UNCHANGED=FP or REVIEW not changed. UNCERTAIN=gate cannot determine."
+          },
+          "gate_reasoning": { "type": ["string", "null"] },
+          "ir_checks_run":  { "type": "array", "items": { "type": "string" }, "description": "Which IR checks the gate applied" },
+          "ir_checks_failed": { "type": "array", "items": { "type": "string" }, "description": "Which checks failed (led to downgrade)" }
+        }
+      }
+    },
+    "gate_stats": {
+      "type": "object",
+      "properties": {
+        "confirmed":  { "type": "integer" },
+        "downgraded": { "type": "integer" },
+        "upgraded":   { "type": "integer" },
+        "unchanged":  { "type": "integer" },
+        "uncertain":  { "type": "integer" }
+      }
+    }
+  }
+}

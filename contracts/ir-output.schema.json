@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "ir-output.schema.json",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "title": "IR Output Schema",
   "description": "Phase 1 extractor output (intermediate representation). Canonical source: skill-sets-framework.md:113-186.",
   "type": "object",
@@ -33,7 +33,45 @@
           },
           "file":       { "type": "string" },
           "line":       { "type": "integer" },
-          "callback":   { "type": "string" },
+          "callback": {
+            "description": "Extractor-resolved callback descriptor. Shape depends on 'type' discriminator. Verified against backwpup-ir.json and call-chain-test-ir.json artifacts.",
+            "oneOf": [
+              {
+                "description": "Resolved method or function callback",
+                "type": "object",
+                "required": ["type", "name", "file", "line_start", "line_end"],
+                "properties": {
+                  "type":       { "const": "method" },
+                  "name":       { "type": ["string", "null"] },
+                  "class":      { "type": ["string", "null"] },
+                  "file":       { "type": "string" },
+                  "line_start": { "type": "integer" },
+                  "line_end":   { "type": "integer" }
+                }
+              },
+              {
+                "description": "Closure/anonymous function callback",
+                "type": "object",
+                "required": ["type", "file", "line_start", "line_end"],
+                "properties": {
+                  "type":       { "const": "closure" },
+                  "name":       { "type": ["string", "null"] },
+                  "class":      { "type": ["string", "null"] },
+                  "file":       { "type": "string" },
+                  "line_start": { "type": "integer" },
+                  "line_end":   { "type": "integer" }
+                }
+              },
+              {
+                "description": "Callback that extractor could not statically resolve",
+                "type": "object",
+                "required": ["type"],
+                "properties": {
+                  "type": { "const": "unresolved" }
+                }
+              }
+            ]
+          },
           "nonce_verified": { "type": ["boolean", "null"] }
         }
       }
@@ -121,16 +159,15 @@
     },
     "unresolved_hooks": {
       "type": "array",
-      "description": "Hooks registered but not analyzed (IR-01). Each item describes an unresolved callback.",
+      "description": "Hooks registered but not statically analyzable (IR-01). Shape verified against backwpup-ir.json artifact (36 items). Extractor emits file/line/function/hook_arg_type — NOT hook_name/callback.",
       "items": {
         "type": "object",
-        "required": ["hook_name", "callback", "file", "line"],
+        "required": ["file", "line", "function", "hook_arg_type"],
         "properties": {
-          "hook_name": { "type": "string" },
-          "callback":  { "type": "string" },
-          "file":      { "type": "string" },
-          "line":      { "type": "integer" },
-          "reason":    { "type": ["string", "null"] }
+          "file":          { "type": "string" },
+          "line":          { "type": "integer" },
+          "function":      { "type": "string", "description": "add_action/add_filter call that could not be resolved" },
+          "hook_arg_type": { "type": "string", "description": "Why hook could not be resolved, e.g. 'concatenation', 'variable', 'dynamic'" }
         }
       }
     },
