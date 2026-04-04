@@ -7,15 +7,16 @@
     {
       "file": "tools/bin/merge_agent_outputs.py",
       "functions_changed": [
-        "_make_dedup_key",
+        "_make_rough_key",
+        "_subgroup_by_line",
         "_merge_group",
         "merge_agent_findings",
         "_collect_input_files",
         "main"
       ],
-      "lines_affected": "1-520",
+      "lines_affected": "1-560",
       "behavior_before": "File did not exist.",
-      "behavior_after": "New script. Phase 2.5 Deterministic Merge. Accepts per-agent JSON files via --agent-{a1,a2,b,c,d} flags, --agents glob, or positional slug. Validates each agent output against contracts/agent-output.schema.json (reject malformed, continue). Merges findings by dedup key: Single-EP=(single, ep_id, sink_file, sink_line_bucket±5, vuln_type), Stored/cross-EP=(stored, store_ep_id, load_ep_id, storage_key, vuln_type). Same-verdict duplicates: merge evidence, keep highest confidence, record agent_agreement. Conflicts (different verdict same key): preserve merged finding with conflict=True, conflicting_verdicts list. Validates merged output against contracts/merge-output.schema.json (hard error on mismatch). Writes reports/<slug>-phase2-merged.json (archive) and reports/<slug>-phase2.json (canonical for gate)."
+      "behavior_after": "New script (post-fix). Phase 2.5 Deterministic Merge. Accepts per-agent JSON files via --agent-{a1,a2,b,c,d} flags, --agents glob, or positional slug. Validates each agent output against contracts/agent-output.schema.json (reject malformed, continue). Merges findings via two-phase dedup: (1) rough key by (ep_id, sink_file, vuln_type) — no line; (2) _subgroup_by_line() pairwise ±5 connected-component within each rough group. Stored/cross-EP key: (store_ep_id, load_ep_id, storage_key, vuln_type). Same-verdict duplicates: merge evidence, keep highest confidence, record agent_agreement. Conflicts (different verdict same key): preserve BOTH findings as separate top-level entries, each with conflict=True + conflicting_verdicts list. Validates merged output against contracts/merge-output.schema.json (hard error on mismatch). Writes reports/<slug>-phase2-merged.json (archive) and reports/<slug>-phase2.json (canonical for gate)."
     }
   ],
   "downstream_updated": [],
@@ -28,8 +29,8 @@
     }
   ],
   "test_command": "python3 tools/bin/merge_agent_outputs.py --help && echo 'CLI OK'",
-  "test_result": "PASS: CLI OK. All 8 test cases verified: (T1) --help exits cleanly; (T2) same-verdict dedup → 1 finding, agent_agreement=2, duplicates_merged=1; (T3) conflict → conflict=True, conflicting_verdicts present, conflicts_flagged=1; (T4) malformed agent skipped (schema_errors=1), valid agent processed; (T5) merged output validates against merge-output.schema.json; (T6) merge_stats has all required fields + agents_missing populated; (T7) -phase2-merged.json and -phase2.json both written; (T8) no existing files modified.",
+  "test_result": "PASS (post-fix): CLI OK. 11 test cases verified including Codex-reported regressions: (Bug1a) lines 9+11 (diff=2≤5) → n=1, duplicates_merged=1; (Bug1b) lines 9+15 (diff=6>5) → n=2; (Bug1c) lines 5+10 (diff=5 boundary) → n=1; (Bug2) TP vs FP same key → 2 top-level findings, each conflict=True + conflicting_verdicts; (T2) same-verdict dedup → agent_agreement=2; (T4) malformed skipped; (T5) merge schema valid; (T6) all stats fields present; (T7) output files written; (T8) no existing files modified.",
   "discovered_issues": [],
   "next_session": "session_18",
-  "notes": "T7 in test harness initially showed false FAIL due to slug mismatch in test fixture ('myplugin' vs 'test-plugin'). Script behavior confirmed correct with explicit re-run. No code change needed."
+  "notes": "Post-session Codex review identified 2 confirmed bugs (both with refutation-by-test): (1) sink_line ±5 was implemented as floor bucket (line//5)*5, causing boundary failures (lines 9 and 11 fell in different buckets). Fixed by two-phase dedup: rough key without line + pairwise ±5 connected-component sweep in _subgroup_by_line(). (2) Conflict path only preserved 1 top-level finding; spec requires 'preserve BOTH'. Fixed: _merge_group() now returns list[dict], conflicts produce 2 separate top-level findings each flagged conflict=True. Both fixes committed separately (58213b7)."
 }
