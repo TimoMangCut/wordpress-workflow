@@ -30,7 +30,22 @@
   ],
   "test_command": "python3 tools/bin/merge_agent_outputs.py --help && echo 'CLI OK'",
   "test_result": "PASS (post-fix): CLI OK. 11 test cases verified including Codex-reported regressions: (Bug1a) lines 9+11 (diff=2≤5) → n=1, duplicates_merged=1; (Bug1b) lines 9+15 (diff=6>5) → n=2; (Bug1c) lines 5+10 (diff=5 boundary) → n=1; (Bug2) TP vs FP same key → 2 top-level findings, each conflict=True + conflicting_verdicts; (T2) same-verdict dedup → agent_agreement=2; (T4) malformed skipped; (T5) merge schema valid; (T6) all stats fields present; (T7) output files written; (T8) no existing files modified.",
-  "discovered_issues": [],
+  "discovered_issues": [
+    {
+      "id": "MERGE-VALIDATE-01",
+      "description": "P1 — _validate() caught ImportError and returned [] (no errors) when jsonschema was absent, causing fail-open behavior. A malformed agent file missing required fields (e.g. severity) passed validation silently, produced exit 0, and wrote canonical phase2 output. Reproduced with python3 -S. Session 17 spec requires hard error on missing merge dependency. Fix: ImportError now calls sys.exit(1) with [ERROR] message — validation cannot be skipped.",
+      "severity": "P1",
+      "introduced_by": "Session 17 initial implementation",
+      "fixed_in": "post-review commit"
+    },
+    {
+      "id": "MERGE-PROVENANCE-01",
+      "description": "P2 — In conflict path, source_agents was set to all_agents (every agent in the conflict) for each verdict finding. In a TP-vs-FP repro, both the TP finding and FP finding listed ['agent-a1', 'agent-a2'] as sources, misstating which agent supported which verdict. contracts/merge-output.schema.json defines source_agents as agents that reported this finding. Fix: source_agents = [aid for _, aid in group] — only agents in the per-verdict group. conflicting_verdicts retains full cross-agent audit trail.",
+      "severity": "P2",
+      "introduced_by": "Session 17 initial implementation",
+      "fixed_in": "post-review commit"
+    }
+  ],
   "next_session": "session_18",
-  "notes": "Post-session Codex review identified 2 confirmed bugs (both with refutation-by-test): (1) sink_line ±5 was implemented as floor bucket (line//5)*5, causing boundary failures (lines 9 and 11 fell in different buckets). Fixed by two-phase dedup: rough key without line + pairwise ±5 connected-component sweep in _subgroup_by_line(). (2) Conflict path only preserved 1 top-level finding; spec requires 'preserve BOTH'. Fixed: _merge_group() now returns list[dict], conflicts produce 2 separate top-level findings each flagged conflict=True. Both fixes committed separately (58213b7)."
+  "notes": "Post-session Codex review identified 2 confirmed bugs (both with refutation-by-test): (1) sink_line ±5 was implemented as floor bucket (line//5)*5, causing boundary failures (lines 9 and 11 fell in different buckets). Fixed by two-phase dedup: rough key without line + pairwise ±5 connected-component sweep in _subgroup_by_line(). (2) Conflict path only preserved 1 top-level finding; spec requires 'preserve BOTH'. Fixed: _merge_group() now returns list[dict], conflicts produce 2 separate top-level findings each flagged conflict=True. Both fixes committed separately (58213b7). Second Codex review identified 2 additional bugs: (3) MERGE-VALIDATE-01: _validate() fail-open on missing jsonschema — fixed by converting ImportError to sys.exit(1). (4) MERGE-PROVENANCE-01: conflict source_agents overstated to all agents in conflict group — fixed by scoping source_agents to per-verdict group only."
 }

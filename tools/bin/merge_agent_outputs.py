@@ -60,19 +60,20 @@ def _load_schema(schema_file: str) -> dict:
 def _validate(instance: dict, schema: dict, label: str) -> list[str]:
     """
     Validate `instance` against `schema`. Returns list of error messages.
-    Requires jsonschema; if missing, logs a warning and skips validation.
+    Requires jsonschema; raises SystemExit(1) if not installed — validation
+    must not be skipped silently (Session 17 spec: hard error on missing dep).
     """
     try:
         import jsonschema
-        errors = list(jsonschema.Draft7Validator(schema).iter_errors(instance))
-        return [e.message for e in errors]
     except ImportError:
         print(
-            f"[WARN] jsonschema not installed — skipping schema validation for {label}. "
+            "[ERROR] jsonschema is not installed — cannot validate schema. "
             "Install with: pip install jsonschema",
             file=sys.stderr,
         )
-        return []
+        sys.exit(1)
+    errors = list(jsonschema.Draft7Validator(schema).iter_errors(instance))
+    return [e.message for e in errors]
 
 
 # ---------------------------------------------------------------------------
@@ -220,7 +221,9 @@ def _merge_group(findings_with_agents: list[tuple[dict, str]]) -> list[dict]:
             # Pick the highest-confidence representative for this verdict
             base_f, base_agent = max(group, key=lambda fa: fa[0].get("confidence") or 0.0)
             merged = copy.deepcopy(base_f)
-            merged["source_agents"] = all_agents
+            # source_agents = only agents that reported THIS verdict (not all conflict agents)
+            # conflicting_verdicts carries full cross-agent provenance for audit
+            merged["source_agents"] = [aid for _, aid in group]
             merged["conflict"] = True
             merged["conflicting_verdicts"] = conflicting_verdicts
             results.append(merged)
