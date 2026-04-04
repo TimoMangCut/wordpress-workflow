@@ -155,20 +155,27 @@ This is expected behavior, not an error.
 output, or writes malformed JSON.
 
 **Action:**
-- Orchestrator exits with code `2`.
-- No merge is attempted.
-- Logs `failure_type: "all_agents_failed"` for agent `"ALL"`.
-- Sentinel file is NOT written.
+- Writes a failure log entry with `failure_type: "all_agents_failed"` and the
+  structured field `multi_agent_fallback: true` (JSON boolean — queryable by tooling
+  without parsing free-text).
+- **Automatically invokes** `run-phase2.sh <slug>` (single-agent Phase 2 fallback).
+- Sentinel file is NOT written by the orchestrator (run-phase2.sh manages its own output).
 
-**Downstream impact:** The multi-agent pipeline produces no Phase 2 output.
-Fallback: run single-agent Phase 2 manually.
+**Exit codes:**
+- `0` — fallback succeeded (pipeline continues from run-phase2.sh output).
+- `2` — fallback script not found, or fallback itself failed.
 
+**Downstream impact:** If fallback succeeds, Phase 2 output is produced by the
+single-agent pipeline (lower coverage, no per-EP-group parallelism). If fallback
+also fails, no `<slug>-phase2.json` is written and the gate cannot run.
+
+**Manual re-run (if needed):**
 ```bash
-# Fallback: single-agent Phase 2
-bash tools/bin/run-phase2.sh --slug <slug>
+bash tools/bin/run-phase2.sh <slug>
 ```
 
-Set `multi_agent_fallback: true` in the run manifest if you trigger this fallback.
+**Detecting fallback in tooling:** Check `multi_agent_fallback: true` in
+`reports/logs/<slug>-failures.json` — this field is a JSON boolean, not a text note.
 
 ---
 
@@ -229,7 +236,7 @@ handles conflict detection and escalation flagging.
 | invalid_json | No | Yes (if others ok) | Yes (if merge ok) | 0 |
 | missing_output | No | Yes (if others ok) | Yes (if merge ok) | 0 |
 | missing_input_file | No (skip at start) | Yes | Yes (if merge ok) | 0 |
-| all_agents_failed | — | No | **No** | **2** |
+| all_agents_failed | — | No (fallback invoked) | **No** | **0** (fallback ok) / **2** (fallback fails) |
 | merge_failed | No | — | **No** | **1** |
 
 ---
