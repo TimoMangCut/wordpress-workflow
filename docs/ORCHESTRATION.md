@@ -29,8 +29,8 @@ orchestrate-agents.sh <slug>
         ↓
 merge_agent_outputs.py <slug>
         ↓
-  reports/phase2/<slug>-phase2-merged.json     (archive)
-  reports/phase2/<slug>-phase2.json            (canonical — gate reads this)
+  reports/<slug>-phase2-merged.json         (archive, top-level reports/)
+  reports/phase2/<slug>-phase2.json         (canonical — gate reads this)
         ↓
   <slug>-merge-ready            (sentinel, written by orchestrator)
         ↓
@@ -45,7 +45,9 @@ run-phase3.sh --slug <slug>
 2. Agent inputs prepared: `python3 tools/bin/prepare_agent_inputs.py <slug>`
    - Produces `reports/<slug>-dispatch.json`
    - Produces `reports/<slug>-ir-slice-*.json` per agent group
-3. Codex CLI available in `$PATH`.
+3. Provider CLIs on `$PATH`:
+   - **Codex CLI** — required for any agent with `provider=codex` (default).
+   - **Claude Code CLI** (`claude`) — required only if `provider_map` routes any agent to `claude`. The orchestrator's Step 3b preflight will fail fast with a clear error if the CLI is missing or auth is broken.
 
 ---
 
@@ -171,7 +173,7 @@ share the same failure log format.
 | File | Description |
 |------|-------------|
 | `reports/<slug>-agent-{id}.json` | Raw output from each agent |
-| `reports/phase2/<slug>-phase2-merged.json` | Merged archive (pre-verify) |
+| `reports/<slug>-phase2-merged.json` | Merged archive (pre-verify, top-level reports/) |
 | `reports/phase2/<slug>-phase2.json` | Canonical Phase 2 output (gate reads this) |
 | `reports/<slug>-merge-ready` | Sentinel — written after successful merge |
 | `reports/logs/<slug>-failures.json` | Failure log (see FAILURE-MODES.md) |

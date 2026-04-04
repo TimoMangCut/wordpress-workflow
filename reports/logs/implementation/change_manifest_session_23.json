@@ -2,6 +2,8 @@
   "session": 23,
   "date": "2026-04-05",
   "status": "COMPLETED",
+  "pipeline_run_status": "PARTIAL",
+  "pipeline_run_notes": "Session is COMPLETED (all session work documented). Pipeline run itself is PARTIAL — agents A1-A5 and B ran for all 3 plugins; agents C+D blocked by Codex quota. wave_4_results.json execution_status='PARTIAL'. Agents C+D deferred to session 25 via DI-24-02.",
   "gaps_addressed": ["WAVE4-PIPELINE-EXECUTION"],
   "notes_on_scope_pivot": "Session 23 card (created by session 22) described 'Open Decisions finalize + Wave 3 impact re-run + tuning'. Actual session pivoted to executing the first real multi-agent pipeline run for Wave 4 across all 3 benchmark plugins (backwpup, cartflows, pretty-link). Reason: the pipeline infrastructure was ready and the benchmark needed actual run data, not just planning artifacts. The original session 23 spec (Open Decisions lock, wave 3 re-run) is carried forward to session 24.",
   "files_modified": [
@@ -115,8 +117,8 @@
       "impact": "Session 24 must pick up the deferred spec: Open Decisions lock, Wave 3 impact re-run, SKILL SET tuning assessment."
     }
   ],
-  "test_command": "python3 -c \"import json; d=json.load(open('reports/logs/implementation/change_manifest_session_23.json')); assert d['status']=='COMPLETED'; print('OK: manifest complete')\"",
-  "test_result": "PASS: change_manifest_session_23.json created with status=COMPLETED. Session 23 pipeline execution documented: 18 agents run (6 per plugin × 3 plugins), phase3 gate + LLM review for backwpup and cartflows, benchmark results recorded. Agents C+D blocked by Codex quota — cron job scheduled for 03:35 AM to re-run.",
+  "test_command": "python3 -c \"import json; d=json.load(open('reports/logs/implementation/change_manifest_session_23.json')); assert d['status']=='COMPLETED'; assert d['pipeline_run_status']=='PARTIAL'; print('OK: session COMPLETED, pipeline PARTIAL')\"",
+  "test_result": "PASS: change_manifest_session_23.json created. Session status=COMPLETED (session work done). Pipeline run status=PARTIAL — 18 agents run (A1-A5+B × 3 plugins), agents C+D blocked by Codex quota and deferred to session 25 (DI-24-02). phase3 gate + LLM review run for backwpup and cartflows. Benchmark results recorded. wave_4_results.json execution_status='PARTIAL'.",
   "discovered_issues": [
     {
       "id": "DI-23-01",
