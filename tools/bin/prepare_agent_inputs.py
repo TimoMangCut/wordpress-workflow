@@ -1,0 +1,181 @@
+#!/usr/bin/env python3
+"""
+prepare_agent_inputs.py — Session 16: IR Slicing Script
+
+Slice a Phase 1 IR JSON into per-EP-group subsets for multi-agent Phase 2 analysis.
+Also filters semgrep results per group.
+
+Usage:
+    python3 tools/bin/prepare_agent_inputs.py \
+        --ir reports/<slug>-ir.json \
+        --semgrep reports/<slug>-semgrep.json \
+        --output-dir reports/
+
+Outputs (one per agent group):
+    <output-dir>/<slug>-ir-slice-ajax-unauth.json   # Agent A1: ajax_nopriv + admin_post_nopriv
+    <output-dir>/<slug>-ir-slice-ajax-auth.json     # Agent A2: ajax_priv + admin_post
+    <output-dir>/<slug>-ir-slice-rest.json          # Agent A3: rest_route
+    <output-dir>/<slug>-ir-slice-shortcode.json     # Agent A4: shortcode + block
+    <output-dir>/<slug>-ir-slice-other.json         # Agent A5: cron + init + template_redirect + filters
+    <output-dir>/<slug>-semgrep-filtered-ajax-unauth.json
+    <output-dir>/<slug>-semgrep-filtered-ajax-auth.json
+    <output-dir>/<slug>-semgrep-filtered-rest.json
+    <output-dir>/<slug>-semgrep-filtered-shortcode.json
+    <output-dir>/<slug>-semgrep-filtered-other.json
+
+Spec: multi-agent-plan.md:228-275
+Schema: contracts/ir-slice.schema.json (v1.3.0)
+"""
+
+import argparse
+import json
+import os
+import sys
+
+import jsonschema
+
+# ---------------------------------------------------------------------------
+# EP group definitions
+# Source: multi-agent-plan.md:238-247
+# ---------------------------------------------------------------------------
+EP_GROUPS = [
+    ("ajax-unauth", {"ajax_nopriv", "admin_post_nopriv"}),
+    ("ajax-auth",   {"ajax_priv", "admin_post"}),
+    ("rest",        {"rest_route"}),
+    ("shortcode",   {"shortcode", "block"}),
+    ("other",       {"cron", "init", "template_redirect", "filters"}),
+]
+
+
+def load_schema() -> dict:
+    """Load ir-slice.schema.json relative to this script's location in tools/bin/."""
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    schema_path = os.path.join(script_dir, "..", "..", "contracts", "ir-slice.schema.json")
+    schema_path = os.path.normpath(schema_path)
+    if not os.path.isfile(schema_path):
+        sys.exit(f"ERROR: Schema not found at {schema_path}")
+    with open(schema_path, encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+def slice_ir_for_group(ir: dict, ep_types: set) -> dict:
+    """
+    Filter entry_points by type.
+    Keep sources/sinks/guards/anomalies matching filtered entry_point_ids.
+    Keep metadata unchanged.
+    unresolved_hooks and coverage_gaps are always [] — handled by Agent D from full IR.
+
+    Source: multi-agent-plan.md:251-268
+    """
+    eps = [ep for ep in ir["entry_points"] if ep["type"] in ep_types]
+    ep_ids = {ep["id"] for ep in eps}
+    return {
+        "metadata": ir["metadata"],
+        "entry_points": eps,
+        "sources":  [s for s in ir["sources"]   if s.get("entry_point_id") in ep_ids],
+        "sinks":    [s for s in ir["sinks"]     if s.get("entry_point_id") in ep_ids],
+        "guards":   [g for g in ir["guards"]    if g.get("entry_point_id") in ep_ids],
+        "anomalies":[a for a in ir["anomalies"] if a.get("entry_point_id") in ep_ids],
+        "unresolved_hooks": [],   # handled by Agent D, not per-group
+        "coverage_gaps": [],      # handled by Agent D
+    }
+
+
+def filter_semgrep_for_group(semgrep: dict, ep_files: set) -> dict:
+    """
+    Filter semgrep results to only hits whose path falls within files
+    referenced by EPs in this group.
+
+    ep_files: set of file paths (strings) from filtered entry_points.
+    If ep_files is empty, returns semgrep structure with empty results.
+    """
+    filtered_results = [
+        r for r in semgrep.get("results", [])
+        if r.get("path") in ep_files
+    ]
+    return {**semgrep, "results": filtered_results}
+
+
+def validate_slice(slice_data: dict, schema: dict, label: str) -> None:
+    """Validate slice_data against ir-slice.schema.json. Exits non-zero on failure."""
+    try:
+        jsonschema.validate(instance=slice_data, schema=schema)
+    except jsonschema.ValidationError as exc:
+        sys.exit(
+            f"ERROR: Slice '{label}' failed schema validation.\n"
+            f"  Path: {list(exc.absolute_path)}\n"
+            f"  Message: {exc.message}"
+        )
+
+
+def write_json(path: str, data: dict) -> None:
+    """Write data as indented JSON to path."""
+    os.makedirs(os.path.dirname(path) if os.path.dirname(path) else ".", exist_ok=True)
+    with open(path, "w", encoding="utf-8") as fh:
+        json.dump(data, fh, indent=2)
+        fh.write("\n")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Slice Phase 1 IR into per-EP-group files for multi-agent Phase 2."
+    )
+    parser.add_argument("--ir",         required=True, help="Path to <slug>-ir.json")
+    parser.add_argument("--semgrep",    required=True, help="Path to <slug>-semgrep.json")
+    parser.add_argument("--output-dir", required=True, dest="output_dir",
+                        help="Directory to write output files into")
+    args = parser.parse_args()
+
+    # --- Fail fast if inputs missing ---
+    if not os.path.isfile(args.ir):
+        sys.exit(f"ERROR: IR file not found: {args.ir}")
+    if not os.path.isfile(args.semgrep):
+        sys.exit(f"ERROR: Semgrep file not found: {args.semgrep}")
+
+    # --- Load inputs ---
+    with open(args.ir, encoding="utf-8") as fh:
+        ir = json.load(fh)
+    with open(args.semgrep, encoding="utf-8") as fh:
+        semgrep = json.load(fh)
+
+    slug = ir["metadata"]["plugin_slug"]
+    schema = load_schema()
+
+    print(f"IR: {args.ir} (slug={slug}, "
+          f"eps={len(ir['entry_points'])}, sources={len(ir['sources'])}, "
+          f"sinks={len(ir['sinks'])}, guards={len(ir['guards'])}, "
+          f"anomalies={len(ir['anomalies'])})")
+    print(f"Semgrep: {args.semgrep} ({len(semgrep.get('results', []))} results)")
+    print(f"Output dir: {args.output_dir}")
+    print()
+
+    # --- Produce one slice per EP group ---
+    for group_name, ep_types in EP_GROUPS:
+        # IR slice
+        slice_data = slice_ir_for_group(ir, ep_types)
+        validate_slice(slice_data, schema, group_name)
+
+        ir_out = os.path.join(args.output_dir, f"{slug}-ir-slice-{group_name}.json")
+        write_json(ir_out, slice_data)
+
+        ep_files = {ep["file"] for ep in slice_data["entry_points"]}
+
+        # Semgrep slice
+        semgrep_slice = filter_semgrep_for_group(semgrep, ep_files)
+        sg_out = os.path.join(args.output_dir, f"{slug}-semgrep-filtered-{group_name}.json")
+        write_json(sg_out, semgrep_slice)
+
+        print(f"  [{group_name}] eps={len(slice_data['entry_points'])} "
+              f"sources={len(slice_data['sources'])} "
+              f"sinks={len(slice_data['sinks'])} "
+              f"guards={len(slice_data['guards'])} "
+              f"anomalies={len(slice_data['anomalies'])} "
+              f"semgrep_hits={len(semgrep_slice['results'])} "
+              f"→ schema OK")
+
+    print()
+    print(f"Done. Wrote {len(EP_GROUPS) * 2} files to {args.output_dir}")
+
+
+if __name__ == "__main__":
+    main()
