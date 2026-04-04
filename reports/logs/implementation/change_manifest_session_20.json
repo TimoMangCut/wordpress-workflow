@@ -14,9 +14,9 @@
     {
       "file": "tools/config/skill-set-agent-b.md",
       "functions_changed": [],
-      "lines_affected": "1-97",
+      "lines_affected": "1-166",
       "behavior_before": "File did not exist.",
-      "behavior_after": "Agent B SKILL SET: stored/cross-EP flows. Context: 2-hop pattern (store leg + load leg), IR-07 fix guarantees. Input: full IR + source + output schema. Tasks: map writes → map reads → match by key → verify attacker reachability → check sanitization at both legs → output findings. Critical rules: entry_point_id MUST = load_entry_point_id (gate uses this for file/path checks); store_entry_point_id = write-leg EP; storage_key required when literal; write-leg auth level must appear in reasoning. Scope: cross-EP flows only."
+      "behavior_after": "Agent B SKILL SET: stored/cross-EP flows. Context: 2-hop pattern (store leg + load leg), IR-07 fix guarantees. Input: full IR + source + output schema. Tasks: map writes → map reads → match by key → verify attacker reachability → check sanitization at both legs → output findings. Critical rules: entry_point_id MUST = load_entry_point_id (gate uses this for file/path checks); store_entry_point_id = write-leg EP; storage_key required when literal; write-leg auth level must appear in reasoning. Scope: cross-EP flows only. Gate Validation Coverage section (added post-session via commit 083e8fd): gate validates write-leg auth (nonce+cap), load-leg nonce/cap, key matching, schema compliance. Gate does NOT validate load-leg output escaping (DI-19-02 — Phase 1 extractor does not emit output_escaping guard type; phase3_gate.py:799-804). Implication embedded: strong escaping evidence (verified file:line, e.g. bare echo with no esc_html) → TP defensible; ambiguous/inferred escaping → verdict REVIEW + confidence ≤ 0.5; do not assume gate will catch wrong escaping claim."
     },
     {
       "file": "tools/config/skill-set-agent-c.md",
@@ -42,7 +42,7 @@
     }
   ],
   "test_command": "python3 -c \"import os; files=['tools/config/skill-set-agent-a.md','tools/config/skill-set-agent-b.md','tools/config/skill-set-agent-c.md','tools/config/skill-set-agent-d.md']; [print('OK:', f) if os.path.exists(f) else print('MISSING:', f) for f in files]\"",
-  "test_result": "PASS: 4/4 files exist. 6/6 test cases verified: (1) skill-set-agent-a.md contains review_reason (5 occurrences). (2) skill-set-agent-b.md contains 'entry_point_id MUST = load_entry_point_id' (1 occurrence). (3) skill-set-agent-b.md contains store_entry_point_id (2 occurrences). (4) skill-set-agent-d.md contains resolved_dynamic:<hash> format (9 occurrences). (5) skill-set-agent-d.md contains ir-supplement path reference. (6) skill-set-agent-d.md contains confidence levels high/medium/low (2 occurrences).",
+  "test_result": "PASS: 4/4 files exist. 7/7 test cases verified: (1) skill-set-agent-a.md contains review_reason (5 occurrences). (2) skill-set-agent-b.md contains 'entry_point_id MUST = load_entry_point_id' (1 occurrence). (3) skill-set-agent-b.md contains store_entry_point_id (2 occurrences). (4) skill-set-agent-d.md contains resolved_dynamic:<hash> format (9 occurrences). (5) skill-set-agent-d.md contains ir-supplement path reference. (6) skill-set-agent-d.md contains confidence levels high/medium/low (2 occurrences). (7) skill-set-agent-b.md contains 'Gate Validation Coverage' section with DI-19-02 limitation and REVIEW guidance for ambiguous escaping (added commit 083e8fd).",
   "discovered_issues": [],
   "post_review": {
     "reviewer": "Codex",
