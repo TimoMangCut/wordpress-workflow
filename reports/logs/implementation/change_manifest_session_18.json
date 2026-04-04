@@ -6,10 +6,20 @@
   "files_modified": [
     {
       "file": "tools/bin/orchestrate-agents.sh",
-      "functions_changed": ["main orchestration loop", "launch_agent", "is_valid_json", "append_failure", "flush_failures"],
-      "lines_affected": "1-357",
+      "functions_changed": [
+        "main orchestration loop",
+        "launch_agent",
+        "agent_output_file",
+        "is_valid_json",
+        "state_set / state_get (temp-file state, replaces declare -A)",
+        "append_failure",
+        "flush_failures",
+        "all-agents fallback block",
+        "merge call with --expected-agents"
+      ],
+      "lines_affected": "1-510 (final post-review-2 state)",
       "behavior_before": "did not exist",
-      "behavior_after": "Reads reports/<slug>-dispatch.json, launches Codex CLI agents (up to --parallel-limit, default 2), polls for valid JSON output per agent (POLL_INTERVAL=15s), retries timed-out agents once, calls merge_agent_outputs.py <slug>, writes reports/<slug>-merge-ready sentinel. Logs all failures to reports/logs/<slug>-failures.json."
+      "behavior_after": "Reads reports/<slug>-dispatch.json, launches Codex CLI agents (up to --parallel-limit, default 2), polls for valid JSON output per agent (POLL_INTERVAL=15s), retries timed-out agents once, calls merge_agent_outputs.py <slug> --expected-agents <all-runnable-agent-ids> (populates agents_missing in merge output), writes reports/<slug>-merge-ready sentinel. On all-agents-fail: invokes run-phase2.sh <slug> fallback with set+e isolation; failure log entry includes structured multi_agent_fallback:true field. Logs all failures to reports/logs/<slug>-failures.json. Bash 3.2 compatible (no mapfile, no declare -A — uses per-agent temp files)."
     },
     {
       "file": "docs/ORCHESTRATION.md",
@@ -23,16 +33,40 @@
       "functions_changed": [],
       "lines_affected": "1-185",
       "behavior_before": "did not exist",
-      "behavior_after": "Per-condition failure handling reference: timeout (1x retry), invalid JSON (reject + continue), missing output (skip + continue), missing input/empty IR slice (skip at start), all agents failed (exit 2, no merge), merge failure (exit 1, no sentinel), high conflict rate (merge script responsibility), Claude Code verify fail (out of scope — Session 21)."
+      "behavior_after": "Per-condition failure handling reference: timeout (1x retry), invalid JSON (reject + continue), missing output (skip + continue), missing input/empty IR slice (skip at start), all agents failed (fallback to run-phase2.sh + exit 2 if fallback fails), merge failure (exit 1, no sentinel), high conflict rate (merge script responsibility), Claude Code verify fail (out of scope — Session 21)."
     }
   ],
   "downstream_updated": [],
   "deviations_from_spec": [
-    "spec says 'Codex CLI' launch syntax — exact codex CLI invocation flags not specified in multi-agent-plan.md:400-520. Script uses `codex run <agent> <slug> --input <file> --output <file>` as a reasonable default. Adjust to actual Codex CLI interface when known."
+    "Codex CLI invocation flags (--input/--output) are placeholder — exact CLI interface not documented in multi-agent-plan.md:400-520. Adjust to actual Codex CLI interface when known."
+  ],
+  "post_review_rounds": [
+    {
+      "round": 1,
+      "reviewer": "Codex",
+      "findings_addressed": [
+        "[P1] Bash 3.2 portability: replaced declare -A with temp-file state, replaced mapfile with while-read loop",
+        "[P1] Output filename double-prefix: agent_output_file() was reports/<slug>-agent-${agent}.json (→ ...-agent-agent-a1.json); fixed to reports/<slug>-${agent}.json (→ ...-agent-a1.json)",
+        "[P2] All-agents-fail invoked run-phase2.sh but set -e caused it to exit before custom handler; also multi_agent_fallback was text-only"
+      ]
+    },
+    {
+      "round": 2,
+      "reviewer": "Codex",
+      "findings_addressed": [
+        "[P1] merge_agent_outputs.py called without --expected-agents — agents_missing always empty; fixed by passing all AGENTS_TO_RUN as --expected-agents",
+        "[P2] Fallback exit code leaked through set -e — wrapped fallback call with set +e / set -e for correct exit 2 on failure",
+        "[P2b] multi_agent_fallback only in free-text impact string — added as structured boolean field in failure log JSON",
+        "[P3] Manifest was pre-fix state — updated to reflect final post-review-2 implementation"
+      ]
+    }
   ],
   "test_command": "bash tools/bin/orchestrate-agents.sh --help && echo 'CLI OK'",
-  "test_result": "PASS: --help outputs usage without error. CLI OK.",
-  "discovered_issues": [],
+  "test_result": "PASS: --help outputs usage without error. CLI OK. Bash 3.2 runtime smoke test: dispatch parse, state_set/get, agent skipping, failure log flush all pass under GNU bash 3.2.57.",
+  "discovered_issues": [
+    "Codex CLI --input/--output flags are assumed — actual Codex CLI interface must be verified before production use",
+    "Parallel agent launch with fake 'codex' shim: happy-path launch→merge→sentinel flow confirmed by Codex round-2 smoke test"
+  ],
   "next_session": "session_19",
-  "notes": "New files only. No existing Python or PHP files modified. Codex CLI invocation flags are placeholder — exact CLI interface should be verified against actual Codex CLI documentation before production use."
+  "notes": "New files only. No existing Python or PHP files modified. Session 18 closed after two post-review rounds (6 confirmed findings total, all addressed)."
 }
