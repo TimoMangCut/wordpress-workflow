@@ -23,6 +23,19 @@
   "test_command": "python3 -c \"import os; f='tools/config/skill-set-verify.md'; print('OK:', f) if os.path.exists(f) else print('MISSING:', f)\"",
   "test_result": "PASS: 4/4 test cases verified. (1) tools/config/skill-set-verify.md exists. (2) skill-set-verify.md specifies merged JSON as sole input (reports/<slug>-phase2-merged.json, no source code by default — 7 occurrences of 'source code'). (3) skill-set-verify.md defines disagreement resolution protocol (Task 3, R4 — 24 occurrences of 'conflict'). (4) skill-set-verify.md includes escalation criteria for low-confidence findings (Task 1, Escalation criteria table, R5 — 13 occurrences of 'escalat').",
   "discovered_issues": [],
+  "post_review": {
+    "reviewer": "Codex",
+    "date": "2026-04-04",
+    "findings": [
+      "P1: skill-set-verify.md referenced merge_stats.total_findings (does not exist at runtime). merge_agent_outputs.py:337-348 writes total_raw and total_deduplicated. Conflict rate formula 'conflicts_flagged / total_findings' would fail on real merged output.",
+      "P2: Task 4 stated entry_point_id is 'required for all findings'. Schema (agent-output.schema.json:64-73) only requires entry_point_id in allOf TP conditional. REVIEW and FP findings validated without it. S5 would falsely flag valid REVIEW findings as malformed."
+    ],
+    "actions_taken": {
+      "P1": "FIXED — merge_stats field list updated to match runtime: total_raw, total_deduplicated (+ duplicates_merged, conflicts_flagged, agents_missing, schema_errors, tp_count, fp_count, review_count). Conflict rate formula changed to 'conflicts_flagged / total_deduplicated' in Task 1 and Escalation criteria table.",
+      "P2": "FIXED — Task 4 malformed check updated: entry_point_id absence flagged only for TP findings. Added explicit note that REVIEW and FP do not require it. reasoning check also scoped to TP/REVIEW only (FP requires fp_reason, not reasoning)."
+    },
+    "post_review_test_result": "PASS: (1) grep 'total_findings' tools/config/skill-set-verify.md → 0 matches. (2) total_raw and total_deduplicated present at lines 28-29 and 48. (3) entry_point_id rule at line 110 scoped to TP only, consistent with agent-output.schema.json:66-73."
+  },
   "next_session": "session_22",
   "notes": "Docs-only session. No PHP, Python, or Bash files modified. 1 new Markdown file created in tools/config/. S5 is the final SKILL SET in the pipeline (A→B→C→D→S5). All spec constraints from critical_notes embedded: meta-review framing, agent disagreement protocol (Task 3 + R4), escalation criteria (Task 1 + Escalation table), minimize-tokens rule (R1 + 10-read hard limit)."
 }
