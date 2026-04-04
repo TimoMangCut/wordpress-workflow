@@ -19,6 +19,8 @@
 #
 # Failures are logged to reports/logs/<slug>-failures.json
 # Source: multi-agent-plan.md:400-520
+#
+# Compatibility: POSIX sh + bash 3.2+ (no declare -A, no mapfile)
 
 set -euo pipefail
 
@@ -120,10 +122,20 @@ MERGE_SCRIPT="$SCRIPT_DIR/merge_agent_outputs.py"
 mkdir -p "$LOGS_DIR"
 
 # ---------------------------------------------------------------------------
+# Temp state dir (bash-3-compatible replacement for associative arrays)
+# One file per agent per field: $STATE_DIR/<agent>.pid  .start  .status
+# ---------------------------------------------------------------------------
+STATE_DIR="$(mktemp -d /tmp/orchestrate-${SLUG}-XXXXXX)"
+cleanup() { rm -rf "$STATE_DIR"; }
+trap cleanup EXIT
+
+state_set() { printf '%s' "$3" > "$STATE_DIR/$1.$2"; }
+state_get() { cat "$STATE_DIR/$1.$2" 2>/dev/null || true; }
+
+# ---------------------------------------------------------------------------
 # Logging helpers
 # ---------------------------------------------------------------------------
 LOG_TAG="[orchestrate-agents]"
-
 log_info()  { echo "$LOG_TAG INFO  $*"; }
 log_warn()  { echo "$LOG_TAG WARN  $*" >&2; }
 log_error() { echo "$LOG_TAG ERROR $*" >&2; }
@@ -171,14 +183,23 @@ print(json.dumps({'failures': json.loads(sys.argv[1])}, indent=2))
 # JSON validation helper
 # ---------------------------------------------------------------------------
 is_valid_json() {
-  local file="$1"
-  python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$file" 2>/dev/null
+  python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$1" 2>/dev/null
+}
+
+# ---------------------------------------------------------------------------
+# Agent output filename
+# Agent IDs in dispatch config already contain the full name (e.g. "agent-a1").
+# Output convention: reports/<slug>-<agent-id>.json
+#   agent-id="agent-a1" → reports/<slug>-agent-a1.json  (no double prefix)
+# ---------------------------------------------------------------------------
+agent_output_file() {
+  echo "$REPORTS_DIR/${SLUG}-${1}.json"
 }
 
 # ---------------------------------------------------------------------------
 # Step 1: Read dispatch config
 # ---------------------------------------------------------------------------
-log_info "=== Session 18: Multi-agent orchestrator starting for slug: $SLUG ==="
+log_info "=== Session 18 (post-review): Multi-agent orchestrator starting for slug: $SLUG ==="
 log_info "Dispatch config: $DISPATCH_FILE"
 
 if [[ ! -f "$DISPATCH_FILE" ]]; then
@@ -192,51 +213,53 @@ if ! is_valid_json "$DISPATCH_FILE"; then
   exit 1
 fi
 
-log_info "Dispatch config is valid JSON. Parsing..."
+log_info "Dispatch config valid. Parsing..."
 
-# Extract fields from dispatch config
 DISPATCH_SLUG=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(d['slug'])" "$DISPATCH_FILE")
-AGENT_LIST=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print('\n'.join(d['agents']))" "$DISPATCH_FILE")
 DISPATCH_TIMEOUT=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(d.get('timeout_seconds', 900))" "$DISPATCH_FILE")
 SOURCE_DIR=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(d.get('source_dir', ''))" "$DISPATCH_FILE")
-
 TIMEOUT_SECONDS="${TIMEOUT_OVERRIDE:-$DISPATCH_TIMEOUT}"
 
 log_info "slug from dispatch: $DISPATCH_SLUG"
-log_info "timeout: ${TIMEOUT_SECONDS}s"
-log_info "source_dir: $SOURCE_DIR"
-log_info "parallel-limit: $PARALLEL_LIMIT"
+log_info "timeout: ${TIMEOUT_SECONDS}s | parallel-limit: $PARALLEL_LIMIT | source_dir: $SOURCE_DIR"
 
-# Validate slug consistency
 if [[ "$DISPATCH_SLUG" != "$SLUG" ]]; then
   log_warn "Slug mismatch: CLI arg '$SLUG' vs dispatch config '$DISPATCH_SLUG'. Using CLI arg."
 fi
 
-# Build agent list array
-mapfile -t AGENTS <<< "$AGENT_LIST"
-log_info "Agents to run (${#AGENTS[@]}): ${AGENTS[*]}"
+# Build agent list using a while-read loop (bash-3 compatible, no mapfile)
+AGENTS_ALL=()
+while IFS= read -r agent_id; do
+  [[ -n "$agent_id" ]] && AGENTS_ALL+=("$agent_id")
+done < <(python3 -c "import json,sys; [print(a) for a in json.load(open(sys.argv[1]))['agents']]" "$DISPATCH_FILE")
 
-# Check agent inputs exist
+log_info "Agents in dispatch (${#AGENTS_ALL[@]}): ${AGENTS_ALL[*]}"
+
+# ---------------------------------------------------------------------------
+# Verify agent input files — collect runnable agents
+# ---------------------------------------------------------------------------
 log_info "Verifying agent input files..."
 AGENTS_TO_RUN=()
-for agent in "${AGENTS[@]}"; do
-  [[ -z "$agent" ]] && continue
+for agent in "${AGENTS_ALL[@]}"; do
   INPUT_FILE=$(python3 -c "
 import json,sys
 d=json.load(open(sys.argv[1]))
-inputs=d.get('inputs',{})
-print(inputs.get(sys.argv[2],''))
+print(d.get('inputs',{}).get(sys.argv[2],''))
 " "$DISPATCH_FILE" "$agent")
 
   if [[ -z "$INPUT_FILE" ]]; then
-    log_warn "No input file mapped for agent '$agent' in dispatch config. Skipping."
-    append_failure "phase2" "$agent" "missing_input" "0" "skipped" "Agent '$agent' has no input file in dispatch config."
+    log_warn "No input file mapped for '$agent' in dispatch config. Skipping."
+    append_failure "phase2" "$agent" "missing_input" "0" "skipped" "No input file in dispatch config for agent '$agent'."
     continue
   fi
 
-  if [[ ! -f "$REPO_ROOT/$INPUT_FILE" ]] && [[ ! -f "$INPUT_FILE" ]]; then
-    log_warn "Input file for agent '$agent' not found: $INPUT_FILE — IR slice may be empty. Skipping."
-    append_failure "phase2" "$agent" "missing_input_file" "0" "skipped" "IR slice empty or not found for $agent — no EPs in group (not an error)."
+  # Resolve path relative to repo root if not absolute
+  local_path="$INPUT_FILE"
+  [[ "$INPUT_FILE" != /* ]] && local_path="$REPO_ROOT/$INPUT_FILE"
+
+  if [[ ! -f "$local_path" ]]; then
+    log_warn "Input file for '$agent' not found: $INPUT_FILE — IR slice empty. Skipping."
+    append_failure "phase2" "$agent" "missing_input_file" "0" "skipped" "IR slice not found for '$agent' — no EPs in group (not an error)."
     continue
   fi
 
@@ -252,40 +275,22 @@ if [[ ${#AGENTS_TO_RUN[@]} -eq 0 ]]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Step 2 & 3: Launch agents in parallel batches, poll for completion
+# launch_agent — starts a single agent via Codex CLI in background
 # ---------------------------------------------------------------------------
-# Track per-agent state
-declare -A AGENT_PID       # agent → background PID (or "done"/"skipped")
-declare -A AGENT_STATUS    # agent → "pending"|"running"|"done"|"failed"|"skipped"
-declare -A AGENT_START     # agent → epoch start time
-
-OUTPUT_FILES=()
-FAILED_AGENTS=()
-
-# Function: get expected output file for an agent
-agent_output_file() {
-  local agent="$1"
-  echo "$REPORTS_DIR/${SLUG}-agent-${agent}.json"
-}
-
-# Function: launch a single agent via codex CLI
 launch_agent() {
   local agent="$1"
-  local input_file
+  local input_file out_file
+
   input_file=$(python3 -c "
 import json,sys
 d=json.load(open(sys.argv[1]))
-inputs=d.get('inputs',{})
-print(inputs.get(sys.argv[2],''))
+print(d.get('inputs',{}).get(sys.argv[2],''))
 " "$DISPATCH_FILE" "$agent")
 
-  local out_file
   out_file="$(agent_output_file "$agent")"
 
-  log_info "Launching agent: $agent (input: $input_file → output: $out_file)"
+  log_info "Launching agent: $agent  input=$input_file  output=$out_file"
 
-  # Launch codex CLI in background. The agent is expected to write $out_file.
-  # We pass the input file and output path as env vars / args per codex convention.
   AGENT_INPUT_FILE="$input_file" \
   AGENT_OUTPUT_FILE="$out_file" \
   AGENT_ID="$agent" \
@@ -293,25 +298,28 @@ print(inputs.get(sys.argv[2],''))
   codex run "$agent" "$SLUG" \
     --input "$input_file" \
     --output "$out_file" \
-    2>>"$LOGS_DIR/${SLUG}-agent-${agent}.log" \
+    2>>"$LOGS_DIR/${SLUG}-${agent}.log" \
     &
-  AGENT_PID["$agent"]=$!
-  AGENT_START["$agent"]=$(date +%s)
-  AGENT_STATUS["$agent"]="running"
-  log_info "Agent '$agent' launched with PID ${AGENT_PID[$agent]}"
+
+  local pid=$!
+  state_set "$agent" "pid"    "$pid"
+  state_set "$agent" "start"  "$(date +%s)"
+  state_set "$agent" "status" "running"
+  log_info "Agent '$agent' launched with PID $pid"
 }
 
-# Initialize all agents as pending
-for agent in "${AGENTS_TO_RUN[@]}"; do
-  AGENT_STATUS["$agent"]="pending"
-done
+# ---------------------------------------------------------------------------
+# Steps 2 & 3: Launch in parallel batches + poll
+# ---------------------------------------------------------------------------
+log_info "=== Step 2: Launching agents (parallel-limit=${PARALLEL_LIMIT}) ==="
 
+OUTPUT_FILES=()
+FAILED_AGENTS=()
+
+# Pending queue (bash-3 indexed array)
 PENDING_AGENTS=("${AGENTS_TO_RUN[@]}")
 RUNNING_AGENTS=()
 
-log_info "=== Step 2: Launching agents (parallel-limit=${PARALLEL_LIMIT}) ==="
-
-# Main orchestration loop
 while true; do
   # Fill running slots from pending
   while [[ ${#RUNNING_AGENTS[@]} -lt $PARALLEL_LIMIT ]] && [[ ${#PENDING_AGENTS[@]} -gt 0 ]]; do
@@ -321,98 +329,103 @@ while true; do
     RUNNING_AGENTS+=("$next_agent")
   done
 
-  # Poll running agents
+  # Poll each running agent
   STILL_RUNNING=()
   for agent in "${RUNNING_AGENTS[@]}"; do
-    local_pid="${AGENT_PID[$agent]}"
+    pid="$(state_get "$agent" pid)"
     out_file="$(agent_output_file "$agent")"
-    elapsed=$(( $(date +%s) - AGENT_START["$agent"] ))
+    start="$(state_get "$agent" start)"
+    elapsed=$(( $(date +%s) - start ))
 
-    # Check if output file exists and is valid JSON (completion signal)
+    # --- Completed: output file exists and is valid JSON ---
     if [[ -f "$out_file" ]] && is_valid_json "$out_file"; then
       log_info "Agent '$agent' completed → $out_file (${elapsed}s)"
-      AGENT_STATUS["$agent"]="done"
+      state_set "$agent" "status" "done"
       OUTPUT_FILES+=("$out_file")
-      # Kill process if still alive (already wrote output)
-      kill "$local_pid" 2>/dev/null || true
-      wait "$local_pid" 2>/dev/null || true
+      kill "$pid" 2>/dev/null || true
+      wait "$pid" 2>/dev/null || true
       continue
     fi
 
-    # Check timeout
+    # --- Timeout ---
     if [[ $elapsed -ge $TIMEOUT_SECONDS ]]; then
       log_warn "Agent '$agent' timed out after ${elapsed}s. Retrying once..."
-      kill "$local_pid" 2>/dev/null || true
-      wait "$local_pid" 2>/dev/null || true
+      kill "$pid" 2>/dev/null || true
+      wait "$pid" 2>/dev/null || true
 
-      # Retry once
       launch_agent "$agent"
-      local_retry_pid="${AGENT_PID[$agent]}"
       sleep "$POLL_INTERVAL"
-      elapsed2=$(( $(date +%s) - AGENT_START["$agent"] ))
 
-      if [[ -f "$out_file" ]] && is_valid_json "$out_file"; then
-        log_info "Agent '$agent' completed on retry → $out_file"
-        AGENT_STATUS["$agent"]="done"
-        OUTPUT_FILES+=("$out_file")
-        kill "$local_retry_pid" 2>/dev/null || true
-        wait "$local_retry_pid" 2>/dev/null || true
+      new_pid="$(state_get "$agent" pid)"
+      new_out="$(agent_output_file "$agent")"
+      elapsed2=$(( $(date +%s) - $(state_get "$agent" start) ))
+
+      if [[ -f "$new_out" ]] && is_valid_json "$new_out"; then
+        log_info "Agent '$agent' completed on retry → $new_out"
+        state_set "$agent" "status" "done"
+        OUTPUT_FILES+=("$new_out")
+        kill "$new_pid" 2>/dev/null || true
+        wait "$new_pid" 2>/dev/null || true
         continue
       else
         log_error "Agent '$agent' timed out after retry (${elapsed2}s). Skipping."
-        AGENT_STATUS["$agent"]="failed"
+        state_set "$agent" "status" "failed"
         FAILED_AGENTS+=("$agent")
-        append_failure "phase2" "$agent" "timeout" "1" "skipped" "Agent '$agent' timed out after retry — AJAX/EP findings for this group may be incomplete."
-        kill "$local_retry_pid" 2>/dev/null || true
-        wait "$local_retry_pid" 2>/dev/null || true
+        append_failure "phase2" "$agent" "timeout" "1" "skipped" \
+          "Agent '$agent' timed out after retry — EP group findings may be incomplete."
+        kill "$new_pid" 2>/dev/null || true
+        wait "$new_pid" 2>/dev/null || true
         continue
       fi
     fi
 
-    # Check if process died without writing valid output
-    if ! kill -0 "$local_pid" 2>/dev/null; then
+    # --- Process exited early (no valid output yet) ---
+    if ! kill -0 "$pid" 2>/dev/null; then
       exit_code=0
-      wait "$local_pid" 2>/dev/null && exit_code=$? || exit_code=$?
+      wait "$pid" 2>/dev/null && exit_code=$? || exit_code=$?
 
-      # Check if it wrote something (invalid JSON or nothing)
       if [[ -f "$out_file" ]]; then
-        # Attempt JSON repair via python (load with error recovery)
-        repaired=$(python3 -c "
+        # File exists but may be malformed
+        repair_result=$(python3 -c "
 import json, sys
 try:
-    data = json.load(open(sys.argv[1]))
+    json.load(open(sys.argv[1]))
     print('valid')
-except json.JSONDecodeError as e:
-    # Attempt partial repair: read raw, try truncating to last valid object
-    raw = open(sys.argv[1]).read().strip()
-    # Last resort: reject
+except Exception:
     print('invalid')
 " "$out_file")
-        if [[ "$repaired" == "valid" ]]; then
-          log_info "Agent '$agent' process exited (code=$exit_code) but output is valid — treating as done."
-          AGENT_STATUS["$agent"]="done"
+        if [[ "$repair_result" == "valid" ]]; then
+          log_info "Agent '$agent' exited (code=$exit_code) — output valid. Treating as done."
+          state_set "$agent" "status" "done"
           OUTPUT_FILES+=("$out_file")
           continue
         else
-          log_error "Agent '$agent' exited (code=$exit_code) with malformed JSON output. Rejecting."
-          append_failure "phase2" "$agent" "invalid_json" "0" "rejected" "Agent '$agent' wrote malformed JSON — output rejected, remaining agents merged."
+          log_error "Agent '$agent' exited (code=$exit_code) with malformed JSON. Rejecting."
+          append_failure "phase2" "$agent" "invalid_json" "0" "rejected" \
+            "Agent '$agent' produced malformed JSON — output rejected."
         fi
       else
-        log_error "Agent '$agent' exited (code=$exit_code) with no output file written."
-        append_failure "phase2" "$agent" "missing_output" "0" "skipped" "Agent '$agent' wrote no output file — findings for this EP group absent."
+        log_error "Agent '$agent' exited (code=$exit_code) with no output file."
+        append_failure "phase2" "$agent" "missing_output" "0" "skipped" \
+          "Agent '$agent' wrote no output — EP group findings absent."
       fi
-      AGENT_STATUS["$agent"]="failed"
+      state_set "$agent" "status" "failed"
       FAILED_AGENTS+=("$agent")
       continue
     fi
 
-    # Still running normally
+    # Still running
     log_info "Agent '$agent' still running (${elapsed}s elapsed)..."
     STILL_RUNNING+=("$agent")
   done
-  RUNNING_AGENTS=("${STILL_RUNNING[@]+"${STILL_RUNNING[@]}"}")
 
-  # All agents done?
+  # Rebuild running list without completed/failed agents
+  RUNNING_AGENTS=()
+  for a in "${STILL_RUNNING[@]+"${STILL_RUNNING[@]}"}"; do
+    RUNNING_AGENTS+=("$a")
+  done
+
+  # All done?
   if [[ ${#PENDING_AGENTS[@]} -eq 0 ]] && [[ ${#RUNNING_AGENTS[@]} -eq 0 ]]; then
     log_info "All agents finished."
     break
@@ -422,22 +435,39 @@ except json.JSONDecodeError as e:
 done
 
 # ---------------------------------------------------------------------------
-# Step 4: Check all-agents-failed fallback
+# Step 3: Completion summary
 # ---------------------------------------------------------------------------
 log_info "=== Step 3: Completion summary ==="
 log_info "Completed: ${#OUTPUT_FILES[@]} agent(s)"
 log_info "Failed:    ${#FAILED_AGENTS[@]} agent(s)"
 
+# ---------------------------------------------------------------------------
+# All-agents-fail: fallback to single-agent Phase 2 (per multi-agent-plan.md:490)
+# ---------------------------------------------------------------------------
 if [[ ${#OUTPUT_FILES[@]} -eq 0 ]]; then
-  log_error "All agents failed. Triggering single-agent fallback (manual review required)."
-  append_failure "phase2" "ALL" "all_agents_failed" "0" "fallback" "All agents failed — pipeline falls back to single-agent Phase 2. Set multi_agent_fallback=true in manifest."
+  log_error "All agents failed. Falling back to single-agent Phase 2 pipeline."
+  append_failure "phase2" "ALL" "all_agents_failed" "0" "fallback_single_agent" \
+    "All agents failed — invoking run-phase2.sh $SLUG (single-agent fallback). Set multi_agent_fallback=true in manifest."
   flush_failures
-  log_error "No merge possible. Exiting with failure."
-  exit 2
+
+  PHASE2_SCRIPT="$SCRIPT_DIR/run-phase2.sh"
+  if [[ ! -f "$PHASE2_SCRIPT" ]]; then
+    log_error "Fallback script not found: $PHASE2_SCRIPT. Exiting."
+    exit 2
+  fi
+  log_info "Invoking fallback: bash $PHASE2_SCRIPT $SLUG"
+  bash "$PHASE2_SCRIPT" "$SLUG"
+  fallback_exit=$?
+  if [[ $fallback_exit -ne 0 ]]; then
+    log_error "Single-agent fallback failed (exit=$fallback_exit)."
+    exit 2
+  fi
+  log_info "Single-agent fallback completed. Pipeline continues from run-phase2.sh output."
+  exit 0
 fi
 
 # ---------------------------------------------------------------------------
-# Step 5: Merge
+# Step 4: Merge
 # ---------------------------------------------------------------------------
 log_info "=== Step 4: Calling merge script ==="
 if [[ ! -f "$MERGE_SCRIPT" ]]; then
@@ -448,21 +478,22 @@ fi
 log_info "Running: python3 $MERGE_SCRIPT $SLUG"
 if ! python3 "$MERGE_SCRIPT" "$SLUG"; then
   log_error "merge_agent_outputs.py failed for slug '$SLUG'."
-  append_failure "phase2" "merge" "merge_failed" "0" "aborted" "merge_agent_outputs.py returned non-zero exit code."
+  append_failure "phase2" "merge" "merge_failed" "0" "aborted" \
+    "merge_agent_outputs.py returned non-zero exit code."
   flush_failures
   exit 1
 fi
 log_info "Merge complete."
 
 # ---------------------------------------------------------------------------
-# Step 6: Write merge-ready sentinel
+# Step 5: Write merge-ready sentinel
 # ---------------------------------------------------------------------------
 log_info "=== Step 5: Writing merge-ready sentinel ==="
 touch "$MERGE_READY_SENTINEL"
 log_info "Sentinel written → $MERGE_READY_SENTINEL"
 
 # ---------------------------------------------------------------------------
-# Flush failures log (even on success, for audit trail)
+# Flush failures log (audit trail — written even on success)
 # ---------------------------------------------------------------------------
 flush_failures
 
