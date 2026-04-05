@@ -1,0 +1,63 @@
+{
+  "metadata": {
+    "plugin_slug": "pretty-link",
+    "plugin_name": "PrettyLinks",
+    "version": "3.6.21",
+    "active_installs": null,
+    "files_analyzed": 198,
+    "total_loc": 26953,
+    "extraction_time_ms": 434,
+    "extractor_version": "1.0.0"
+  },
+  "unresolved_hooks": [
+    {
+      "file": "app/lib/PrliAddonUpdates.php",
+      "line": 17,
+      "function": "add_action",
+      "hook_arg_type": "other"
+    },
+    {
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 34,
+      "function": "add_filter",
+      "hook_arg_type": "concatenation"
+    },
+    {
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 39,
+      "function": "add_action",
+      "hook_arg_type": "concatenation"
+    },
+    {
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 40,
+      "function": "add_filter",
+      "hook_arg_type": "concatenation"
+    },
+    {
+      "file": "app/controllers/PrliLinksController.php",
+      "line": 41,
+      "function": "add_filter",
+      "hook_arg_type": "concatenation"
+    },
+    {
+      "file": "app/controllers/PrliAppController.php",
+      "line": 47,
+      "function": "add_filter",
+      "hook_arg_type": "concatenation"
+    },
+    {
+      "file": "vendor-prefixed/caseproof/ground-level-mothership/Manager/LicenseManager.php",
+      "line": 29,
+      "function": "add_action",
+      "hook_arg_type": "variable"
+    },
+    {
+      "file": "vendor-prefixed/caseproof/growth-tools/src/App.php",
+      "line": 48,
+      "function": "add_action",
+      "hook_arg_type": "concatenation"
+    }
+  ],
+  "coverage_gaps": []
+}

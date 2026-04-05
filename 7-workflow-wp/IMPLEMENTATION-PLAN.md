@@ -1220,7 +1220,9 @@ Trong `phase3_gate.py`:
 [x] Session 22: Step 4 Benchmark (→ USER REVIEW ④)   ← 2026-04-04
 [x] Session 23: First multi-agent pipeline run — Wave 4 S1+S2 for 3 benchmark plugins   ← 2026-04-05
 [x] Session 24: Pipeline fixes (DI-23-01-03) + Open Decisions lock + Codex Round 3 (quota safety, provider routing, resume flag)   ← 2026-04-05
-Session 25: Agents C+D completion + wave_4_results.json finalize + S5 (Claude Code Verify) runs
+[x] Session 25: Agents C+D completion (all 3 plugins) + wave_4_results.json finalize + DI-23-03 benchmark decision (Option D)   ← 2026-04-05
+[x] Session 26: Option D benchmark (compare.py) + DI-25-03 fix (accepted_fp in phase3_summary) + DI-25-02 root cause confirmed (Phase 1 extractor gap, DI-26-01) + LLM reviews (all 3 plugins) + S5 first run (backwpup)   ← 2026-04-05
+Session 27: DI-26-01 fix (Phase 1 extractor: resolve __array_callable__ permission_callbacks for REST EPs) + S5 for cartflows/pretty-link + benchmark re-run post fix
 ```
 
 Details sẽ được spec-out khi đến thời điểm (sau Session 19).

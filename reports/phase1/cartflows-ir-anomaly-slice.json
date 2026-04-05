@@ -1,0 +1,1845 @@
+{
+  "metadata": {
+    "plugin_slug": "cartflows",
+    "plugin_name": "CartFlows",
+    "version": "2.2.4",
+    "active_installs": null,
+    "files_analyzed": 333,
+    "total_loc": 104100,
+    "extraction_time_ms": 2311,
+    "extractor_version": "1.0.0"
+  },
+  "entry_points": [
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "load_cf_textdomain",
+        "class": "Cartflows_Loader",
+        "file": "classes/class-cartflows-loader.php",
+        "line_start": 562,
+        "line_end": 606
+      },
+      "auth_level": "none",
+      "file": "classes/class-cartflows-loader.php",
+      "line": 128
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "deactivation_survey_data_handler",
+        "class": "Cartflows_Loader",
+        "file": "classes/class-cartflows-loader.php",
+        "line_start": 379,
+        "line_end": 408
+      },
+      "auth_level": "none",
+      "file": "classes/class-cartflows-loader.php",
+      "line": 130
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook_name": "admin_init",
+      "callback": {
+        "type": "method",
+        "name": "flush_rules_after_save_permalinks",
+        "class": "Cartflows_Admin",
+        "file": "classes/class-cartflows-admin.php",
+        "line_start": 215,
+        "line_end": 223
+      },
+      "auth_level": "subscriber",
+      "file": "classes/class-cartflows-admin.php",
+      "line": 64
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "run_scheduled_docs_job",
+        "class": "Cartflows_Admin",
+        "file": "classes/class-cartflows-admin.php",
+        "line_start": 100,
+        "line_end": 104
+      },
+      "auth_level": "none",
+      "file": "classes/class-cartflows-admin.php",
+      "line": 70
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook_name": "admin_init",
+      "callback": {
+        "type": "method",
+        "name": "add_admin_cache_restrict_const",
+        "class": "Cartflows_Admin",
+        "file": "classes/class-cartflows-admin.php",
+        "line_start": 341,
+        "line_end": 346
+      },
+      "auth_level": "subscriber",
+      "file": "classes/class-cartflows-admin.php",
+      "line": 90
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "init_wc_logger",
+        "class": "Cartflows_Logger",
+        "file": "classes/class-cartflows-logger.php",
+        "line_start": 61,
+        "line_end": 65
+      },
+      "auth_level": "none",
+      "file": "classes/class-cartflows-logger.php",
+      "line": 50
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook_name": "admin_init",
+      "callback": {
+        "type": "method",
+        "name": "schedule_deletion_of_old_logs",
+        "class": "Cartflows_Logger",
+        "file": "classes/class-cartflows-logger.php",
+        "line_start": 156,
+        "line_end": 174
+      },
+      "auth_level": "subscriber",
+      "file": "classes/class-cartflows-logger.php",
+      "line": 52
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook_name": "admin_init",
+      "callback": {
+        "type": "method",
+        "name": "init",
+        "class": "Cartflows_Update",
+        "file": "classes/class-cartflows-update.php",
+        "line_start": 52,
+        "line_end": 177
+      },
+      "auth_level": "subscriber",
+      "file": "classes/class-cartflows-update.php",
+      "line": 43
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_cartflows_snooze_script_migration",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_cartflows_snooze_script_migration",
+      "callback": {
+        "type": "method",
+        "name": "snooze_script_migration_notice",
+        "class": "Cartflows_Admin_Notices",
+        "file": "classes/class-cartflows-admin-notices.php",
+        "line_start": 177,
+        "line_end": 202
+      },
+      "auth_level": "subscriber",
+      "file": "classes/class-cartflows-admin-notices.php",
+      "line": 83
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_cartflows_dismiss_script_migration_complete_notice",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_cartflows_dismiss_script_migration_complete_notice",
+      "callback": {
+        "type": "method",
+        "name": "dismiss_script_migration_complete_notice",
+        "class": "Cartflows_Admin_Notices",
+        "file": "classes/class-cartflows-admin-notices.php",
+        "line_start": 418,
+        "line_end": 429
+      },
+      "auth_level": "subscriber",
+      "file": "classes/class-cartflows-admin-notices.php",
+      "line": 84
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "debug_data_setting_actions",
+        "class": "Cartflows_Frontend",
+        "file": "classes/class-cartflows-frontend.php",
+        "line_start": 381,
+        "line_end": 384
+      },
+      "auth_level": "none",
+      "file": "classes/class-cartflows-frontend.php",
+      "line": 42
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "setup_optin_checkout_filter",
+        "class": "Cartflows_Frontend",
+        "file": "classes/class-cartflows-frontend.php",
+        "line_start": 852,
+        "line_end": 859
+      },
+      "auth_level": "none",
+      "file": "classes/class-cartflows-frontend.php",
+      "line": 43
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook_name": "admin_init",
+      "callback": {
+        "type": "method",
+        "name": "disable_rediraction",
+        "class": "Cartflows_BB_Compatibility",
+        "file": "compatibilities/plugins/class-cartflows-bb-compatibility.php",
+        "line_start": 55,
+        "line_end": 57
+      },
+      "auth_level": "subscriber",
+      "file": "compatibilities/plugins/class-cartflows-bb-compatibility.php",
+      "line": 45
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "register_wc_hooks",
+        "class": "Elementor\\Modules\\PageTemplates\\Cartflows_Elementor_Compatibility",
+        "file": "compatibilities/plugins/class-cartflows-elementor-compatibility.php",
+        "line_start": 122,
+        "line_end": 124
+      },
+      "auth_level": "none",
+      "file": "compatibilities/plugins/class-cartflows-elementor-compatibility.php",
+      "line": 53
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_cartflows_save_tutor_course_template",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_cartflows_save_tutor_course_template",
+      "callback": {
+        "type": "method",
+        "name": "ajax_save_course_template",
+        "class": "Cartflows_Tutor_Compatibility",
+        "file": "compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php",
+        "line_start": 198,
+        "line_end": 236
+      },
+      "auth_level": "subscriber",
+      "file": "compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php",
+      "line": 58
+    },
+    {
+      "id": "ep_template_redirect_template_redirect",
+      "type": "template_redirect",
+      "hook_name": "template_redirect",
+      "callback": {
+        "type": "method",
+        "name": "override_course_template",
+        "class": "Cartflows_Tutor_Compatibility",
+        "file": "compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php",
+        "line_start": 313,
+        "line_end": 348
+      },
+      "auth_level": "none",
+      "file": "compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php",
+      "line": 60
+    },
+    {
+      "id": "ep_template_redirect_template_redirect",
+      "type": "template_redirect",
+      "hook_name": "template_redirect",
+      "callback": {
+        "type": "method",
+        "name": "cartflows_override_course_template",
+        "class": "Cartflows_Learndash_Compatibility",
+        "file": "compatibilities/plugins/class-cartflows-learndash-compatibility.php",
+        "line_start": 257,
+        "line_end": 281
+      },
+      "auth_level": "none",
+      "file": "compatibilities/plugins/class-cartflows-learndash-compatibility.php",
+      "line": 47
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_cartflows_get_suretriggers_data",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_cartflows_get_suretriggers_data",
+      "callback": {
+        "type": "method",
+        "name": "get_suretriggers_data",
+        "class": "Cartflows_SureTriggers_Compatibility",
+        "file": "compatibilities/plugins/class-cartflows-suretriggers-compatibility.php",
+        "line_start": 115,
+        "line_end": 133
+      },
+      "auth_level": "subscriber",
+      "file": "compatibilities/plugins/class-cartflows-suretriggers-compatibility.php",
+      "line": 51
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "load_cartflows_theme_support",
+        "class": "Cartflows_Compatibility",
+        "file": "compatibilities/class-cartflows-compatibility.php",
+        "line_start": 65,
+        "line_end": 74
+      },
+      "auth_level": "none",
+      "file": "compatibilities/class-cartflows-compatibility.php",
+      "line": 45
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook_name": "admin_init",
+      "callback": {
+        "type": "method",
+        "name": "setup_wizard",
+        "class": "CartflowsAdmin\\Wizard\\Inc\\WizardCore",
+        "file": "wizard/inc/wizard-core.php",
+        "line_start": 201,
+        "line_end": 215
+      },
+      "auth_level": "subscriber",
+      "file": "wizard/inc/wizard-core.php",
+      "line": 50
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook_name": "admin_init",
+      "callback": {
+        "type": "method",
+        "name": "hide_notices",
+        "class": "CartflowsAdmin\\Wizard\\Inc\\WizardCore",
+        "file": "wizard/inc/wizard-core.php",
+        "line_start": 126,
+        "line_end": 138
+      },
+      "auth_level": "subscriber",
+      "file": "wizard/inc/wizard-core.php",
+      "line": 51
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "load_scripts",
+        "class": "CartflowsAdmin\\Wizard\\Inc\\WizardCore",
+        "file": "wizard/inc/wizard-core.php",
+        "line_start": 111,
+        "line_end": 114
+      },
+      "auth_level": "none",
+      "file": "wizard/inc/wizard-core.php",
+      "line": 57
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook_name": "admin_init",
+      "callback": {
+        "type": "method",
+        "name": "redirect_to_onboarding",
+        "class": "CartflowsAdmin\\Wizard\\Inc\\WizardCore",
+        "file": "wizard/inc/wizard-core.php",
+        "line_start": 71,
+        "line_end": 84
+      },
+      "auth_level": "subscriber",
+      "file": "wizard/inc/wizard-core.php",
+      "line": 60
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "prepare_ajax_errors",
+        "class": "CartflowsAdmin\\Wizard\\Ajax\\AjaxErrors",
+        "file": "wizard/ajax/ajax-errors.php",
+        "line_start": 66,
+        "line_end": 72
+      },
+      "auth_level": "none",
+      "file": "wizard/ajax/ajax-errors.php",
+      "line": 58
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook_name": "admin_init",
+      "callback": {
+        "type": "method",
+        "name": "settings_admin_scripts",
+        "class": "CartflowsAdmin\\AdminCore\\Inc\\AdminMenu",
+        "file": "admin-core/inc/admin-menu.php",
+        "line_start": 219,
+        "line_end": 229
+      },
+      "auth_level": "subscriber",
+      "file": "admin-core/inc/admin-menu.php",
+      "line": 82
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook_name": "admin_init",
+      "callback": {
+        "type": "method",
+        "name": "add_capabilities_to_admin",
+        "class": "CartflowsAdmin\\AdminCore\\Inc\\AdminMenu",
+        "file": "admin-core/inc/admin-menu.php",
+        "line_start": 339,
+        "line_end": 351
+      },
+      "auth_level": "subscriber",
+      "file": "admin-core/inc/admin-menu.php",
+      "line": 83
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_cartflows_install_plugin",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_cartflows_install_plugin",
+      "callback": {
+        "type": "function",
+        "name": "wp_ajax_install_plugin",
+        "class": null,
+        "file": null,
+        "line_start": null,
+        "line_end": null
+      },
+      "auth_level": "subscriber",
+      "file": "admin-core/ajax/importer.php",
+      "line": 81
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "prepare_ajax_errors",
+        "class": "CartflowsAdmin\\AdminCore\\Ajax\\AjaxErrors",
+        "file": "admin-core/ajax/ajax-errors.php",
+        "line_start": 65,
+        "line_end": 72
+      },
+      "auth_level": "none",
+      "file": "admin-core/ajax/ajax-errors.php",
+      "line": 57
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook_name": "admin_init",
+      "callback": {
+        "type": "method",
+        "name": "setup",
+        "class": "Cartflows_Pointer",
+        "file": "libraries/cartflows-pointer/class-cartflows-pointer.php",
+        "line_start": 74,
+        "line_end": 90
+      },
+      "auth_level": "subscriber",
+      "file": "libraries/cartflows-pointer/class-cartflows-pointer.php",
+      "line": 66
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_cartflows_pointer_should_show",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_cartflows_pointer_should_show",
+      "callback": {
+        "type": "method",
+        "name": "ajax_should_show",
+        "class": "Cartflows_Pointer",
+        "file": "libraries/cartflows-pointer/class-cartflows-pointer.php",
+        "line_start": 233,
+        "line_end": 254
+      },
+      "auth_level": "subscriber",
+      "file": "libraries/cartflows-pointer/class-cartflows-pointer.php",
+      "line": 140
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_cartflows_pointer_dismiss",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_cartflows_pointer_dismiss",
+      "callback": {
+        "type": "method",
+        "name": "ajax_dismiss",
+        "class": "Cartflows_Pointer",
+        "file": "libraries/cartflows-pointer/class-cartflows-pointer.php",
+        "line_start": 261,
+        "line_end": 274
+      },
+      "auth_level": "subscriber",
+      "file": "libraries/cartflows-pointer/class-cartflows-pointer.php",
+      "line": 141
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_cartflows_pointer_accept",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_cartflows_pointer_accept",
+      "callback": {
+        "type": "method",
+        "name": "ajax_accept",
+        "class": "Cartflows_Pointer",
+        "file": "libraries/cartflows-pointer/class-cartflows-pointer.php",
+        "line_start": 281,
+        "line_end": 294
+      },
+      "auth_level": "subscriber",
+      "file": "libraries/cartflows-pointer/class-cartflows-pointer.php",
+      "line": 142
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook_name": "admin_init",
+      "callback": {
+        "type": "method",
+        "name": "handle_optin_optout",
+        "class": "BSF_Analytics",
+        "file": "libraries/bsf-analytics/class-bsf-analytics.php",
+        "line_start": 312,
+        "line_end": 347
+      },
+      "auth_level": "subscriber",
+      "file": "libraries/bsf-analytics/class-bsf-analytics.php",
+      "line": 58
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook_name": "admin_init",
+      "callback": {
+        "type": "method",
+        "name": "option_notice",
+        "class": "BSF_Analytics",
+        "file": "libraries/bsf-analytics/class-bsf-analytics.php",
+        "line_start": 209,
+        "line_end": 305
+      },
+      "auth_level": "subscriber",
+      "file": "libraries/bsf-analytics/class-bsf-analytics.php",
+      "line": 59
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "maybe_track_analytics",
+        "class": "BSF_Analytics",
+        "file": "libraries/bsf-analytics/class-bsf-analytics.php",
+        "line_start": 572,
+        "line_end": 585
+      },
+      "auth_level": "none",
+      "file": "libraries/bsf-analytics/class-bsf-analytics.php",
+      "line": 60
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook_name": "admin_init",
+      "callback": {
+        "type": "method",
+        "name": "register_usage_tracking_setting",
+        "class": "BSF_Analytics",
+        "file": "libraries/bsf-analytics/class-bsf-analytics.php",
+        "line_start": 432,
+        "line_end": 476
+      },
+      "auth_level": "subscriber",
+      "file": "libraries/bsf-analytics/class-bsf-analytics.php",
+      "line": 64
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_uds_plugin_deactivate_feedback",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_uds_plugin_deactivate_feedback",
+      "callback": {
+        "type": "method",
+        "name": "send_plugin_deactivate_feedback",
+        "class": "Deactivation_Survey_Feedback",
+        "file": "libraries/bsf-analytics/modules/deactivation-survey/classes/class-deactivation-survey-feedback.php",
+        "line_start": 227,
+        "line_end": 276
+      },
+      "auth_level": "subscriber",
+      "file": "libraries/bsf-analytics/modules/deactivation-survey/classes/class-deactivation-survey-feedback.php",
+      "line": 54
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "load_analytics",
+        "class": "BSF_Analytics_Loader",
+        "file": "libraries/bsf-analytics/class-bsf-analytics-loader.php",
+        "line_start": 86,
+        "line_end": 117
+      },
+      "auth_level": "none",
+      "file": "libraries/bsf-analytics/class-bsf-analytics-loader.php",
+      "line": 68
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "init",
+        "class": "Cartflows_Update",
+        "file": "classes/class-cartflows-update.php",
+        "line_start": 52,
+        "line_end": 177
+      },
+      "auth_level": "none",
+      "file": "libraries/action-scheduler/classes/abstracts/ActionScheduler.php",
+      "line": 152
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "init",
+        "class": "Cartflows_Update",
+        "file": "classes/class-cartflows-update.php",
+        "line_start": 52,
+        "line_end": 177
+      },
+      "auth_level": "none",
+      "file": "libraries/action-scheduler/classes/abstracts/ActionScheduler.php",
+      "line": 153
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "init",
+        "class": "Cartflows_Update",
+        "file": "classes/class-cartflows-update.php",
+        "line_start": 52,
+        "line_end": 177
+      },
+      "auth_level": "none",
+      "file": "libraries/action-scheduler/classes/abstracts/ActionScheduler.php",
+      "line": 154
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "init",
+        "class": "Cartflows_Update",
+        "file": "classes/class-cartflows-update.php",
+        "line_start": 52,
+        "line_end": 177
+      },
+      "auth_level": "none",
+      "file": "libraries/action-scheduler/classes/abstracts/ActionScheduler.php",
+      "line": 155
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "closure",
+        "name": null,
+        "class": null,
+        "file": "libraries/action-scheduler/classes/abstracts/ActionScheduler.php",
+        "line_start": 166,
+        "line_end": 175
+      },
+      "auth_level": "none",
+      "file": "libraries/action-scheduler/classes/abstracts/ActionScheduler.php",
+      "line": 157
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "maybe_hook_migration",
+        "class": "Action_Scheduler\\Migration\\Controller",
+        "file": "libraries/action-scheduler/classes/migration/Controller.php",
+        "line_start": 184,
+        "line_end": 190
+      },
+      "auth_level": "none",
+      "file": "libraries/action-scheduler/classes/migration/Controller.php",
+      "line": 171
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "load",
+        "class": "Cartflows_Nps_Survey",
+        "file": "libraries/class-cartflows-nps-survey.php",
+        "line_start": 93,
+        "line_end": 99
+      },
+      "auth_level": "none",
+      "file": "libraries/class-cartflows-nps-survey.php",
+      "line": 50
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "register_elements",
+        "class": "Cartflows_Bricks_Elements_Loader",
+        "file": "modules/bricks/class-cartflows-bricks-elements-loader.php",
+        "line_start": 73,
+        "line_end": 90
+      },
+      "auth_level": "none",
+      "file": "modules/bricks/class-cartflows-bricks-elements-loader.php",
+      "line": 42
+    },
+    {
+      "id": "ep_template_redirect_template_redirect",
+      "type": "template_redirect",
+      "hook_name": "template_redirect",
+      "callback": {
+        "type": "method",
+        "name": "handle_step_visited",
+        "class": "Cartflows_Webhook_Events",
+        "file": "modules/webhook/classes/class-cartflows-webhook-events.php",
+        "line_start": 85,
+        "line_end": 119
+      },
+      "auth_level": "none",
+      "file": "modules/webhook/classes/class-cartflows-webhook-events.php",
+      "line": 53
+    },
+    {
+      "id": "ep_template_redirect_template_redirect",
+      "type": "template_redirect",
+      "hook_name": "template_redirect",
+      "callback": {
+        "type": "method",
+        "name": "template_redirect",
+        "class": "Cartflows_Landing_Markup",
+        "file": "modules/landing/classes/class-cartflows-landing-markup.php",
+        "line_start": 129,
+        "line_end": 148
+      },
+      "auth_level": "none",
+      "file": "modules/landing/classes/class-cartflows-landing-markup.php",
+      "line": 43
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_wcf_json_search_flows",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_wcf_json_search_flows",
+      "callback": {
+        "type": "method",
+        "name": "json_search_flows",
+        "class": "Cartflows_Wd_Flow_Product_Meta",
+        "file": "modules/woo-dynamic-flow/classes/class-cartflows-wd-flow-product-meta.php",
+        "line_start": 83,
+        "line_end": 123
+      },
+      "auth_level": "subscriber",
+      "file": "modules/woo-dynamic-flow/classes/class-cartflows-wd-flow-product-meta.php",
+      "line": 43
+    },
+    {
+      "id": "ep_shortcode_cartflows_product_title",
+      "type": "shortcode",
+      "hook_name": "cartflows_product_title",
+      "callback": {
+        "type": "method",
+        "name": "product_title",
+        "class": "Cartflows_Wd_Flow_Shortcodes",
+        "file": "modules/woo-dynamic-flow/classes/class-cartflows-wd-flow-shortcodes.php",
+        "line_start": 81,
+        "line_end": 99
+      },
+      "auth_level": "contributor",
+      "file": "modules/woo-dynamic-flow/classes/class-cartflows-wd-flow-shortcodes.php",
+      "line": 52
+    },
+    {
+      "id": "ep_shortcode_cartflows_product_add_to_cart",
+      "type": "shortcode",
+      "hook_name": "cartflows_product_add_to_cart",
+      "callback": {
+        "type": "method",
+        "name": "add_to_cart",
+        "class": "Cartflows_Wd_Flow_Shortcodes",
+        "file": "modules/woo-dynamic-flow/classes/class-cartflows-wd-flow-shortcodes.php",
+        "line_start": 106,
+        "line_end": 192
+      },
+      "auth_level": "contributor",
+      "file": "modules/woo-dynamic-flow/classes/class-cartflows-wd-flow-shortcodes.php",
+      "line": 53
+    },
+    {
+      "id": "ep_template_redirect_template_redirect",
+      "type": "template_redirect",
+      "hook_name": "template_redirect",
+      "callback": {
+        "type": "method",
+        "name": "redirect_tq_page_to_custom_url",
+        "class": "Cartflows_Thankyou_Markup",
+        "file": "modules/thankyou/classes/class-cartflows-thankyou-markup.php",
+        "line_start": 191,
+        "line_end": 206
+      },
+      "auth_level": "none",
+      "file": "modules/thankyou/classes/class-cartflows-thankyou-markup.php",
+      "line": 53
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "register_blocks",
+        "class": "WCFB_Optin_Form",
+        "file": "modules/gutenberg/dist/blocks/optin-form/class-wcfb-optin-form.php",
+        "line_start": 51,
+        "line_end": 400
+      },
+      "auth_level": "none",
+      "file": "modules/gutenberg/dist/blocks/optin-form/class-wcfb-optin-form.php",
+      "line": 43
+    },
+    {
+      "id": "ep_block_wcfb_optin_form",
+      "type": "block",
+      "hook_name": "wcfb/optin-form",
+      "callback": {
+        "type": "method",
+        "name": "render_html",
+        "class": "WCFB_Optin_Form",
+        "file": "modules/gutenberg/dist/blocks/optin-form/class-wcfb-optin-form.php",
+        "line_start": 420,
+        "line_end": 490
+      },
+      "auth_level": "contributor",
+      "file": "modules/gutenberg/dist/blocks/optin-form/class-wcfb-optin-form.php",
+      "line": 389
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "register_blocks",
+        "class": "WCFB_Order_Detail_Form",
+        "file": "modules/gutenberg/dist/blocks/order-detail-form/class-wcfb-order-detail-form.php",
+        "line_start": 60,
+        "line_end": 874
+      },
+      "auth_level": "none",
+      "file": "modules/gutenberg/dist/blocks/order-detail-form/class-wcfb-order-detail-form.php",
+      "line": 52
+    },
+    {
+      "id": "ep_block_wcfb_order_detail_form",
+      "type": "block",
+      "hook_name": "wcfb/order-detail-form",
+      "callback": {
+        "type": "method",
+        "name": "render_html",
+        "class": "WCFB_Order_Detail_Form",
+        "file": "modules/gutenberg/dist/blocks/order-detail-form/class-wcfb-order-detail-form.php",
+        "line_start": 884,
+        "line_end": 918
+      },
+      "auth_level": "contributor",
+      "file": "modules/gutenberg/dist/blocks/order-detail-form/class-wcfb-order-detail-form.php",
+      "line": 67
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "register_blocks",
+        "class": "WCFB_Checkout_Form",
+        "file": "modules/gutenberg/dist/blocks/checkout-form/class-wcfb-checkout-form.php",
+        "line_start": 50,
+        "line_end": 810
+      },
+      "auth_level": "none",
+      "file": "modules/gutenberg/dist/blocks/checkout-form/class-wcfb-checkout-form.php",
+      "line": 42
+    },
+    {
+      "id": "ep_block_wcfb_checkout_form",
+      "type": "block",
+      "hook_name": "wcfb/checkout-form",
+      "callback": {
+        "type": "method",
+        "name": "render_html",
+        "class": "WCFB_Checkout_Form",
+        "file": "modules/gutenberg/dist/blocks/checkout-form/class-wcfb-checkout-form.php",
+        "line_start": 819,
+        "line_end": 887
+      },
+      "auth_level": "contributor",
+      "file": "modules/gutenberg/dist/blocks/checkout-form/class-wcfb-checkout-form.php",
+      "line": 799
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "prepare_block_list",
+        "class": "Cartflows_Gb_Helper",
+        "file": "modules/gutenberg/classes/class-cartflows-gb-helper.php",
+        "line_start": 112,
+        "line_end": 114
+      },
+      "auth_level": "none",
+      "file": "modules/gutenberg/classes/class-cartflows-gb-helper.php",
+      "line": 103
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook_name": "admin_init",
+      "callback": {
+        "type": "method",
+        "name": "gutenberg_editor_compatibility",
+        "class": "Cartflows_Gutenberg_Editor",
+        "file": "modules/gutenberg/classes/class-cartflows-gutenberg-editor.php",
+        "line_start": 153,
+        "line_end": 190
+      },
+      "auth_level": "subscriber",
+      "file": "modules/gutenberg/classes/class-cartflows-gutenberg-editor.php",
+      "line": 43
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook_name": "admin_init",
+      "callback": {
+        "type": "method",
+        "name": "add_gcp_colors_to_block_default_color_pallet",
+        "class": "Cartflows_Gutenberg_Editor",
+        "file": "modules/gutenberg/classes/class-cartflows-gutenberg-editor.php",
+        "line_start": 57,
+        "line_end": 88
+      },
+      "auth_level": "subscriber",
+      "file": "modules/gutenberg/classes/class-cartflows-gutenberg-editor.php",
+      "line": 47
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_wpcf_order_detail_form_shortcode",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_wpcf_order_detail_form_shortcode",
+      "callback": {
+        "type": "method",
+        "name": "order_detail_form_shortcode",
+        "class": "Cartflows_Init_Blocks",
+        "file": "modules/gutenberg/classes/class-cartflows-init-blocks.php",
+        "line_start": 141,
+        "line_end": 190
+      },
+      "auth_level": "subscriber",
+      "file": "modules/gutenberg/classes/class-cartflows-init-blocks.php",
+      "line": 64
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_wcf_woo_apply_coupon",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_wcf_woo_apply_coupon",
+      "callback": {
+        "type": "method",
+        "name": "apply_coupon",
+        "class": "Cartflows_Checkout_Ajax",
+        "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "line_start": 106,
+        "line_end": 137
+      },
+      "auth_level": "subscriber",
+      "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "line": 45
+    },
+    {
+      "id": "ep_ajax_nopriv_wp_ajax_nopriv_wcf_woo_apply_coupon",
+      "type": "ajax_nopriv",
+      "hook_name": "wp_ajax_nopriv_wcf_woo_apply_coupon",
+      "callback": {
+        "type": "method",
+        "name": "apply_coupon",
+        "class": "Cartflows_Checkout_Ajax",
+        "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "line_start": 106,
+        "line_end": 137
+      },
+      "auth_level": "none",
+      "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "line": 46
+    },
+    {
+      "id": "ep_ajax_priv_wp_ajax_wcf_upload_checkout_file",
+      "type": "ajax_priv",
+      "hook_name": "wp_ajax_wcf_upload_checkout_file",
+      "callback": {
+        "type": "method",
+        "name": "upload_checkout_file",
+        "class": "Cartflows_Checkout_Ajax",
+        "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "line_start": 293,
+        "line_end": 346
+      },
+      "auth_level": "subscriber",
+      "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "line": 57
+    },
+    {
+      "id": "ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file",
+      "type": "ajax_nopriv",
+      "hook_name": "wp_ajax_nopriv_wcf_upload_checkout_file",
+      "callback": {
+        "type": "method",
+        "name": "upload_checkout_file",
+        "class": "Cartflows_Checkout_Ajax",
+        "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "line_start": 293,
+        "line_end": 346
+      },
+      "auth_level": "none",
+      "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "line": 58
+    },
+    {
+      "id": "ep_shortcode_cartflows_checkout",
+      "type": "shortcode",
+      "hook_name": "cartflows_checkout",
+      "callback": {
+        "type": "method",
+        "name": "checkout_shortcode_markup",
+        "class": "Cartflows_Checkout_Markup",
+        "file": "modules/checkout/classes/class-cartflows-checkout-markup.php",
+        "line_start": 473,
+        "line_end": 541
+      },
+      "auth_level": "contributor",
+      "file": "modules/checkout/classes/class-cartflows-checkout-markup.php",
+      "line": 55
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "update_woo_actions_ajax",
+        "class": "Cartflows_Checkout_Markup",
+        "file": "modules/checkout/classes/class-cartflows-checkout-markup.php",
+        "line_start": 209,
+        "line_end": 215
+      },
+      "auth_level": "none",
+      "file": "modules/checkout/classes/class-cartflows-checkout-markup.php",
+      "line": 79
+    },
+    {
+      "id": "ep_template_redirect_template_redirect",
+      "type": "template_redirect",
+      "hook_name": "template_redirect",
+      "callback": {
+        "type": "method",
+        "name": "global_checkout_template_redirect",
+        "class": "Cartflows_Global_Checkout",
+        "file": "modules/checkout/classes/class-cartflows-global-checkout.php",
+        "line_start": 127,
+        "line_end": 158
+      },
+      "auth_level": "none",
+      "file": "modules/checkout/classes/class-cartflows-global-checkout.php",
+      "line": 45
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook_name": "admin_init",
+      "callback": {
+        "type": "method",
+        "name": "register_modules",
+        "class": "Cartflows_BB_Modules_Loader",
+        "file": "modules/beaver-builder/class-cartflows-bb-modules-loader.php",
+        "line_start": 104,
+        "line_end": 110
+      },
+      "auth_level": "subscriber",
+      "file": "modules/beaver-builder/class-cartflows-bb-modules-loader.php",
+      "line": 42
+    },
+    {
+      "id": "ep_shortcode_cartflows_optin",
+      "type": "shortcode",
+      "hook_name": "cartflows_optin",
+      "callback": {
+        "type": "method",
+        "name": "optin_shortcode_markup",
+        "class": "Cartflows_Optin_Markup",
+        "file": "modules/optin/classes/class-cartflows-optin-markup.php",
+        "line_start": 225,
+        "line_end": 284
+      },
+      "auth_level": "contributor",
+      "file": "modules/optin/classes/class-cartflows-optin-markup.php",
+      "line": 47
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "remove_woo_actions",
+        "class": "Cartflows_Optin_Markup",
+        "file": "modules/optin/classes/class-cartflows-optin-markup.php",
+        "line_start": 120,
+        "line_end": 145
+      },
+      "auth_level": "none",
+      "file": "modules/optin/classes/class-cartflows-optin-markup.php",
+      "line": 69
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook_name": "admin_init",
+      "callback": {
+        "type": "method",
+        "name": "schedule_weekly_report_email",
+        "class": "Cartflows_Admin_Report_Emails",
+        "file": "modules/email-report/class-cartflows-admin-report-emails.php",
+        "line_start": 54,
+        "line_end": 73
+      },
+      "auth_level": "subscriber",
+      "file": "modules/email-report/class-cartflows-admin-report-emails.php",
+      "line": 44
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook_name": "admin_init",
+      "callback": {
+        "type": "method",
+        "name": "unsubscribe_cartflows_weekly_emails",
+        "class": "Cartflows_Admin_Report_Emails",
+        "file": "modules/email-report/class-cartflows-admin-report-emails.php",
+        "line_start": 115,
+        "line_end": 150
+      },
+      "auth_level": "subscriber",
+      "file": "modules/email-report/class-cartflows-admin-report-emails.php",
+      "line": 48
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "flow_post_type",
+        "class": "Cartflows_Flow_Post_Type",
+        "file": "modules/flow/classes/class-cartflows-flow-post-type.php",
+        "line_start": 100,
+        "line_end": 162
+      },
+      "auth_level": "none",
+      "file": "modules/flow/classes/class-cartflows-flow-post-type.php",
+      "line": 42
+    },
+    {
+      "id": "ep_template_redirect_template_redirect",
+      "type": "template_redirect",
+      "hook_name": "template_redirect",
+      "callback": {
+        "type": "method",
+        "name": "redirect_to_step",
+        "class": "Cartflows_Flow_Post_Type",
+        "file": "modules/flow/classes/class-cartflows-flow-post-type.php",
+        "line_start": 280,
+        "line_end": 291
+      },
+      "auth_level": "none",
+      "file": "modules/flow/classes/class-cartflows-flow-post-type.php",
+      "line": 55
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "rewrite_step_rule",
+        "class": "Cartflows_Permalink",
+        "file": "modules/flow/classes/class-cartflows-permalink.php",
+        "line_start": 109,
+        "line_end": 148
+      },
+      "auth_level": "none",
+      "file": "modules/flow/classes/class-cartflows-permalink.php",
+      "line": 43
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "step_post_type",
+        "class": "Cartflows_Step_Post_Type",
+        "file": "modules/flow/classes/class-cartflows-step-post-type.php",
+        "line_start": 168,
+        "line_end": 295
+      },
+      "auth_level": "none",
+      "file": "modules/flow/classes/class-cartflows-step-post-type.php",
+      "line": 49
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "add_wp_templates_support",
+        "class": "Cartflows_Step_Post_Type",
+        "file": "modules/flow/classes/class-cartflows-step-post-type.php",
+        "line_start": 305,
+        "line_end": 307
+      },
+      "auth_level": "none",
+      "file": "modules/flow/classes/class-cartflows-step-post-type.php",
+      "line": 50
+    },
+    {
+      "id": "ep_template_redirect_template_redirect",
+      "type": "template_redirect",
+      "hook_name": "template_redirect",
+      "callback": {
+        "type": "method",
+        "name": "query_fix",
+        "class": "Cartflows_Step_Post_Type",
+        "file": "modules/flow/classes/class-cartflows-step-post-type.php",
+        "line_start": 344,
+        "line_end": 370
+      },
+      "auth_level": "none",
+      "file": "modules/flow/classes/class-cartflows-step-post-type.php",
+      "line": 56
+    },
+    {
+      "id": "ep_admin_init_admin_init",
+      "type": "admin_init",
+      "hook_name": "admin_init",
+      "callback": {
+        "type": "method",
+        "name": "disallowed_admin_all_steps_view",
+        "class": "Cartflows_Step_Post_Type",
+        "file": "modules/flow/classes/class-cartflows-step-post-type.php",
+        "line_start": 511,
+        "line_end": 525
+      },
+      "auth_level": "subscriber",
+      "file": "modules/flow/classes/class-cartflows-step-post-type.php",
+      "line": 58
+    }
+  ],
+  "anomalies": [
+    {
+      "id": "anom_1",
+      "rule_id": "rule_01",
+      "type": "missing_nonce",
+      "severity": "high",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_cartflows_dismiss_script_migration_complete_notice",
+      "description": "Missing nonce check in ajax_priv handler 'wp_ajax_cartflows_dismiss_script_migration_complete_notice'",
+      "evidence": {
+        "file": "classes/class-cartflows-admin-notices.php",
+        "line": 84
+      }
+    },
+    {
+      "id": "anom_2",
+      "rule_id": "rule_01",
+      "type": "missing_nonce",
+      "severity": "high",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_wcf_json_search_flows",
+      "description": "Missing nonce check in ajax_priv handler 'wp_ajax_wcf_json_search_flows'",
+      "evidence": {
+        "file": "modules/woo-dynamic-flow/classes/class-cartflows-wd-flow-product-meta.php",
+        "line": 43
+      }
+    },
+    {
+      "id": "anom_3",
+      "rule_id": "rule_01",
+      "type": "missing_nonce",
+      "severity": "high",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_wcf_upload_checkout_file",
+      "description": "Missing nonce check in ajax_priv handler 'wp_ajax_wcf_upload_checkout_file'",
+      "evidence": {
+        "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "line": 57
+      }
+    },
+    {
+      "id": "anom_4",
+      "rule_id": "rule_02",
+      "type": "missing_capability",
+      "severity": "high",
+      "cwe_id": "CWE-862",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_cartflows_save_tutor_course_template",
+      "description": "Missing current_user_can() in ajax_priv handler 'wp_ajax_cartflows_save_tutor_course_template' with admin-level operations",
+      "evidence": {
+        "file": "compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php",
+        "line": 58
+      }
+    },
+    {
+      "id": "anom_5",
+      "rule_id": "rule_02",
+      "type": "missing_capability",
+      "severity": "high",
+      "cwe_id": "CWE-862",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_wcf_upload_checkout_file",
+      "description": "Missing current_user_can() in ajax_priv handler 'wp_ajax_wcf_upload_checkout_file' with admin-level operations",
+      "evidence": {
+        "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "line": 57
+      }
+    },
+    {
+      "id": "anom_6",
+      "rule_id": "rule_03",
+      "type": "flawed_nonce_pattern",
+      "severity": "medium",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_cartflows_snooze_script_migration",
+      "description": "Flawed nonce check: check_ajax_referer with $die=false \u2014 code continues on failure",
+      "evidence": {
+        "file": "classes/class-cartflows-admin-notices.php",
+        "line": 179
+      }
+    },
+    {
+      "id": "anom_7",
+      "rule_id": "rule_03",
+      "type": "flawed_nonce_pattern",
+      "severity": "medium",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_cartflows_dismiss_script_migration_complete_notice",
+      "description": "Flawed nonce check: guard at line 424 after side-effect at line 421",
+      "evidence": {
+        "file": "classes/class-cartflows-admin-notices.php",
+        "line": 424
+      }
+    },
+    {
+      "id": "anom_8",
+      "rule_id": "rule_03",
+      "type": "flawed_nonce_pattern",
+      "severity": "medium",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_cartflows_get_suretriggers_data",
+      "description": "Flawed nonce check: check_ajax_referer with $die=false \u2014 code continues on failure; guard at line 127 after side-effect at line 121",
+      "evidence": {
+        "file": "compatibilities/plugins/class-cartflows-suretriggers-compatibility.php",
+        "line": 127
+      }
+    },
+    {
+      "id": "anom_9",
+      "rule_id": "rule_03",
+      "type": "flawed_nonce_pattern",
+      "severity": "medium",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_cartflows_pointer_should_show",
+      "description": "Flawed nonce check: guard at line 240 after side-effect at line 236",
+      "evidence": {
+        "file": "libraries/cartflows-pointer/class-cartflows-pointer.php",
+        "line": 240
+      }
+    },
+    {
+      "id": "anom_10",
+      "rule_id": "rule_03",
+      "type": "flawed_nonce_pattern",
+      "severity": "medium",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_cartflows_pointer_dismiss",
+      "description": "Flawed nonce check: guard at line 268 after side-effect at line 264",
+      "evidence": {
+        "file": "libraries/cartflows-pointer/class-cartflows-pointer.php",
+        "line": 268
+      }
+    },
+    {
+      "id": "anom_11",
+      "rule_id": "rule_03",
+      "type": "flawed_nonce_pattern",
+      "severity": "medium",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_cartflows_pointer_accept",
+      "description": "Flawed nonce check: guard at line 288 after side-effect at line 284",
+      "evidence": {
+        "file": "libraries/cartflows-pointer/class-cartflows-pointer.php",
+        "line": 288
+      }
+    },
+    {
+      "id": "anom_12",
+      "rule_id": "rule_03",
+      "type": "flawed_nonce_pattern",
+      "severity": "medium",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_uds_plugin_deactivate_feedback",
+      "description": "Flawed nonce check: check_ajax_referer with $die=false \u2014 code continues on failure; guard at line 241 after side-effect at line 235",
+      "evidence": {
+        "file": "libraries/bsf-analytics/modules/deactivation-survey/classes/class-deactivation-survey-feedback.php",
+        "line": 241
+      }
+    },
+    {
+      "id": "anom_13",
+      "rule_id": "rule_03",
+      "type": "flawed_nonce_pattern",
+      "severity": "medium",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_wcf_json_search_flows",
+      "description": "Flawed nonce check: guard at line 89 after side-effect at line 86",
+      "evidence": {
+        "file": "modules/woo-dynamic-flow/classes/class-cartflows-wd-flow-product-meta.php",
+        "line": 89
+      }
+    },
+    {
+      "id": "anom_14",
+      "rule_id": "rule_03",
+      "type": "flawed_nonce_pattern",
+      "severity": "medium",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_wpcf_order_detail_form_shortcode",
+      "description": "Flawed nonce check: guard at line 161 after side-effect at line 146",
+      "evidence": {
+        "file": "modules/gutenberg/classes/class-cartflows-init-blocks.php",
+        "line": 161
+      }
+    },
+    {
+      "id": "anom_15",
+      "rule_id": "rule_03",
+      "type": "flawed_nonce_pattern",
+      "severity": "medium",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_wpcf_order_detail_form_shortcode",
+      "description": "Flawed nonce check: guard at line 175 after side-effect at line 146",
+      "evidence": {
+        "file": "modules/gutenberg/classes/class-cartflows-init-blocks.php",
+        "line": 175
+      }
+    },
+    {
+      "id": "anom_16",
+      "rule_id": "rule_03",
+      "type": "flawed_nonce_pattern",
+      "severity": "medium",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_wcf_woo_apply_coupon",
+      "description": "Flawed nonce check: check_ajax_referer with $die=false \u2014 code continues on failure",
+      "evidence": {
+        "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "line": 109
+      }
+    },
+    {
+      "id": "anom_17",
+      "rule_id": "rule_03",
+      "type": "flawed_nonce_pattern",
+      "severity": "medium",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_nopriv_wp_ajax_nopriv_wcf_woo_apply_coupon",
+      "description": "Flawed nonce check: check_ajax_referer with $die=false \u2014 code continues on failure",
+      "evidence": {
+        "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "line": 109
+      }
+    },
+    {
+      "id": "anom_18",
+      "rule_id": "rule_03",
+      "type": "flawed_nonce_pattern",
+      "severity": "medium",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_wcf_upload_checkout_file",
+      "description": "Flawed nonce check: check_ajax_referer with $die=false \u2014 code continues on failure",
+      "evidence": {
+        "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "line": 295
+      }
+    },
+    {
+      "id": "anom_19",
+      "rule_id": "rule_03",
+      "type": "flawed_nonce_pattern",
+      "severity": "medium",
+      "cwe_id": "CWE-352",
+      "entry_point_id": "ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file",
+      "description": "Flawed nonce check: check_ajax_referer with $die=false \u2014 code continues on failure",
+      "evidence": {
+        "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "line": 295
+      }
+    },
+    {
+      "id": "anom_20",
+      "rule_id": "rule_05",
+      "type": "potential_xss",
+      "severity": "medium",
+      "cwe_id": "CWE-79",
+      "entry_point_id": "ep_shortcode_cartflows_product_title",
+      "description": "Shortcode/block 'cartflows_product_title' has attribute sources + output sinks \u2014 verify escaping",
+      "evidence": {
+        "file": "modules/woo-dynamic-flow/classes/class-cartflows-wd-flow-shortcodes.php",
+        "line": 52
+      }
+    },
+    {
+      "id": "anom_21",
+      "rule_id": "rule_05",
+      "type": "potential_xss",
+      "severity": "medium",
+      "cwe_id": "CWE-79",
+      "entry_point_id": "ep_shortcode_cartflows_product_add_to_cart",
+      "description": "Shortcode/block 'cartflows_product_add_to_cart' has attribute sources + output sinks \u2014 verify escaping",
+      "evidence": {
+        "file": "modules/woo-dynamic-flow/classes/class-cartflows-wd-flow-shortcodes.php",
+        "line": 53
+      }
+    },
+    {
+      "id": "anom_22",
+      "rule_id": "rule_05",
+      "type": "potential_xss",
+      "severity": "medium",
+      "cwe_id": "CWE-79",
+      "entry_point_id": "ep_block_wcfb_optin_form",
+      "description": "Shortcode/block 'wcfb/optin-form' has attribute sources + output sinks \u2014 verify escaping",
+      "evidence": {
+        "file": "modules/gutenberg/dist/blocks/optin-form/class-wcfb-optin-form.php",
+        "line": 389
+      }
+    },
+    {
+      "id": "anom_23",
+      "rule_id": "rule_05",
+      "type": "potential_xss",
+      "severity": "medium",
+      "cwe_id": "CWE-79",
+      "entry_point_id": "ep_block_wcfb_order_detail_form",
+      "description": "Shortcode/block 'wcfb/order-detail-form' has attribute sources + output sinks \u2014 verify escaping",
+      "evidence": {
+        "file": "modules/gutenberg/dist/blocks/order-detail-form/class-wcfb-order-detail-form.php",
+        "line": 67
+      }
+    },
+    {
+      "id": "anom_24",
+      "rule_id": "rule_05",
+      "type": "potential_xss",
+      "severity": "medium",
+      "cwe_id": "CWE-79",
+      "entry_point_id": "ep_block_wcfb_checkout_form",
+      "description": "Shortcode/block 'wcfb/checkout-form' has attribute sources + output sinks \u2014 verify escaping",
+      "evidence": {
+        "file": "modules/gutenberg/dist/blocks/checkout-form/class-wcfb-checkout-form.php",
+        "line": 799
+      }
+    },
+    {
+      "id": "anom_25",
+      "rule_id": "rule_05",
+      "type": "potential_xss",
+      "severity": "medium",
+      "cwe_id": "CWE-79",
+      "entry_point_id": "ep_shortcode_cartflows_checkout",
+      "description": "Shortcode/block 'cartflows_checkout' has attribute sources + output sinks \u2014 verify escaping",
+      "evidence": {
+        "file": "modules/checkout/classes/class-cartflows-checkout-markup.php",
+        "line": 55
+      }
+    },
+    {
+      "id": "anom_26",
+      "rule_id": "rule_05",
+      "type": "potential_xss",
+      "severity": "medium",
+      "cwe_id": "CWE-79",
+      "entry_point_id": "ep_shortcode_cartflows_optin",
+      "description": "Shortcode/block 'cartflows_optin' has attribute sources + output sinks \u2014 verify escaping",
+      "evidence": {
+        "file": "modules/optin/classes/class-cartflows-optin-markup.php",
+        "line": 47
+      }
+    },
+    {
+      "id": "anom_27",
+      "rule_id": "rule_06",
+      "type": "is_admin_as_auth",
+      "severity": "high",
+      "cwe_id": "CWE-862",
+      "entry_point_id": "ep_template_redirect_template_redirect",
+      "description": "is_admin() checks URI prefix, NOT user role \u2014 any subscriber can access /wp-admin/admin-ajax.php",
+      "evidence": {
+        "file": "compatibilities/plugins/tutor-lms/class-cartflows-tutor-compatibility.php",
+        "line": 315
+      }
+    },
+    {
+      "id": "anom_28",
+      "rule_id": "rule_06",
+      "type": "is_admin_as_auth",
+      "severity": "high",
+      "cwe_id": "CWE-862",
+      "entry_point_id": "ep_template_redirect_template_redirect",
+      "description": "is_admin() checks URI prefix, NOT user role \u2014 any subscriber can access /wp-admin/admin-ajax.php",
+      "evidence": {
+        "file": "compatibilities/plugins/class-cartflows-learndash-compatibility.php",
+        "line": 259
+      }
+    },
+    {
+      "id": "anom_29",
+      "rule_id": "rule_06",
+      "type": "is_admin_as_auth",
+      "severity": "high",
+      "cwe_id": "CWE-862",
+      "entry_point_id": "ep_admin_init_admin_init",
+      "description": "is_admin() checks URI prefix, NOT user role \u2014 any subscriber can access /wp-admin/admin-ajax.php",
+      "evidence": {
+        "file": "modules/gutenberg/classes/class-cartflows-gutenberg-editor.php",
+        "line": 156
+      }
+    },
+    {
+      "id": "anom_30",
+      "rule_id": "rule_06",
+      "type": "is_admin_as_auth",
+      "severity": "high",
+      "cwe_id": "CWE-862",
+      "entry_point_id": "ep_shortcode_cartflows_checkout",
+      "description": "is_admin() checks URI prefix, NOT user role \u2014 any subscriber can access /wp-admin/admin-ajax.php",
+      "evidence": {
+        "file": "modules/checkout/classes/class-cartflows-checkout-markup.php",
+        "line": 492
+      }
+    },
+    {
+      "id": "anom_31",
+      "rule_id": "rule_06",
+      "type": "is_admin_as_auth",
+      "severity": "high",
+      "cwe_id": "CWE-862",
+      "entry_point_id": "ep_admin_init_admin_init",
+      "description": "is_admin() checks URI prefix, NOT user role \u2014 any subscriber can access /wp-admin/admin-ajax.php",
+      "evidence": {
+        "file": "modules/beaver-builder/class-cartflows-bb-modules-loader.php",
+        "line": 106
+      }
+    },
+    {
+      "id": "anom_32",
+      "rule_id": "rule_06",
+      "type": "is_admin_as_auth",
+      "severity": "high",
+      "cwe_id": "CWE-862",
+      "entry_point_id": "ep_shortcode_cartflows_optin",
+      "description": "is_admin() checks URI prefix, NOT user role \u2014 any subscriber can access /wp-admin/admin-ajax.php",
+      "evidence": {
+        "file": "modules/optin/classes/class-cartflows-optin-markup.php",
+        "line": 245
+      }
+    },
+    {
+      "id": "anom_33",
+      "rule_id": "rule_06",
+      "type": "is_admin_as_auth",
+      "severity": "high",
+      "cwe_id": "CWE-862",
+      "entry_point_id": "ep_shortcode_cartflows_optin",
+      "description": "is_admin() checks URI prefix, NOT user role \u2014 any subscriber can access /wp-admin/admin-ajax.php",
+      "evidence": {
+        "file": "modules/optin/classes/class-cartflows-optin-markup.php",
+        "line": 257
+      }
+    },
+    {
+      "id": "anom_34",
+      "rule_id": "rule_06",
+      "type": "is_admin_as_auth",
+      "severity": "high",
+      "cwe_id": "CWE-862",
+      "entry_point_id": "ep_init_init",
+      "description": "is_admin() checks URI prefix, NOT user role \u2014 any subscriber can access /wp-admin/admin-ajax.php",
+      "evidence": {
+        "file": "modules/flow/classes/class-cartflows-step-post-type.php",
+        "line": 239
+      }
+    },
+    {
+      "id": "anom_35",
+      "rule_id": "rule_08",
+      "type": "nopriv_sensitive_op",
+      "severity": "critical",
+      "cwe_id": "CWE-862",
+      "entry_point_id": "ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file",
+      "description": "Unauthenticated handler 'wp_ajax_nopriv_wcf_upload_checkout_file' performs sensitive operations",
+      "evidence": {
+        "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "line": 58
+      }
+    },
+    {
+      "id": "anom_36",
+      "rule_id": "rule_10",
+      "type": "inconsistency",
+      "severity": "high",
+      "cwe_id": "CWE-862",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_cartflows_snooze_script_migration",
+      "description": "Handler 'wp_ajax_cartflows_snooze_script_migration' missing nonce + capability \u2014 20 other ajax_priv handlers have them",
+      "evidence": {
+        "file": "classes/class-cartflows-admin-notices.php",
+        "line": 83
+      }
+    },
+    {
+      "id": "anom_37",
+      "rule_id": "rule_10",
+      "type": "inconsistency",
+      "severity": "high",
+      "cwe_id": "CWE-862",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_cartflows_install_plugin",
+      "description": "Handler 'wp_ajax_cartflows_install_plugin' missing nonce + capability \u2014 20 other ajax_priv handlers have them",
+      "evidence": {
+        "file": "admin-core/ajax/importer.php",
+        "line": 81
+      }
+    },
+    {
+      "id": "anom_38",
+      "rule_id": "rule_10",
+      "type": "inconsistency",
+      "severity": "high",
+      "cwe_id": "CWE-862",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_wcf_woo_apply_coupon",
+      "description": "Handler 'wp_ajax_wcf_woo_apply_coupon' missing nonce + capability \u2014 20 other ajax_priv handlers have them",
+      "evidence": {
+        "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "line": 45
+      }
+    },
+    {
+      "id": "anom_39",
+      "rule_id": "rule_10",
+      "type": "inconsistency",
+      "severity": "high",
+      "cwe_id": "CWE-862",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_wcf_upload_checkout_file",
+      "description": "Handler 'wp_ajax_wcf_upload_checkout_file' missing nonce + capability \u2014 20 other ajax_priv handlers have them",
+      "evidence": {
+        "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "line": 57
+      }
+    },
+    {
+      "id": "anom_40",
+      "rule_id": "rule_10",
+      "type": "inconsistency",
+      "severity": "high",
+      "cwe_id": "CWE-862",
+      "entry_point_id": "ep_ajax_nopriv_wp_ajax_nopriv_wcf_woo_apply_coupon",
+      "description": "Handler 'wp_ajax_nopriv_wcf_woo_apply_coupon' missing nonce + capability \u2014 5 other ajax_nopriv handlers have them",
+      "evidence": {
+        "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "line": 46
+      }
+    },
+    {
+      "id": "anom_41",
+      "rule_id": "rule_10",
+      "type": "inconsistency",
+      "severity": "high",
+      "cwe_id": "CWE-862",
+      "entry_point_id": "ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file",
+      "description": "Handler 'wp_ajax_nopriv_wcf_upload_checkout_file' missing nonce + capability \u2014 5 other ajax_nopriv handlers have them",
+      "evidence": {
+        "file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "line": 58
+      }
+    }
+  ]
+}

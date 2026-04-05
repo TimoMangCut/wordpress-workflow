@@ -1313,6 +1313,7 @@ def main() -> int:
     plausible = [v for v in validated if v["validation_status"] == "PLAUSIBLE"]
     uncertain = [v for v in validated if v["validation_status"] == "UNCERTAIN"]
     hallucinated = [v for v in validated if v["validation_status"] == "LIKELY_HALLUCINATION"]
+    accepted_fp = [v for v in validated if v["validation_status"] == "ACCEPTED_FP"]
 
     actionable = []
     actionable_not_patchstack = []
@@ -1343,6 +1344,7 @@ def main() -> int:
             "confirmed": len(confirmed),
             "plausible": len(plausible),
             "uncertain": len(uncertain),
+            "accepted_fp": len(accepted_fp),
             "likely_hallucination": len(hallucinated),
         },
         "validated_findings": validated,

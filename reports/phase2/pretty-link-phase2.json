@@ -1,6 +1,6 @@
 {
   "plugin_slug": "pretty-link",
-  "merge_timestamp": "2026-04-04T18:52:26.986149Z",
+  "merge_timestamp": "2026-04-05T01:26:36.830039Z",
   "findings": [
     {
       "finding_id": "agent-a2-f001",
@@ -423,25 +423,917 @@
       "source_agents": [
         "agent-a5"
       ]
+    },
+    {
+      "anomaly_id": "anom_1",
+      "verdict": "FP",
+      "entry_point_id": "ep_admin_init_admin_init",
+      "vuln_type": "missing_nonce",
+      "fp_reason": "The admin_init hook only fires in the wp-admin context for logged-in users. The callback persist_display_keys (PrliStripeConnectController.php:31-35) performs no sensitive state-changing database operation \u2014 it exclusively sets a browser cookie. No CSRF risk exists because (a) only admins reach admin_init and (b) the only effect is a client-side cookie with no security implication.",
+      "fp_evidence": {
+        "defense": "Operation is a setcookie() call only \u2014 no DB write, no option update. admin_init gate limits exposure to logged-in administrators.",
+        "file": "app/controllers/PrliStripeConnectController.php",
+        "line": 31
+      },
+      "finding_id": "anom_1",
+      "severity": "high",
+      "source_agents": [
+        "agent-c",
+        "agent-c",
+        "agent-c",
+        "agent-c",
+        "agent-c",
+        "agent-c"
+      ],
+      "agent_agreement": 6,
+      "conflict": false
+    },
+    {
+      "anomaly_id": "anom_2",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+      "vuln_type": "missing_nonce",
+      "fp_reason": "AnomalyRules flagged the hook registration line (line 22). The actual handler process_refresh_tokens() verifies wp_verify_nonce($_GET['_wpnonce'], 'stripe-refresh') at line 168 as the first guard \u2014 execution terminates via wp_die() on failure.",
+      "fp_evidence": {
+        "defense": "wp_verify_nonce($_GET['_wpnonce'], 'stripe-refresh') with wp_die() on failure",
+        "file": "app/controllers/PrliStripeConnectController.php",
+        "line": 168
+      },
+      "finding_id": "anom_2",
+      "severity": "high",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_3",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_disconnect",
+      "vuln_type": "missing_nonce",
+      "fp_reason": "AnomalyRules flagged the hook registration line (line 23). The actual handler process_disconnect() verifies wp_verify_nonce($_GET['_wpnonce'], 'stripe-disconnect') at line 228 with wp_die() on failure.",
+      "fp_evidence": {
+        "defense": "wp_verify_nonce($_GET['_wpnonce'], 'stripe-disconnect') with wp_die() on failure",
+        "file": "app/controllers/PrliStripeConnectController.php",
+        "line": 228
+      },
+      "finding_id": "anom_3",
+      "severity": "high",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_4",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_customer_portal_notice",
+      "vuln_type": "missing_nonce",
+      "fp_reason": "AnomalyRules flagged the hook registration line (line 22 in PrliStripeController). The actual handler dismiss_customer_portal_notice() at line 1139 checks check_ajax_referer('prli_dismiss_customer_portal_notice', false, false) AND PrliUtils::is_logged_in_and_an_admin() in a single combined guard that short-circuits with wp_send_json_error() on any failure.",
+      "fp_evidence": {
+        "defense": "check_ajax_referer('prli_dismiss_customer_portal_notice', false, false) inside combined guard with is_logged_in_and_an_admin()",
+        "file": "app/controllers/PrliStripeController.php",
+        "line": 1140
+      },
+      "finding_id": "anom_4",
+      "severity": "high",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_5",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_review_prompt",
+      "vuln_type": "missing_nonce",
+      "fp_reason": "AnomalyRules flagged the hook registration line (line 10). The actual handler dismiss_review_prompt() checks wp_verify_nonce($_POST['nonce'], 'pl_dismiss_review_prompt') at line 15 with die('Failed') on failure.",
+      "fp_evidence": {
+        "defense": "wp_verify_nonce($_POST['nonce'], 'pl_dismiss_review_prompt') with die() on failure",
+        "file": "app/controllers/PrliReviewNoticeController.php",
+        "line": 15
+      },
+      "finding_id": "anom_5",
+      "severity": "high",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_7",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_for_links",
+      "vuln_type": "missing_nonce",
+      "fp_reason": "AnomalyRules flagged the hook registration line (line 13 in PrliPostsController). The handler search_for_links() checks check_ajax_referer('prli_create_link_nonce', false, false) at line 184 \u2014 nonce is verified before any action is taken.",
+      "fp_evidence": {
+        "defense": "check_ajax_referer('prli_create_link_nonce', false, false) with wp_send_json_error() on failure",
+        "file": "app/controllers/PrliPostsController.php",
+        "line": 184
+      },
+      "finding_id": "anom_7",
+      "severity": "high",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_10",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_upgrade_header",
+      "vuln_type": "missing_nonce",
+      "fp_reason": "AnomalyRules flagged hook registration at line 51 in PrliAppController. The actual handler dismiss_upgrade_header() at line 66 checks wp_verify_nonce($_POST['nonce'], 'pl_dismiss_upgrade_header') as its first guard, with die() on failure.",
+      "fp_evidence": {
+        "defense": "wp_verify_nonce($_POST['nonce'], 'pl_dismiss_upgrade_header') with die() on failure",
+        "file": "app/controllers/PrliAppController.php",
+        "line": 69
+      },
+      "finding_id": "anom_10",
+      "severity": "high",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_11",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_notice",
+      "vuln_type": "missing_nonce",
+      "fp_reason": "AnomalyRules flagged hook registration at line 52 in PrliAppController. The actual handler dismiss_notice() at line 130 wraps the state-changing operation entirely inside an if-block that requires check_ajax_referer('prli_dismiss_notice', false, false) to return true \u2014 the update_option call at line 138 is only reachable when nonce passes.",
+      "fp_evidence": {
+        "defense": "check_ajax_referer('prli_dismiss_notice', false, false) used as conditional gate \u2014 update_option only executes inside the true branch",
+        "file": "app/controllers/PrliAppController.php",
+        "line": 131
+      },
+      "finding_id": "anom_11",
+      "severity": "high",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_12",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_onboarding_finish",
+      "vuln_type": "missing_nonce",
+      "fp_reason": "AnomalyRules flagged hook registration at line 26 in PrliOnboardingController. The handler PrliOnboardingController::finish() delegates immediately to self::validate_request('prli_onboarding_finish') which calls check_ajax_referer('prli_onboarding_finish', false, false) at line 203, returning wp_send_json_error on failure. The update_option call at line 932 is unreachable without passing this check.",
+      "fp_evidence": {
+        "defense": "validate_request() \u2192 check_ajax_referer('prli_onboarding_finish', false, false) with wp_send_json_error on failure",
+        "file": "app/controllers/PrliOnboardingController.php",
+        "line": 203
+      },
+      "finding_id": "anom_12",
+      "severity": "high",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_15",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+      "vuln_type": "missing_capability",
+      "fp_reason": "AnomalyRules flagged hook registration at line 22. The handler process_refresh_tokens() checks PrliUtils::is_authorized() at line 178 which calls current_user_can(get_minimum_role()) \u2014 defaulting to current_user_can('manage_options'). This is a proper capability check. The rule missed it because it uses a wrapper method rather than a direct current_user_can() call.",
+      "fp_evidence": {
+        "defense": "PrliUtils::is_authorized() \u2192 current_user_can('manage_options') at PrliUtils.php:1031-1032",
+        "file": "app/controllers/PrliStripeConnectController.php",
+        "line": 178
+      },
+      "finding_id": "anom_15",
+      "severity": "high",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_16",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_disconnect",
+      "vuln_type": "missing_capability",
+      "fp_reason": "AnomalyRules flagged hook registration at line 23. The handler process_disconnect() checks PrliUtils::is_authorized() at line 233 \u2014 same wrapper as anom_15, which resolves to current_user_can('manage_options').",
+      "fp_evidence": {
+        "defense": "PrliUtils::is_authorized() \u2192 current_user_can('manage_options') at PrliUtils.php:1031-1032",
+        "file": "app/controllers/PrliStripeConnectController.php",
+        "line": 233
+      },
+      "finding_id": "anom_16",
+      "severity": "high",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_17",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_customer_portal_notice",
+      "vuln_type": "missing_capability",
+      "fp_reason": "AnomalyRules flagged hook registration at line 22 in PrliStripeController. The handler dismiss_customer_portal_notice() at line 1140 checks PrliUtils::is_logged_in_and_an_admin() which calls is_user_logged_in() && current_user_can('manage_options') (PrliUtils.php:996-997, 1004-1006).",
+      "fp_evidence": {
+        "defense": "PrliUtils::is_logged_in_and_an_admin() \u2192 current_user_can('manage_options') at PrliUtils.php:1004-1006",
+        "file": "app/controllers/PrliStripeController.php",
+        "line": 1140
+      },
+      "finding_id": "anom_17",
+      "severity": "high",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_18",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_review_prompt",
+      "vuln_type": "missing_capability",
+      "fp_reason": "AnomalyRules flagged hook registration at line 10. The handler dismiss_review_prompt() checks PrliUtils::is_authorized() at line 19 \u2014 resolves to current_user_can('manage_options').",
+      "fp_evidence": {
+        "defense": "PrliUtils::is_authorized() \u2192 current_user_can('manage_options') at PrliUtils.php:1031-1032",
+        "file": "app/controllers/PrliReviewNoticeController.php",
+        "line": 19
+      },
+      "finding_id": "anom_18",
+      "severity": "high",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_19",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_upgrade_header",
+      "vuln_type": "missing_capability",
+      "fp_reason": "AnomalyRules flagged hook registration at line 51. The handler dismiss_upgrade_header() checks PrliUtils::is_authorized() at line 73 \u2014 resolves to current_user_can('manage_options').",
+      "fp_evidence": {
+        "defense": "PrliUtils::is_authorized() \u2192 current_user_can('manage_options') at PrliUtils.php:1031-1032",
+        "file": "app/controllers/PrliAppController.php",
+        "line": 73
+      },
+      "finding_id": "anom_19",
+      "severity": "high",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_20",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_notice",
+      "vuln_type": "missing_capability",
+      "fp_reason": "AnomalyRules flagged hook registration at line 52. The handler dismiss_notice() checks PrliUtils::is_authorized() at line 132 inside the successful nonce branch \u2014 resolves to current_user_can('manage_options').",
+      "fp_evidence": {
+        "defense": "PrliUtils::is_authorized() \u2192 current_user_can('manage_options') at PrliUtils.php:1031-1032",
+        "file": "app/controllers/PrliAppController.php",
+        "line": 132
+      },
+      "finding_id": "anom_20",
+      "severity": "high",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_21",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_onboarding_finish",
+      "vuln_type": "missing_capability",
+      "fp_reason": "AnomalyRules flagged hook registration at line 26. The handler PrliOnboardingController::finish() delegates to validate_request() which calls PrliUtils::is_logged_in_and_an_admin() at line 199, resolving to current_user_can('manage_options').",
+      "fp_evidence": {
+        "defense": "validate_request() \u2192 PrliUtils::is_logged_in_and_an_admin() \u2192 current_user_can('manage_options') at PrliUtils.php:996-997, 1004-1006",
+        "file": "app/controllers/PrliOnboardingController.php",
+        "line": 199
+      },
+      "finding_id": "anom_21",
+      "severity": "high",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_22",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_stripe_prices",
+      "vuln_type": "flawed_nonce_pattern",
+      "fp_reason": "The check_ajax_referer with $die=false at line 603 is correctly evaluated: the entire guard is a compound condition (!is_get_request() || !is_logged_in_and_an_admin() || !check_ajax_referer(...)). Any false result \u2014 including nonce failure \u2014 causes the condition to be true, which throws an Exception that exits the handler. Code never continues on nonce failure.",
+      "fp_evidence": {
+        "defense": "check_ajax_referer result is part of a compound OR guard; failure throws Exception that terminates execution",
+        "file": "app/controllers/PrliStripeController.php",
+        "line": 603
+      },
+      "finding_id": "anom_22",
+      "severity": "medium",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_23",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_add_product",
+      "vuln_type": "flawed_nonce_pattern",
+      "fp_reason": "Same compound-OR guard pattern as anom_22. check_ajax_referer at line 740 is part of (!is_post_request() || !is_logged_in_and_an_admin() || !check_ajax_referer(...)). Nonce failure causes the condition to be true, throwing an Exception that terminates the handler.",
+      "fp_evidence": {
+        "defense": "check_ajax_referer result is part of a compound OR guard; failure throws Exception that terminates execution",
+        "file": "app/controllers/PrliStripeController.php",
+        "line": 740
+      },
+      "finding_id": "anom_23",
+      "severity": "medium",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_24",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_customer_portal_notice",
+      "vuln_type": "flawed_nonce_pattern",
+      "fp_reason": "Same compound-OR guard pattern. check_ajax_referer at line 1140 is part of (!is_post_request() || !is_logged_in_and_an_admin() || !check_ajax_referer(...)). Nonce failure causes the condition to be true, returning wp_send_json_error and terminating. No code continues on failure.",
+      "fp_evidence": {
+        "defense": "check_ajax_referer result is part of a compound OR guard; failure calls wp_send_json_error() and terminates",
+        "file": "app/controllers/PrliStripeController.php",
+        "line": 1140
+      },
+      "finding_id": "anom_24",
+      "severity": "medium",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_25",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_tinymce_validate_slug",
+      "vuln_type": "flawed_nonce_pattern",
+      "fp_reason": "The handler validate_tinymce_slug() at line 156 uses: if(!check_ajax_referer('prli_tinymce_nonce', false, false)) { wp_send_json_error(); }. The return value is explicitly checked; failure sends a JSON error and terminates. Code never continues on nonce failure.",
+      "fp_evidence": {
+        "defense": "Return value of check_ajax_referer checked in if-negation; wp_send_json_error() called and handler terminates on failure",
+        "file": "app/controllers/PrliPostsController.php",
+        "line": 156
+      },
+      "finding_id": "anom_25",
+      "severity": "medium",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_26",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_tinymce_create_link",
+      "vuln_type": "flawed_nonce_pattern",
+      "fp_reason": "The handler create_pretty_link() at line 184 uses: if(!check_ajax_referer('prli_create_link_nonce', false, false)) { wp_send_json_error(); }. Return value is explicitly checked; code terminates on nonce failure.",
+      "fp_evidence": {
+        "defense": "Return value of check_ajax_referer checked in if-negation; wp_send_json_error() called and handler terminates on failure",
+        "file": "app/controllers/PrliPostsController.php",
+        "line": 184
+      },
+      "finding_id": "anom_26",
+      "severity": "medium",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_27",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_bulk_edit_links",
+      "vuln_type": "flawed_nonce_pattern",
+      "fp_reason": "The handler save_bulk_edit() at line 714 uses: if(!check_ajax_referer('prli_admin_link_list_nonce', false, false) || !PrliUtils::is_authorized()) { wp_send_json_error(..., 403); }. Return value is checked in an if-condition; code terminates with a 403 error on nonce failure.",
+      "fp_evidence": {
+        "defense": "Return value of check_ajax_referer checked in compound OR guard; wp_send_json_error(403) terminates on failure",
+        "file": "app/controllers/PrliLinksController.php",
+        "line": 714
+      },
+      "finding_id": "anom_27",
+      "severity": "medium",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_28",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_quick_create",
+      "vuln_type": "flawed_nonce_pattern",
+      "fp_reason": "The handler ajax_quick_create() at line 870 uses: if(!check_ajax_referer('prli_quick_create', false, false)) { wp_send_json_error(...); }. Return value is explicitly checked; code terminates on failure.",
+      "fp_evidence": {
+        "defense": "Return value of check_ajax_referer checked in if-negation; wp_send_json_error() terminates on failure",
+        "file": "app/controllers/PrliLinksController.php",
+        "line": 870
+      },
+      "finding_id": "anom_28",
+      "severity": "medium",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_29",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_activate",
+      "vuln_type": "flawed_nonce_pattern",
+      "fp_reason": "The handler ajax_addon_activate() at line 65 uses: if(!check_ajax_referer('prli_addons', false, false)) { wp_send_json_error(...); }. The return value is explicitly checked in an if-negation; the handler terminates via wp_send_json_error on failure. The rule's claim of 'code continues on failure' is incorrect for this handler.",
+      "fp_evidence": {
+        "defense": "if(!check_ajax_referer(..., false, false)) { wp_send_json_error() } \u2014 return value explicitly checked; terminates on failure",
+        "file": "app/controllers/PrliAddonsController.php",
+        "line": 65
+      },
+      "finding_id": "anom_29",
+      "severity": "medium",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_30",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_deactivate",
+      "vuln_type": "flawed_nonce_pattern",
+      "fp_reason": "The handler ajax_addon_deactivate() at line 108 uses: if(!check_ajax_referer('prli_addons', false, false)) { wp_send_json_error(...); }. Return value is explicitly checked. The rule's description of 'guard at line 108 after side-effect at line 101' is inaccurate \u2014 lines 100-106 are input validation and capability checks (no side-effects), not state-changing operations.",
+      "fp_evidence": {
+        "defense": "if(!check_ajax_referer(..., false, false)) { wp_send_json_error() } \u2014 return value checked; terminates on failure. Lines 100-106 are input/capability guards, not side-effects.",
+        "file": "app/controllers/PrliAddonsController.php",
+        "line": 108
+      },
+      "finding_id": "anom_30",
+      "severity": "medium",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_31",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_install",
+      "vuln_type": "flawed_nonce_pattern",
+      "fp_reason": "The handler ajax_addon_install() at line 131 uses: if(!check_ajax_referer('prli_addons', false, false)) { wp_send_json_error(...); }. Return value is explicitly checked. Lines 123-129 (the rule's claimed 'side-effects') are input validation and capability checks \u2014 no state-changing operations occur before the nonce verification.",
+      "fp_evidence": {
+        "defense": "if(!check_ajax_referer(..., false, false)) { wp_send_json_error() } \u2014 return value checked; terminates on failure. Lines 123-129 are input validation and capability checks only.",
+        "file": "app/controllers/PrliAddonsController.php",
+        "line": 131
+      },
+      "finding_id": "anom_31",
+      "severity": "medium",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_32",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_notice",
+      "vuln_type": "flawed_nonce_pattern",
+      "fp_reason": "The handler dismiss_notice() at line 131 uses check_ajax_referer inside an if-conditional: the update_option() state change only executes inside the if-block when the nonce passes. When nonce fails, the if-block is skipped entirely \u2014 only wp_send_json_success() is called with no state modification. The CSRF risk is absent because no sensitive operation is reachable without a valid nonce.",
+      "fp_evidence": {
+        "defense": "update_option() is enclosed inside if(check_ajax_referer(...)) \u2014 state change is only reachable on nonce success; nonce failure path writes nothing",
+        "file": "app/controllers/PrliAppController.php",
+        "line": 131
+      },
+      "finding_id": "anom_32",
+      "severity": "medium",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_33",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_daily_notice",
+      "vuln_type": "flawed_nonce_pattern",
+      "fp_reason": "Same structural pattern as anom_32. The set_transient() call at line 152 is enclosed inside if(check_ajax_referer(...)) \u2014 only reachable when nonce passes. Nonce failure path skips the block and calls wp_send_json_success() with no state modification.",
+      "fp_evidence": {
+        "defense": "set_transient() enclosed inside if(check_ajax_referer(...)); state change only reachable on nonce success",
+        "file": "app/controllers/PrliAppController.php",
+        "line": 145
+      },
+      "finding_id": "anom_33",
+      "severity": "medium",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_34",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_monthly_notice",
+      "vuln_type": "flawed_nonce_pattern",
+      "fp_reason": "Same structural pattern as anoms 32-33. The set_transient() at line 166 is enclosed inside if(check_ajax_referer(...)). Nonce failure skips the block with no state modification.",
+      "fp_evidence": {
+        "defense": "set_transient() enclosed inside if(check_ajax_referer(...)); state change only reachable on nonce success",
+        "file": "app/controllers/PrliAppController.php",
+        "line": 159
+      },
+      "finding_id": "anom_34",
+      "severity": "medium",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_35",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_activate_license",
+      "vuln_type": "flawed_nonce_pattern",
+      "fp_reason": "The handler ajax_activate_license() at line 64 checks: (1) is_post_request + key exists at line 65 \u2014 exits on failure; (2) is_logged_in_and_an_admin() at line 69 \u2014 exits on failure; (3) check_ajax_referer('prli_activate_license', false, false) at line 73 \u2014 exits on failure. The rule's claim of 'side-effect at line 66' is incorrect \u2014 line 66 is a wp_send_json_error() early-exit (guard), not a state-changing operation. No sensitive operation precedes the nonce check.",
+      "fp_evidence": {
+        "defense": "check_ajax_referer at line 73 checked in if-negation; wp_send_json_error() terminates on failure. Lines 65-71 are input/capability guards only.",
+        "file": "app/controllers/PrliUpdateController.php",
+        "line": 73
+      },
+      "finding_id": "anom_35",
+      "severity": "medium",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_36",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_deactivate_license",
+      "vuln_type": "flawed_nonce_pattern",
+      "fp_reason": "Same ordered-guard pattern as anom_35. ajax_deactivate_license() checks is_post_request at line 160, is_logged_in_and_an_admin at line 164, then check_ajax_referer at line 168 \u2014 all exit-on-failure guards. The rule's 'side-effect at line 161' refers to a wp_send_json_error() early-exit guard, not a state change.",
+      "fp_evidence": {
+        "defense": "check_ajax_referer at line 168 checked in if-negation; terminates on failure. Lines 160-166 are input/capability guards only.",
+        "file": "app/controllers/PrliUpdateController.php",
+        "line": 168
+      },
+      "finding_id": "anom_36",
+      "severity": "medium",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_37",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_install_license_edition",
+      "vuln_type": "flawed_nonce_pattern",
+      "fp_reason": "Same ordered-guard pattern. ajax_install_license_edition() checks is_post_request at line 199, current_user_can('update_plugins') at line 203, then check_ajax_referer at line 207 \u2014 all exit-on-failure guards before any state change.",
+      "fp_evidence": {
+        "defense": "check_ajax_referer at line 207 checked in if-negation; terminates on failure. Lines 199-205 are input/capability guards only.",
+        "file": "app/controllers/PrliUpdateController.php",
+        "line": 207
+      },
+      "finding_id": "anom_37",
+      "severity": "medium",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_38",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+      "vuln_type": "unsafe_redirect",
+      "fp_reason": "The wp_redirect() at line 126 sends the user to admin_url('edit.php?post_type=pretty-link&page=pretty-link-options'). The base URL is generated by admin_url() which always resolves to the current site's wp-admin. The user-supplied $stripe_action from $_GET['stripe-action'] is passed as a query parameter VALUE (not the URL host or path), after sanitize_text_field(). The redirect destination is constrained to the current site \u2014 no open redirect to external domains is possible.",
+      "fp_evidence": {
+        "defense": "Redirect base is admin_url() (current site always); $stripe_action is a sanitized query parameter value, not a URL; destination domain is not user-controlled",
+        "file": "app/controllers/PrliStripeConnectController.php",
+        "line": 122
+      },
+      "finding_id": "anom_38",
+      "severity": "medium",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_39",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+      "vuln_type": "unsafe_redirect",
+      "fp_reason": "The wp_redirect() at line 216 redirects to add_query_arg(array('stripe-action' => 'refreshed'), admin_url('...')). The base is admin_url() \u2014 current site always. The 'refreshed' value is a hardcoded string, not from user input. No open redirect possible.",
+      "fp_evidence": {
+        "defense": "Redirect base is admin_url(); 'stripe-action' value is a hardcoded string literal 'refreshed' \u2014 not from user input",
+        "file": "app/controllers/PrliStripeConnectController.php",
+        "line": 212
+      },
+      "finding_id": "anom_39",
+      "severity": "medium",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_40",
+      "verdict": "FP",
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_disconnect",
+      "vuln_type": "unsafe_redirect",
+      "fp_reason": "The wp_redirect() at line 251 redirects to add_query_arg(array('stripe-action' => 'disconnected'), admin_url('...')). Base is admin_url(). 'disconnected' is a hardcoded string literal. No open redirect possible.",
+      "fp_evidence": {
+        "defense": "Redirect base is admin_url(); 'stripe-action' value is a hardcoded string literal 'disconnected' \u2014 not from user input",
+        "file": "app/controllers/PrliStripeConnectController.php",
+        "line": 247
+      },
+      "finding_id": "anom_40",
+      "severity": "medium",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "anomaly_id": "anom_41",
+      "verdict": "FP",
+      "entry_point_id": "ep_init_init",
+      "vuln_type": "unsafe_redirect",
+      "fp_reason": "The wp_redirect() at line 125 redirects to PrliStripeConnect::get_stripe_connect_url($_GET['method_id']). That function constructs: PRLI_STRIPE_SERVICE_URL . '/connect/{site_uuid}/{method_id}/{jwt}' where PRLI_STRIPE_SERVICE_URL is the hardcoded constant 'https://stripe.prettylinks.com'. The destination domain is always stripe.prettylinks.com \u2014 not derived from user input. $_GET['method_id'] becomes only a URL path segment on a hardcoded domain. Furthermore, process_connect() validates a nonce at line 165 of PrliAuthenticatorController before this redirect is reached.",
+      "fp_evidence": {
+        "defense": "Redirect destination domain is PRLI_STRIPE_SERVICE_URL = 'https://stripe.prettylinks.com' (hardcoded constant); method_id is only a path segment on a controlled domain",
+        "file": "app/lib/PrliStripeConnect.php",
+        "line": 61
+      },
+      "finding_id": "anom_41",
+      "severity": "medium",
+      "source_agents": [
+        "agent-c",
+        "agent-c",
+        "agent-c"
+      ],
+      "agent_agreement": 3,
+      "conflict": false
+    },
+    {
+      "finding_id": "agent-d-unresolved-001",
+      "verdict": "REVIEW",
+      "vuln_type": "unresolved_dynamic_hook",
+      "cwe_id": null,
+      "severity": "informational",
+      "auth_required": "unknown",
+      "confidence": 0.0,
+      "entry_point_id": "unresolved:app/lib/PrliAddonUpdates.php:17",
+      "store_entry_point_id": null,
+      "load_entry_point_id": null,
+      "source_function": null,
+      "source_file_path": "app/lib/PrliAddonUpdates.php",
+      "source_line_number": 17,
+      "sink_function": null,
+      "sink_file_path": "app/lib/PrliAddonUpdates.php",
+      "sink_line_number": 214,
+      "reasoning": null,
+      "fp_reason": null,
+      "fp_evidence": null,
+      "review_reason": "Dynamic hook 'in_plugin_update_message-$main_file' at app/lib/PrliAddonUpdates.php:17 \u2014 resolution failed, manual trace required. The hook expression is 'in_plugin_update_message-' . $this->main_file where $main_file is a constructor parameter (class PrliAddonUpdates, line 8). Attempted: searched all PHP files in the plugin for 'new PrliAddonUpdates' \u2014 zero results found. The class is defined in app/lib/PrliAddonUpdates.php but is never instantiated within the lite plugin codebase. Instantiation is expected to occur inside the Pro add-on (pretty-link-pro.php) which is not present in the analyzed source tree. The $main_file value \u2014 and therefore the concrete hook name \u2014 cannot be determined from the available source. Resolution requires access to the Pro add-on source or runtime observation of the constructor call.",
+      "poc_description": null,
+      "storage_key": null,
+      "patchstack_eligible": null,
+      "remediation": null,
+      "source_agents": [
+        "agent-d"
+      ],
+      "file_path": "app/lib/PrliAddonUpdates.php",
+      "line_number": 214
+    },
+    {
+      "finding_id": "agent-d-fp-002",
+      "verdict": "FP",
+      "vuln_type": "resolved_dynamic_hook_admin_display",
+      "cwe_id": null,
+      "severity": "informational",
+      "auth_required": "admin",
+      "confidence": 0.9,
+      "entry_point_id": "resolved_dynamic:ba175a7ef01df93a1b1c51a9ed9a28a69d63b592",
+      "store_entry_point_id": null,
+      "load_entry_point_id": null,
+      "source_function": null,
+      "source_file_path": null,
+      "source_line_number": null,
+      "sink_function": null,
+      "sink_file_path": null,
+      "sink_line_number": null,
+      "reasoning": "Confidence: high (0.9) \u2014 found literal class-constant assignment at app/models/PrliLink.php:6. Hook 'views_edit-'.PrliLink::$cpt resolves to 'views_edit-pretty-link'. PrliLink::$cpt is a public static property assigned the literal string 'pretty-link' at declaration (PrliLink.php:6: public static $cpt = 'pretty-link';). The callback is PrliLinksController::modify_quick_links(), which filters the Quick Links submenu in the WordPress admin post-type list screen for the 'pretty-link' CPT. This hook fires only inside wp-admin for authenticated admin/editor users. The callback modifies and returns the $views array (an array of HTML strings) which is wp-admin internal display data. No user-controlled untrusted input flows into the hook callback or its output. No vulnerability.",
+      "fp_reason": "Hook fires exclusively in wp-admin post-type list screen. Callback (modify_quick_links) only manipulates the $views array for display. No user-supplied input enters the callback; no sensitive operation (DB write, file write, CSRF-impacting state change) occurs. Defence: access is implicitly restricted to authenticated admin/editor users by WordPress's admin_init/capability gate on the post-type.",
+      "fp_evidence": {
+        "defense": "WordPress wp-admin requires authentication and appropriate post-type capability (manage capability for 'pretty-link' CPT) before the 'views_edit-pretty-link' hook fires. No anonymous or low-privilege path to this callback exists.",
+        "file": "app/controllers/PrliLinksController.php",
+        "line": 34
+      },
+      "review_reason": null,
+      "poc_description": null,
+      "storage_key": null,
+      "patchstack_eligible": false,
+      "remediation": null,
+      "source_agents": [
+        "agent-d"
+      ]
+    },
+    {
+      "finding_id": "agent-d-fp-003",
+      "verdict": "FP",
+      "vuln_type": "resolved_dynamic_hook_admin_display",
+      "cwe_id": null,
+      "severity": "informational",
+      "auth_required": "admin",
+      "confidence": 0.9,
+      "entry_point_id": "resolved_dynamic:7a6c3356d249c53a5800d04c9105eb4df950dcc7",
+      "store_entry_point_id": null,
+      "load_entry_point_id": null,
+      "source_function": null,
+      "source_file_path": null,
+      "source_line_number": null,
+      "sink_function": null,
+      "sink_file_path": null,
+      "sink_line_number": null,
+      "reasoning": "Confidence: high (0.9) \u2014 PrliLink::$cpt = 'pretty-link' (PrliLink.php:6). Hook 'manage_'.PrliLink::$cpt.'_posts_custom_column' resolves to 'manage_pretty-link_posts_custom_column'. Callback: PrliLinksController::custom_columns(). This is a standard WordPress action hook for rendering custom columns in the admin post-list table. Fires only in wp-admin for authenticated users with access to the 'pretty-link' CPT. The callback renders column content (echo). No user-supplied untrusted input is present at this hook invocation; the $column_name and $post_id parameters come from WordPress internals. No vulnerability.",
+      "fp_reason": "Hook fires exclusively in wp-admin post-list table rendering. Column name and post ID are WordPress-internal values, not user-supplied HTTP input. No CSRF-impacting or data-modifying operation occurs in the callback. Access gated by wp-admin authentication and CPT capability.",
+      "fp_evidence": {
+        "defense": "Hook fires exclusively inside wp-admin under WordPress capability control for the 'pretty-link' CPT. Parameters ($column_name, $post_id) are WordPress-internal, not HTTP input.",
+        "file": "app/controllers/PrliLinksController.php",
+        "line": 39
+      },
+      "review_reason": null,
+      "poc_description": null,
+      "storage_key": null,
+      "patchstack_eligible": false,
+      "remediation": null,
+      "source_agents": [
+        "agent-d"
+      ]
+    },
+    {
+      "finding_id": "agent-d-fp-004",
+      "verdict": "FP",
+      "vuln_type": "resolved_dynamic_hook_admin_display",
+      "cwe_id": null,
+      "severity": "informational",
+      "auth_required": "admin",
+      "confidence": 0.9,
+      "entry_point_id": "resolved_dynamic:c3ea7794c1b9cc4378f2e9b4b9438a9988e98467",
+      "store_entry_point_id": null,
+      "load_entry_point_id": null,
+      "source_function": null,
+      "source_file_path": null,
+      "source_line_number": null,
+      "sink_function": null,
+      "sink_file_path": null,
+      "sink_line_number": null,
+      "reasoning": "Confidence: high (0.9) \u2014 PrliLink::$cpt = 'pretty-link' (PrliLink.php:6). Hook 'manage_edit-'.PrliLink::$cpt.'_columns' resolves to 'manage_edit-pretty-link_columns'. Callback: PrliLinksController::columns(). This is the standard WordPress filter for defining the columns of a CPT list table. Fires only in wp-admin. Returns an array of column definitions (title strings); no user-controlled input flows in or out. No vulnerability.",
+      "fp_reason": "Standard WordPress CPT columns filter. Returns a static array of column label strings. No user input, no sensitive operation. Admin-only context.",
+      "fp_evidence": {
+        "defense": "Hook fires exclusively in wp-admin under WordPress capability control. Returns a static column-definition array \u2014 no user input, no state-modifying side effects.",
+        "file": "app/controllers/PrliLinksController.php",
+        "line": 40
+      },
+      "review_reason": null,
+      "poc_description": null,
+      "storage_key": null,
+      "patchstack_eligible": false,
+      "remediation": null,
+      "source_agents": [
+        "agent-d"
+      ]
+    },
+    {
+      "finding_id": "agent-d-fp-005",
+      "verdict": "FP",
+      "vuln_type": "resolved_dynamic_hook_admin_display",
+      "cwe_id": null,
+      "severity": "informational",
+      "auth_required": "admin",
+      "confidence": 0.9,
+      "entry_point_id": "resolved_dynamic:46b5df1b5a5a01dfd0b09f02576b28a53c2f0959",
+      "store_entry_point_id": null,
+      "load_entry_point_id": null,
+      "source_function": null,
+      "source_file_path": null,
+      "source_line_number": null,
+      "sink_function": null,
+      "sink_file_path": null,
+      "sink_line_number": null,
+      "reasoning": "Confidence: high (0.9) \u2014 PrliLink::$cpt = 'pretty-link' (PrliLink.php:6). Hook 'manage_edit-'.PrliLink::$cpt.'_sortable_columns' resolves to 'manage_edit-pretty-link_sortable_columns'. Callback: PrliLinksController::sortable_columns(). Standard WordPress filter for defining sortable columns on the CPT list table. Returns a static associative array. No user-controlled input. No vulnerability.",
+      "fp_reason": "Standard WordPress CPT sortable-columns filter. Returns a static array of sortable column definitions. No user input, no sensitive operation. Admin-only context.",
+      "fp_evidence": {
+        "defense": "Hook fires exclusively in wp-admin under WordPress capability control. Returns a static sortable-column definition array \u2014 no user input, no state-modifying side effects.",
+        "file": "app/controllers/PrliLinksController.php",
+        "line": 41
+      },
+      "review_reason": null,
+      "poc_description": null,
+      "storage_key": null,
+      "patchstack_eligible": false,
+      "remediation": null,
+      "source_agents": [
+        "agent-d"
+      ]
+    },
+    {
+      "finding_id": "agent-d-fp-006",
+      "verdict": "FP",
+      "vuln_type": "resolved_dynamic_hook_admin_display",
+      "cwe_id": null,
+      "severity": "informational",
+      "auth_required": "admin",
+      "confidence": 0.9,
+      "entry_point_id": "resolved_dynamic:e191a1c9a87053c796ec39fba5b2a217d2c18671",
+      "store_entry_point_id": null,
+      "load_entry_point_id": null,
+      "source_function": null,
+      "source_file_path": null,
+      "source_line_number": null,
+      "sink_function": null,
+      "sink_file_path": null,
+      "sink_line_number": null,
+      "reasoning": "Confidence: high (0.9) \u2014 PRLI_PLUGIN_SLUG = 'pretty-link/pretty-link.php' (pretty-link.php:32). Hook 'plugin_action_links_' . PRLI_PLUGIN_SLUG resolves to 'plugin_action_links_pretty-link/pretty-link.php'. Callback: PrliAppController::add_plugin_action_links(). This is the standard WordPress filter for adding links to the Plugins page row. Fires only in wp-admin for administrators. The callback constructs an array of hard-coded HTML anchor tags (pointing to known URLs) and merges with the existing $links array. No user-controlled input enters the callback. No vulnerability.",
+      "fp_reason": "Standard WordPress plugin-action-links filter. Callback builds static HTML anchors with hard-coded URLs (prettylinks.com, admin URLs via esc_url/get_admin_url). No user input, no CSRF-risky state change. Admin-only context.",
+      "fp_evidence": {
+        "defense": "Hook fires only in wp-admin on the Plugins page for administrators. All URLs are either hard-coded or constructed with esc_url(get_admin_url(...)). No user-supplied input is used.",
+        "file": "app/controllers/PrliAppController.php",
+        "line": 47
+      },
+      "review_reason": null,
+      "poc_description": null,
+      "storage_key": null,
+      "patchstack_eligible": false,
+      "remediation": null,
+      "source_agents": [
+        "agent-d"
+      ]
+    },
+    {
+      "finding_id": "agent-d-fp-007",
+      "verdict": "FP",
+      "vuln_type": "resolved_dynamic_hook_cron",
+      "cwe_id": null,
+      "severity": "informational",
+      "auth_required": "system",
+      "confidence": 0.9,
+      "entry_point_id": "resolved_dynamic:ff47a18053962bd4a6dad0483d9a7c818ea3506e",
+      "store_entry_point_id": null,
+      "load_entry_point_id": null,
+      "source_function": null,
+      "source_file_path": null,
+      "source_line_number": null,
+      "sink_function": null,
+      "sink_file_path": null,
+      "sink_line_number": null,
+      "reasoning": "Confidence: high (0.9) \u2014 $pluginId resolved to 'prettylink' via PrliMothershipPluginConnector::__construct() at app/lib/PrliMothershipPluginConnector.php:19 ($this->pluginId = 'prettylink'), which extends AbstractPluginConnection. Hook '$pluginId . \"_check_license_status_event\"' resolves to 'prettylink_check_license_status_event'. Callback: LicenseManager::checkLicenseStatus(). This is a WP-Cron callback registered at LicenseManager.php:29. It runs on the server-side WP-Cron schedule (twice daily), with no user HTTP input. The callback calls LicenseActivations::retrieveLicenseActivation() against a remote API using stored credentials, then fires do_action($pluginId . '_license_status_changed', ...). No user input \u2192 no sink path. No vulnerability.",
+      "fp_reason": "WP-Cron callback. No user-controlled HTTP input enters the handler. The callback reads stored credentials and performs an outbound API call. do_action() output is an internal event with no user-controlled data payload. No sensitive sink reachable from user input.",
+      "fp_evidence": {
+        "defense": "WP-Cron system event \u2014 no user HTTP request can directly trigger this callback with attacker-controlled data. All inputs are from server-side stored options/credentials.",
+        "file": "vendor-prefixed/caseproof/ground-level-mothership/Manager/LicenseManager.php",
+        "line": 29
+      },
+      "review_reason": null,
+      "poc_description": null,
+      "storage_key": null,
+      "patchstack_eligible": false,
+      "remediation": null,
+      "source_agents": [
+        "agent-d"
+      ]
+    },
+    {
+      "finding_id": "agent-d-fp-008",
+      "verdict": "FP",
+      "vuln_type": "resolved_dynamic_hook_ajax",
+      "cwe_id": null,
+      "severity": "informational",
+      "auth_required": "admin",
+      "confidence": 0.9,
+      "entry_point_id": "resolved_dynamic:b236fdd07ca2f86085170ae978dc2f6d376a2d5d",
+      "store_entry_point_id": null,
+      "load_entry_point_id": null,
+      "source_function": null,
+      "source_file_path": null,
+      "source_line_number": null,
+      "sink_function": null,
+      "sink_file_path": null,
+      "sink_line_number": null,
+      "reasoning": "Confidence: high (0.9) \u2014 AJAX_ACTION_PREFIX = 'caseproof_growth_tool_addon_action_' (App.php:29, class constant), instanceId = 'pretty-link' (PrliGrowthToolsController.php:15). Hook 'wp_ajax_' . AJAX_ACTION_PREFIX . instanceId resolves to 'wp_ajax_caseproof_growth_tool_addon_action_pretty-link'. Uses wp_ajax_ prefix \u2014 only fires for authenticated (logged-in) users. Callback: App::addonAction() \u2192 dispatches to AddonHelper::installAddon(), ::activateAddon(), or ::deactivateAddon() based on sanitize_text_field($_REQUEST['type']). Each helper enforces: (1) check_ajax_referer('caseproof_growth_tools_install_addon', 'nonce') \u2014 nonce verification; (2) current_user_can('install_plugins' / 'activate_plugin' / 'activate_plugins') \u2014 capability check. The $addon parameter used in install/activate/deactivate is restricted to values matching the pre-configured addon list ($addons array from $config->getAddonsConfig()), preventing arbitrary plugin file paths from being passed to activate_plugin() or Plugin_Upgrader::install(). REFUTATION ATTEMPT: Tried to find an IDOR/authorization bypass \u2014 the addon whitelist check in addonAction() (lines 148-165) ensures that only addons matching the configured list are processed. installAddon() uses a download URL from the pre-configured addon config, not from user input. Tried to find nonce bypass \u2014 nonce is enforced inside each helper before any privileged operation. No vulnerability.",
+      "fp_reason": "AJAX endpoint is authenticated-only (wp_ajax_ prefix). Each dispatched operation enforces nonce (check_ajax_referer) and capability (current_user_can). The addon to install/activate/deactivate is validated against a pre-configured whitelist before any privileged filesystem or plugin operation. No user-controlled download URL reaches Plugin_Upgrader::install().",
+      "fp_evidence": {
+        "defense": "Three-layer defense: (1) wp_ajax_ hook requires authentication; (2) each AddonHelper method calls check_ajax_referer('caseproof_growth_tools_install_addon', 'nonce') blocking CSRF; (3) each method calls current_user_can('install_plugins'/'activate_plugin'/'activate_plugins'). Additionally, the addon slug is matched against a pre-configured whitelist in App::addonAction() before dispatch.",
+        "file": "vendor-prefixed/caseproof/growth-tools/src/Helper/AddonHelper.php",
+        "line": 18
+      },
+      "review_reason": null,
+      "poc_description": null,
+      "storage_key": null,
+      "patchstack_eligible": false,
+      "remediation": null,
+      "source_agents": [
+        "agent-d"
+      ]
     }
   ],
   "merge_stats": {
-    "total_raw": 20,
-    "total_deduplicated": 20,
+    "total_raw": 71,
+    "total_deduplicated": 64,
     "agents_included": [
       "agent-a1",
       "agent-a2",
       "agent-a3",
       "agent-a4",
       "agent-a5",
-      "agent-b"
+      "agent-b",
+      "agent-c",
+      "agent-d"
     ],
     "agents_missing": [],
     "tp_count": 0,
-    "fp_count": 20,
-    "review_count": 0,
-    "duplicates_merged": 0,
+    "fp_count": 63,
+    "review_count": 1,
+    "duplicates_merged": 7,
     "conflicts_flagged": 0,
     "schema_errors": 0
+  },
+  "postprocess": {
+    "phase3_review_applied": {
+      "applied_edits": 4
+    }
   }
 }

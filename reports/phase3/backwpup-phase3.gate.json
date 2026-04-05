@@ -7,15 +7,16 @@
     "sinks": 958
   },
   "phase2_summary": {
-    "total": 33,
+    "total": 44,
     "tp": 17,
-    "fp": 14,
-    "review": 2
+    "fp": 22,
+    "review": 5
   },
   "phase3_summary": {
     "confirmed": 0,
     "plausible": 0,
-    "uncertain": 19,
+    "uncertain": 22,
+    "accepted_fp": 22,
     "likely_hallucination": 0
   },
   "validated_findings": [
@@ -310,7 +311,7 @@
     {
       "finding_id": "agent-a3-getblock-secret-disclosure",
       "verdict": "TP",
-      "validation_status": "PLAUSIBLE",
+      "validation_status": "UNCERTAIN",
       "confidence_score": 0.6736,
       "resolved_entry_point_id": "ep_rest___getblock",
       "entry_point_exact": true,
@@ -363,8 +364,7 @@
         "guard_contradiction",
         "insufficient_evidence_to_confirm",
         "path_reachability_weak"
-      ],
-      "phase3_llm_upgrade": true
+      ]
     },
     {
       "finding_id": "agent-a3-storagelistcompact-readonly",
@@ -1453,6 +1453,365 @@
         "guard_contradiction",
         "insufficient_evidence_to_confirm",
         "path_reachability_weak"
+      ]
+    },
+    {
+      "finding_id": "agent-c-anom_2",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_admin_init_admin_init",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: inc/class-message-box.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-c-anom_8",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_admin_init_admin_init",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: src/Dependencies/BerlinDB/Database/Table.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-c-anom_11",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_admin_init_admin_init",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: src/Dependencies/BerlinDB/Database/Table.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-c-anom_12",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "ep_admin_init_admin_init",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: inc/class-admin.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-c-anom_13",
+      "verdict": "REVIEW",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.4955,
+      "resolved_entry_point_id": "ep_admin_post_admin_post_backwpup_support",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "file_exists": true,
+        "path_reachable": false,
+        "auth_consistent": false,
+        "guard_consistent": false,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": true,
+        "code_evidence": false,
+        "reasoning_quality": true,
+        "cvss_plausible": true,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 1.0,
+        "path_reachable": 0.25,
+        "auth_consistent": 0.25,
+        "guard_consistent": 0.1,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 0.5,
+        "psalm_corroborates": 0.5,
+        "code_evidence": 0.25,
+        "reasoning_quality": 0.87,
+        "cvss_plausible": 0.8,
+        "patchstack_eligible": 0.8,
+        "no_hallucination": 1.0
+      },
+      "check_notes": {
+        "file_exists": "exists: inc/class-admin.php",
+        "path_reachable": "neither source nor sink matched in EP ep_admin_post_admin_post_backwpup_support",
+        "auth_consistent": "auth mismatch [ep (load-leg)]: EP type=admin_post expects subscriber, finding claims ",
+        "guard_consistent": "no guard detected",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
+        "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
+        "code_evidence": "sink function 'backwpup_pro_page_support::save_post_form' not found near line 1177",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "cvss_vector omitted (allowed)",
+        "patchstack_eligible": "patchstack_eligible not provided (allowed)",
+        "no_hallucination": "no hallucination signals",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "code_evidence_missing_or_mismatch",
+        "guard_contradiction",
+        "path_reachability_weak"
+      ]
+    },
+    {
+      "finding_id": "agent-d-uh-001",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "resolved_dynamic:3e529ca494c3acb7748c6ac45a509f1e5eac8dd2",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: inc/class-admin.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-d-uh-002",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "resolved_dynamic:95ff1bb5bf495e2d04a8d96b88dc0b537ef53b65",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: inc/class-destination-rsc.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-d-uh-003",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": "resolved_dynamic:8f42e21fb1d9d1cf4cb0b537c1046bfe61a7711e",
+      "entry_point_exact": true,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "entry_point_id exact",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: inc/Notice/DismissibleNoticeOption.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-d-uh-004",
+      "verdict": "REVIEW",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.4164,
+      "resolved_entry_point_id": null,
+      "entry_point_exact": false,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "no EP resolved",
+      "checks": {
+        "file_exists": false,
+        "path_reachable": false,
+        "auth_consistent": true,
+        "guard_consistent": true,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": true,
+        "code_evidence": false,
+        "reasoning_quality": false,
+        "cvss_plausible": true,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 0.0,
+        "path_reachable": 0.45,
+        "auth_consistent": 0.6,
+        "guard_consistent": 0.6,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 0.5,
+        "psalm_corroborates": 0.5,
+        "code_evidence": 0.0,
+        "reasoning_quality": 0.0,
+        "cvss_plausible": 0.8,
+        "patchstack_eligible": 0.8,
+        "no_hallucination": 0.75
+      },
+      "check_notes": {
+        "file_exists": "missing file_path/sink_file_path/source_file_path",
+        "path_reachable": "no entry point resolved (missing/invalid entry_point_id + fuzzy resolution failed)",
+        "auth_consistent": "EP unresolved \u2192 cannot disprove auth claim",
+        "guard_consistent": "EP unresolved \u2192 cannot validate guards precisely",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep available but finding missing file path",
+        "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
+        "code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "cvss_vector omitted (allowed)",
+        "patchstack_eligible": "patchstack_eligible not provided (allowed)",
+        "no_hallucination": "1 hallucination signal: file_not_found",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "code_evidence_missing_or_mismatch",
+        "file_not_found_or_unresolvable",
+        "path_reachability_weak",
+        "reasoning_quality_low"
+      ]
+    },
+    {
+      "finding_id": "agent-d-cg-001",
+      "verdict": "FP",
+      "validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
+      "resolved_entry_point_id": null,
+      "entry_point_exact": false,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "no EP resolved",
+      "checks": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_scores": {
+        "fp_evidence_file_exists": 1.0,
+        "fp_code_evidence": 0.0
+      },
+      "check_notes": {
+        "fp_evidence_file_exists": "exists: inc/class-admin.php",
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
+      },
+      "issues": []
+    },
+    {
+      "finding_id": "agent-d-cg-002",
+      "verdict": "REVIEW",
+      "validation_status": "UNCERTAIN",
+      "confidence_score": 0.6618,
+      "resolved_entry_point_id": null,
+      "entry_point_exact": false,
+      "suggested_entry_point_id": null,
+      "entry_point_resolution_notes": "no EP resolved",
+      "checks": {
+        "file_exists": true,
+        "path_reachable": false,
+        "auth_consistent": true,
+        "guard_consistent": true,
+        "sanitizer_claim": true,
+        "semgrep_corroborates": true,
+        "psalm_corroborates": true,
+        "code_evidence": true,
+        "reasoning_quality": false,
+        "cvss_plausible": true,
+        "patchstack_eligible": true,
+        "no_hallucination": true
+      },
+      "check_scores": {
+        "file_exists": 1.0,
+        "path_reachable": 0.45,
+        "auth_consistent": 0.6,
+        "guard_consistent": 0.6,
+        "sanitizer_claim": 0.8,
+        "semgrep_corroborates": 0.5,
+        "psalm_corroborates": 0.5,
+        "code_evidence": 1.0,
+        "reasoning_quality": 0.0,
+        "cvss_plausible": 0.8,
+        "patchstack_eligible": 0.8,
+        "no_hallucination": 1.0
+      },
+      "check_notes": {
+        "file_exists": "exists: inc/class-destination-downloader.php",
+        "path_reachable": "no entry point resolved (missing/invalid entry_point_id + fuzzy resolution failed)",
+        "auth_consistent": "EP unresolved \u2192 cannot disprove auth claim",
+        "guard_consistent": "EP unresolved \u2192 cannot validate guards precisely",
+        "sanitizer_claim": "sanitizer claim not contradicted",
+        "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
+        "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
+        "code_evidence": "sink evidence validated (and source evidence checked when available)",
+        "reasoning_quality": "evidence-binding + refute-first heuristics",
+        "cvss_plausible": "cvss_vector omitted (allowed)",
+        "patchstack_eligible": "patchstack_eligible not provided (allowed)",
+        "no_hallucination": "no hallucination signals",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+      },
+      "issues": [
+        "insufficient_evidence_to_confirm",
+        "path_reachability_weak",
+        "reasoning_quality_low"
       ]
     }
   ],

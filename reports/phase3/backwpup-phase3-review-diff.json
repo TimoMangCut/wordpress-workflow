@@ -1,13 +1,36 @@
 {
   "plugin_slug": "backwpup",
-  "applied_edits": 1,
+  "applied_edits": 5,
   "changes": [
     {
-      "finding_id": "agent-a3-getblock-secret-disclosure",
-      "field": "phase3_review_note",
+      "finding_id": "agent-a2-f001",
+      "field": "source_line_number",
+      "old": 283,
+      "new": 281
+    },
+    {
+      "finding_id": "agent-a2-f002",
+      "field": "source_line_number",
+      "old": 893,
+      "new": 838
+    },
+    {
+      "finding_id": "agent-a3-save-files-exclusions-bac",
+      "field": "sink_line_number",
+      "old": 230,
+      "new": 217
+    },
+    {
+      "finding_id": "agent-a3-save-excluded-tables-bac",
+      "field": "sink_line_number",
+      "old": 172,
+      "new": 149
+    },
+    {
+      "finding_id": "agent-d-cg-002",
+      "field": "entry_point_id",
       "old": null,
-      "new": "LLM confirmed TP",
-      "reason": "Full attack path confirmed from source. (1) POST to /wp-admin/rest-api/backwpup/v1/getblock with block_type=children, block_name=sidebar/storage-FTP, block_data={job_id:N} using backwpup_check authentication. (2) BackWPupHelpers::children() (inc/Utils/BackWPupHelpers.php:71-116) builds path as plugindir/parts/sidebar/storage-FTP.php, passes realpath()+boundary check (no traversal needed \u2014 the target partial is directly under parts/). (3) extract($args, EXTR_SKIP) sets $job_id=N because $job_id is not pre-set in local scope \u2014 EXTR_SKIP only protects already-defined variables. (4) parts/sidebar/storage-FTP.php line 178 decrypts the stored FTP password via BackWPup_Encryption::decrypt() and places it in an HTML value attribute. (5) The REST response returns the rendered HTML containing the decrypted plaintext FTP credential. (6) Similar paths exist for other storage provider partials (S3, Azure, etc.) exposing their respective credentials. The backwpup_check role is intended to be a low-privilege monitoring role without edit rights \u2014 it should not have access to decrypted credentials. This is a privilege escalation for credential access."
+      "new": "ep_ajax_priv_wp_ajax_download_backup_file"
     }
   ],
   "review_source": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/backwpup-phase3-review.json"

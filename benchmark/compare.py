@@ -2,17 +2,28 @@
 """
 benchmark/compare.py — Pipeline benchmark comparison tool
 Session 0: ground truth + compare.py
+Session 26: Option D — read gate output (phase3.final.json), not phase2 verdicts.
 
 Compares pipeline phase3 output against ground truth to compute:
   - Quality Score = TP / (TP + FP + FN)
-  - Decision Rate = (TP + FP) / (TP + FP + REVIEW_HIT + REVIEW_MISS)
+    (UNCERTAIN not in QS denominator — they're undecided, neither right nor wrong)
+  - Decision Rate = (TP + FP) / (TP + FP + FN + UNCERTAIN)
+    (UNCERTAIN counts as "not yet decided" in DR — measures gate decisiveness)
+
+Metric semantics (Option D):
+  TP           = CONFIRMED or PLAUSIBLE finding that matches a GT finding
+  FP           = CONFIRMED or PLAUSIBLE finding that does NOT match any GT finding
+  FN           = GT finding not matched by any CONFIRMED/PLAUSIBLE pipeline finding
+  UNCERTAIN    = Gate-undecided findings (in DR denominator; not in QS denominator)
+  ACCEPTED_FP  = Correctly rejected findings (not in any denominator)
+
+Source ref: change_manifest_session_25.json:deferred_reason.DI-24-03
+            (user approval of Option D in Session 25 via session_cards/session_25)
 
 Usage:
   python3 benchmark/compare.py <slug>
   python3 benchmark/compare.py --all
   python3 benchmark/compare.py --all --save-baseline
-
-Source ref: skill-sets-framework.md:412-427
 """
 
 import json
@@ -99,16 +110,25 @@ def matches(pipeline_finding: dict, gt_finding: dict) -> bool:
 
 
 # ---------------------------------------------------------------------------
-# Extract pipeline findings from phase3 JSON
+# Extract pipeline findings from phase3 final/gate JSON (Option D)
 # ---------------------------------------------------------------------------
 
-def load_phase3(slug: str) -> dict:
-    """Load reports/<slug>-phase3.json"""
-    path = PHASE3_DIR / f"{slug}-phase3.json"
-    if not path.exists():
-        raise FileNotFoundError(f"Phase3 output not found: {path}")
-    with open(path) as f:
-        return json.load(f)
+def load_phase3_final(slug: str) -> dict:
+    """Load reports/phase3/<slug>-phase3.final.json, falling back to phase3.json.
+
+    Option D: benchmark reads gate output, not phase2 verdicts.
+    """
+    final_path = PHASE3_DIR / f"{slug}-phase3.final.json"
+    gate_path = PHASE3_DIR / f"{slug}-phase3.json"
+    if final_path.exists():
+        with open(final_path) as f:
+            return json.load(f)
+    if gate_path.exists():
+        with open(gate_path) as f:
+            return json.load(f)
+    raise FileNotFoundError(
+        f"Phase3 output not found: tried {final_path} and {gate_path}"
+    )
 
 
 def load_ground_truth(slug: str) -> dict:
@@ -120,45 +140,47 @@ def load_ground_truth(slug: str) -> dict:
         return json.load(f)
 
 
-def extract_pipeline_findings(phase3: dict) -> tuple[list, list]:
+def extract_gate_findings(phase3: dict) -> tuple:
     """
-    Returns (tp_findings, review_findings) from phase3 validated_findings.
-    TP = verdict == "TP", REVIEW = verdict == "REVIEW".
-    FP = verdict == "FP" (also tracked for completeness).
+    Option D extraction: read validation_status from phase3 validated_findings.
+
+    Returns:
+      decided_findings  — list of (validated_finding, match_dict) for CONFIRMED/PLAUSIBLE
+      uncertain_count   — count of UNCERTAIN findings (undecided; in DR denominator)
+      accepted_fp_count — count of ACCEPTED_FP findings (excluded from all denominators)
     """
-    tp_findings = []
-    review_findings = []
-    fp_findings = []
+    decided_findings = []  # (validated_finding, match_dict)
+    uncertain_count = 0
+    accepted_fp_count = 0
 
-    for f in phase3.get("validated_findings", []):
-        verdict = f.get("verdict", "").upper()
-        if verdict == "TP":
-            tp_findings.append(f)
-        elif verdict == "REVIEW":
-            review_findings.append(f)
-        elif verdict == "FP":
-            fp_findings.append(f)
+    for vf in phase3.get("validated_findings", []):
+        status = vf.get("validation_status", "").upper()
+        if status in ("CONFIRMED", "PLAUSIBLE"):
+            decided_findings.append(vf)
+        elif status == "UNCERTAIN":
+            uncertain_count += 1
+        elif status == "ACCEPTED_FP":
+            accepted_fp_count += 1
+        # LIKELY_HALLUCINATION: treated like ACCEPTED_FP (excluded from denominators)
 
-    return tp_findings, review_findings, fp_findings
+    return decided_findings, uncertain_count, accepted_fp_count
 
 
 def _finding_to_match_dict(validated_finding: dict) -> dict:
     """
-    Convert a phase3 validated_finding into a flat dict for matching.
-    Extracts the fields that compare.py needs.
-    Phase3 findings reference entry point and sink via check_notes.
-    We use available structured fields.
+    Convert a phase3 validated_finding into a flat dict for matching against GT.
+    Extracts the fields needed for sink file+line matching.
+
+    Phase3 validated_findings store evidence in check_notes.
+    We extract sink_file and sink_line_approx from those notes.
     """
-    # Phase3 validated_findings don't have a uniform flat structure matching
-    # ground truth schema directly. They have resolved_entry_point_id and
-    # check_notes with sink info. We extract what we can.
     d = {}
 
-    # vuln_type: not directly in phase3 validated_finding — stored in check_notes
-    # or the original phase2 finding (not linked here). Use "unknown" fallback.
+    # vuln_type: phase3 validated_findings don't store this directly.
+    # Use "unknown" fallback — GT for current wave also uses "unknown" for most entries.
     d["vuln_type"] = validated_finding.get("vuln_type", "unknown")
 
-    # sink_file: extracted from check_notes if present
+    # sink_file: extracted from check_notes.file_exists note
     notes = validated_finding.get("check_notes", {})
     file_exists_note = notes.get("file_exists", "")
     # Pattern: "exists: path/to/file.php" or "basename resolved uniquely → path/to/file.php"
@@ -169,9 +191,9 @@ def _finding_to_match_dict(validated_finding: dict) -> dict:
         sink_file = file_exists_note.split("→", 1)[1].strip()
     d["sink_file"] = sink_file
 
-    # sink_line_approx: from check_notes code_evidence note (rough extraction)
+    # sink_line_approx: extracted from code_evidence note
     code_evidence_note = notes.get("code_evidence", "")
-    # Pattern: "sink function '...' not found near line N" — extract line
+    # Pattern: "sink function '...' not found near line N"
     sink_line = -1
     if "near line" in code_evidence_note:
         try:
@@ -188,33 +210,33 @@ def _finding_to_match_dict(validated_finding: dict) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Core metrics computation
+# Core metrics computation (Option D)
 # ---------------------------------------------------------------------------
 
 def compute_metrics(slug: str) -> dict:
     """
     Compute Quality Score and Decision Rate for one plugin.
+    Uses Option D: reads gate validation_status, not phase2 verdicts.
 
     Returns dict with:
-      tp, fp, fn, review_hit, review_miss,
+      tp, fp, fn, uncertain, accepted_fp,
       quality_score, decision_rate,
       slug, details
     """
-    phase3 = load_phase3(slug)
+    phase3 = load_phase3_final(slug)
     gt = load_ground_truth(slug)
 
     gt_findings = gt.get("findings", [])
-    tp_pf, review_pf, fp_pf = extract_pipeline_findings(phase3)
+    decided_findings, uncertain_count, accepted_fp_count = extract_gate_findings(phase3)
 
-    # Convert pipeline findings to matchable dicts
-    tp_match = [_finding_to_match_dict(f) for f in tp_pf]
-    review_match = [_finding_to_match_dict(f) for f in review_pf]
+    # Convert CONFIRMED/PLAUSIBLE findings to matchable dicts
+    match_dicts = [_finding_to_match_dict(vf) for vf in decided_findings]
 
-    # --- TP count: pipeline TP finding matches a ground truth finding ---
+    # --- TP count: CONFIRMED/PLAUSIBLE finding matches a GT finding ---
     matched_gt = set()
     tp_count = 0
     tp_details = []
-    for pf in tp_match:
+    for pf in match_dicts:
         for i, gf in enumerate(gt_findings):
             if i not in matched_gt and matches(pf, gf):
                 matched_gt.add(i)
@@ -226,32 +248,21 @@ def compute_metrics(slug: str) -> dict:
                 })
                 break
 
-    # --- FP count: pipeline TP finding NOT matching any ground truth ---
-    fp_count = len(tp_match) - tp_count
+    # --- FP count: CONFIRMED/PLAUSIBLE finding NOT matching any GT ---
+    fp_count = len(match_dicts) - tp_count
 
-    # --- FN count: ground truth finding NOT matched by any pipeline TP ---
+    # --- FN count: GT finding NOT matched by any CONFIRMED/PLAUSIBLE pipeline finding ---
     fn_count = len(gt_findings) - len(matched_gt)
 
-    # --- REVIEW_HIT: pipeline REVIEW finding matches a ground truth location ---
-    review_matched_gt = set()
-    review_hit = 0
-    review_miss = 0
-    for pf in review_match:
-        matched = False
-        for i, gf in enumerate(gt_findings):
-            if i not in review_matched_gt and matches(pf, gf):
-                review_matched_gt.add(i)
-                review_hit += 1
-                matched = True
-                break
-        if not matched:
-            review_miss += 1
-
-    # --- Metrics ---
+    # --- Quality Score: TP / (TP + FP + FN)
+    # UNCERTAIN not in QS denominator (undecided — not right, not wrong)
     denom_quality = tp_count + fp_count + fn_count
     quality_score = tp_count / denom_quality if denom_quality > 0 else None
 
-    denom_decision = tp_count + fp_count + review_hit + review_miss
+    # --- Decision Rate: (TP + FP) / (TP + FP + FN + UNCERTAIN)
+    # UNCERTAIN in DR denominator — they're unresolved decisions
+    # ACCEPTED_FP excluded from DR — correctly rejected, not undecided
+    denom_decision = tp_count + fp_count + fn_count + uncertain_count
     decision_rate = (tp_count + fp_count) / denom_decision if denom_decision > 0 else None
 
     return {
@@ -259,13 +270,13 @@ def compute_metrics(slug: str) -> dict:
         "tp": tp_count,
         "fp": fp_count,
         "fn": fn_count,
-        "review_hit": review_hit,
-        "review_miss": review_miss,
+        "uncertain": uncertain_count,
+        "accepted_fp": accepted_fp_count,
         "quality_score": quality_score,
         "decision_rate": decision_rate,
         "gt_findings_count": len(gt_findings),
-        "pipeline_tp_count": len(tp_match),
-        "pipeline_review_count": len(review_match),
+        "pipeline_decided_count": len(decided_findings),
+        "tp_details": tp_details,
     }
 
 
@@ -279,7 +290,7 @@ def run_single(slug: str) -> dict:
     qs = f"{result['quality_score']:.4f}" if result["quality_score"] is not None else "N/A"
     dr = f"{result['decision_rate']:.4f}" if result["decision_rate"] is not None else "N/A"
     print(f"QS={qs}  DR={dr}  TP={result['tp']} FP={result['fp']} FN={result['fn']} "
-          f"RH={result['review_hit']} RM={result['review_miss']}")
+          f"UNCERTAIN={result['uncertain']} ACCEPTED_FP={result['accepted_fp']}")
     return result
 
 
@@ -294,18 +305,20 @@ def discover_slugs() -> list[str]:
 def save_results(results: list[dict], path: Path) -> None:
     payload = {
         "run_timestamp": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "benchmark_version": "option_d",
         "plugins": results,
         "aggregate": {
             "total_tp": sum(r["tp"] for r in results),
             "total_fp": sum(r["fp"] for r in results),
             "total_fn": sum(r["fn"] for r in results),
-            "total_review_hit": sum(r["review_hit"] for r in results),
-            "total_review_miss": sum(r["review_miss"] for r in results),
+            "total_uncertain": sum(r["uncertain"] for r in results),
+            "total_accepted_fp": sum(r["accepted_fp"] for r in results),
         }
     }
     agg = payload["aggregate"]
     d_q = agg["total_tp"] + agg["total_fp"] + agg["total_fn"]
-    d_dr = agg["total_tp"] + agg["total_fp"] + agg["total_review_hit"] + agg["total_review_miss"]
+    # DR denominator includes UNCERTAIN (unresolved decisions)
+    d_dr = agg["total_tp"] + agg["total_fp"] + agg["total_fn"] + agg["total_uncertain"]
     payload["aggregate"]["quality_score"] = agg["total_tp"] / d_q if d_q > 0 else None
     payload["aggregate"]["decision_rate"] = (
         (agg["total_tp"] + agg["total_fp"]) / d_dr if d_dr > 0 else None

@@ -1,0 +1,14 @@
+{
+  "metadata": {
+    "plugin_slug": "cartflows",
+    "plugin_name": "CartFlows",
+    "version": "2.2.4",
+    "active_installs": null,
+    "files_analyzed": 333,
+    "total_loc": 104100,
+    "extraction_time_ms": 2311,
+    "extractor_version": "1.0.0"
+  },
+  "unresolved_hooks": [],
+  "coverage_gaps": []
+}
