@@ -259,6 +259,14 @@ print(pm.get(sys.argv[2], default))
 " "$DISPATCH_FILE" "$agent"
 }
 
+threat_context_for_run() {
+  python3 -c "
+import json, sys
+d = json.load(open(sys.argv[1]))
+print(d.get('threat_context_path', f'reports/{sys.argv[2]}-threat-context.json'))
+" "$DISPATCH_FILE" "$SLUG"
+}
+
 # ---------------------------------------------------------------------------
 # model_for_agent — reads agent-level model override from dispatch model_map
 # Dispatch format:
@@ -414,8 +422,8 @@ done
 
 if [[ "${SKIP_QUOTA_PROBE:-0}" != "1" ]] && [[ "$NEEDS_CODEX" -eq 1 ]]; then
   log_info "Preflight: probing Codex quota before launching agents..."
-  PROBE_OUT=$(mktemp /tmp/orchestrate-probe-XXXXXX.json)
-  PROBE_ERR=$(mktemp /tmp/orchestrate-probe-err-XXXXXX.txt)
+  PROBE_OUT=$(mktemp /tmp/orchestrate-probe.XXXXXX)
+  PROBE_ERR=$(mktemp /tmp/orchestrate-probe-err.XXXXXX)
   PROBE_EXIT=0
   echo '{"probe":true,"task":"reply with: {\"ok\":true}"}' \
     | codex exec \
@@ -481,8 +489,8 @@ if [[ "${SKIP_QUOTA_PROBE:-0}" != "1" ]] && [[ "$NEEDS_CLAUDE" -eq 1 ]]; then
     exit 2
   fi
 
-  _CLAUDE_PROBE_ERR="$(mktemp /tmp/orchestrate-claude-probe-err-XXXXXX.txt)"
-  _CLAUDE_PROBE_OUT="$(mktemp /tmp/orchestrate-claude-probe-XXXXXX.txt)"
+  _CLAUDE_PROBE_ERR="$(mktemp /tmp/orchestrate-claude-probe-err.XXXXXX)"
+  _CLAUDE_PROBE_OUT="$(mktemp /tmp/orchestrate-claude-probe.XXXXXX)"
   _CLAUDE_PROBE_EXIT=0
   _CLAUDE_PROBE_CMD=(claude -p --dangerously-skip-permissions --verbose --output-format stream-json)
   if [[ -n "$CLAUDE_PROBE_MODEL" ]]; then
@@ -540,7 +548,7 @@ skill_set_file_for_agent() {
 # ---------------------------------------------------------------------------
 launch_agent() {
   local agent="$1"
-  local input_file out_file skill_set_file prompt_file agent_provider agent_model
+  local input_file out_file skill_set_file prompt_file agent_provider agent_model threat_context_path
 
   input_file=$(python3 -c "
 import json,sys
@@ -552,6 +560,7 @@ print(d.get('inputs',{}).get(sys.argv[2],''))
   skill_set_file="$(skill_set_file_for_agent "$agent")"
   agent_provider="$(provider_for_agent "$agent")"
   agent_model="$(model_for_agent "$agent")"
+  threat_context_path="$(threat_context_for_run)"
 
   log_info "Launching agent: $agent  provider=$agent_provider  model=${agent_model:-<default>}  input=$input_file  output=$out_file"
 
@@ -564,7 +573,7 @@ print(d.get('inputs',{}).get(sys.argv[2],''))
   fi
 
   # Build prompt file: SKILL SET content + runtime context block
-  prompt_file="$(mktemp /tmp/prompt-${SLUG}-${agent}-XXXXXX.md)"
+  prompt_file="$(mktemp /tmp/prompt-${SLUG}-${agent}.XXXXXX)"
   {
     cat "$skill_set_file"
     echo ""
@@ -577,7 +586,9 @@ print(d.get('inputs',{}).get(sys.argv[2],''))
     echo "- **Agent ID:** ${agent}"
     echo "- **Provider:** ${agent_provider}"
     echo "- **Source directory:** $REPO_ROOT/plugins/${SLUG}/"
+    echo "- **Threat context:** ${threat_context_path}"
     echo ""
+    echo "Read the threat context first (matched_categories + priority_vulns) before deep source review."
     echo "Write your JSON output to: \`${out_file}\`"
     echo "The output must conform to the agent-output schema."
   } > "$prompt_file"

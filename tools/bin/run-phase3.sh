@@ -14,6 +14,7 @@ source "${TOOLS_DIR}/bin/report-paths.sh"
 source "${TOOLS_DIR}/bin/console-ui.sh"
 resolve_report_dirs "${ROOT_DIR}/reports"
 PLUGINS_DIR="${ROOT_DIR}/plugins"
+ARTIFACT_FRESHNESS_BIN="${BIN_DIR}/artifact_freshness.py"
 
 apply_project_claude_env_defaults() {
     local helper="${BIN_DIR}/load_claude_env.py"
@@ -59,6 +60,11 @@ Notes:
   1) Show available Phase2 output indexes (IR-order)
   2) Ask start index / end index
   3) Ask thread count
+
+  Freshness-aware by default:
+  - `phase3.json` is reused when it is newer than direct gate inputs
+  - `phase3.final.json` is canonical only when it is not older than `phase3.json`
+  - markdown is re-rendered only when its canonical Phase 3 input changes
 
 Flags:
   --apply-review   Optional feedback loop. Apply phase3-review corrections to phase2 and re-run gate.
@@ -209,6 +215,101 @@ provider_in_list() {
 if ! provider_in_list "$PHASE3_PRIMARY_PROVIDER"; then
     PHASE3_PRIMARY_PROVIDER="${LLM_PROVIDER_ARRAY[0]}"
 fi
+
+freshness_is_fresh() {
+    local output="$1"
+    shift
+
+    local cmd=(python3 "$ARTIFACT_FRESHNESS_BIN" is-fresh --output "$output")
+    local path
+    for path in "$@"; do
+        [ -n "$path" ] || continue
+        [ -e "$path" ] || continue
+        cmd+=(--input "$path")
+    done
+
+    "${cmd[@]}" >/dev/null 2>&1
+}
+
+phase3_canonical_path() {
+    python3 "$ARTIFACT_FRESHNESS_BIN" canonical-phase3 --phase3-dir "$PHASE3_DIR" --slug "$1" 2>/dev/null || true
+}
+
+phase3_gate_is_fresh() {
+    local slug="$1"
+    local phase2_file="${PHASE2_DIR}/${slug}-phase2.json"
+    local ir_file="${PHASE1_DIR}/${slug}-ir.json"
+    local ir_supplement_file="${PHASE1_DIR}/${slug}-ir-supplement.json"
+    local semgrep_file="${PHASE1_DIR}/${slug}-semgrep.json"
+    local psalm_file="${PHASE1_DIR}/${slug}-psalm.sarif"
+    local plugin_dir="${PLUGINS_DIR}/${slug}"
+    local gate_output="${PHASE3_DIR}/${slug}-phase3.json"
+    local -a inputs=("$phase2_file" "$ir_file" "$plugin_dir" "${BIN_DIR}/phase3_gate.py" "${BIN_DIR}/run-phase3.sh")
+    if [ -f "$ir_supplement_file" ]; then
+        inputs+=("$ir_supplement_file")
+    fi
+    if [ -f "$semgrep_file" ]; then
+        inputs+=("$semgrep_file")
+    fi
+    if [ -f "$psalm_file" ]; then
+        inputs+=("$psalm_file")
+    fi
+    freshness_is_fresh "$gate_output" "${inputs[@]}"
+}
+
+phase3_reviews_are_fresh() {
+    local slug="$1"
+    local idx="$2"
+    local gate_output="${PHASE3_DIR}/${slug}-phase3.json"
+    local canonical_review_json="${PHASE3_DIR}/${slug}-phase3-review.json"
+    local review_json md_path
+    local -a inputs=("$gate_output" "${BIN_DIR}/phase3_llm_review.py" "${BIN_DIR}/run-phase3.sh")
+
+    if [ -n "$PROMPT_TEMPLATE" ]; then
+        inputs+=("$PROMPT_TEMPLATE")
+    fi
+
+    if ! freshness_is_fresh "$canonical_review_json" "${inputs[@]}"; then
+        return 1
+    fi
+
+    local provider
+    for provider in "${LLM_PROVIDER_ARRAY[@]}"; do
+        review_json="$(phase3_review_json_path "$slug" "$provider")"
+        md_path="$(phase3_review_md_path "$slug" "$idx" "$provider")"
+        if ! freshness_is_fresh "$review_json" "${inputs[@]}"; then
+            return 1
+        fi
+        if ! freshness_is_fresh "$md_path" "${inputs[@]}"; then
+            return 1
+        fi
+    done
+
+    return 0
+}
+
+phase3_final_is_fresh() {
+    local slug="$1"
+    local gate_output="${PHASE3_DIR}/${slug}-phase3.json"
+    local review_json="${PHASE3_DIR}/${slug}-phase3-review.json"
+    local final_output="${PHASE3_DIR}/${slug}-phase3.final.json"
+    local -a inputs=("$gate_output" "$review_json" "${BIN_DIR}/phase3_apply_review.py" "${BIN_DIR}/run-phase3.sh")
+    freshness_is_fresh "$final_output" "${inputs[@]}"
+}
+
+phase3_markdown_is_fresh() {
+    local slug="$1"
+    local idx="$2"
+    local phase2_file="${PHASE2_DIR}/${slug}-phase2.json"
+    local markdown_path="${PHASE3_DIR}/${idx}-${slug}.md"
+    local canonical_path
+    canonical_path="$(phase3_canonical_path "$slug")"
+    if [ -z "$canonical_path" ]; then
+        return 1
+    fi
+    local -a inputs=("$canonical_path" "$phase2_file" "${BIN_DIR}/phase3_write_md.py")
+    freshness_is_fresh "$markdown_path" "${inputs[@]}"
+}
 
 provider_model() {
     case "$1" in
@@ -428,10 +529,12 @@ run_one() {
     local ir_file="${PHASE1_DIR}/${slug}-ir.json"
     local plugin_dir="${PLUGINS_DIR}/${slug}"
     local gate_output="${PHASE3_DIR}/${slug}-phase3.json"
+    local canonical_review_json="${PHASE3_DIR}/${slug}-phase3-review.json"
     if [ -z "$idx" ]; then
         idx="$(ir_index_for_slug "$slug" 2>/dev/null || true)"
     fi
     local gate_md="${PHASE3_DIR}/${idx}-${slug}.md"
+    local did_work=false
 
     if [ ! -f "$phase2_file" ]; then
         log_error_block "Phase 2 output not found" \
@@ -464,12 +567,6 @@ run_one() {
         return 1
     fi
 
-    if [ -f "$gate_md" ] && [ "$FORCE" != true ]; then
-        log_info "Skip ${slug}: phase3 markdown already exists"
-        RUN_RESULT="skipped"
-        return 0
-    fi
-
     log_section "Phase 3: ${slug}"
     echo "  Reports dir: ${REPORTS_DIR}"
     echo "  Plugins dir: ${PLUGINS_DIR}"
@@ -489,15 +586,20 @@ run_one() {
     fi
 
     # Step 1: deterministic gate (authoritative).
-    log_stage "Phase 3a: Deterministic Gate"
-    python3 "${BIN_DIR}/phase3_gate.py" "$slug" \
-        --reports-dir "$REPORTS_DIR" \
-        --plugins-dir "$PLUGINS_DIR" || {
-        log_error_block "Phase 3a gate failed" \
-            "slug" "$slug"
-        RUN_RESULT="failed"
-        return 1
-    }
+    if [ "$FORCE" = true ] || ! phase3_gate_is_fresh "$slug"; then
+        log_stage "Phase 3a: Deterministic Gate"
+        python3 "${BIN_DIR}/phase3_gate.py" "$slug" \
+            --reports-dir "$REPORTS_DIR" \
+            --plugins-dir "$PLUGINS_DIR" || {
+            log_error_block "Phase 3a gate failed" \
+                "slug" "$slug"
+            RUN_RESULT="failed"
+            return 1
+        }
+        did_work=true
+    else
+        log_info "Reuse ${slug}: phase3 gate output is fresh"
+    fi
 
     if [ ! -f "$gate_output" ]; then
         log_error_block "Gate output not generated" \
@@ -506,11 +608,6 @@ run_one() {
         RUN_RESULT="failed"
         return 1
     fi
-
-    # Always render deterministic markdown, even if LLM is skipped/failed.
-    python3 "${BIN_DIR}/phase3_write_md.py" "$slug" \
-        --reports-dir "$REPORTS_DIR" \
-        --index "$idx" || true
 
     local needs_llm confirmed
     needs_llm=$(python3 -c "
@@ -539,25 +636,49 @@ print(int(d.get('phase3_summary', {}).get('confirmed', 0)))
     fi
 
     if [ "$run_llm" = true ]; then
-        log_stage "Phase 3b: LLM Skeptic Review"
-        run_phase3_provider_reviews "$slug" "$idx"
-
-        if [ "$APPLY_REVIEW" = true ] && [ -f "${BIN_DIR}/phase3_apply_review.py" ] && [ -f "${PHASE3_DIR}/${slug}-phase3-review.json" ]; then
-            log_stage "Applying review corrections (optional)"
-            python3 "${BIN_DIR}/phase3_apply_review.py" "$slug" \
-                --reports-dir "$REPORTS_DIR" \
-                --plugins-dir "$PLUGINS_DIR" || true
+        if [ "$FORCE" = true ] || ! phase3_reviews_are_fresh "$slug" "$idx"; then
+            log_stage "Phase 3b: LLM Skeptic Review"
+            run_phase3_provider_reviews "$slug" "$idx"
+            did_work=true
+        else
+            log_info "Reuse ${slug}: phase3 review artifacts are fresh"
         fi
 
-        # Re-render deterministic markdown after optional apply-review loop.
-        python3 "${BIN_DIR}/phase3_write_md.py" "$slug" \
-            --reports-dir "$REPORTS_DIR" \
-            --index "$idx" || true
+        if [ "$APPLY_REVIEW" = true ] && [ -f "${BIN_DIR}/phase3_apply_review.py" ] && [ -f "$canonical_review_json" ]; then
+            if [ "$FORCE" = true ] || ! phase3_final_is_fresh "$slug"; then
+                log_stage "Applying review corrections (optional)"
+                python3 "${BIN_DIR}/phase3_apply_review.py" "$slug" \
+                    --reports-dir "$REPORTS_DIR" \
+                    --plugins-dir "$PLUGINS_DIR" || true
+                did_work=true
+            else
+                log_info "Reuse ${slug}: phase3 final snapshot is fresh"
+            fi
+        fi
     else
         log_stage "Phase 3b: SKIPPED (llm-mode=${LLM_MODE}, needs_llm=${needs_llm})"
     fi
 
+    local canonical_path
+    canonical_path="$(phase3_canonical_path "$slug")"
+    if [ -z "$canonical_path" ]; then
+        log_error_block "Canonical Phase 3 artifact not found" \
+            "slug" "$slug"
+        RUN_RESULT="failed"
+        return 1
+    fi
+
+    if [ "$FORCE" = true ] || ! phase3_markdown_is_fresh "$slug" "$idx"; then
+        python3 "${BIN_DIR}/phase3_write_md.py" "$slug" \
+            --reports-dir "$REPORTS_DIR" \
+            --index "$idx" || true
+        did_work=true
+    else
+        log_info "Reuse ${slug}: phase3 markdown is fresh"
+    fi
+
     echo "  Deterministic report: ${gate_md}"
+    echo "  Canonical Phase 3 artifact: ${canonical_path}"
     local provider_md
     for provider in "${LLM_PROVIDER_ARRAY[@]}"; do
         provider_md="$(phase3_review_md_path "$slug" "$idx" "$provider")"
@@ -565,8 +686,13 @@ print(int(d.get('phase3_summary', {}).get('confirmed', 0)))
             echo "  LLM skeptic report (${provider}): ${provider_md}"
         fi
     done
+    if [ "$did_work" = true ]; then
+        RUN_RESULT="done"
+    else
+        log_info "Skip ${slug}: phase3 artifacts are fresh"
+        RUN_RESULT="skipped"
+    fi
     log_section "Done Phase 3: ${slug}"
-    RUN_RESULT="done"
     return 0
 }
 

@@ -4,21 +4,23 @@ Inputs:
 - Phase 1 IR: `reports/phase1/{PLUGIN_SLUG}-ir.json`
 - Semgrep: `reports/phase1/{PLUGIN_SLUG}-semgrep.json` (if exists)
 - Psalm SARIF: `reports/phase1/{PLUGIN_SLUG}-psalm.sarif` (if exists, corroboration signal)
+- Threat context: `{THREAT_CONTEXT_PATH}` (if exists; use `matched_categories` + `priority_vulns` to prioritize review)
 - Source code: `plugins/{PLUGIN_SLUG}/`
 
 Task:
-1. Read IR map first, then verify directly in source code.
-2. Prioritize high-value targets:
+1. Read IR map first. If threat context exists, read it next and use `matched_categories` + `priority_vulns` to prioritize review.
+2. Verify directly in source code.
+3. Prioritize high-value targets:
    - unauth/subscriber entry points
    - SQL/file/redirect/include/deserialization sinks
    - anomalies high/critical
-3. Validate every candidate using source->sink trace with exact file:line.
-4. Refute-first:
+4. Validate every candidate using source->sink trace with exact file:line.
+5. Refute-first:
    - check nonce/capability guards
    - check sanitizer/prepare correctness
    - check realistic exploitability
-5. Keep only meaningful findings (Patchstack-oriented impact).
-6. Unresolved Hooks: check `ir.unresolved_hooks[]` for dynamic hook registrations.
+6. Keep only meaningful findings (Patchstack-oriented impact).
+7. Unresolved Hooks: check `ir.unresolved_hooks[]` for dynamic hook registrations.
    - For each entry, inspect the surrounding source code at `file:line` to determine the hook name value at runtime.
    - Pay special attention to `hook_arg_type=concatenation`: common dangerous patterns include
      `'wp_ajax_nopriv_' . $action` (unauthenticated AJAX), `'wp_ajax_' . $action` (subscriber AJAX),
@@ -26,7 +28,7 @@ Task:
      per wp-context (REST API = single most critically exploited surface; wp_ajax_nopriv = zero auth).
    - If the hook resolves to a security-relevant hook, attempt to trace its callback for missing nonce/cap checks.
    - If the hook name cannot be determined statically, note it in `negative_findings` with reason `dynamic_hook_unresolved`.
-7. Coverage Gaps: check `ir.coverage_gaps[]` for files that contain WP security signals but no discovered entry point.
+8. Coverage Gaps: check `ir.coverage_gaps[]` for files that contain WP security signals but no discovered entry point.
    - Each entry has: `file` (plugin-relative path), `signals[]` (list of detected signal strings), `reason` (`has_security_functions_but_no_entry_point`).
    - For each gap entry, inspect the file at `file` to determine whether it is a missed entry point (e.g., a class loaded via `add_action` in a bootstrap file not yet traced) or a helper/utility file called from a known entry point.
    - If the file appears to be a missed entry point (direct hook registration, direct AJAX handler, direct REST handler), attempt to trace its inputs for missing nonce/cap checks and add findings accordingly.

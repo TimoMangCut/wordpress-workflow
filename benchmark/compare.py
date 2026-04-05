@@ -35,6 +35,10 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).parent.parent
+sys.path.insert(0, str(REPO_ROOT / "tools" / "bin"))
+
+from artifact_freshness import resolve_canonical_phase3_path
+
 GROUND_TRUTH_DIR = REPO_ROOT / "benchmark" / "ground-truth"
 RESULTS_DIR = REPO_ROOT / "benchmark" / "results"
 PHASE3_DIR = REPO_ROOT / "reports" / "phase3"
@@ -114,20 +118,16 @@ def matches(pipeline_finding: dict, gt_finding: dict) -> bool:
 # ---------------------------------------------------------------------------
 
 def load_phase3_final(slug: str) -> dict:
-    """Load reports/phase3/<slug>-phase3.final.json, falling back to phase3.json.
+    """Load the canonical Phase 3 artifact for a slug.
 
-    Option D: benchmark reads gate output, not phase2 verdicts.
+    `phase3.final.json` is canonical only when it is not older than `phase3.json`.
     """
-    final_path = PHASE3_DIR / f"{slug}-phase3.final.json"
-    gate_path = PHASE3_DIR / f"{slug}-phase3.json"
-    if final_path.exists():
-        with open(final_path) as f:
-            return json.load(f)
-    if gate_path.exists():
-        with open(gate_path) as f:
+    canonical_path = resolve_canonical_phase3_path(PHASE3_DIR, slug)
+    if canonical_path is not None:
+        with open(canonical_path) as f:
             return json.load(f)
     raise FileNotFoundError(
-        f"Phase3 output not found: tried {final_path} and {gate_path}"
+        f"Phase3 output not found for slug: {slug}"
     )
 
 
@@ -299,7 +299,11 @@ def run_single(slug: str) -> dict:
 def discover_slugs() -> list[str]:
     """Find all slugs that have BOTH a ground truth and a phase3 output."""
     gt_slugs = {p.stem for p in GROUND_TRUTH_DIR.glob("*.json")}
-    ph3_slugs = {p.stem.replace("-phase3", "") for p in PHASE3_DIR.glob("*-phase3.json")}
+    ph3_slugs = set()
+    for path in PHASE3_DIR.glob("*-phase3.json"):
+        ph3_slugs.add(path.stem.replace("-phase3", ""))
+    for path in PHASE3_DIR.glob("*-phase3.final.json"):
+        ph3_slugs.add(path.stem.replace("-phase3.final", ""))
     common = sorted(gt_slugs & ph3_slugs)
     return common
 

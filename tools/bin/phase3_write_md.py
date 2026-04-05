@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render a human-readable Phase 3 markdown report from deterministic gate JSON."""
+"""Render a human-readable Phase 3 markdown report from canonical Phase 3 JSON."""
 
 from __future__ import annotations
 
@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from artifact_freshness import resolve_canonical_phase3_path
 from report_paths import build_report_layout
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
@@ -205,7 +206,7 @@ def main() -> int:
     reports_dir = Path(args.reports_dir).resolve()
     layout = build_report_layout(reports_dir).ensure()
     slug = args.slug
-    gate_path = layout.phase3 / f"{slug}-phase3.json"
+    gate_path = resolve_canonical_phase3_path(layout.phase3, slug)
     phase2_path = layout.phase2 / f"{slug}-phase2.json"
     phase3_dir = layout.phase3
 
@@ -215,6 +216,10 @@ def main() -> int:
         return 1
 
     out_path = phase3_dir / f"{idx}-{slug}.md"
+
+    if gate_path is None:
+        print(f"[ERROR] Phase 3 artifact missing for slug: {slug}")
+        return 1
 
     gate = load_json(gate_path)
     if not gate:
@@ -307,6 +312,14 @@ def main() -> int:
         "If LLM skeptic review exists, use it as supplemental counter-evidence only."
     )
     lines.append("")
+
+    for stale_path in phase3_dir.glob(f"*-{slug}.md"):
+        if stale_path == out_path:
+            continue
+        try:
+            stale_path.unlink()
+        except OSError:
+            pass
 
     out_path.write_text("\n".join(lines), encoding="utf-8")
     print(f"[OK] Gate markdown written: {out_path}")

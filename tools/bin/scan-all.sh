@@ -1,6 +1,6 @@
 #!/bin/bash
 # scan-all.sh - Full Phase 1 pipeline for a single plugin
-# Pipeline: surface-map -> semgrep -> psalm (optional) -> IR extract + rules -> SQLite
+# Pipeline: surface-map -> semgrep -> psalm (optional) -> IR extract + rules -> SQLite -> threat context
 # Usage: scan-all.sh <plugin-directory>
 
 set -euo pipefail
@@ -29,6 +29,9 @@ source "${SCRIPT_DIR}/bin/report-paths.sh"
 source "${SCRIPT_DIR}/bin/console-ui.sh"
 resolve_report_dirs "${ROOT_DIR}/reports"
 ensure_report_dirs
+ARTIFACT_FRESHNESS_BIN="${SCRIPT_DIR}/bin/artifact_freshness.py"
+THREAT_CONTEXT_PATH="${REPORTS_DIR}/${SLUG}-threat-context.json"
+THREAT_PROFILES_PATH="${SCRIPT_DIR}/data/threat-profiles.json"
 
 log_section "PHASE 1: $SLUG"
 
@@ -69,24 +72,39 @@ resolve_php_bin() {
     return 1
 }
 
+freshness_is_fresh() {
+    local output="$1"
+    shift
+
+    local cmd=(python3 "$ARTIFACT_FRESHNESS_BIN" is-fresh --output "$output")
+    local path
+    for path in "$@"; do
+        [ -n "$path" ] || continue
+        [ -e "$path" ] || continue
+        cmd+=(--input "$path")
+    done
+
+    "${cmd[@]}" >/dev/null 2>&1
+}
+
 # --- Step 1: Surface Map (fast grep, always run) ---
 if [ -f "${SCRIPT_DIR}/bin/surface-map.sh" ]; then
-    log_stage "[1/4] Surface Map"
+    log_stage "[1/5] Surface Map"
     bash "${SCRIPT_DIR}/bin/surface-map.sh" "$PLUGIN_DIR" || log_warn_block "surface-map failed" "slug" "$SLUG"
 else
-    log_stage "[1/4] Surface Map --- SKIPPED"
+    log_stage "[1/5] Surface Map --- SKIPPED"
 fi
 
 # --- Step 2: Semgrep (primary taint scanner) ---
 if [ -f "${SCRIPT_DIR}/bin/scan-semgrep.sh" ]; then
-    log_stage "[2/4] Semgrep"
+    log_stage "[2/5] Semgrep"
     bash "${SCRIPT_DIR}/bin/scan-semgrep.sh" "$PLUGIN_DIR" || log_warn_block "semgrep failed" "slug" "$SLUG"
 else
-    log_stage "[2/4] Semgrep --- MISSING"
+    log_stage "[2/5] Semgrep --- MISSING"
 fi
 
 # --- Step 3: Psalm taint analysis (cross-file taint -> SARIF, non-blocking) ---
-log_stage "[3/4] Psalm Taint"
+log_stage "[3/5] Psalm Taint"
 if [ -f "${SCRIPT_DIR}/bin/scan-psalm.sh" ]; then
     bash "${SCRIPT_DIR}/bin/scan-psalm.sh" "$PLUGIN_DIR" || log_warn_block "psalm failed (non-blocking)" "slug" "$SLUG"
 else
@@ -94,7 +112,7 @@ else
 fi
 
 # --- Step 4: IR Extraction + Deterministic Rules + SQLite Store ---
-log_stage "[4/4] IR Extract + Rules"
+log_stage "[4/5] IR Extract + Rules"
 if [ -f "${SCRIPT_DIR}/vendor/autoload.php" ] && [ -f "${SCRIPT_DIR}/bin/extract.php" ]; then
     PHP_RUNTIME="$(resolve_php_bin || true)"
     if [ -n "$PHP_RUNTIME" ]; then
@@ -104,6 +122,22 @@ if [ -f "${SCRIPT_DIR}/vendor/autoload.php" ] && [ -f "${SCRIPT_DIR}/bin/extract
     fi
 else
     log_warn "SKIPPED: php-parser not installed (run: cd tools && composer install)"
+fi
+
+# --- Step 5: Threat Context (deterministic keyword matching) ---
+if [ -f "${SCRIPT_DIR}/bin/generate_threat_context.py" ]; then
+    log_stage "[5/5] Threat Context"
+    if freshness_is_fresh "$THREAT_CONTEXT_PATH" "$PLUGIN_DIR" "$THREAT_PROFILES_PATH" "${SCRIPT_DIR}/bin/generate_threat_context.py"; then
+        log_info "Skip ${SLUG}: threat context is fresh"
+    else
+        python3 "${SCRIPT_DIR}/bin/generate_threat_context.py" "$SLUG" \
+            --plugins-dir "${ROOT_DIR}/plugins" \
+            --reports-dir "${REPORTS_DIR}" \
+            --profiles "${THREAT_PROFILES_PATH}" \
+            || log_warn_block "threat context generation failed" "slug" "$SLUG"
+    fi
+else
+    log_stage "[5/5] Threat Context --- MISSING"
 fi
 
 log_section "DONE: $SLUG"

@@ -41,11 +41,14 @@ run-phase3.sh --slug <slug>
 
 ## Prerequisites
 
-1. Phase 1 scan complete: `reports/<slug>-ir.json` exists.
+1. Phase 1 scan complete: `reports/phase1/<slug>-ir.json` exists.
 2. Agent inputs prepared: `python3 tools/bin/prepare_agent_inputs.py <slug>`
    - Produces `reports/<slug>-dispatch.json`
    - Produces `reports/<slug>-ir-slice-*.json` per agent group
-3. Provider CLIs on `$PATH`:
+3. Threat context available: `reports/<slug>-threat-context.json`
+   - Generated automatically by `scan-all.sh`
+   - Passed into agent runtime prompts during orchestration
+4. Provider CLIs on `$PATH`:
    - **Codex CLI** — required for any agent with `provider=codex` (default).
    - **Claude Code CLI** (`claude`) — required only if `provider_map` routes any agent to `claude`. The orchestrator's Step 3b preflight will fail fast with a clear error if the CLI is missing or auth is broken.
 
@@ -59,8 +62,12 @@ run-phase3.sh --slug <slug>
 bash tools/bin/run-pipeline.sh <slug> --multi-agent
 ```
 
-This runs all phases end-to-end:
-Phase 1 → Prep → Orchestrate → Merge → Gate → Report
+For a specific slug, this runs:
+Phase 1 → Threat Context → Prep → Orchestrate → Merge → Gate → Report
+
+If you omit `<slug>`, multi-agent mode uses existing `reports/phase1/*-ir.json`
+artifacts, refreshes threat context per slug when plugin source is present,
+and runs Prep → Orchestrate → Merge → Gate → Report for each slug.
 
 ### Manual Mode (quota-controlled)
 
@@ -68,6 +75,8 @@ Phase 1 → Prep → Orchestrate → Merge → Gate → Report
 ```bash
 bash tools/bin/scan-all.sh plugins/<slug>/
 ```
+
+This also generates `reports/<slug>-threat-context.json` when fresh output is not already available.
 
 **Step 2: Prepare agent inputs**
 ```bash
@@ -111,6 +120,7 @@ bash tools/bin/run-phase3.sh --slug <slug>
     "agent-d":  "reports/<slug>-ir.json"
   },
   "source_dir": "plugins/<slug>/",
+  "threat_context_path": "reports/<slug>-threat-context.json",
   "timeout_seconds": 600,
   "quota_account": "",
   "provider_map": {

@@ -6,6 +6,9 @@ Slice a Phase 1 IR JSON into per-EP-group subsets for multi-agent Phase 2 analys
 Also filters semgrep results per group.
 
 Usage:
+    python3 tools/bin/prepare_agent_inputs.py <slug>
+
+    # Equivalent explicit form:
     python3 tools/bin/prepare_agent_inputs.py \
         --ir reports/<slug>-ir.json \
         --semgrep reports/<slug>-semgrep.json \
@@ -31,6 +34,7 @@ import argparse
 import json
 import os
 import sys
+from pathlib import Path
 
 import jsonschema
 
@@ -132,32 +136,50 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Slice Phase 1 IR into per-EP-group files for multi-agent Phase 2."
     )
-    parser.add_argument("--ir",         required=True, help="Path to <slug>-ir.json")
-    parser.add_argument("--semgrep",    required=True, help="Path to <slug>-semgrep.json")
-    parser.add_argument("--output-dir", required=True, dest="output_dir",
+    parser.add_argument("slug", nargs="?", help="Plugin slug shorthand (uses reports/phase1/<slug>-*.json and writes into reports/)")
+    parser.add_argument("--ir",         help="Path to <slug>-ir.json")
+    parser.add_argument("--semgrep",    help="Path to <slug>-semgrep.json (missing path falls back to empty results)")
+    parser.add_argument("--output-dir", dest="output_dir",
                         help="Directory to write output files into")
     args = parser.parse_args()
+
+    script_dir = Path(__file__).resolve().parent
+    root_dir = script_dir.parent.parent
+
+    if args.slug:
+        phase1_dir = root_dir / "reports" / "phase1"
+        args.ir = args.ir or str(phase1_dir / f"{args.slug}-ir.json")
+        args.semgrep = args.semgrep or str(phase1_dir / f"{args.slug}-semgrep.json")
+        args.output_dir = args.output_dir or str(root_dir / "reports")
+
+    if not args.ir or not args.semgrep or not args.output_dir:
+        parser.error("Provide either <slug> shorthand or all of --ir, --semgrep, and --output-dir")
 
     # --- Fail fast if inputs missing ---
     if not os.path.isfile(args.ir):
         sys.exit(f"ERROR: IR file not found: {args.ir}")
-    if not os.path.isfile(args.semgrep):
-        sys.exit(f"ERROR: Semgrep file not found: {args.semgrep}")
-
     # --- Load inputs ---
     with open(args.ir, encoding="utf-8") as fh:
         ir = json.load(fh)
-    with open(args.semgrep, encoding="utf-8") as fh:
-        semgrep = json.load(fh)
+    semgrep_missing = not os.path.isfile(args.semgrep)
+    if semgrep_missing:
+        semgrep = {"results": []}
+    else:
+        with open(args.semgrep, encoding="utf-8") as fh:
+            semgrep = json.load(fh)
 
     slug = ir["metadata"]["plugin_slug"]
     schema = load_schema()
+    threat_context_rel = os.path.join("reports", f"{slug}-threat-context.json")
 
     print(f"IR: {args.ir} (slug={slug}, "
           f"eps={len(ir['entry_points'])}, sources={len(ir['sources'])}, "
           f"sinks={len(ir['sinks'])}, guards={len(ir['guards'])}, "
           f"anomalies={len(ir['anomalies'])})")
-    print(f"Semgrep: {args.semgrep} ({len(semgrep.get('results', []))} results)")
+    if semgrep_missing:
+        print(f"Semgrep: {args.semgrep} (missing -> using empty results)")
+    else:
+        print(f"Semgrep: {args.semgrep} ({len(semgrep.get('results', []))} results)")
     print(f"Output dir: {args.output_dir}")
     print()
 
@@ -221,6 +243,7 @@ def main() -> None:
         "agents": agents_list,
         "inputs": inputs,
         "source_dir": f"plugins/{slug}/",
+        "threat_context_path": threat_context_rel,
         "timeout_seconds": 600,
         # quota_account: set CODEX_QUOTA_ACCOUNT env var before running orchestrator
         # to record which Codex account was used (helps debug cross-account quota issues).

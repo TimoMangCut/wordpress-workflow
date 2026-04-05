@@ -16,6 +16,7 @@ source "${TOOLS_DIR}/bin/console-ui.sh"
 source "${TOOLS_DIR}/bin/timeout-utils.sh"
 resolve_report_dirs "${ROOT_DIR}/reports"
 PLUGINS_DIR="${ROOT_DIR}/plugins"
+ARTIFACT_FRESHNESS_BIN="${BIN_DIR}/artifact_freshness.py"
 
 apply_project_claude_env_defaults() {
     local helper="${BIN_DIR}/load_claude_env.py"
@@ -71,7 +72,7 @@ Options:
   --end-index <N>        Batch end index (IR-order, 1-based).
   --threads <N>          Parallel workers for batch mode (default: 1).
   --interactive          Show index list and ask Start/End/Threads.
-  --force                Re-run even if reports/phase2/<slug>-phase2.json exists.
+  --force                Re-run even if the existing phase2 output is still fresh.
   --force-deep           Skip quick-triage and always run deep prompt.
   --with-claude          Convenience flag: run both codex and claude.
   --provider <name>      Single LLM provider shorthand: codex|claude.
@@ -199,12 +200,14 @@ if [ -z "$PROMPT_TEMPLATE" ]; then
 fi
 
 SYSTEM_PROMPT_PHASE2=""
+SYSTEM_PROMPT_PHASE2_PATH=""
 for candidate in \
     "${TOOLS_DIR}/config/system-prompt-phase2.md" \
     "${ROOT_DIR}/system-prompt-phase2.md"
 do
     if [ -f "$candidate" ]; then
         SYSTEM_PROMPT_PHASE2="$(cat "$candidate")"
+        SYSTEM_PROMPT_PHASE2_PATH="$candidate"
         break
     fi
 done
@@ -256,6 +259,50 @@ if ! provider_in_list "$PHASE2_PRIMARY_PROVIDER"; then
     PHASE2_PRIMARY_PROVIDER="${LLM_PROVIDER_ARRAY[0]}"
 fi
 
+freshness_is_fresh() {
+    local output="$1"
+    shift
+
+    local cmd=(python3 "$ARTIFACT_FRESHNESS_BIN" is-fresh --output "$output")
+    local path
+    for path in "$@"; do
+        [ -n "$path" ] || continue
+        [ -e "$path" ] || continue
+        cmd+=(--input "$path")
+    done
+
+    "${cmd[@]}" >/dev/null 2>&1
+}
+
+phase2_output_is_fresh() {
+    local slug="$1"
+    local output="${PHASE2_DIR}/${slug}-phase2.json"
+    local ir_file="${PHASE1_DIR}/${slug}-ir.json"
+    local plugin_dir="${PLUGINS_DIR}/${slug}"
+    local semgrep_file="${PHASE1_DIR}/${slug}-semgrep.json"
+    local psalm_file="${PHASE1_DIR}/${slug}-psalm.sarif"
+    local threat_context_file="${REPORTS_DIR}/${slug}-threat-context.json"
+    local -a inputs=("$ir_file" "$plugin_dir" "$PROMPT_TEMPLATE" "${BIN_DIR}/run-phase2.sh")
+
+    if [ -n "$SYSTEM_PROMPT_PHASE2_PATH" ]; then
+        inputs+=("$SYSTEM_PROMPT_PHASE2_PATH")
+    fi
+    if [ -f "${BIN_DIR}/phase2_postprocess.py" ]; then
+        inputs+=("${BIN_DIR}/phase2_postprocess.py")
+    fi
+    if [ -f "$semgrep_file" ]; then
+        inputs+=("$semgrep_file")
+    fi
+    if [ -f "$psalm_file" ]; then
+        inputs+=("$psalm_file")
+    fi
+    if [ -f "$threat_context_file" ]; then
+        inputs+=("$threat_context_file")
+    fi
+
+    freshness_is_fresh "$output" "${inputs[@]}"
+}
+
 provider_model() {
     case "$1" in
         codex) printf '%s' "$CODEX_MODEL" ;;
@@ -284,6 +331,10 @@ phase2_output_rel() {
     printf 'reports/phase2/%s-phase2.%s.json' "$1" "$2"
 }
 
+phase2_threat_context_rel() {
+    printf 'reports/%s-threat-context.json' "$1"
+}
+
 phase2_errlog_path() {
     if [ "$3" = "quick" ]; then
         printf '%s/%s-phase2-quick.%s.err' "$LOGS_DIR" "$1" "$2"
@@ -293,14 +344,15 @@ phase2_errlog_path() {
 }
 
 render_phase2_template_prompt() {
-    python3 - "$PROMPT_TEMPLATE" "$1" "$2" <<'PY'
+    python3 - "$PROMPT_TEMPLATE" "$1" "$2" "$3" <<'PY'
 from pathlib import Path
 import sys
 
-template_path, slug, output_path = sys.argv[1:4]
+template_path, slug, output_path, threat_context_path = sys.argv[1:5]
 text = Path(template_path).read_text(encoding="utf-8", errors="replace")
 text = text.replace("{PLUGIN_SLUG}", slug)
 text = text.replace("{OUTPUT_PATH}", output_path)
+text = text.replace("{THREAT_CONTEXT_PATH}", threat_context_path)
 print(text, end="")
 PY
 }
@@ -308,7 +360,8 @@ PY
 render_phase2_quick_prompt() {
     local slug="$1"
     local output_rel="$2"
-    printf 'Quick triage mode for plugin `%s`.\nInputs:\n- Phase 1 IR: `reports/phase1/%s-ir.json`\n- Semgrep: `reports/phase1/%s-semgrep.json` (if exists)\n- Psalm SARIF: `reports/phase1/%s-psalm.sarif` (if exists; corroboration only)\n- Source: `plugins/%s/`\n\nTask:\n1) Read IR (AST-derived) and spot-check only high-risk code paths in source.\n2) Focus on meaningful security impact only (Patchstack-eligible first).\n3) If nothing meaningful, return empty findings with concise negative_findings.\n4) Check `ir.coverage_gaps[]` for files with WP security signals but no discovered entry point. If any gap file appears to be a missed entry point, note it — do not ignore it.\n5) Keep reasoning concise, but evidence-bound.\n\nSchema requirements (critical):\n- Every TP/REVIEW MUST include: entry_point_id, source_file_path+source_line_number, sink_file_path+sink_line_number, source_function, sink_function.\n- All path fields must be relative to the plugin root. Never prefix them with `plugins/%s/`.\n- Keep backcompat aliases: file_path = sink_file_path, line_number = sink_line_number.\n- Stored/second-order: include storage_key when literal; otherwise mark REVIEW and explain.\n\nOutput strictly to `%s`.' "$slug" "$slug" "$slug" "$slug" "$slug" "$slug" "$output_rel"
+    local threat_context_rel="$3"
+    printf 'Quick triage mode for plugin `%s`.\nInputs:\n- Phase 1 IR: `reports/phase1/%s-ir.json`\n- Semgrep: `reports/phase1/%s-semgrep.json` (if exists)\n- Psalm SARIF: `reports/phase1/%s-psalm.sarif` (if exists; corroboration only)\n- Threat context: `%s` (if exists; use matched_categories + priority_vulns to prioritize review)\n- Source: `plugins/%s/`\n\nTask:\n1) Read IR (AST-derived) first. If threat context exists, read it next and prioritize `priority_vulns[]` plus matched plugin categories before spot-checking source.\n2) Spot-check only high-risk code paths in source.\n3) Focus on meaningful security impact only (Patchstack-eligible first).\n4) If nothing meaningful, return empty findings with concise negative_findings.\n5) Check `ir.coverage_gaps[]` for files with WP security signals but no discovered entry point. If any gap file appears to be a missed entry point, note it — do not ignore it.\n6) Keep reasoning concise, but evidence-bound.\n\nSchema requirements (critical):\n- Every TP/REVIEW MUST include: entry_point_id, source_file_path+source_line_number, sink_file_path+sink_line_number, source_function, sink_function.\n- All path fields must be relative to the plugin root. Never prefix them with `plugins/%s/`.\n- Keep backcompat aliases: file_path = sink_file_path, line_number = sink_line_number.\n- Stored/second-order: include storage_key when literal; otherwise mark REVIEW and explain.\n\nOutput strictly to `%s`.' "$slug" "$slug" "$slug" "$slug" "$threat_context_rel" "$slug" "$slug" "$output_rel"
 }
 
 append_quota_log() {
@@ -638,17 +691,18 @@ run_phase2_stage() {
     local stage="$2"
     shift 2
     local providers=("$@")
-    local stage_dir pids provider system_prompt prompt errlog output_rel
+    local stage_dir pids provider system_prompt prompt errlog output_rel threat_context_rel
     stage_dir="$(mktemp -d)"
     pids=()
+    threat_context_rel="$(phase2_threat_context_rel "$slug")"
 
     for provider in "${providers[@]}"; do
         system_prompt="$(normalize_system_prompt_for_provider "$provider" "$SYSTEM_PROMPT_PHASE2")"
         output_rel="$(phase2_output_rel "$slug" "$provider")"
         if [ "$stage" = "quick" ]; then
-            prompt="$(render_phase2_quick_prompt "$slug" "$output_rel")"
+            prompt="$(render_phase2_quick_prompt "$slug" "$output_rel" "$threat_context_rel")"
         else
-            prompt="$(render_phase2_template_prompt "$slug" "$output_rel")"
+            prompt="$(render_phase2_template_prompt "$slug" "$output_rel" "$threat_context_rel")"
         fi
         errlog="$(phase2_errlog_path "$slug" "$provider" "$stage")"
 
@@ -696,8 +750,8 @@ run_one() {
         return 1
     fi
 
-    if [ -f "$output" ] && [ "$FORCE" != true ]; then
-        log_info "Skip ${slug}: phase2 already exists"
+    if [ "$FORCE" != true ] && phase2_output_is_fresh "$slug"; then
+        log_info "Skip ${slug}: phase2 output is fresh"
         RUN_RESULT="skipped"
         return 0
     fi
@@ -1029,6 +1083,8 @@ echo "$out"
 if [ $rc -ne 0 ]; then
   echo "failed|${slug}" >> "$STATUS_FILE"
 elif echo "$out" | grep -q '^\[=\] Skip '; then
+  echo "skipped|${slug}" >> "$STATUS_FILE"
+elif echo "$out" | grep -q '^\[INFO\] Skip '; then
   echo "skipped|${slug}" >> "$STATUS_FILE"
 else
   echo "done|${slug}" >> "$STATUS_FILE"

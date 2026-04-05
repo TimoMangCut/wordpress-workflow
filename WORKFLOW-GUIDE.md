@@ -13,7 +13,7 @@ Pipeline gồm 3 phase:
 
 1. Phase 1 (Deterministic Collection)
 - Quét toàn bộ plugin.
-- Thu tín hiệu tĩnh: surface map, Semgrep, Psalm, IR.
+- Thu tín hiệu tĩnh: surface map, Semgrep, Psalm, IR, threat context.
 - Không dùng LLM.
 - Psalm có cơ chế `primary + fallback` để tránh crash do `humanmade/psalm-plugin-wordpress`.
 
@@ -201,6 +201,18 @@ Ví dụ bật thêm Claude:
 ```bash
 bash tools/bin/run-single-plugin.sh <slug> --with-claude --llm-mode auto
 ```
+
+Multi-agent automation mode cho một plugin:
+
+```bash
+bash tools/bin/run-pipeline.sh <slug> --multi-agent
+```
+
+Mode này sẽ:
+- refresh Phase 1 qua `scan-all.sh`
+- tự generate `reports/<slug>-threat-context.json` nếu cần
+- tự chạy `prepare_agent_inputs.py <slug>`
+- orchestrate agents rồi chuyển thẳng sang Phase 3
 
 Batch Psalm riêng (toàn bộ plugin mặc định):
 
@@ -399,6 +411,10 @@ python3 tools/bin/quota-report.py --reports-dir reports --phase all --days 7
 - `reports/phase2/<slug>-phase2.before_review.json` (nếu apply review)
 - `reports/phase2/<slug>-phase2.after_review.json` (nếu apply review)
 
+Runner Phase 2 dùng freshness-aware skip:
+- chỉ skip khi `phase2.json` mới hơn IR, source tree plugin, prompt/system prompt trực tiếp, và script Phase 2 liên quan
+- `--force` sẽ bỏ qua freshness check
+
 ### 5.3 Phase 3
 - `reports/phase3/<slug>-phase3.json`
 - `reports/phase3/<index>-<slug>.md`
@@ -408,6 +424,16 @@ python3 tools/bin/quota-report.py --reports-dir reports --phase all --days 7
 - `reports/phase3/<slug>-phase3-review-diff.json` (nếu có)
 - `reports/phase3/<slug>-phase3.gate.json` (snapshot trước khi apply review, nếu có)
 - `reports/phase3/<slug>-phase3.final.json` (snapshot cuối sau apply review, nếu có)
+
+Canonical Phase 3 selection:
+- `phase3.json` luôn là gate output
+- `phase3.final.json` chỉ được coi là canonical khi file này **không cũ hơn** `phase3.json`
+- markdown report và benchmark comparison phải đọc Phase 3 canonical artifact theo rule trên
+
+Runner Phase 3 cũng dùng freshness-aware skip theo từng lớp:
+- gate JSON
+- optional final snapshot sau apply review
+- markdown deterministic report
 
 ## 6) Cách xóa hết thông tin theo từng phase
 
