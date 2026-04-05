@@ -1,0 +1,66 @@
+{
+  "session": 28,
+  "title": "Investigate path_reachability_weak for backwpup REST EP findings (DI-27-01) + S5 for cartflows/pretty-link",
+  "status": "PENDING",
+  "created_by_session": 27,
+  "wave": "Wave 4 (close-out)",
+  "dependencies": [
+    {
+      "session": 27,
+      "reason": "change_manifest_session_27.json status=COMPLETED required. DI-26-01 fix complete. Phase 1 IR, gate, and benchmark updated."
+    }
+  ],
+  "gaps": ["DI-27-01"],
+  "critical_notes": [
+    "E1: source_ref wins over spec if they conflict. E4: Python null discipline. E5: no scope expansion.",
+    "DI-27-01 BLOCKER for backwpup findings: path_reachable=0.25 for most REST EP findings. Root cause unknown — investigate before attempting fix.",
+    "INVESTIGATION FIRST: read phase3_gate.py _check_path_reachability() carefully. Check which sink IDs are being matched for REST EP findings. Compare against EP callback chain in IR. Do NOT patch the gate without understanding why path_reachable is 0.25.",
+    "S5 for cartflows/pretty-link: independent of DI-27-01. Run after understanding DI-27-01 root cause (or in parallel if time permits).",
+    "Do not reopen Session 26 or 27 artifacts unless factual mismatch found.",
+    "Benchmark metrics (TP/FP/DR) will only improve if path_reachability_weak is fixed AND findings reach PLAUSIBLE. Do not expect benchmark improvement from S5 alone."
+  ],
+  "spec": {
+    "DI-27-01": {
+      "source_ref": "reports/logs/implementation/change_manifest_session_27.json:discovered_issues[0]",
+      "file": "tools/bin/phase3_gate.py (_check_path_reachability) AND reports/phase3/backwpup-phase3.json (validated_findings)",
+      "change": "Investigate root cause of path_reachable=0.25 for backwpup REST EP findings. Check: (1) what sink IDs are being looked up; (2) whether IR-02 call chain resolution covers REST EP callbacks; (3) whether finding sink file paths match EP callback chain. If fixable with < 20 lines: fix. If requires agent re-run: document and defer.",
+      "note": "NẾUN spec ở đây mâu thuẫn với source_ref → source_ref thắng"
+    },
+    "S5-CARTFLOWS-PRETTYLINK": {
+      "source_ref": "tools/config/skill-set-verify.md",
+      "file": "tools/config/skill-set-verify.md",
+      "change": "Run S5 (Claude Code Verify) for cartflows and pretty-link. Output: reports/phase3/cartflows-s5-verify.json and reports/phase3/pretty-link-s5-verify.json. These plugins are not affected by DI-27-01 (no REST EP findings). Gate artifacts are final for them.",
+      "note": "Only run if gate artifacts for cartflows/pretty-link are confirmed final (no re-run needed)."
+    }
+  },
+  "files_to_read": [
+    {
+      "file": "tools/bin/phase3_gate.py",
+      "line_range": "400-600",
+      "reason": "_check_path_reachability — understand what path_reachable checks and why it returns 0.25 for REST EP findings"
+    },
+    {
+      "file": "reports/phase3/backwpup-phase3.json",
+      "line_range": "first 5 validated_findings (lines 1-300 approx)",
+      "reason": "Check check_notes.path_reachable field for actual mismatch detail"
+    },
+    {
+      "file": "reports/phase1/backwpup-ir.json",
+      "line_range": "entry_points section (REST routes only, first 10 EPs)",
+      "reason": "Verify callback chain for REST EPs — what files/methods are in callback and call chain"
+    },
+    {
+      "file": "benchmark/results/wave_4_results.json",
+      "line_range": "full",
+      "reason": "Current state before any fix"
+    }
+  ],
+  "test_command": "python3 benchmark/compare.py --all && python3 -c \"import json; d=json.load(open('benchmark/results/wave_4_results.json')); s=d['plugins'][0]; assert s['slug']=='backwpup'; print(f\\\"backwpup QS={s.get('quality_score')} DR={s.get('decision_rate')} TP={s['tp']} FP={s['fp']} FN={s['fn']} UNCERTAIN={s['uncertain']}\\\")\"",
+  "test_cases": [
+    "If DI-27-01 is fixed: at least 1 backwpup finding reaches PLAUSIBLE (path_reachable score improves above 0.5).",
+    "Cartflows and pretty-link metrics unchanged from Session 27 state (FP=0 maintained).",
+    "S5 output files generated for cartflows and pretty-link if S5 run."
+  ],
+  "commit_message": "Session 28: investigate/fix DI-27-01 path_reachability_weak + S5 cartflows/pretty-link",
+  "next_session_preview": "Session 29: depends on DI-27-01 outcome. If fixed and findings reach PLAUSIBLE, update benchmark and close Wave 4. If deferred, plan Wave 5 scope."
+}

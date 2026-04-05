@@ -1,0 +1,80 @@
+{
+  "session": 27,
+  "date": "2026-04-05",
+  "status": "COMPLETED",
+  "gaps_addressed": ["DI-26-01"],
+  "files_modified": [
+    {
+      "file": "tools/src/Extractor/Visitors/EntryPointVisitor.php",
+      "functions_changed": ["resolvePermissionCallback", "parseRouteConfig", "handleRestRoute"],
+      "lines_affected": "411-453 (parseRouteConfig), 436-453 (resolvePermissionCallback), 171-200 (handleRestRoute)",
+      "behavior_before": "resolvePermissionCallback() returned '__array_callable__' for any Array_ node. parseRouteConfig() stored only permission_callback string and permission_callback_ast. handleRestRoute() emitted entry points without permission_callback_ref.",
+      "behavior_after": "resolvePermissionCallback() extracts method name from [$this, 'method'] Array_ nodes (returns e.g., 'has_permission' instead of '__array_callable__'). parseRouteConfig() also stores permission_callback_ref containing the resolved method's {type, name, class, file, line_start, line_end}. handleRestRoute() propagates permission_callback_ref into emitted EP entries."
+    },
+    {
+      "file": "tools/src/Extractor/IRBuilder.php",
+      "functions_changed": ["build (Phase 3 loop)"],
+      "lines_affected": "129-174",
+      "behavior_before": "Phase 3 loop ran GuardVisitor only on the callback body. No guards scanned from permission_callback method bodies.",
+      "behavior_after": "Phase 3 loop also runs GuardVisitor on permission_callback method body when permission_callback_ref is set. Guards attributed to same entry_point_id. AST cache extended on-demand if file not already parsed."
+    },
+    {
+      "file": "reports/phase1/backwpup-ir.json",
+      "functions_changed": ["Phase 1 extraction output"],
+      "lines_affected": "full regeneration",
+      "behavior_before": "25 REST EPs, 0 with guards. permission_callback='__array_callable__' for all array callables.",
+      "behavior_after": "25 REST EPs, 23 with capability_check guards (is_effective=None). permission_callback='has_permission' (or actual method name). permission_callback_ref populated for 23 EPs."
+    },
+    {
+      "file": "reports/phase3/backwpup-phase3.json",
+      "functions_changed": ["phase3_gate output"],
+      "lines_affected": "full regeneration",
+      "behavior_before": "22 UNCERTAIN, guard_consistent=0.1 for all findings.",
+      "behavior_after": "22 UNCERTAIN (no change in verdict count), guard_consistent=0.6 for 17 findings (up from 0.1). Findings remain UNCERTAIN due to pre-existing path_reachability_weak (separate issue, not DI-26-01)."
+    },
+    {
+      "file": "benchmark/results/wave_4_results.json",
+      "functions_changed": ["metadata update"],
+      "lines_affected": "sessions_covered, execution_status, execution_note, plugin backwpup note + phase3_gate_note",
+      "behavior_before": "Sessions 20-26. Notes described DI-26-01 as open.",
+      "behavior_after": "Sessions 20-27. Notes document DI-26-01 fix, guard_consistent improvement, and path_reachability_weak as remaining UNCERTAIN root cause."
+    }
+  ],
+  "downstream_updated": [
+    "reports/phase1/backwpup-ir.json",
+    "reports/phase3/backwpup-phase3.json",
+    "benchmark/results/wave_4_results.json"
+  ],
+  "deviations_from_spec": [
+    {
+      "spec_item": "DI-26-01 test: 'Verify guard_consistent score improves above 0.1 for at least some findings'",
+      "actual": "guard_consistent improved from 0.1 to 0.6 for 17/22 UNCERTAIN findings. ✓",
+      "deviation": "None — success criteria met."
+    },
+    {
+      "spec_item": "DI-26-01 test: 'Rerun benchmark/compare.py --all and check if TP count changes'",
+      "actual": "TP=0 unchanged. Reason: benchmark TP requires CONFIRMED or PLAUSIBLE verdict. Gate's can_confirm requires path_reachable>=0.8; most findings have path_reachable=0.25. path_reachability_weak is a pre-existing issue not caused by DI-26-01. guard_consistent improvement alone insufficient to reach PLAUSIBLE given path_reachable gate.",
+      "deviation": "No deviation from spec — spec only asked to 'check if TP count changes', not to guarantee improvement. Documented root cause shift."
+    },
+    {
+      "spec_item": "S5 for cartflows and pretty-link after DI-26-01 fix",
+      "actual": "NOT run in Session 27. DI-26-01 fix does not affect cartflows/pretty-link (they have no array callable permission_callbacks in REST EPs). Session card said 'Only run after DI-26-01 fix is confirmed and gate re-run is complete' — deferred to Session 28.",
+      "deviation": "Scope decision: S5 for cartflows/pretty-link deferred to Session 28 as separate task."
+    }
+  ],
+  "test_command": "python3 benchmark/compare.py --all && python3 -c \"import json; d=json.load(open('benchmark/results/wave_4_results.json')); assert d.get('execution_status','').startswith('COMPLETE'); s=d['plugins'][0]; assert s['slug']=='backwpup'; print(f\\\"backwpup QS={s.get('quality_score')} DR={s.get('decision_rate')} TP={s['tp']} FP={s['fp']} FN={s['fn']} UNCERTAIN={s['uncertain']}\\\")\"",
+  "test_result": "PASS — benchmark re-run successful. backwpup QS=0.0 DR=0.0 TP=0 FP=0 FN=2 UNCERTAIN=22. DI-26-01 success criteria met: 23/25 REST EPs have guards, guard_consistent improved 0.1→0.6 for 17 findings.",
+  "discovered_issues": [
+    {
+      "id": "DI-27-01",
+      "title": "path_reachability_weak: backwpup REST EP findings have path_reachable=0.25",
+      "root_cause_analysis": "Gate check_scores show path_reachable=0.25 for most backwpup REST findings. The 'path_reachable' check requires sink evidence matched in the EP's callback body. Backwpup REST EP callbacks are often thin dispatchers — the actual sink (update_option, etc.) is in a downstream method. Phase 1 IR-02 shallow call chain resolution may not be finding these downstream sinks for REST EPs. Alternatively, the findings reference sinks in files not matched to the EP's callback chain.",
+      "severity": "MEDIUM — prevents UNCERTAIN→PLAUSIBLE transition for backwpup REST findings. guard_consistent improved but path_reachable bottleneck remains.",
+      "affects": ["backwpup REST EP findings (most of 22 UNCERTAIN)"],
+      "fix_session": "Session 28 or deferred",
+      "investigation_needed": "Check phase3_gate.py _check_path_reachability() logic for REST EPs. Verify IR-02 call chain resolution covers REST callbacks. Compare sink file paths in findings vs EP callback chain."
+    }
+  ],
+  "next_session": "session_28",
+  "notes": "DI-26-01 is RESOLVED. The fix correctly emits capability_check guards for REST EPs with array callable permission_callbacks. The remaining UNCERTAIN findings are blocked by path_reachability_weak (DI-27-01), which is a separate Phase 1/gate issue. S5 for cartflows/pretty-link deferred to Session 28."
+}
