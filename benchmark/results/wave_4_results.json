@@ -57,7 +57,7 @@
       "decision_rate": 0.0,
       "gt_findings_count": 0,
       "pipeline_decided_count": 0,
-      "note": "Option D metrics. GT=0. Gate outputs 6 UNCERTAIN + 71 ACCEPTED_FP. No CONFIRMED/PLAUSIBLE → FP=0 (correct for clean plugin). QS=N/A (GT=0), DR=0.0 ((0)/(0+0+0+6)). Pipeline correctly rejects all phase2 TP claims via gate. 6 UNCERTAIN need LLM review. Agent-c 41-finding dump all ACCEPTED_FP at gate.",
+      "note": "Option D metrics. GT=0. Gate outputs 6 UNCERTAIN + 71 ACCEPTED_FP. No CONFIRMED/PLAUSIBLE → FP=0 (correct for clean plugin). QS=N/A (GT=0), DR=0.0 ((0)/(0+0+0+6)). Pipeline correctly rejects all phase2 TP claims via gate. LLM review run (Session 26): 2 downgrades applied (cf-c-anom_5, cf-c-anom_35); 4 findings remain UNCERTAIN (no verdict change from review). Agent-c 41-finding dump all ACCEPTED_FP at gate.",
       "per_agent_stats": {
         "agent-a1": {"findings": 2, "tp": 2, "fp": 0, "review": 0},
         "agent-a2": {"findings": 22, "tp": 1, "fp": 21, "review": 0},
@@ -82,7 +82,7 @@
       "decision_rate": 0.0,
       "gt_findings_count": 0,
       "pipeline_decided_count": 0,
-      "note": "Option D metrics. GT=0. Gate outputs 1 UNCERTAIN + 63 ACCEPTED_FP. No CONFIRMED/PLAUSIBLE → FP=0 (correct for clean plugin). QS=N/A (GT=0), DR=0.0 ((0)/(0+0+0+1)). 1 UNCERTAIN needs LLM review.",
+      "note": "Option D metrics. GT=0. Gate outputs 1 UNCERTAIN + 63 ACCEPTED_FP. No CONFIRMED/PLAUSIBLE → FP=0 (correct for clean plugin). QS=N/A (GT=0), DR=0.0 ((0)/(0+0+0+1)). LLM review run (Session 26): 4 field corrections applied; finding remains UNCERTAIN (no verdict change — apply_review guard blocked REVIEW→FP).",
       "per_agent_stats": {
         "agent-a1": {"findings": 0, "tp": 0, "fp": 0, "review": 0},
         "agent-a2": {"findings": 14, "tp": 0, "fp": 14, "review": 0},
@@ -177,7 +177,7 @@
       "quality_score_no_regression": "FAIL — backwpup QS: 1.0→0.0 (root cause: DI-25-02 Phase 1 extractor gap for REST EP guards)",
       "decision_rate_no_drop_10pct": "FAIL — DR=0.0 (no CONFIRMED/PLAUSIBLE findings; root cause: DI-25-02)",
       "no_false_positives_in_output": "PASS — FP=0 (Option D: gate correctly withholds confirmation)",
-      "skill_sets_all_run": "PASS — S1-S5 all run. S5 run for backwpup (Session 26); S5 for cartflows and pretty-link deferred to Session 27.",
+      "skill_sets_all_run": "PASS — S5-FIRST-RUN objective met (backwpup, Session 26). S5 for cartflows and pretty-link deferred to Session 27.",
       "skill_sets_all_deployed": "PASS — S1-S5 all deployed"
     },
     "verdict": "WAVE 4 COMPLETE. Option D benchmark active. Infrastructure fully validated. Gate FP=0 (correct pipeline behavior). S5 run for backwpup — no escalations, TPs source-verified. LLM reviews complete for all 3 plugins. Remaining regression explained solely by DI-25-02 (Phase 1 extractor gap for REST EP guards). Next priority: DI-26-01 (Phase 1 REST EP guard extraction) in Session 27."
