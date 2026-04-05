@@ -1,6 +1,6 @@
 {
   "plugin_slug": "backwpup",
-  "merge_timestamp": "2026-04-04T19:13:43.815667Z",
+  "merge_timestamp": "2026-04-05T01:26:36.659291Z",
   "findings": [
     {
       "finding_id": "agent-a2-f001",
@@ -691,24 +691,278 @@
       "source_agents": [
         "agent-a3"
       ]
+    },
+    {
+      "finding_id": "agent-c-anom_2",
+      "verdict": "FP",
+      "vuln_type": "missing_nonce",
+      "cwe_id": "CWE-352",
+      "severity": "informational",
+      "confidence": 0.97,
+      "entry_point_id": "ep_admin_init_admin_init",
+      "fp_reason": "Line 82 of class-message-box.php is the hook registration add_action('admin_init', [$this, 'save_not_display']). The actual callback save_not_display() at line 122 contains a full nonce verification: it reads the nonce via filter_input(INPUT_GET, '_wpnonce') and calls wp_verify_nonce($nonce, $nonce_action) at line 131. If the nonce is absent or invalid, the function returns immediately before any state-changing operation.",
+      "fp_evidence": {
+        "defense": "wp_verify_nonce() check present in save_not_display() callback before update_user_meta()",
+        "file": "inc/class-message-box.php",
+        "line": 131
+      },
+      "reasoning": null,
+      "review_reason": null,
+      "source_agents": [
+        "agent-c",
+        "agent-c",
+        "agent-c",
+        "agent-c",
+        "agent-c"
+      ],
+      "agent_agreement": 5,
+      "conflict": false
+    },
+    {
+      "finding_id": "agent-c-anom_8",
+      "verdict": "FP",
+      "vuln_type": "missing_capability",
+      "cwe_id": "CWE-862",
+      "severity": "informational",
+      "confidence": 0.97,
+      "entry_point_id": "ep_admin_init_admin_init",
+      "fp_reason": "Line 930 of BerlinDB/Database/Table.php registers maybe_upgrade() on admin_init. As established for anom_3, maybe_upgrade() is internal schema management that does not process user input. There is no privileged user operation to gate; the function only reads internal version state and creates/modifies the plugin's own database tables using hardcoded schema definitions.",
+      "fp_evidence": {
+        "defense": "Function does not process user input; all SQL uses hardcoded internal class properties; no user-controlled operation requiring a capability gate",
+        "file": "src/Dependencies/BerlinDB/Database/Table.php",
+        "line": 221
+      },
+      "reasoning": null,
+      "review_reason": null,
+      "source_agents": [
+        "agent-c",
+        "agent-c",
+        "agent-c",
+        "agent-c",
+        "agent-c"
+      ],
+      "agent_agreement": 5,
+      "conflict": false
+    },
+    {
+      "finding_id": "agent-c-anom_11",
+      "verdict": "FP",
+      "vuln_type": "unsanitized_sql",
+      "cwe_id": "CWE-89",
+      "severity": "informational",
+      "confidence": 0.95,
+      "entry_point_id": "ep_admin_init_admin_init",
+      "fp_reason": "Line 417 of BerlinDB/Database/Table.php contains $db->query(\"CREATE TABLE {$this->table_name} ( {$this->schema} ) {$this->charset_collation}\") in the create() method. $this->table_name is derived from the class's own $name property processed through sanitize_table_name() at line 793 during setup(). $this->schema is a hardcoded protected property defined in subclass declarations. $this->charset_collation is derived from $db->charset and $db->collate (WordPress database object properties). None of these values originate from user-supplied input. The IR annotation acknowledges prepare() is used on other sinks \u2014 for this sink, prepare() is not needed because the values are internal constants, not user data.",
+      "fp_evidence": {
+        "defense": "sanitize_table_name() applied to $this->table_name at setup(); $this->schema is a hardcoded class constant; no user input flows to this query",
+        "file": "src/Dependencies/BerlinDB/Database/Table.php",
+        "line": 793
+      },
+      "reasoning": null,
+      "review_reason": null,
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "finding_id": "agent-c-anom_12",
+      "verdict": "FP",
+      "vuln_type": "is_admin_as_auth",
+      "cwe_id": "CWE-862",
+      "severity": "informational",
+      "confidence": 0.93,
+      "entry_point_id": "ep_admin_init_admin_init",
+      "fp_reason": "The is_admin() check at line 251 of class-admin.php is inside the admin_init() callback. This callback is registered at line 1171 inside init(). The init() method at line 1124 has current_user_can('backwpup') as its first guard at line 1125: if the user lacks this capability, init() returns immediately and no hook registrations occur. Therefore the admin_init hook can only ever be registered for sessions that already passed the capability check. The is_admin() call inside admin_init() serves as a context check (is this an admin-area request) rather than an authorization check \u2014 a correct use. The actual authorization boundary is current_user_can('backwpup') at line 1125.",
+      "fp_evidence": {
+        "defense": "current_user_can('backwpup') in init() at line 1125 gates registration of admin_init hook; is_admin() inside admin_init() is a context guard, not the sole auth check",
+        "file": "inc/class-admin.php",
+        "line": 1125
+      },
+      "reasoning": null,
+      "review_reason": null,
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "finding_id": "agent-c-anom_13",
+      "verdict": "REVIEW",
+      "vuln_type": "inconsistency",
+      "cwe_id": "CWE-862",
+      "severity": "high",
+      "confidence": 0.6,
+      "entry_point_id": "ep_admin_post_admin_post_backwpup_support",
+      "reasoning": "The admin_post_backwpup handler at inc/class-admin.php:1175 calls $this->save_post_form() which has both check_admin_referer($post_page.'_page') (line 849) and current_user_can('backwpup') (line 851). The admin_post_backwpup_support handler at line 1177 calls BackWPup_Pro_Page_Support::save_post_form(). BackWPup_Pro_Page_Support is a Pro-only class whose source is not present in this codebase (no file found under plugins/backwpup/ matching this class). Cannot verify whether the Pro handler implements equivalent nonce and capability checks. The inconsistency anomaly is plausible: if BackWPup_Pro_Page_Support::save_post_form() lacks nonce verification and capability check, any authenticated user could POST to admin-post.php?action=backwpup_support to trigger that handler. Source reference: inc/class-admin.php:1177.",
+      "review_reason": "BackWPup_Pro_Page_Support class source is absent from this codebase (Pro-only). Cannot trace the save_post_form() implementation to confirm or refute the presence of nonce/capability checks. Resolution: obtain the BackWPup Pro plugin source and inspect BackWPup_Pro_Page_Support::save_post_form() for check_admin_referer() and current_user_can() calls. If absent, this is a TP CSRF / missing authorization on admin_post_backwpup_support.",
+      "source_file_path": "inc/class-admin.php",
+      "source_line_number": 1177,
+      "source_function": "BackWPup_Admin::init",
+      "sink_file_path": "inc/class-admin.php",
+      "sink_line_number": 1177,
+      "sink_function": "BackWPup_Pro_Page_Support::save_post_form",
+      "source_agents": [
+        "agent-c"
+      ]
+    },
+    {
+      "finding_id": "agent-d-uh-001",
+      "verdict": "FP",
+      "vuln_type": "unresolved_hook_resolution",
+      "severity": "informational",
+      "confidence": 0.9,
+      "entry_point_id": "resolved_dynamic:3e529ca494c3acb7748c6ac45a509f1e5eac8dd2",
+      "source_function": null,
+      "source_file_path": null,
+      "source_line_number": null,
+      "sink_function": null,
+      "sink_file_path": null,
+      "sink_line_number": null,
+      "fp_reason": "All 28 unresolved hooks in inc/class-admin.php (lines 476-810) follow the pattern 'load-' + $this->page_hooks['<key>'], 'admin_print_styles-' + $this->page_hooks['<key>'], and 'admin_print_scripts-' + $this->page_hooks['<key>']. The $this->page_hooks values are return values from add_submenu_page(), which WordPress generates deterministically as '<parent_slug>_page_<page_slug>' or 'toplevel_page_<slug>'. These are internal WordPress admin page lifecycle hooks that fire when WP loads an admin page \u2014 they carry no user-supplied data and are not externally reachable HTTP entry points. No untrusted input enters through these hooks; they trigger internal initialization (enqueue scripts, run auth checks, register list tables). None warrant security analysis as entry points.",
+      "fp_evidence": {
+        "defense": "WordPress admin page hooks (load-*, admin_print_styles-*, admin_print_scripts-*) are internal lifecycle events. They fire only for authenticated admin users who have already passed WordPress capability checks enforced by add_submenu_page(). The hook names are deterministic outputs of add_submenu_page() return values stored in $this->page_hooks[], fully traceable to literal page slugs in admin_page_jobs(), admin_page_editjob(), admin_page_logs(), admin_page_backups(), admin_page_settings(), admin_page_restore(), admin_page_about(), admin_page_first_backup(), admin_page_onboarding() methods.",
+        "file": "inc/class-admin.php",
+        "line": 528
+      },
+      "reasoning": "Confidence: high \u2014 found literal resolution for all patterns. inc/class-admin.php:528 adds 'load-' . $this->page_hooks['backwpupfirstbackup']; page_hooks['backwpupfirstbackup'] is set at :519 as the return of add_submenu_page(..., 'backwpupfirstbackup', ...) which WordPress normalizes to 'backwpup_page_backwpupfirstbackup'. Same pattern repeats for all 28 hooks. Callbacks are class method references (self::init_general, BackWPup_Page_Jobs::load, etc.) that perform initialization only.",
+      "source_agents": [
+        "agent-d"
+      ]
+    },
+    {
+      "finding_id": "agent-d-uh-002",
+      "verdict": "FP",
+      "vuln_type": "unresolved_hook_resolution",
+      "severity": "informational",
+      "confidence": 0.6,
+      "entry_point_id": "resolved_dynamic:95ff1bb5bf495e2d04a8d96b88dc0b537ef53b65",
+      "source_function": null,
+      "source_file_path": null,
+      "source_line_number": null,
+      "sink_function": null,
+      "sink_file_path": null,
+      "sink_line_number": null,
+      "fp_reason": "inc/class-admin.php:299 registers 'wp_ajax_backwpup_jobtype_' . strtolower($id) for each key in $jobtypes array (e.g. wp_ajax_backwpup_jobtype_dbdump, wp_ajax_backwpup_jobtype_wpexp, etc.). The callback is [$jobtypeclass, 'edit_ajax']. These are standard admin AJAX handlers for job type edit forms. The wp_ajax_* prefix means WordPress already requires the user to be logged-in. The edit_ajax() methods on job type classes are invoked only within the edit job admin page context. inc/class-admin.php:303 registers 'wp_ajax_backwpup_dest_' . strtolower($id) similarly for destination classes. All destination edit_ajax() methods verified to include check_ajax_referer('backwpup_ajax_nonce') and current_user_can('backwpup_jobs_edit') \u2014 see inc/class-destination-rsc.php:432-435 and inc/class-destination-s3.php:57-60. These are already protected.",
+      "fp_evidence": {
+        "defense": "wp_ajax_* hooks require logged-in users (WordPress enforces this). Destination edit_ajax callbacks at inc/class-destination-rsc.php:432 check current_user_can('backwpup_jobs_edit') and at :435 call check_ajax_referer('backwpup_ajax_nonce'). inc/class-destination-s3.php:57-60 applies identical guards. The jobtype edit_ajax handlers follow the same pattern per code review.",
+        "file": "inc/class-destination-rsc.php",
+        "line": 432
+      },
+      "reasoning": "Confidence: medium \u2014 inferred from class structure and naming convention. The $jobtypes keys are controlled by plugin registration (not user input). Each jobtype/destination class implements edit_ajax() with a consistent guard pattern verified in two destination classes. Hash computed on representative example: inc/class-admin.php:299:wp_ajax_backwpup_jobtype_dbdump.",
+      "source_agents": [
+        "agent-d"
+      ]
+    },
+    {
+      "finding_id": "agent-d-uh-003",
+      "verdict": "FP",
+      "vuln_type": "unresolved_hook_resolution",
+      "severity": "informational",
+      "confidence": 0.9,
+      "entry_point_id": "resolved_dynamic:8f42e21fb1d9d1cf4cb0b537c1046bfe61a7711e",
+      "source_function": null,
+      "source_file_path": null,
+      "source_line_number": null,
+      "sink_function": null,
+      "sink_file_path": null,
+      "sink_line_number": null,
+      "fp_reason": "inc/Notice/DismissibleNoticeOption.php:111 registers 'admin_post_' . self::FOR_GOOD_ACTION which resolves to 'admin_post_dismiss_admin_notice_for_good' (constant defined at :28). Line 117 resolves to 'admin_post_dismiss_admin_notice_for_now'. The dismiss() callback is fully guarded: assert_allowed() at :279 checks is_admin() (:280), validates action against ALL_ACTIONS whitelist (:305), checks current_user_can($capability) (:318), and verifies wp_verify_nonce($nonce, $action) (:324). No vulnerability \u2014 defense is correct and complete.",
+      "fp_evidence": {
+        "defense": "inc/Notice/DismissibleNoticeOption.php:318 checks current_user_can($capability) where $capability is registered per notice_id. :324 verifies wp_verify_nonce() against the action. :280 checks is_admin(). :305 validates $action against a strict whitelist. All four defenses must pass before any data write occurs.",
+        "file": "inc/Notice/DismissibleNoticeOption.php",
+        "line": 279
+      },
+      "reasoning": "Confidence: high \u2014 found literal constant assignment at :28 (FOR_GOOD_ACTION = 'dismiss_admin_notice_for_good') and :34 (FOR_NOW_ACTION = 'dismiss_admin_notice_for_now'). Hash computed on inc/Notice/DismissibleNoticeOption.php:111:admin_post_dismiss_admin_notice_for_good.",
+      "source_agents": [
+        "agent-d"
+      ]
+    },
+    {
+      "finding_id": "agent-d-uh-004",
+      "verdict": "REVIEW",
+      "vuln_type": "unresolved_hook_resolution",
+      "severity": "informational",
+      "confidence": 0.0,
+      "entry_point_id": "unresolved:inc/dependencies/wp-media/event-manager/EventManager.php:26",
+      "source_function": null,
+      "source_file_path": null,
+      "source_line_number": null,
+      "sink_function": null,
+      "sink_file_path": null,
+      "sink_line_number": null,
+      "review_reason": "Dynamic hook, resolution failed \u2014 manual trace required. inc/dependencies/wp-media/event-manager/EventManager.php:26 is add_filter($hook_name, $callback, ...) where $hook_name is a parameter passed from add_subscriber_callback(). The caller iterates $subscriber->get_subscribed_events() which returns a map of hook_name => parameters defined by each SubscriberInterface implementation. Resolution requires enumerating all classes that implement SubscriberInterface and their get_subscribed_events() return values \u2014 this is a subscriber pattern dispatcher that can register an arbitrary number of hooks depending on the subscriber implementations present. Attempted: searched for SubscriberInterface implementations in the codebase. The actual hook names are defined in individual subscriber classes not visible from this file. To fully resolve: enumerate all classes implementing SubscriberInterface and read their get_subscribed_events() method to extract concrete hook names. This dispatcher itself introduces no vulnerability \u2014 it is a standard subscriber dispatch wrapper around add_filter().",
+      "source_agents": [
+        "agent-d"
+      ]
+    },
+    {
+      "finding_id": "agent-d-cg-001",
+      "verdict": "FP",
+      "vuln_type": "coverage_gap_analysis",
+      "severity": "informational",
+      "confidence": 0.9,
+      "entry_point_id": null,
+      "source_function": null,
+      "source_file_path": null,
+      "source_line_number": null,
+      "sink_function": null,
+      "sink_file_path": null,
+      "sink_line_number": null,
+      "fp_reason": "inc/class-destination-rsc.php, inc/class-destination-s3.php, inc/class-destination-email.php, inc/class-destination-msazure.php coverage gaps: these files contain check_ajax_referer and current_user_can because they implement edit_ajax() methods that are called by the dynamically-registered 'wp_ajax_backwpup_dest_<id>' hooks (class-admin.php:303). The IR parser could not resolve the dynamic hook names and therefore could not link these files to their entry points. The gap is a parser limitation, not a missing entry point. The entry points exist \u2014 they are the unresolved hooks from Task 1 (finding agent-d-uh-002). The security guards inside these files (check_ajax_referer at inc/class-destination-rsc.php:435, current_user_can at :432; inc/class-destination-s3.php:57-60) are correct and verified.",
+      "fp_evidence": {
+        "defense": "inc/class-admin.php:301-313 iterates $destinations and registers wp_ajax_backwpup_dest_<strtolower($id)> => [$dest_class, 'edit_ajax']. The gap exists because the IR parser logged these as unresolved_hooks (concatenation type). The destination classes are called only via these registered AJAX hooks, which require logged-in users and are further guarded by check_ajax_referer('backwpup_ajax_nonce') inside edit_ajax().",
+        "file": "inc/class-admin.php",
+        "line": 303
+      },
+      "source_agents": [
+        "agent-d",
+        "agent-d",
+        "agent-d",
+        "agent-d"
+      ],
+      "agent_agreement": 4,
+      "conflict": false
+    },
+    {
+      "finding_id": "agent-d-cg-002",
+      "verdict": "REVIEW",
+      "vuln_type": "missing_authentication_ajax_handler",
+      "cwe_id": "CWE-306",
+      "severity": "high",
+      "auth_required": "unknown",
+      "confidence": 0.5,
+      "entry_point_id": null,
+      "source_function": "download_by_ajax",
+      "source_file_path": "inc/class-destination-downloader.php",
+      "source_line_number": 58,
+      "sink_function": "file_download",
+      "sink_file_path": "inc/class-destination-downloader.php",
+      "sink_line_number": 95,
+      "review_reason": "inc/class-destination-downloader.php coverage gap: the file is reached via 'wp_ajax_download_backup_file' registered at inc/class-admin.php:296 calling BackWPup_Destination_Downloader::download_by_ajax(). The static download_by_ajax() method (lines 58-100) accepts $_GET['destination'], $_GET['jobid'], $_GET['file'], $_GET['local_file'] and passes them to $dest_class->file_download() with only sanitize_text_field() applied \u2014 no capability check, no nonce verification. By contrast, download_by_chunks() (line 109) does call $this->ensure_user_can_download() at line 110. The static download_by_ajax() method is missing both checks. \n\nHowever: this endpoint uses 'wp_ajax_' prefix (not 'wp_ajax_nopriv_'), so WordPress already requires the user to be logged in. The missing check is therefore capability escalation (any logged-in user, not just those with backwpup_backups_download capability) rather than unauthenticated access. The $dest parameter is used to call BackWPup::get_destination($dest) which returns a registered destination class \u2014 if $dest is an unexpected value, get_destination() behavior needs to be verified. The $file and $file_local parameters are sanitized with sanitize_text_field() but used in file_download() \u2014 the behavior of file_download() with attacker-controlled file paths is unknown from this file alone.\n\nResolution path: (1) Verify whether wp_ajax_download_backup_file allows any logged-in subscriber or requires higher capability \u2014 if any authenticated user can trigger this, it is a privilege escalation. (2) Trace $dest_class->file_download($job_id, $file, $file_local) to determine if the $file/$file_local parameters can be used for path traversal or SSRF. (3) Verify if there is a nonce passed in the AJAX call from the frontend that is not checked server-side.",
+      "poc_description": "Logged-in user (subscriber+) sends: POST /wp-admin/admin-ajax.php?action=download_backup_file&destination=FOLDER&jobid=1&file=../wp-config.php&local_file=../wp-config.php. If file_download() follows these paths without further restriction, sensitive files may be disclosed.",
+      "remediation": "Add current_user_can(self::CAPABILITY) check and nonce verification at the start of download_by_ajax() before any processing, mirroring the ensure_user_can_download() guard in download_by_chunks().",
+      "source_agents": [
+        "agent-d"
+      ]
     }
   ],
   "merge_stats": {
-    "total_raw": 33,
-    "total_deduplicated": 33,
+    "total_raw": 55,
+    "total_deduplicated": 44,
     "agents_included": [
       "agent-a1",
       "agent-a2",
       "agent-a3",
       "agent-a4",
       "agent-a5",
-      "agent-b"
+      "agent-b",
+      "agent-c",
+      "agent-d"
     ],
     "agents_missing": [],
     "tp_count": 17,
-    "fp_count": 14,
-    "review_count": 2,
-    "duplicates_merged": 0,
+    "fp_count": 22,
+    "review_count": 5,
+    "duplicates_merged": 11,
     "conflicts_flagged": 0,
     "schema_errors": 0
   }

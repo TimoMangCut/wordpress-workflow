@@ -17,13 +17,19 @@
     "agent-a4": "reports/cartflows-ir-slice-shortcode.json",
     "agent-a5": "reports/cartflows-ir-slice-other.json",
     "agent-b": "reports/phase1/cartflows-ir.json",
-    "agent-c": "reports/phase1/cartflows-ir.json",
-    "agent-d": "reports/phase1/cartflows-ir.json"
+    "agent-c": "reports/phase1/cartflows-ir-anomaly-slice.json",
+    "agent-d": "reports/phase1/cartflows-ir-hooks-slice.json"
   },
   "source_dir": "plugins/cartflows/",
   "timeout_seconds": 600,
   "quota_account": "",
-  "provider_map": {},
+  "provider_map": {
+    "agent-c": "claude",
+    "agent-d": "claude"
+  },
   "default_provider": "codex",
-  "model_map": {}
+  "model_map": {
+    "agent-c": "claude-sonnet-4.6",
+    "agent-d": "claude-sonnet-4.6"
+  }
 }

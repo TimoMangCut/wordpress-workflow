@@ -484,7 +484,7 @@ if [[ "${SKIP_QUOTA_PROBE:-0}" != "1" ]] && [[ "$NEEDS_CLAUDE" -eq 1 ]]; then
   _CLAUDE_PROBE_ERR="$(mktemp /tmp/orchestrate-claude-probe-err-XXXXXX.txt)"
   _CLAUDE_PROBE_OUT="$(mktemp /tmp/orchestrate-claude-probe-XXXXXX.txt)"
   _CLAUDE_PROBE_EXIT=0
-  _CLAUDE_PROBE_CMD=(claude -p --dangerously-skip-permissions --output-format stream-json)
+  _CLAUDE_PROBE_CMD=(claude -p --dangerously-skip-permissions --verbose --output-format stream-json)
   if [[ -n "$CLAUDE_PROBE_MODEL" ]]; then
     _CLAUDE_PROBE_CMD+=(--model "$CLAUDE_PROBE_MODEL")
   fi
@@ -497,7 +497,7 @@ if [[ "${SKIP_QUOTA_PROBE:-0}" != "1" ]] && [[ "$NEEDS_CLAUDE" -eq 1 ]]; then
   _CLAUDE_PROBE_ERR_TEXT="$(head -c 500 "$_CLAUDE_PROBE_ERR" 2>/dev/null || true)"
 
   if [[ "$_CLAUDE_PROBE_EXIT" -ne 0 ]]; then
-    log_error "Preflight FAILED: Claude CLI probe exited $CLAUDE_PROBE_EXIT (model=${CLAUDE_PROBE_MODEL:-<default>})."
+    log_error "Preflight FAILED: Claude CLI probe exited $_CLAUDE_PROBE_EXIT (model=${CLAUDE_PROBE_MODEL:-<default>})."
     log_error "stderr: $_CLAUDE_PROBE_ERR_TEXT"
     log_error "Aborting — fix Claude auth/model and retry."
     append_failure "phase2" "preflight-claude" "claude_preflight_failed" "0" "aborted" \
@@ -594,7 +594,7 @@ print(d.get('inputs',{}).get(sys.argv[2],''))
     # stdout is streamed through Python to extract final text content,
     # matching the pattern established in run-phase2.sh:477-499.
     local claude_cmd
-    claude_cmd=(claude -p --dangerously-skip-permissions --output-format stream-json)
+    claude_cmd=(claude -p --dangerously-skip-permissions --verbose --output-format stream-json)
     if [[ -n "$agent_model" ]]; then
       claude_cmd+=(--model "$agent_model")
     fi

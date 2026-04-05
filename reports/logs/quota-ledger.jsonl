@@ -53,3 +53,7 @@
 {"ts":"2026-04-04T16:43:35Z","phase":"phase3","slug":"backwpup","mode":"llm_skeptic","provider":"claude","model":"claude-sonnet-4.6","status":"failed","duration_sec":0}
 {"ts":"2026-04-04T17:05:36Z","phase":"phase3","slug":"backwpup","mode":"llm_skeptic","provider":"claude","model":"claude-sonnet-4.6","status":"failed","duration_sec":1280}
 {"ts":"2026-04-04T17:30:07Z","phase":"phase3","slug":"cartflows","mode":"llm_skeptic","provider":"codex","model":"","status":"failed","duration_sec":5}
+{"ts":"2026-04-04T23:10:55Z","phase":"phase3","slug":"backwpup","mode":"llm_skeptic","provider":"claude","model":"claude-sonnet-4.6","status":"failed","duration_sec":1315}
+{"ts":"2026-04-04T23:53:10Z","phase":"phase3","slug":"backwpup","mode":"llm_skeptic","provider":"claude","model":"claude-sonnet-4.6","status":"failed","duration_sec":2500}
+{"ts":"2026-04-05T00:05:56Z","phase":"phase3","slug":"backwpup","mode":"llm_skeptic","provider":"claude","model":"claude-sonnet-4.6","status":"failed","duration_sec":473}
+{"ts":"2026-04-05T00:15:31Z","phase":"phase3","slug":"backwpup","mode":"llm_skeptic","provider":"claude","model":"claude-sonnet-4.6","status":"failed","duration_sec":357}

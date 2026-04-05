@@ -1,7 +1,7 @@
 {
   "session": 25,
   "title": "Agents C+D completion + Wave 4 finalize + DI-23-03 decision + S5 first run",
-  "status": "PENDING",
+  "status": "COMPLETED",
   "created_by_session": 24,
   "wave": "Wave 4 (completion)",
   "dependencies": [
@@ -11,6 +11,12 @@
     }
   ],
   "gaps": ["DI-24-02", "DI-24-03", "WAVE4-FINALIZE", "S5-FIRST-RUN"],
+  "gaps_outcome": {
+    "DI-24-02": "ADDRESSED — all 6 agent C+D files produced; all 3 phase2 merged with 8 agents; all 3 phase3 gate reruns complete",
+    "WAVE4-FINALIZE": "PARTIAL — 8/8 agents run, phase2+gate artifacts correct. Not done: backwpup LLM review partial (12/22, timed out); cartflows/pretty-link LLM reviews not run; benchmark architecture (DI-24-03) deferred; S5 deferred. Remaining work moved to Session 26.",
+    "DI-24-03": "DEFERRED to Session 26 — user approved Option D; implementation pending",
+    "S5-FIRST-RUN": "DEFERRED to Session 26 — pending benchmark stability (DI-24-03)"
+  },
   "critical_notes": [
     "START WITH QUOTA CHECK: verify Codex quota available before attempting agents C+D. Run: codex --version || echo 'check quota'. If blocked, document quota status and skip to DI-24-03 decision.",
     "DI-24-02 (agents C+D): Run orchestrate-agents.sh with --resume-missing-only for all 3 plugins. Only agents c and d should need to run. Command: bash tools/bin/orchestrate-agents.sh <slug> --resume-missing-only. If quota still blocked after checking, defer agents C+D and focus on DI-24-03 and S5.",

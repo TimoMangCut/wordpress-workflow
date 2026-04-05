@@ -1,12 +1,12 @@
 # Phase 3 Gate Report - `backwpup`
 
-_Generated: 2026-04-04T17:05:36.835084+00:00_
+_Generated: 2026-04-05T01:24:34.222742+00:00_
 
 ## Plugin Overview
 - Plugin slug: `backwpup`
 - Phase 1: EPs `61`, anomalies `13`, sources `544`, sinks `958`
-- Phase 2: total `33`, TP `17`, FP `14`, REVIEW `2`
-- Phase 3: confirmed `0`, plausible `0`, uncertain `19`, likely_hallucination `0`
+- Phase 2: total `44`, TP `16`, FP `22`, REVIEW `6`
+- Phase 3: confirmed `0`, plausible `0`, uncertain `22`, likely_hallucination `0`
 
 ## Tool Signals
 - Semgrep: `ok (47 results)`
@@ -22,8 +22,8 @@ None.
 - Severity: `low` | Confidence: `0.72`
 - Gate Verdict: `UNCERTAIN`
 - Entry point: claimed `ep_ajax_priv_wp_ajax_backwpup_debug_info`, resolved `ep_ajax_priv_wp_ajax_backwpup_debug_info`
-- Trace: source `inc/class-admin.php:283` -> sink `inc/class-admin.php:287`
-- Description (2 sentences): Finding `agent-a2-f001` flags `sensitive_information_disclosure` at `inc/class-admin.php:287` via entry point `ep_ajax_priv_wp_ajax_backwpup_debug_info`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.72`), so dynamic verification is still required.
+- Trace: source `inc/class-admin.php:283` -> sink `inc/class-page-settings.php:109`
+- Description (2 sentences): Finding `agent-a2-f001` flags `sensitive_information_disclosure` at `inc/class-page-settings.php:109` via entry point `ep_ajax_priv_wp_ajax_backwpup_debug_info`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.72`), so dynamic verification is still required.
 - Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `subscriber`.
 - Validation issues: `guard_contradiction, insufficient_evidence_to_confirm`
 - PoC (Setup -> Activate -> Attack -> Verify):
@@ -38,7 +38,7 @@ None.
 - Severity: `low` | Confidence: `0.56`
 - Gate Verdict: `UNCERTAIN`
 - Entry point: claimed `ep_admin_post_admin_post_backwpup`, resolved `ep_admin_post_admin_post_backwpup`
-- Trace: source `inc/class-admin.php:893` -> sink `inc/class-page-onboarding.php:127`
+- Trace: source `inc/class-admin.php:827` -> sink `inc/class-page-onboarding.php:127`
 - Description (2 sentences): Finding `agent-a2-f002` flags `broken_access_control` at `inc/class-page-onboarding.php:127` via entry point `ep_admin_post_admin_post_backwpup`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.56`), so dynamic verification is still required.
 - Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
 - Validation issues: `guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak`
@@ -86,14 +86,14 @@ None.
 - Severity: `medium` | Confidence: `0.57`
 - Gate Verdict: `UNCERTAIN`
 - Entry point: claimed `ep_rest___authenticate_cloud`, resolved `ep_rest___authenticate_cloud`
-- Trace: source `src/StorageProviders/API/Rest.php:194` -> sink `src/StorageProviders/SugarSync/SugarSyncProvider.php:134`
+- Trace: source `src/StorageProviders/API/Rest.php:96` -> sink `src/StorageProviders/SugarSync/SugarSyncProvider.php:134`
 - Description (2 sentences): Finding `agent-a3-authenticate-cloud-bac` flags `broken_access_control` at `src/StorageProviders/SugarSync/SugarSyncProvider.php:134` via entry point `ep_rest___authenticate_cloud`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.57`), so dynamic verification is still required.
 - Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
 - Validation issues: `code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak`
 - PoC (Setup -> Activate -> Attack -> Verify):
   - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
   - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
-  - Step 3 (Attack): Use entry point `ep_rest___authenticate_cloud` and send crafted input from source `src/StorageProviders/API/Rest.php:194` toward sink `src/StorageProviders/SugarSync/SugarSyncProvider.php:134`.
+  - Step 3 (Attack): Use entry point `ep_rest___authenticate_cloud` and send crafted input from source `src/StorageProviders/API/Rest.php:96` toward sink `src/StorageProviders/SugarSync/SugarSyncProvider.php:134`.
   - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
 
 ### agent-a3-delete-auth-cloud-bac
@@ -243,17 +243,17 @@ None.
 ### agent-a3-save-files-exclusions-bac
 - Type: `broken_access_control`
 - Minimum Role/Capability: `unknown`
-- Severity: `medium` | Confidence: `0.67`
+- Severity: `medium` | Confidence: `0.55`
 - Gate Verdict: `UNCERTAIN`
 - Entry point: claimed `ep_rest___save_files_exclusions`, resolved `ep_rest___save_files_exclusions`
-- Trace: source `src/Jobs/API/Rest.php:736` -> sink `inc/class-jobtype-file.php:230`
-- Description (2 sentences): Finding `agent-a3-save-files-exclusions-bac` flags `broken_access_control` at `inc/class-jobtype-file.php:230` via entry point `ep_rest___save_files_exclusions`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.67`), so dynamic verification is still required.
+- Trace: source `src/Jobs/API/Rest.php:219` -> sink `src/Jobs/API/Rest.php:219`
+- Description (2 sentences): Finding `agent-a3-save-files-exclusions-bac` flags `broken_access_control` at `src/Jobs/API/Rest.php:219` via entry point `ep_rest___save_files_exclusions`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.55`), so dynamic verification is still required.
 - Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
-- Validation issues: `guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak`
+- Validation issues: `code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak`
 - PoC (Setup -> Activate -> Attack -> Verify):
   - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
   - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
-  - Step 3 (Attack): Use entry point `ep_rest___save_files_exclusions` and send crafted input from source `src/Jobs/API/Rest.php:736` toward sink `inc/class-jobtype-file.php:230`.
+  - Step 3 (Attack): Use entry point `ep_rest___save_files_exclusions` and send crafted input from source `src/Jobs/API/Rest.php:219` toward sink `src/Jobs/API/Rest.php:219`.
   - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
 
 ### agent-a3-save-excluded-tables-bac
@@ -318,6 +318,54 @@ None.
   - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
   - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
   - Step 3 (Attack): Use entry point `ep_rest_backwpup_v1__process_bulk_actions` and send crafted input from source `src/Backups/API/Rest.php:360` toward sink `src/Backups/API/Rest.php:420`.
+  - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
+
+### agent-c-anom_13
+- Type: `inconsistency`
+- Minimum Role/Capability: `unknown`
+- Severity: `high` | Confidence: `0.50`
+- Gate Verdict: `UNCERTAIN`
+- Entry point: claimed `ep_admin_post_admin_post_backwpup_support`, resolved `ep_admin_post_admin_post_backwpup_support`
+- Trace: source `inc/class-admin.php:1177` -> sink `inc/class-admin.php:1177`
+- Description (2 sentences): Finding `agent-c-anom_13` flags `inconsistency` at `inc/class-admin.php:1177` via entry point `ep_admin_post_admin_post_backwpup_support`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.50`), so dynamic verification is still required.
+- Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
+- Validation issues: `code_evidence_missing_or_mismatch, guard_contradiction, path_reachability_weak`
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
+  - Step 3 (Attack): Use entry point `ep_admin_post_admin_post_backwpup_support` and send crafted input from source `inc/class-admin.php:1177` toward sink `inc/class-admin.php:1177`.
+  - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
+
+### agent-d-uh-004
+- Type: `unresolved_hook_resolution`
+- Minimum Role/Capability: `unknown`
+- Severity: `informational` | Confidence: `0.42`
+- Gate Verdict: `UNCERTAIN`
+- Entry point: claimed `unresolved:inc/dependencies/wp-media/event-manager/EventManager.php:26`, resolved `None`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `agent-d-uh-004` flags `unresolved_hook_resolution` at `N/A:N/A` via entry point `unresolved:inc/dependencies/wp-media/event-manager/EventManager.php:26`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.42`), so dynamic verification is still required.
+- Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
+- Validation issues: `code_evidence_missing_or_mismatch, file_not_found_or_unresolvable, path_reachability_weak, reasoning_quality_low`
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
+  - Step 3 (Attack): Use entry point `unresolved:inc/dependencies/wp-media/event-manager/EventManager.php:26` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
+
+### agent-d-cg-002
+- Type: `missing_authentication_ajax_handler`
+- Minimum Role/Capability: `unknown`
+- Severity: `high` | Confidence: `0.66`
+- Gate Verdict: `UNCERTAIN`
+- Entry point: claimed `None`, resolved `None`
+- Trace: source `inc/class-destination-downloader.php:58` -> sink `inc/class-destination-downloader.php:95`
+- Description (2 sentences): Finding `agent-d-cg-002` flags `missing_authentication_ajax_handler` at `inc/class-destination-downloader.php:95` via entry point `N/A`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.66`), so dynamic verification is still required.
+- Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
+- Validation issues: `insufficient_evidence_to_confirm, path_reachability_weak, reasoning_quality_low`
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
+  - Step 3 (Attack): Logged-in user (subscriber+) sends: POST /wp-admin/admin-ajax.php?action=download_backup_file&destination=FOLDER&jobid=1&file=../wp-config.php&local_file=../wp-config.php. If file_download() follows these paths without further restriction, sensitive files may be disclosed.
   - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
 
 ## Likely Hallucinations
@@ -534,6 +582,126 @@ None.
   - Step 3 (Attack): Use entry point `ep_rest___pagination` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
   - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
 
+### agent-c-anom_2
+- Type: `missing_nonce`
+- Minimum Role/Capability: `unknown`
+- Severity: `informational` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `ep_admin_init_admin_init`, resolved `ep_admin_init_admin_init`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `agent-c-anom_2` flags `missing_nonce` at `N/A:N/A` via entry point `ep_admin_init_admin_init`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
+  - Step 3 (Attack): Use entry point `ep_admin_init_admin_init` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### agent-c-anom_8
+- Type: `missing_capability`
+- Minimum Role/Capability: `unknown`
+- Severity: `informational` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `ep_admin_init_admin_init`, resolved `ep_admin_init_admin_init`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `agent-c-anom_8` flags `missing_capability` at `N/A:N/A` via entry point `ep_admin_init_admin_init`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
+  - Step 3 (Attack): Use entry point `ep_admin_init_admin_init` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### agent-c-anom_11
+- Type: `unsanitized_sql`
+- Minimum Role/Capability: `unknown`
+- Severity: `informational` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `ep_admin_init_admin_init`, resolved `ep_admin_init_admin_init`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `agent-c-anom_11` flags `unsanitized_sql` at `N/A:N/A` via entry point `ep_admin_init_admin_init`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
+  - Step 3 (Attack): Use entry point `ep_admin_init_admin_init` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### agent-c-anom_12
+- Type: `is_admin_as_auth`
+- Minimum Role/Capability: `unknown`
+- Severity: `informational` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `ep_admin_init_admin_init`, resolved `ep_admin_init_admin_init`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `agent-c-anom_12` flags `is_admin_as_auth` at `N/A:N/A` via entry point `ep_admin_init_admin_init`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
+  - Step 3 (Attack): Use entry point `ep_admin_init_admin_init` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### agent-d-uh-001
+- Type: `unresolved_hook_resolution`
+- Minimum Role/Capability: `unknown`
+- Severity: `informational` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `resolved_dynamic:3e529ca494c3acb7748c6ac45a509f1e5eac8dd2`, resolved `resolved_dynamic:3e529ca494c3acb7748c6ac45a509f1e5eac8dd2`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `agent-d-uh-001` flags `unresolved_hook_resolution` at `N/A:N/A` via entry point `resolved_dynamic:3e529ca494c3acb7748c6ac45a509f1e5eac8dd2`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
+  - Step 3 (Attack): Use entry point `resolved_dynamic:3e529ca494c3acb7748c6ac45a509f1e5eac8dd2` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### agent-d-uh-002
+- Type: `unresolved_hook_resolution`
+- Minimum Role/Capability: `unknown`
+- Severity: `informational` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `resolved_dynamic:95ff1bb5bf495e2d04a8d96b88dc0b537ef53b65`, resolved `resolved_dynamic:95ff1bb5bf495e2d04a8d96b88dc0b537ef53b65`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `agent-d-uh-002` flags `unresolved_hook_resolution` at `N/A:N/A` via entry point `resolved_dynamic:95ff1bb5bf495e2d04a8d96b88dc0b537ef53b65`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
+  - Step 3 (Attack): Use entry point `resolved_dynamic:95ff1bb5bf495e2d04a8d96b88dc0b537ef53b65` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### agent-d-uh-003
+- Type: `unresolved_hook_resolution`
+- Minimum Role/Capability: `unknown`
+- Severity: `informational` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `resolved_dynamic:8f42e21fb1d9d1cf4cb0b537c1046bfe61a7711e`, resolved `resolved_dynamic:8f42e21fb1d9d1cf4cb0b537c1046bfe61a7711e`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `agent-d-uh-003` flags `unresolved_hook_resolution` at `N/A:N/A` via entry point `resolved_dynamic:8f42e21fb1d9d1cf4cb0b537c1046bfe61a7711e`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
+  - Step 3 (Attack): Use entry point `resolved_dynamic:8f42e21fb1d9d1cf4cb0b537c1046bfe61a7711e` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### agent-d-cg-001
+- Type: `coverage_gap_analysis`
+- Minimum Role/Capability: `unknown`
+- Severity: `informational` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `None`, resolved `None`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `agent-d-cg-001` flags `coverage_gap_analysis` at `N/A:N/A` via entry point `N/A`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
+  - Step 3 (Attack): Use entry point `N/A` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
 ## Why Not Confirmed
 - `agent-a2-f001`: guard_contradiction, insufficient_evidence_to_confirm
 - `agent-a2-f002`: guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
@@ -549,11 +717,14 @@ None.
 - `agent-a3-delete-job-bac`: code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
 - `agent-a3-save-job-settings-bac`: code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
 - `agent-a3-save-job-format-bac`: code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
-- `agent-a3-save-files-exclusions-bac`: guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
+- `agent-a3-save-files-exclusions-bac`: code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
 - `agent-a3-save-excluded-tables-bac`: guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
 - `agent-a3-update-backup-type-bac`: code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
 - `agent-a3-startbackup-bac`: code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
 - `agent-a3-process-bulk-actions-needs-proof`: code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
+- `agent-c-anom_13`: code_evidence_missing_or_mismatch, guard_contradiction, path_reachability_weak
+- `agent-d-uh-004`: code_evidence_missing_or_mismatch, file_not_found_or_unresolvable, path_reachability_weak, reasoning_quality_low
+- `agent-d-cg-002`: insufficient_evidence_to_confirm, path_reachability_weak, reasoning_quality_low
 
 ## Stored/Second-order Notes
 No stored/second-order findings in this plugin.
