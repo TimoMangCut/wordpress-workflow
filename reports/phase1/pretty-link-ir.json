@@ -6,7 +6,7 @@
         "active_installs": null,
         "files_analyzed": 198,
         "total_loc": 26953,
-        "extraction_time_ms": 434,
+        "extraction_time_ms": 481,
         "extractor_version": "1.0.0"
     },
     "entry_points": [
@@ -1156,6 +1156,15 @@
             "notes": null
         },
         {
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+            "type": "custom_guard",
+            "function_called": "PrliUtils::is_authorized()",
+            "file": "app/controllers/PrliStripeConnectController.php",
+            "line": 114,
+            "is_effective": null,
+            "notes": "custom guard heuristic: method/static call in if-condition with wp_die/exit/return in body"
+        },
+        {
             "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
             "type": "nonce_check",
             "function_called": "wp_verify_nonce",
@@ -1165,6 +1174,15 @@
             "notes": null
         },
         {
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+            "type": "custom_guard",
+            "function_called": "PrliUtils::is_authorized()",
+            "file": "app/controllers/PrliStripeConnectController.php",
+            "line": 178,
+            "is_effective": null,
+            "notes": "custom guard heuristic: method/static call in if-condition with wp_die/exit/return in body"
+        },
+        {
             "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_disconnect",
             "type": "nonce_check",
             "function_called": "wp_verify_nonce",
@@ -1172,6 +1190,15 @@
             "line": 228,
             "is_effective": null,
             "notes": null
+        },
+        {
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_disconnect",
+            "type": "custom_guard",
+            "function_called": "PrliUtils::is_authorized()",
+            "file": "app/controllers/PrliStripeConnectController.php",
+            "line": 233,
+            "is_effective": null,
+            "notes": "custom guard heuristic: method/static call in if-condition with wp_die/exit/return in body"
         },
         {
             "entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_stripe_prices",
@@ -1210,6 +1237,15 @@
             "notes": null
         },
         {
+            "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_review_prompt",
+            "type": "custom_guard",
+            "function_called": "PrliUtils::is_authorized()",
+            "file": "app/controllers/PrliReviewNoticeController.php",
+            "line": 19,
+            "is_effective": null,
+            "notes": "custom guard heuristic: method/static call in if-condition with wp_die/exit/return in body"
+        },
+        {
             "entry_point_id": "ep_init_init",
             "type": "nonce_check",
             "function_called": "wp_verify_nonce",
@@ -1220,12 +1256,30 @@
         },
         {
             "entry_point_id": "ep_init_init",
+            "type": "custom_guard",
+            "function_called": "PrliUtils::is_authorized()",
+            "file": "app/controllers/PrliAuthenticatorController.php",
+            "line": 88,
+            "is_effective": null,
+            "notes": "custom guard heuristic: method/static call in if-condition with wp_die/exit/return in body"
+        },
+        {
+            "entry_point_id": "ep_init_init",
             "type": "nonce_check",
             "function_called": "wp_verify_nonce",
             "file": "app/controllers/PrliAuthenticatorController.php",
             "line": 165,
             "is_effective": null,
             "notes": null
+        },
+        {
+            "entry_point_id": "ep_init_init",
+            "type": "custom_guard",
+            "function_called": "PrliUtils::is_authorized()",
+            "file": "app/controllers/PrliAuthenticatorController.php",
+            "line": 170,
+            "is_effective": null,
+            "notes": "custom guard heuristic: method/static call in if-condition with wp_die/exit/return in body"
         },
         {
             "entry_point_id": "ep_admin_init_admin_init",
@@ -1246,6 +1300,24 @@
             "notes": null
         },
         {
+            "entry_point_id": "ep_init_init",
+            "type": "custom_guard",
+            "function_called": "PrliUtils::is_authorized()",
+            "file": "app/controllers/PrliPostsController.php",
+            "line": 32,
+            "is_effective": null,
+            "notes": "custom guard heuristic: method/static call in if-condition with wp_die/exit/return in body"
+        },
+        {
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_tinymce_form",
+            "type": "custom_guard",
+            "function_called": "PrliUtils::is_authorized()",
+            "file": "app/controllers/PrliPostsController.php",
+            "line": 85,
+            "is_effective": null,
+            "notes": "custom guard heuristic: method/static call in if-condition with wp_die/exit/return in body"
+        },
+        {
             "entry_point_id": "ep_ajax_priv_wp_ajax_prli_tinymce_validate_slug",
             "type": "nonce_check",
             "function_called": "check_ajax_referer",
@@ -1255,6 +1327,15 @@
             "notes": "check_ajax_referer with $die=false \u2014 code continues on failure"
         },
         {
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_tinymce_validate_slug",
+            "type": "custom_guard",
+            "function_called": "PrliUtils::is_authorized()",
+            "file": "app/controllers/PrliPostsController.php",
+            "line": 160,
+            "is_effective": null,
+            "notes": "custom guard heuristic: method/static call in if-condition with wp_die/exit/return in body"
+        },
+        {
             "entry_point_id": "ep_ajax_priv_wp_ajax_prli_create_pretty_link",
             "type": "nonce_check",
             "function_called": "check_ajax_referer",
@@ -1262,6 +1343,15 @@
             "line": 184,
             "is_effective": false,
             "notes": "check_ajax_referer with $die=false \u2014 code continues on failure"
+        },
+        {
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_create_pretty_link",
+            "type": "custom_guard",
+            "function_called": "PrliUtils::is_authorized()",
+            "file": "app/controllers/PrliPostsController.php",
+            "line": 190,
+            "is_effective": null,
+            "notes": "custom guard heuristic: method/static call in if-condition with wp_die/exit/return in body"
         },
         {
             "entry_point_id": "ep_init_init",
@@ -1289,6 +1379,15 @@
             "line": 842,
             "is_effective": true,
             "notes": null
+        },
+        {
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_quick_create",
+            "type": "custom_guard",
+            "function_called": "PrliUtils::is_authorized()",
+            "file": "app/controllers/PrliLinksController.php",
+            "line": 866,
+            "is_effective": null,
+            "notes": "custom guard heuristic: method/static call in if-condition with wp_die/exit/return in body"
         },
         {
             "entry_point_id": "ep_ajax_priv_wp_ajax_prli_quick_create",
@@ -1381,6 +1480,15 @@
             "notes": null
         },
         {
+            "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_upgrade_header",
+            "type": "custom_guard",
+            "function_called": "PrliUtils::is_authorized()",
+            "file": "app/controllers/PrliAppController.php",
+            "line": 73,
+            "is_effective": null,
+            "notes": "custom guard heuristic: method/static call in if-condition with wp_die/exit/return in body"
+        },
+        {
             "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_notice",
             "type": "nonce_check",
             "function_called": "check_ajax_referer",
@@ -1388,6 +1496,15 @@
             "line": 131,
             "is_effective": false,
             "notes": "check_ajax_referer with $die=false \u2014 code continues on failure"
+        },
+        {
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_notice",
+            "type": "custom_guard",
+            "function_called": "PrliUtils::is_authorized()",
+            "file": "app/controllers/PrliAppController.php",
+            "line": 132,
+            "is_effective": null,
+            "notes": "custom guard heuristic: method/static call in if-condition with wp_die/exit/return in body"
         },
         {
             "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_daily_notice",
@@ -1399,6 +1516,15 @@
             "notes": "check_ajax_referer with $die=false \u2014 code continues on failure"
         },
         {
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_daily_notice",
+            "type": "custom_guard",
+            "function_called": "PrliUtils::is_authorized()",
+            "file": "app/controllers/PrliAppController.php",
+            "line": 146,
+            "is_effective": null,
+            "notes": "custom guard heuristic: method/static call in if-condition with wp_die/exit/return in body"
+        },
+        {
             "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_monthly_notice",
             "type": "nonce_check",
             "function_called": "check_ajax_referer",
@@ -1406,6 +1532,15 @@
             "line": 159,
             "is_effective": false,
             "notes": "check_ajax_referer with $die=false \u2014 code continues on failure"
+        },
+        {
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_monthly_notice",
+            "type": "custom_guard",
+            "function_called": "PrliUtils::is_authorized()",
+            "file": "app/controllers/PrliAppController.php",
+            "line": 160,
+            "is_effective": null,
+            "notes": "custom guard heuristic: method/static call in if-condition with wp_die/exit/return in body"
         },
         {
             "entry_point_id": "ep_ajax_priv_wp_ajax_prli_onboarding_save_new_link",
@@ -1462,6 +1597,24 @@
             "notes": null
         },
         {
+            "entry_point_id": "ep_admin_init_admin_init",
+            "type": "custom_guard",
+            "function_called": "$this->is_installed()",
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 330,
+            "is_effective": null,
+            "notes": "custom guard heuristic: method/static call in if-condition with wp_die/exit/return in body"
+        },
+        {
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_activate_license",
+            "type": "custom_guard",
+            "function_called": "PrliUtils::is_logged_in_and_an_admin()",
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 69,
+            "is_effective": null,
+            "notes": "custom guard heuristic: method/static call in if-condition with wp_die/exit/return in body"
+        },
+        {
             "entry_point_id": "ep_ajax_priv_wp_ajax_prli_activate_license",
             "type": "nonce_check",
             "function_called": "check_ajax_referer",
@@ -1472,12 +1625,39 @@
         },
         {
             "entry_point_id": "ep_ajax_priv_wp_ajax_prli_deactivate_license",
+            "type": "custom_guard",
+            "function_called": "PrliUtils::is_post_request()",
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 160,
+            "is_effective": null,
+            "notes": "custom guard heuristic: method/static call in if-condition with wp_die/exit/return in body"
+        },
+        {
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_deactivate_license",
+            "type": "custom_guard",
+            "function_called": "PrliUtils::is_logged_in_and_an_admin()",
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 164,
+            "is_effective": null,
+            "notes": "custom guard heuristic: method/static call in if-condition with wp_die/exit/return in body"
+        },
+        {
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_deactivate_license",
             "type": "nonce_check",
             "function_called": "check_ajax_referer",
             "file": "app/controllers/PrliUpdateController.php",
             "line": 168,
             "is_effective": false,
             "notes": "check_ajax_referer with $die=false \u2014 code continues on failure; guard at line 168 after side-effect at line 161"
+        },
+        {
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_install_license_edition",
+            "type": "custom_guard",
+            "function_called": "PrliUtils::is_post_request()",
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 199,
+            "is_effective": null,
+            "notes": "custom guard heuristic: method/static call in if-condition with wp_die/exit/return in body"
         },
         {
             "entry_point_id": "ep_ajax_priv_wp_ajax_prli_install_license_edition",
@@ -1789,6 +1969,15 @@
         },
         {
             "id": "src_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+            "type": "option_read",
+            "variable": "get_option()",
+            "key": null,
+            "file": "app/controllers/PrliStripeConnectController.php",
+            "line": 133
+        },
+        {
+            "id": "src_1",
             "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
             "type": "superglobal_get",
             "variable": "$_GET",
@@ -1888,6 +2077,15 @@
         },
         {
             "id": "src_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_disconnect",
+            "type": "option_read",
+            "variable": "get_option()",
+            "key": null,
+            "file": "app/controllers/PrliStripeConnectController.php",
+            "line": 257
+        },
+        {
+            "id": "src_1",
             "entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_stripe_prices",
             "type": "superglobal_get",
             "variable": "$_GET",
@@ -1924,6 +2122,15 @@
         },
         {
             "id": "src_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_stripe_prices",
+            "type": "rest_headers",
+            "variable": "$request->get_headers()",
+            "key": null,
+            "file": "app/controllers/PrliStripeController.php",
+            "line": 566
+        },
+        {
+            "id": "src_1",
             "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_add_product",
             "type": "superglobal_post",
             "variable": "$_POST",
@@ -1957,6 +2164,33 @@
             "key": null,
             "file": "app/controllers/PrliStripeController.php",
             "line": 744
+        },
+        {
+            "id": "src_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_add_product",
+            "type": "rest_headers",
+            "variable": "$request->get_headers()",
+            "key": null,
+            "file": "app/controllers/PrliStripeController.php",
+            "line": 566
+        },
+        {
+            "id": "src_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_add_product",
+            "type": "option_read",
+            "variable": "get_option()",
+            "key": "prli_stripe_test_secret_key",
+            "file": "app/controllers/PrliStripeController.php",
+            "line": 474
+        },
+        {
+            "id": "src_2",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_add_product",
+            "type": "option_read",
+            "variable": "get_option()",
+            "key": "prli_stripe_live_secret_key",
+            "file": "app/controllers/PrliStripeController.php",
+            "line": 477
         },
         {
             "id": "src_1",
@@ -2002,6 +2236,33 @@
             "key": "prli_stripe_customer_portal",
             "file": "app/controllers/PrliStripeController.php",
             "line": 940
+        },
+        {
+            "id": "src_1",
+            "entry_point_id": "ep_filter_output_the_content",
+            "type": "rest_headers",
+            "variable": "$request->get_headers()",
+            "key": null,
+            "file": "app/controllers/PrliStripeController.php",
+            "line": 566
+        },
+        {
+            "id": "src_1",
+            "entry_point_id": "ep_filter_output_the_content",
+            "type": "option_read",
+            "variable": "get_option()",
+            "key": "prli_stripe_test_secret_key",
+            "file": "app/controllers/PrliStripeController.php",
+            "line": 474
+        },
+        {
+            "id": "src_2",
+            "entry_point_id": "ep_filter_output_the_content",
+            "type": "option_read",
+            "variable": "get_option()",
+            "key": "prli_stripe_live_secret_key",
+            "file": "app/controllers/PrliStripeController.php",
+            "line": 477
         },
         {
             "id": "src_1",
@@ -2803,6 +3064,150 @@
             "key": null,
             "file": "app/controllers/PrliClicksController.php",
             "line": 26
+        },
+        {
+            "id": "src_1",
+            "entry_point_id": "ep_init_init",
+            "type": "superglobal_get",
+            "variable": "$_GET",
+            "key": "l",
+            "file": "app/controllers/PrliClicksController.php",
+            "line": 137
+        },
+        {
+            "id": "src_2",
+            "entry_point_id": "ep_init_init",
+            "type": "superglobal_get",
+            "variable": "$_GET",
+            "key": null,
+            "file": "app/controllers/PrliClicksController.php",
+            "line": 137
+        },
+        {
+            "id": "src_3",
+            "entry_point_id": "ep_init_init",
+            "type": "superglobal_get",
+            "variable": "$_GET",
+            "key": "l",
+            "file": "app/controllers/PrliClicksController.php",
+            "line": 138
+        },
+        {
+            "id": "src_4",
+            "entry_point_id": "ep_init_init",
+            "type": "superglobal_get",
+            "variable": "$_GET",
+            "key": null,
+            "file": "app/controllers/PrliClicksController.php",
+            "line": 138
+        },
+        {
+            "id": "src_5",
+            "entry_point_id": "ep_init_init",
+            "type": "superglobal_get",
+            "variable": "$_GET",
+            "key": "ip",
+            "file": "app/controllers/PrliClicksController.php",
+            "line": 143
+        },
+        {
+            "id": "src_6",
+            "entry_point_id": "ep_init_init",
+            "type": "superglobal_get",
+            "variable": "$_GET",
+            "key": null,
+            "file": "app/controllers/PrliClicksController.php",
+            "line": 143
+        },
+        {
+            "id": "src_7",
+            "entry_point_id": "ep_init_init",
+            "type": "superglobal_get",
+            "variable": "$_GET",
+            "key": "ip",
+            "file": "app/controllers/PrliClicksController.php",
+            "line": 144
+        },
+        {
+            "id": "src_8",
+            "entry_point_id": "ep_init_init",
+            "type": "superglobal_get",
+            "variable": "$_GET",
+            "key": null,
+            "file": "app/controllers/PrliClicksController.php",
+            "line": 144
+        },
+        {
+            "id": "src_9",
+            "entry_point_id": "ep_init_init",
+            "type": "superglobal_get",
+            "variable": "$_GET",
+            "key": "vuid",
+            "file": "app/controllers/PrliClicksController.php",
+            "line": 151
+        },
+        {
+            "id": "src_10",
+            "entry_point_id": "ep_init_init",
+            "type": "superglobal_get",
+            "variable": "$_GET",
+            "key": null,
+            "file": "app/controllers/PrliClicksController.php",
+            "line": 151
+        },
+        {
+            "id": "src_11",
+            "entry_point_id": "ep_init_init",
+            "type": "superglobal_get",
+            "variable": "$_GET",
+            "key": "vuid",
+            "file": "app/controllers/PrliClicksController.php",
+            "line": 152
+        },
+        {
+            "id": "src_12",
+            "entry_point_id": "ep_init_init",
+            "type": "superglobal_get",
+            "variable": "$_GET",
+            "key": null,
+            "file": "app/controllers/PrliClicksController.php",
+            "line": 152
+        },
+        {
+            "id": "src_13",
+            "entry_point_id": "ep_init_init",
+            "type": "superglobal_get",
+            "variable": "$_GET",
+            "key": "prli_page",
+            "file": "app/controllers/PrliClicksController.php",
+            "line": 166
+        },
+        {
+            "id": "src_14",
+            "entry_point_id": "ep_init_init",
+            "type": "superglobal_get",
+            "variable": "$_GET",
+            "key": null,
+            "file": "app/controllers/PrliClicksController.php",
+            "line": 166
+        },
+        {
+            "id": "src_15",
+            "entry_point_id": "ep_init_init",
+            "type": "superglobal_get",
+            "variable": "$_GET",
+            "key": "prli_page",
+            "file": "app/controllers/PrliClicksController.php",
+            "line": 166
+        },
+        {
+            "id": "src_16",
+            "entry_point_id": "ep_init_init",
+            "type": "superglobal_get",
+            "variable": "$_GET",
+            "key": null,
+            "file": "app/controllers/PrliClicksController.php",
+            "line": 166
         },
         {
             "id": "src_1",
@@ -3688,6 +4093,15 @@
         },
         {
             "id": "src_1",
+            "entry_point_id": "ep_init_init",
+            "type": "superglobal_get",
+            "variable": "$_GET",
+            "key": null,
+            "file": "app/controllers/PrliAppController.php",
+            "line": 741
+        },
+        {
+            "id": "src_1",
             "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_upgrade_header",
             "type": "superglobal_post",
             "variable": "$_POST",
@@ -3928,6 +4342,24 @@
             "key": "prli_activated",
             "file": "app/controllers/PrliUpdateController.php",
             "line": 321
+        },
+        {
+            "id": "src_1",
+            "entry_point_id": "ep_admin_init_admin_init",
+            "type": "option_read",
+            "variable": "get_option()",
+            "key": "prli_activation_override",
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 255
+        },
+        {
+            "id": "src_2",
+            "entry_point_id": "ep_admin_init_admin_init",
+            "type": "option_read",
+            "variable": "get_option()",
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 274
         },
         {
             "id": "src_1",
@@ -4947,24 +5379,6 @@
             "line": 67
         },
         {
-            "id": "src_23",
-            "entry_point_id": null,
-            "type": "option_read",
-            "variable": "get_option()",
-            "key": null,
-            "file": "app/controllers/PrliStripeConnectController.php",
-            "line": 133
-        },
-        {
-            "id": "src_35",
-            "entry_point_id": null,
-            "type": "option_read",
-            "variable": "get_option()",
-            "key": null,
-            "file": "app/controllers/PrliStripeConnectController.php",
-            "line": 257
-        },
-        {
             "id": "src_36",
             "entry_point_id": null,
             "type": "option_read",
@@ -5451,24 +5865,6 @@
             "line": 391
         },
         {
-            "id": "src_125",
-            "entry_point_id": null,
-            "type": "option_read",
-            "variable": "get_option()",
-            "key": "prli_stripe_test_secret_key",
-            "file": "app/controllers/PrliStripeController.php",
-            "line": 474
-        },
-        {
-            "id": "src_126",
-            "entry_point_id": null,
-            "type": "option_read",
-            "variable": "get_option()",
-            "key": "prli_stripe_live_secret_key",
-            "file": "app/controllers/PrliStripeController.php",
-            "line": 477
-        },
-        {
             "id": "src_127",
             "entry_point_id": null,
             "type": "option_read",
@@ -5476,15 +5872,6 @@
             "key": "prli_a99_f33_9c7_version",
             "file": "app/controllers/PrliStripeController.php",
             "line": 518
-        },
-        {
-            "id": "src_128",
-            "entry_point_id": null,
-            "type": "rest_headers",
-            "variable": "$request->get_headers()",
-            "key": null,
-            "file": "app/controllers/PrliStripeController.php",
-            "line": 566
         },
         {
             "id": "src_133",
@@ -5917,69 +6304,6 @@
             "key": "size",
             "file": "app/controllers/PrliClicksController.php",
             "line": 57
-        },
-        {
-            "id": "src_22",
-            "entry_point_id": null,
-            "type": "superglobal_get",
-            "variable": "$_GET",
-            "key": "l",
-            "file": "app/controllers/PrliClicksController.php",
-            "line": 137
-        },
-        {
-            "id": "src_24",
-            "entry_point_id": null,
-            "type": "superglobal_get",
-            "variable": "$_GET",
-            "key": "l",
-            "file": "app/controllers/PrliClicksController.php",
-            "line": 138
-        },
-        {
-            "id": "src_26",
-            "entry_point_id": null,
-            "type": "superglobal_get",
-            "variable": "$_GET",
-            "key": "ip",
-            "file": "app/controllers/PrliClicksController.php",
-            "line": 143
-        },
-        {
-            "id": "src_28",
-            "entry_point_id": null,
-            "type": "superglobal_get",
-            "variable": "$_GET",
-            "key": "ip",
-            "file": "app/controllers/PrliClicksController.php",
-            "line": 144
-        },
-        {
-            "id": "src_30",
-            "entry_point_id": null,
-            "type": "superglobal_get",
-            "variable": "$_GET",
-            "key": "vuid",
-            "file": "app/controllers/PrliClicksController.php",
-            "line": 151
-        },
-        {
-            "id": "src_32",
-            "entry_point_id": null,
-            "type": "superglobal_get",
-            "variable": "$_GET",
-            "key": "vuid",
-            "file": "app/controllers/PrliClicksController.php",
-            "line": 152
-        },
-        {
-            "id": "src_34",
-            "entry_point_id": null,
-            "type": "superglobal_get",
-            "variable": "$_GET",
-            "key": "prli_page",
-            "file": "app/controllers/PrliClicksController.php",
-            "line": 166
         },
         {
             "id": "src_38",
@@ -6882,15 +7206,6 @@
             "line": 706
         },
         {
-            "id": "src_60",
-            "entry_point_id": null,
-            "type": "superglobal_get",
-            "variable": "$_GET",
-            "key": null,
-            "file": "app/controllers/PrliAppController.php",
-            "line": 741
-        },
-        {
             "id": "src_61",
             "entry_point_id": null,
             "type": "superglobal_get",
@@ -7078,24 +7393,6 @@
             "key": "prlipro_activated",
             "file": "app/controllers/PrliUpdateController.php",
             "line": 238
-        },
-        {
-            "id": "src_12",
-            "entry_point_id": null,
-            "type": "option_read",
-            "variable": "get_option()",
-            "key": "prli_activation_override",
-            "file": "app/controllers/PrliUpdateController.php",
-            "line": 255
-        },
-        {
-            "id": "src_13",
-            "entry_point_id": null,
-            "type": "option_read",
-            "variable": "get_option()",
-            "key": null,
-            "file": "app/controllers/PrliUpdateController.php",
-            "line": 274
         },
         {
             "id": "src_15",
@@ -7704,6 +8001,126 @@
     "sinks": [
         {
             "id": "sink_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stop_popup",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliPopupController.php",
+            "line": 121
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stop_popup",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliPopupController.php",
+            "line": 239
+        },
+        {
+            "id": "sink_2",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stop_popup",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliPopupController.php",
+            "line": 242
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stop_popup",
+            "category": "meta_update",
+            "function_called": "update_user_meta",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliPopupController.php",
+            "line": 130
+        },
+        {
+            "id": "sink_2",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stop_popup",
+            "category": "option_update",
+            "function_called": "update_option",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliPopupController.php",
+            "line": 133
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stop_popup",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliPopupController.php",
+            "line": 247
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_delay_popup",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliPopupController.php",
+            "line": 121
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_delay_popup",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliPopupController.php",
+            "line": 239
+        },
+        {
+            "id": "sink_2",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_delay_popup",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliPopupController.php",
+            "line": 242
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_delay_popup",
+            "category": "meta_update",
+            "function_called": "update_user_meta",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliPopupController.php",
+            "line": 130
+        },
+        {
+            "id": "sink_2",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_delay_popup",
+            "category": "option_update",
+            "function_called": "update_option",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliPopupController.php",
+            "line": 133
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_delay_popup",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliPopupController.php",
+            "line": 247
+        },
+        {
+            "id": "sink_1",
             "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
             "category": "redirect",
             "function_called": "wp_redirect",
@@ -7711,6 +8128,96 @@
             "key": null,
             "file": "app/controllers/PrliStripeConnectController.php",
             "line": 126
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+            "category": "remote_request",
+            "function_called": "wp_remote_get",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliStripeConnectController.php",
+            "line": 143
+        },
+        {
+            "id": "sink_2",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+            "category": "option_update",
+            "function_called": "update_option",
+            "uses_prepared_statement": null,
+            "key": "prli_stripe_status",
+            "file": "app/controllers/PrliStripeConnectController.php",
+            "line": 149
+        },
+        {
+            "id": "sink_3",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+            "category": "option_update",
+            "function_called": "update_option",
+            "uses_prepared_statement": null,
+            "key": "prli_stripe_test_secret_key",
+            "file": "app/controllers/PrliStripeConnectController.php",
+            "line": 150
+        },
+        {
+            "id": "sink_4",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+            "category": "option_update",
+            "function_called": "update_option",
+            "uses_prepared_statement": null,
+            "key": "prli_stripe_test_publishable_key",
+            "file": "app/controllers/PrliStripeConnectController.php",
+            "line": 151
+        },
+        {
+            "id": "sink_5",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+            "category": "option_update",
+            "function_called": "update_option",
+            "uses_prepared_statement": null,
+            "key": "prli_stripe_live_secret_key",
+            "file": "app/controllers/PrliStripeConnectController.php",
+            "line": 152
+        },
+        {
+            "id": "sink_6",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+            "category": "option_update",
+            "function_called": "update_option",
+            "uses_prepared_statement": null,
+            "key": "prli_stripe_live_publishable_key",
+            "file": "app/controllers/PrliStripeConnectController.php",
+            "line": 153
+        },
+        {
+            "id": "sink_7",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+            "category": "option_update",
+            "function_called": "update_option",
+            "uses_prepared_statement": null,
+            "key": "prli_stripe_connect_status",
+            "file": "app/controllers/PrliStripeConnectController.php",
+            "line": 155
+        },
+        {
+            "id": "sink_8",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+            "category": "option_update",
+            "function_called": "update_option",
+            "uses_prepared_statement": null,
+            "key": "prli_stripe_service_account_id",
+            "file": "app/controllers/PrliStripeConnectController.php",
+            "line": 156
+        },
+        {
+            "id": "sink_9",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+            "category": "option_update",
+            "function_called": "update_option",
+            "uses_prepared_statement": null,
+            "key": "prli_stripe_service_account_name",
+            "file": "app/controllers/PrliStripeConnectController.php",
+            "line": 157
         },
         {
             "id": "sink_1",
@@ -7844,6 +8351,136 @@
         },
         {
             "id": "sink_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_disconnect",
+            "category": "remote_request",
+            "function_called": "wp_remote_request",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliStripeConnectController.php",
+            "line": 269
+        },
+        {
+            "id": "sink_2",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_disconnect",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliStripeConnectController.php",
+            "line": 277
+        },
+        {
+            "id": "sink_3",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_disconnect",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliStripeConnectController.php",
+            "line": 280
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_stripe_prices",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliStripeController.php",
+            "line": 714
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_stripe_prices",
+            "category": "remote_request",
+            "function_called": "wp_remote_request",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliStripeController.php",
+            "line": 575
+        },
+        {
+            "id": "sink_2",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_stripe_prices",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliStripeController.php",
+            "line": 580
+        },
+        {
+            "id": "sink_3",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_stripe_prices",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliStripeController.php",
+            "line": 592
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_add_product",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliStripeController.php",
+            "line": 784
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_add_product",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliStripeController.php",
+            "line": 869
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_add_product",
+            "category": "remote_request",
+            "function_called": "wp_remote_request",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliStripeController.php",
+            "line": 575
+        },
+        {
+            "id": "sink_2",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_add_product",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliStripeController.php",
+            "line": 580
+        },
+        {
+            "id": "sink_3",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_add_product",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliStripeController.php",
+            "line": 592
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_add_product",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliStripeController.php",
+            "line": 480
+        },
+        {
+            "id": "sink_1",
             "entry_point_id": "ep_filter_output_the_content",
             "category": "output_return",
             "function_called": "return",
@@ -7881,6 +8518,46 @@
             "key": null,
             "file": "app/controllers/PrliStripeController.php",
             "line": 952
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_filter_output_the_content",
+            "category": "remote_request",
+            "function_called": "wp_remote_request",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliStripeController.php",
+            "line": 575
+        },
+        {
+            "id": "sink_2",
+            "entry_point_id": "ep_filter_output_the_content",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliStripeController.php",
+            "line": 580
+        },
+        {
+            "id": "sink_3",
+            "entry_point_id": "ep_filter_output_the_content",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliStripeController.php",
+            "line": 592
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_filter_output_the_content",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliStripeController.php",
+            "line": 480
         },
         {
             "id": "sink_1",
@@ -8104,6 +8781,36 @@
         },
         {
             "id": "sink_1",
+            "entry_point_id": "ep_init_init",
+            "category": "sql",
+            "function_called": "get_var",
+            "uses_prepared_statement": true,
+            "key": null,
+            "file": "app/controllers/PrliClicksController.php",
+            "line": 140
+        },
+        {
+            "id": "sink_2",
+            "entry_point_id": "ep_init_init",
+            "category": "sql",
+            "function_called": "get_var",
+            "uses_prepared_statement": true,
+            "key": null,
+            "file": "app/controllers/PrliClicksController.php",
+            "line": 141
+        },
+        {
+            "id": "sink_3",
+            "entry_point_id": "ep_init_init",
+            "category": "include",
+            "function_called": "require_once",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliClicksController.php",
+            "line": 183
+        },
+        {
+            "id": "sink_1",
             "entry_point_id": "ep_admin_init_admin_init",
             "category": "option_update",
             "function_called": "update_option",
@@ -8111,6 +8818,26 @@
             "key": "prli_auto_trim_clicks_last_run",
             "file": "app/controllers/PrliClicksController.php",
             "line": 45
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_admin_init_admin_init",
+            "category": "sql",
+            "function_called": "get_col",
+            "uses_prepared_statement": true,
+            "key": null,
+            "file": "app/controllers/PrliLinksController.php",
+            "line": 433
+        },
+        {
+            "id": "sink_2",
+            "entry_point_id": "ep_admin_init_admin_init",
+            "category": "sql",
+            "function_called": "query",
+            "uses_prepared_statement": true,
+            "key": null,
+            "file": "app/controllers/PrliLinksController.php",
+            "line": 451
         },
         {
             "id": "sink_1",
@@ -8195,6 +8922,176 @@
         {
             "id": "sink_1",
             "entry_point_id": "ep_admin_init_admin_init",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 247
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_admin_init_admin_init",
+            "category": "option_update",
+            "function_called": "update_option",
+            "uses_prepared_statement": null,
+            "key": "prli_activated",
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 258
+        },
+        {
+            "id": "sink_2",
+            "entry_point_id": "ep_admin_init_admin_init",
+            "category": "option_update",
+            "function_called": "update_option",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 275
+        },
+        {
+            "id": "sink_3",
+            "entry_point_id": "ep_admin_init_admin_init",
+            "category": "option_update",
+            "function_called": "update_option",
+            "uses_prepared_statement": null,
+            "key": "prli_activated",
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 293
+        },
+        {
+            "id": "sink_4",
+            "entry_point_id": "ep_admin_init_admin_init",
+            "category": "option_update",
+            "function_called": "update_option",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 300
+        },
+        {
+            "id": "sink_5",
+            "entry_point_id": "ep_admin_init_admin_init",
+            "category": "option_update",
+            "function_called": "update_option",
+            "uses_prepared_statement": null,
+            "key": "prli_activated",
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 301
+        },
+        {
+            "id": "sink_6",
+            "entry_point_id": "ep_admin_init_admin_init",
+            "category": "option_update",
+            "function_called": "update_option",
+            "uses_prepared_statement": null,
+            "key": "prli_activated",
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 305
+        },
+        {
+            "id": "sink_7",
+            "entry_point_id": "ep_admin_init_admin_init",
+            "category": "option_update",
+            "function_called": "update_option",
+            "uses_prepared_statement": null,
+            "key": "prli_activated",
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 313
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_admin_init_admin_init",
+            "category": "remote_request",
+            "function_called": "wp_remote_request",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 607
+        },
+        {
+            "id": "sink_2",
+            "entry_point_id": "ep_admin_init_admin_init",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 612
+        },
+        {
+            "id": "sink_3",
+            "entry_point_id": "ep_admin_init_admin_init",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 624
+        },
+        {
+            "id": "sink_4",
+            "entry_point_id": "ep_admin_init_admin_init",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 632
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_plp_edge_updates",
+            "category": "option_update",
+            "function_called": "update_option",
+            "uses_prepared_statement": null,
+            "key": "plp_edge_updates",
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 41
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_plp_edge_updates",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 449
+        },
+        {
+            "id": "sink_2",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_plp_edge_updates",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 452
+        },
+        {
+            "id": "sink_3",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_plp_edge_updates",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 507
+        },
+        {
+            "id": "sink_4",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_plp_edge_updates",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 537
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_admin_init_admin_init",
             "category": "include",
             "function_called": "require",
             "uses_prepared_statement": null,
@@ -8214,6 +9111,116 @@
         },
         {
             "id": "sink_1",
+            "entry_point_id": "ep_admin_init_admin_init",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 247
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_admin_init_admin_init",
+            "category": "option_update",
+            "function_called": "update_option",
+            "uses_prepared_statement": null,
+            "key": "prli_activated",
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 430
+        },
+        {
+            "id": "sink_2",
+            "entry_point_id": "ep_admin_init_admin_init",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 439
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_admin_init_admin_init",
+            "category": "remote_request",
+            "function_called": "wp_remote_request",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 607
+        },
+        {
+            "id": "sink_2",
+            "entry_point_id": "ep_admin_init_admin_init",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 612
+        },
+        {
+            "id": "sink_3",
+            "entry_point_id": "ep_admin_init_admin_init",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 624
+        },
+        {
+            "id": "sink_4",
+            "entry_point_id": "ep_admin_init_admin_init",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 632
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_admin_init_admin_init",
+            "category": "option_update",
+            "function_called": "update_option",
+            "uses_prepared_statement": null,
+            "key": "plp_mothership_license",
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 47
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_admin_init_admin_init",
+            "category": "option_update",
+            "function_called": "update_option",
+            "uses_prepared_statement": null,
+            "key": "plp_edge_updates",
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 41
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_admin_init_admin_init",
+            "category": "option_update",
+            "function_called": "update_option",
+            "uses_prepared_statement": null,
+            "key": "prli_activated",
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 374
+        },
+        {
+            "id": "sink_2",
+            "entry_point_id": "ep_admin_init_admin_init",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 392
+        },
+        {
+            "id": "sink_1",
             "entry_point_id": "ep_ajax_priv_wp_ajax_prli_activate_license",
             "category": "include",
             "function_called": "require",
@@ -8224,6 +9231,106 @@
         },
         {
             "id": "sink_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_activate_license",
+            "category": "option_update",
+            "function_called": "update_option",
+            "uses_prepared_statement": null,
+            "key": "prli_activated",
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 374
+        },
+        {
+            "id": "sink_2",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_activate_license",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 392
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_activate_license",
+            "category": "remote_request",
+            "function_called": "wp_remote_request",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 607
+        },
+        {
+            "id": "sink_2",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_activate_license",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 612
+        },
+        {
+            "id": "sink_3",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_activate_license",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 624
+        },
+        {
+            "id": "sink_4",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_activate_license",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 632
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_activate_license",
+            "category": "option_update",
+            "function_called": "update_option",
+            "uses_prepared_statement": null,
+            "key": "plp_mothership_license",
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 47
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_activate_license",
+            "category": "include",
+            "function_called": "require_once",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 186
+        },
+        {
+            "id": "sink_2",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_activate_license",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 192
+        },
+        {
+            "id": "sink_3",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_activate_license",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 195
+        },
+        {
+            "id": "sink_1",
             "entry_point_id": "ep_ajax_priv_wp_ajax_prli_deactivate_license",
             "category": "include",
             "function_called": "require",
@@ -8231,6 +9338,106 @@
             "key": null,
             "file": "app/controllers/PrliUpdateController.php",
             "line": 179
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_deactivate_license",
+            "category": "option_update",
+            "function_called": "update_option",
+            "uses_prepared_statement": null,
+            "key": "prli_activated",
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 430
+        },
+        {
+            "id": "sink_2",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_deactivate_license",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 439
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_deactivate_license",
+            "category": "remote_request",
+            "function_called": "wp_remote_request",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 607
+        },
+        {
+            "id": "sink_2",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_deactivate_license",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 612
+        },
+        {
+            "id": "sink_3",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_deactivate_license",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 624
+        },
+        {
+            "id": "sink_4",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_deactivate_license",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 632
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_deactivate_license",
+            "category": "option_update",
+            "function_called": "update_option",
+            "uses_prepared_statement": null,
+            "key": "plp_mothership_license",
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 47
+        },
+        {
+            "id": "sink_1",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_install_license_edition",
+            "category": "include",
+            "function_called": "require_once",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 186
+        },
+        {
+            "id": "sink_2",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_install_license_edition",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 192
+        },
+        {
+            "id": "sink_3",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_install_license_edition",
+            "category": "output_return",
+            "function_called": "return",
+            "uses_prepared_statement": null,
+            "key": null,
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 195
         },
         {
             "id": "sink_1",
@@ -9153,26 +10360,6 @@
             "line": 214
         },
         {
-            "id": "sink_1",
-            "entry_point_id": null,
-            "category": "meta_update",
-            "function_called": "update_user_meta",
-            "uses_prepared_statement": null,
-            "key": null,
-            "file": "app/controllers/PrliPopupController.php",
-            "line": 130
-        },
-        {
-            "id": "sink_2",
-            "entry_point_id": null,
-            "category": "option_update",
-            "function_called": "update_option",
-            "uses_prepared_statement": null,
-            "key": null,
-            "file": "app/controllers/PrliPopupController.php",
-            "line": 133
-        },
-        {
             "id": "sink_3",
             "entry_point_id": null,
             "category": "option_update",
@@ -9221,106 +10408,6 @@
             "key": "prli_old_site_url",
             "file": "app/controllers/PrliStripeConnectController.php",
             "line": 88
-        },
-        {
-            "id": "sink_4",
-            "entry_point_id": null,
-            "category": "remote_request",
-            "function_called": "wp_remote_get",
-            "uses_prepared_statement": null,
-            "key": null,
-            "file": "app/controllers/PrliStripeConnectController.php",
-            "line": 143
-        },
-        {
-            "id": "sink_5",
-            "entry_point_id": null,
-            "category": "option_update",
-            "function_called": "update_option",
-            "uses_prepared_statement": null,
-            "key": "prli_stripe_status",
-            "file": "app/controllers/PrliStripeConnectController.php",
-            "line": 149
-        },
-        {
-            "id": "sink_6",
-            "entry_point_id": null,
-            "category": "option_update",
-            "function_called": "update_option",
-            "uses_prepared_statement": null,
-            "key": "prli_stripe_test_secret_key",
-            "file": "app/controllers/PrliStripeConnectController.php",
-            "line": 150
-        },
-        {
-            "id": "sink_7",
-            "entry_point_id": null,
-            "category": "option_update",
-            "function_called": "update_option",
-            "uses_prepared_statement": null,
-            "key": "prli_stripe_test_publishable_key",
-            "file": "app/controllers/PrliStripeConnectController.php",
-            "line": 151
-        },
-        {
-            "id": "sink_8",
-            "entry_point_id": null,
-            "category": "option_update",
-            "function_called": "update_option",
-            "uses_prepared_statement": null,
-            "key": "prli_stripe_live_secret_key",
-            "file": "app/controllers/PrliStripeConnectController.php",
-            "line": 152
-        },
-        {
-            "id": "sink_9",
-            "entry_point_id": null,
-            "category": "option_update",
-            "function_called": "update_option",
-            "uses_prepared_statement": null,
-            "key": "prli_stripe_live_publishable_key",
-            "file": "app/controllers/PrliStripeConnectController.php",
-            "line": 153
-        },
-        {
-            "id": "sink_10",
-            "entry_point_id": null,
-            "category": "option_update",
-            "function_called": "update_option",
-            "uses_prepared_statement": null,
-            "key": "prli_stripe_connect_status",
-            "file": "app/controllers/PrliStripeConnectController.php",
-            "line": 155
-        },
-        {
-            "id": "sink_11",
-            "entry_point_id": null,
-            "category": "option_update",
-            "function_called": "update_option",
-            "uses_prepared_statement": null,
-            "key": "prli_stripe_service_account_id",
-            "file": "app/controllers/PrliStripeConnectController.php",
-            "line": 156
-        },
-        {
-            "id": "sink_12",
-            "entry_point_id": null,
-            "category": "option_update",
-            "function_called": "update_option",
-            "uses_prepared_statement": null,
-            "key": "prli_stripe_service_account_name",
-            "file": "app/controllers/PrliStripeConnectController.php",
-            "line": 157
-        },
-        {
-            "id": "sink_26",
-            "entry_point_id": null,
-            "category": "remote_request",
-            "function_called": "wp_remote_request",
-            "uses_prepared_statement": null,
-            "key": null,
-            "file": "app/controllers/PrliStripeConnectController.php",
-            "line": 269
         },
         {
             "id": "sink_27",
@@ -9401,16 +10488,6 @@
             "key": "prli_a99_f33_9c7_version",
             "file": "app/controllers/PrliStripeController.php",
             "line": 529
-        },
-        {
-            "id": "sink_5",
-            "entry_point_id": null,
-            "category": "remote_request",
-            "function_called": "wp_remote_request",
-            "uses_prepared_statement": null,
-            "key": null,
-            "file": "app/controllers/PrliStripeController.php",
-            "line": 575
         },
         {
             "id": "sink_7",
@@ -9573,36 +10650,6 @@
             "line": 131
         },
         {
-            "id": "sink_5",
-            "entry_point_id": null,
-            "category": "sql",
-            "function_called": "get_var",
-            "uses_prepared_statement": true,
-            "key": null,
-            "file": "app/controllers/PrliClicksController.php",
-            "line": 140
-        },
-        {
-            "id": "sink_6",
-            "entry_point_id": null,
-            "category": "sql",
-            "function_called": "get_var",
-            "uses_prepared_statement": true,
-            "key": null,
-            "file": "app/controllers/PrliClicksController.php",
-            "line": 141
-        },
-        {
-            "id": "sink_7",
-            "entry_point_id": null,
-            "category": "include",
-            "function_called": "require_once",
-            "uses_prepared_statement": null,
-            "key": null,
-            "file": "app/controllers/PrliClicksController.php",
-            "line": 183
-        },
-        {
             "id": "sink_8",
             "entry_point_id": null,
             "category": "sql",
@@ -9671,26 +10718,6 @@
             "key": null,
             "file": "app/controllers/PrliLinksController.php",
             "line": 390
-        },
-        {
-            "id": "sink_5",
-            "entry_point_id": null,
-            "category": "sql",
-            "function_called": "get_col",
-            "uses_prepared_statement": true,
-            "key": null,
-            "file": "app/controllers/PrliLinksController.php",
-            "line": 433
-        },
-        {
-            "id": "sink_6",
-            "entry_point_id": null,
-            "category": "sql",
-            "function_called": "query",
-            "uses_prepared_statement": true,
-            "key": null,
-            "file": "app/controllers/PrliLinksController.php",
-            "line": 451
         },
         {
             "id": "sink_7",
@@ -10193,26 +11220,6 @@
             "line": 1018
         },
         {
-            "id": "sink_1",
-            "entry_point_id": null,
-            "category": "option_update",
-            "function_called": "update_option",
-            "uses_prepared_statement": null,
-            "key": "plp_edge_updates",
-            "file": "app/controllers/PrliUpdateController.php",
-            "line": 41
-        },
-        {
-            "id": "sink_2",
-            "entry_point_id": null,
-            "category": "option_update",
-            "function_called": "update_option",
-            "uses_prepared_statement": null,
-            "key": "plp_mothership_license",
-            "file": "app/controllers/PrliUpdateController.php",
-            "line": 47
-        },
-        {
             "id": "sink_3",
             "entry_point_id": null,
             "category": "include",
@@ -10223,106 +11230,6 @@
             "line": 61
         },
         {
-            "id": "sink_6",
-            "entry_point_id": null,
-            "category": "include",
-            "function_called": "require_once",
-            "uses_prepared_statement": null,
-            "key": null,
-            "file": "app/controllers/PrliUpdateController.php",
-            "line": 186
-        },
-        {
-            "id": "sink_7",
-            "entry_point_id": null,
-            "category": "option_update",
-            "function_called": "update_option",
-            "uses_prepared_statement": null,
-            "key": "prli_activated",
-            "file": "app/controllers/PrliUpdateController.php",
-            "line": 258
-        },
-        {
-            "id": "sink_8",
-            "entry_point_id": null,
-            "category": "option_update",
-            "function_called": "update_option",
-            "uses_prepared_statement": null,
-            "key": null,
-            "file": "app/controllers/PrliUpdateController.php",
-            "line": 275
-        },
-        {
-            "id": "sink_9",
-            "entry_point_id": null,
-            "category": "option_update",
-            "function_called": "update_option",
-            "uses_prepared_statement": null,
-            "key": "prli_activated",
-            "file": "app/controllers/PrliUpdateController.php",
-            "line": 293
-        },
-        {
-            "id": "sink_10",
-            "entry_point_id": null,
-            "category": "option_update",
-            "function_called": "update_option",
-            "uses_prepared_statement": null,
-            "key": null,
-            "file": "app/controllers/PrliUpdateController.php",
-            "line": 300
-        },
-        {
-            "id": "sink_11",
-            "entry_point_id": null,
-            "category": "option_update",
-            "function_called": "update_option",
-            "uses_prepared_statement": null,
-            "key": "prli_activated",
-            "file": "app/controllers/PrliUpdateController.php",
-            "line": 301
-        },
-        {
-            "id": "sink_12",
-            "entry_point_id": null,
-            "category": "option_update",
-            "function_called": "update_option",
-            "uses_prepared_statement": null,
-            "key": "prli_activated",
-            "file": "app/controllers/PrliUpdateController.php",
-            "line": 305
-        },
-        {
-            "id": "sink_13",
-            "entry_point_id": null,
-            "category": "option_update",
-            "function_called": "update_option",
-            "uses_prepared_statement": null,
-            "key": "prli_activated",
-            "file": "app/controllers/PrliUpdateController.php",
-            "line": 313
-        },
-        {
-            "id": "sink_16",
-            "entry_point_id": null,
-            "category": "option_update",
-            "function_called": "update_option",
-            "uses_prepared_statement": null,
-            "key": "prli_activated",
-            "file": "app/controllers/PrliUpdateController.php",
-            "line": 374
-        },
-        {
-            "id": "sink_17",
-            "entry_point_id": null,
-            "category": "option_update",
-            "function_called": "update_option",
-            "uses_prepared_statement": null,
-            "key": "prli_activated",
-            "file": "app/controllers/PrliUpdateController.php",
-            "line": 430
-        },
-        {
             "id": "sink_18",
             "entry_point_id": null,
             "category": "output",
@@ -10331,16 +11238,6 @@
             "key": null,
             "file": "app/controllers/PrliUpdateController.php",
             "line": 547
-        },
-        {
-            "id": "sink_19",
-            "entry_point_id": null,
-            "category": "remote_request",
-            "function_called": "wp_remote_request",
-            "uses_prepared_statement": null,
-            "key": null,
-            "file": "app/controllers/PrliUpdateController.php",
-            "line": 607
         },
         {
             "id": "sink_20",
@@ -15493,9 +16390,215 @@
             "line": 6
         }
     ],
+    "coverage_gaps": [
+        {
+            "file": "app/models/PrliGroup.php",
+            "signals": [
+                "$wpdb",
+                "sanitize_"
+            ],
+            "reason": "has_security_functions_but_no_entry_point"
+        },
+        {
+            "file": "app/models/PrliClick.php",
+            "signals": [
+                "$wpdb",
+                "sanitize_"
+            ],
+            "reason": "has_security_functions_but_no_entry_point"
+        },
+        {
+            "file": "app/models/PrliDb.php",
+            "signals": [
+                "$wpdb"
+            ],
+            "reason": "has_security_functions_but_no_entry_point"
+        },
+        {
+            "file": "app/models/PrliLinkMeta.php",
+            "signals": [
+                "$wpdb"
+            ],
+            "reason": "has_security_functions_but_no_entry_point"
+        },
+        {
+            "file": "app/models/PrliUtils.php",
+            "signals": [
+                "check_ajax_referer",
+                "current_user_can",
+                "$wpdb",
+                "sanitize_"
+            ],
+            "reason": "has_security_functions_but_no_entry_point"
+        },
+        {
+            "file": "app/models/PrliLink.php",
+            "signals": [
+                "current_user_can",
+                "$wpdb",
+                "sanitize_"
+            ],
+            "reason": "has_security_functions_but_no_entry_point"
+        },
+        {
+            "file": "app/lib/PrliNotifications.php",
+            "signals": [
+                "current_user_can"
+            ],
+            "reason": "has_security_functions_but_no_entry_point"
+        },
+        {
+            "file": "app/controllers/PrliLocalApiController.php",
+            "signals": [
+                "$wpdb"
+            ],
+            "reason": "has_security_functions_but_no_entry_point"
+        },
+        {
+            "file": "app/controllers/PrliOptionsController.php",
+            "signals": [
+                "wp_verify_nonce",
+                "wp_die",
+                "sanitize_"
+            ],
+            "reason": "has_security_functions_but_no_entry_point"
+        },
+        {
+            "file": "app/views/admin/onboarding/license.php",
+            "signals": [
+                "sanitize_"
+            ],
+            "reason": "has_security_functions_but_no_entry_point"
+        },
+        {
+            "file": "app/views/admin/onboarding/parts/finish.php",
+            "signals": [
+                "sanitize_"
+            ],
+            "reason": "has_security_functions_but_no_entry_point"
+        },
+        {
+            "file": "app/views/shared/link-table-nav.php",
+            "signals": [
+                "sanitize_"
+            ],
+            "reason": "has_security_functions_but_no_entry_point"
+        },
+        {
+            "file": "app/views/shared/table-nav.php",
+            "signals": [
+                "sanitize_"
+            ],
+            "reason": "has_security_functions_but_no_entry_point"
+        },
+        {
+            "file": "app/views/groups/new.php",
+            "signals": [
+                "sanitize_"
+            ],
+            "reason": "has_security_functions_but_no_entry_point"
+        },
+        {
+            "file": "app/views/clicks/csv.php",
+            "signals": [
+                "current_user_can",
+                "sanitize_"
+            ],
+            "reason": "has_security_functions_but_no_entry_point"
+        },
+        {
+            "file": "app/helpers/PrliAppHelper.php",
+            "signals": [
+                "sanitize_"
+            ],
+            "reason": "has_security_functions_but_no_entry_point"
+        },
+        {
+            "file": "app/helpers/PrliClicksHelper.php",
+            "signals": [
+                "$wpdb"
+            ],
+            "reason": "has_security_functions_but_no_entry_point"
+        },
+        {
+            "file": "vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php",
+            "signals": [
+                "check_ajax_referer",
+                "current_user_can",
+                "sanitize_"
+            ],
+            "reason": "has_security_functions_but_no_entry_point"
+        },
+        {
+            "file": "vendor-prefixed/caseproof/ground-level-mothership/Manager/LicenseManager.php",
+            "signals": [
+                "wp_verify_nonce",
+                "current_user_can"
+            ],
+            "reason": "has_security_functions_but_no_entry_point"
+        },
+        {
+            "file": "vendor-prefixed/caseproof/growth-tools/src/App.php",
+            "signals": [
+                "sanitize_"
+            ],
+            "reason": "has_security_functions_but_no_entry_point"
+        },
+        {
+            "file": "vendor-prefixed/caseproof/growth-tools/src/Helper/AddonHelper.php",
+            "signals": [
+                "check_ajax_referer",
+                "current_user_can",
+                "wp_die",
+                "sanitize_"
+            ],
+            "reason": "has_security_functions_but_no_entry_point"
+        },
+        {
+            "file": "vendor-prefixed/caseproof/ground-level-in-product-notifications/Service.php",
+            "signals": [
+                "current_user_can"
+            ],
+            "reason": "has_security_functions_but_no_entry_point"
+        },
+        {
+            "file": "vendor-prefixed/caseproof/ground-level-in-product-notifications/Services/Ajax.php",
+            "signals": [
+                "wp_verify_nonce",
+                "current_user_can"
+            ],
+            "reason": "has_security_functions_but_no_entry_point"
+        }
+    ],
     "anomalies": [
         {
             "id": "anom_1",
+            "rule_id": "rule_01",
+            "type": "missing_nonce",
+            "severity": "high",
+            "cwe_id": "CWE-352",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stop_popup",
+            "description": "Missing nonce check in ajax_priv handler 'wp_ajax_prli_stop_popup'",
+            "evidence": {
+                "file": "app/controllers/PrliPopupController.php",
+                "line": 39
+            }
+        },
+        {
+            "id": "anom_2",
+            "rule_id": "rule_01",
+            "type": "missing_nonce",
+            "severity": "high",
+            "cwe_id": "CWE-352",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_delay_popup",
+            "description": "Missing nonce check in ajax_priv handler 'wp_ajax_prli_delay_popup'",
+            "evidence": {
+                "file": "app/controllers/PrliPopupController.php",
+                "line": 40
+            }
+        },
+        {
+            "id": "anom_3",
             "rule_id": "rule_01",
             "type": "missing_nonce",
             "severity": "high",
@@ -15508,7 +16611,20 @@
             }
         },
         {
-            "id": "anom_2",
+            "id": "anom_4",
+            "rule_id": "rule_01",
+            "type": "missing_nonce",
+            "severity": "high",
+            "cwe_id": "CWE-352",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+            "description": "Missing nonce check in ajax_priv handler 'wp_ajax_prli_stripe_connect_update_creds'",
+            "evidence": {
+                "file": "app/controllers/PrliStripeConnectController.php",
+                "line": 21
+            }
+        },
+        {
+            "id": "anom_5",
             "rule_id": "rule_01",
             "type": "missing_nonce",
             "severity": "high",
@@ -15521,7 +16637,7 @@
             }
         },
         {
-            "id": "anom_3",
+            "id": "anom_6",
             "rule_id": "rule_01",
             "type": "missing_nonce",
             "severity": "high",
@@ -15534,7 +16650,7 @@
             }
         },
         {
-            "id": "anom_4",
+            "id": "anom_7",
             "rule_id": "rule_01",
             "type": "missing_nonce",
             "severity": "high",
@@ -15547,7 +16663,7 @@
             }
         },
         {
-            "id": "anom_5",
+            "id": "anom_8",
             "rule_id": "rule_01",
             "type": "missing_nonce",
             "severity": "high",
@@ -15560,7 +16676,7 @@
             }
         },
         {
-            "id": "anom_6",
+            "id": "anom_9",
             "rule_id": "rule_01",
             "type": "missing_nonce",
             "severity": "high",
@@ -15573,7 +16689,7 @@
             }
         },
         {
-            "id": "anom_7",
+            "id": "anom_10",
             "rule_id": "rule_01",
             "type": "missing_nonce",
             "severity": "high",
@@ -15586,7 +16702,7 @@
             }
         },
         {
-            "id": "anom_8",
+            "id": "anom_11",
             "rule_id": "rule_01",
             "type": "missing_nonce",
             "severity": "high",
@@ -15599,7 +16715,7 @@
             }
         },
         {
-            "id": "anom_9",
+            "id": "anom_12",
             "rule_id": "rule_01",
             "type": "missing_nonce",
             "severity": "high",
@@ -15612,7 +16728,7 @@
             }
         },
         {
-            "id": "anom_10",
+            "id": "anom_13",
             "rule_id": "rule_01",
             "type": "missing_nonce",
             "severity": "high",
@@ -15625,7 +16741,7 @@
             }
         },
         {
-            "id": "anom_11",
+            "id": "anom_14",
             "rule_id": "rule_01",
             "type": "missing_nonce",
             "severity": "high",
@@ -15638,7 +16754,7 @@
             }
         },
         {
-            "id": "anom_12",
+            "id": "anom_15",
             "rule_id": "rule_01",
             "type": "missing_nonce",
             "severity": "high",
@@ -15651,7 +16767,7 @@
             }
         },
         {
-            "id": "anom_13",
+            "id": "anom_16",
             "rule_id": "rule_01",
             "type": "missing_nonce",
             "severity": "high",
@@ -15664,7 +16780,20 @@
             }
         },
         {
-            "id": "anom_14",
+            "id": "anom_17",
+            "rule_id": "rule_01",
+            "type": "missing_nonce",
+            "severity": "high",
+            "cwe_id": "CWE-352",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_plp_edge_updates",
+            "description": "Missing nonce check in ajax_priv handler 'wp_ajax_plp_edge_updates'",
+            "evidence": {
+                "file": "app/controllers/PrliUpdateController.php",
+                "line": 21
+            }
+        },
+        {
+            "id": "anom_18",
             "rule_id": "rule_01",
             "type": "missing_nonce",
             "severity": "high",
@@ -15677,7 +16806,72 @@
             }
         },
         {
-            "id": "anom_15",
+            "id": "anom_19",
+            "rule_id": "rule_01",
+            "type": "missing_nonce",
+            "severity": "high",
+            "cwe_id": "CWE-352",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_activate_license",
+            "description": "Missing nonce check in ajax_priv handler 'wp_ajax_prli_activate_license'",
+            "evidence": {
+                "file": "app/controllers/PrliUpdateController.php",
+                "line": 28
+            }
+        },
+        {
+            "id": "anom_20",
+            "rule_id": "rule_01",
+            "type": "missing_nonce",
+            "severity": "high",
+            "cwe_id": "CWE-352",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_deactivate_license",
+            "description": "Missing nonce check in ajax_priv handler 'wp_ajax_prli_deactivate_license'",
+            "evidence": {
+                "file": "app/controllers/PrliUpdateController.php",
+                "line": 29
+            }
+        },
+        {
+            "id": "anom_21",
+            "rule_id": "rule_02",
+            "type": "missing_capability",
+            "severity": "high",
+            "cwe_id": "CWE-862",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stop_popup",
+            "description": "Missing current_user_can() in ajax_priv handler 'wp_ajax_prli_stop_popup' with admin-level operations",
+            "evidence": {
+                "file": "app/controllers/PrliPopupController.php",
+                "line": 39
+            }
+        },
+        {
+            "id": "anom_22",
+            "rule_id": "rule_02",
+            "type": "missing_capability",
+            "severity": "high",
+            "cwe_id": "CWE-862",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_delay_popup",
+            "description": "Missing current_user_can() in ajax_priv handler 'wp_ajax_prli_delay_popup' with admin-level operations",
+            "evidence": {
+                "file": "app/controllers/PrliPopupController.php",
+                "line": 40
+            }
+        },
+        {
+            "id": "anom_23",
+            "rule_id": "rule_02",
+            "type": "missing_capability",
+            "severity": "high",
+            "cwe_id": "CWE-862",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+            "description": "Missing current_user_can() in ajax_priv handler 'wp_ajax_prli_stripe_connect_update_creds' with admin-level operations",
+            "evidence": {
+                "file": "app/controllers/PrliStripeConnectController.php",
+                "line": 21
+            }
+        },
+        {
+            "id": "anom_24",
             "rule_id": "rule_02",
             "type": "missing_capability",
             "severity": "high",
@@ -15690,7 +16884,7 @@
             }
         },
         {
-            "id": "anom_16",
+            "id": "anom_25",
             "rule_id": "rule_02",
             "type": "missing_capability",
             "severity": "high",
@@ -15703,7 +16897,7 @@
             }
         },
         {
-            "id": "anom_17",
+            "id": "anom_26",
             "rule_id": "rule_02",
             "type": "missing_capability",
             "severity": "high",
@@ -15716,7 +16910,7 @@
             }
         },
         {
-            "id": "anom_18",
+            "id": "anom_27",
             "rule_id": "rule_02",
             "type": "missing_capability",
             "severity": "high",
@@ -15729,7 +16923,7 @@
             }
         },
         {
-            "id": "anom_19",
+            "id": "anom_28",
             "rule_id": "rule_02",
             "type": "missing_capability",
             "severity": "high",
@@ -15742,7 +16936,7 @@
             }
         },
         {
-            "id": "anom_20",
+            "id": "anom_29",
             "rule_id": "rule_02",
             "type": "missing_capability",
             "severity": "high",
@@ -15755,7 +16949,7 @@
             }
         },
         {
-            "id": "anom_21",
+            "id": "anom_30",
             "rule_id": "rule_02",
             "type": "missing_capability",
             "severity": "high",
@@ -15768,7 +16962,46 @@
             }
         },
         {
-            "id": "anom_22",
+            "id": "anom_31",
+            "rule_id": "rule_02",
+            "type": "missing_capability",
+            "severity": "high",
+            "cwe_id": "CWE-862",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_plp_edge_updates",
+            "description": "Missing current_user_can() in ajax_priv handler 'wp_ajax_plp_edge_updates' with admin-level operations",
+            "evidence": {
+                "file": "app/controllers/PrliUpdateController.php",
+                "line": 21
+            }
+        },
+        {
+            "id": "anom_32",
+            "rule_id": "rule_02",
+            "type": "missing_capability",
+            "severity": "high",
+            "cwe_id": "CWE-862",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_activate_license",
+            "description": "Missing current_user_can() in ajax_priv handler 'wp_ajax_prli_activate_license' with admin-level operations",
+            "evidence": {
+                "file": "app/controllers/PrliUpdateController.php",
+                "line": 28
+            }
+        },
+        {
+            "id": "anom_33",
+            "rule_id": "rule_02",
+            "type": "missing_capability",
+            "severity": "high",
+            "cwe_id": "CWE-862",
+            "entry_point_id": "ep_ajax_priv_wp_ajax_prli_deactivate_license",
+            "description": "Missing current_user_can() in ajax_priv handler 'wp_ajax_prli_deactivate_license' with admin-level operations",
+            "evidence": {
+                "file": "app/controllers/PrliUpdateController.php",
+                "line": 29
+            }
+        },
+        {
+            "id": "anom_34",
             "rule_id": "rule_03",
             "type": "flawed_nonce_pattern",
             "severity": "medium",
@@ -15781,7 +17014,7 @@
             }
         },
         {
-            "id": "anom_23",
+            "id": "anom_35",
             "rule_id": "rule_03",
             "type": "flawed_nonce_pattern",
             "severity": "medium",
@@ -15794,7 +17027,7 @@
             }
         },
         {
-            "id": "anom_24",
+            "id": "anom_36",
             "rule_id": "rule_03",
             "type": "flawed_nonce_pattern",
             "severity": "medium",
@@ -15807,7 +17040,7 @@
             }
         },
         {
-            "id": "anom_25",
+            "id": "anom_37",
             "rule_id": "rule_03",
             "type": "flawed_nonce_pattern",
             "severity": "medium",
@@ -15820,7 +17053,7 @@
             }
         },
         {
-            "id": "anom_26",
+            "id": "anom_38",
             "rule_id": "rule_03",
             "type": "flawed_nonce_pattern",
             "severity": "medium",
@@ -15833,7 +17066,7 @@
             }
         },
         {
-            "id": "anom_27",
+            "id": "anom_39",
             "rule_id": "rule_03",
             "type": "flawed_nonce_pattern",
             "severity": "medium",
@@ -15846,7 +17079,7 @@
             }
         },
         {
-            "id": "anom_28",
+            "id": "anom_40",
             "rule_id": "rule_03",
             "type": "flawed_nonce_pattern",
             "severity": "medium",
@@ -15859,7 +17092,7 @@
             }
         },
         {
-            "id": "anom_29",
+            "id": "anom_41",
             "rule_id": "rule_03",
             "type": "flawed_nonce_pattern",
             "severity": "medium",
@@ -15872,7 +17105,7 @@
             }
         },
         {
-            "id": "anom_30",
+            "id": "anom_42",
             "rule_id": "rule_03",
             "type": "flawed_nonce_pattern",
             "severity": "medium",
@@ -15885,7 +17118,7 @@
             }
         },
         {
-            "id": "anom_31",
+            "id": "anom_43",
             "rule_id": "rule_03",
             "type": "flawed_nonce_pattern",
             "severity": "medium",
@@ -15898,7 +17131,7 @@
             }
         },
         {
-            "id": "anom_32",
+            "id": "anom_44",
             "rule_id": "rule_03",
             "type": "flawed_nonce_pattern",
             "severity": "medium",
@@ -15911,7 +17144,7 @@
             }
         },
         {
-            "id": "anom_33",
+            "id": "anom_45",
             "rule_id": "rule_03",
             "type": "flawed_nonce_pattern",
             "severity": "medium",
@@ -15924,7 +17157,7 @@
             }
         },
         {
-            "id": "anom_34",
+            "id": "anom_46",
             "rule_id": "rule_03",
             "type": "flawed_nonce_pattern",
             "severity": "medium",
@@ -15937,7 +17170,7 @@
             }
         },
         {
-            "id": "anom_35",
+            "id": "anom_47",
             "rule_id": "rule_03",
             "type": "flawed_nonce_pattern",
             "severity": "medium",
@@ -15950,7 +17183,7 @@
             }
         },
         {
-            "id": "anom_36",
+            "id": "anom_48",
             "rule_id": "rule_03",
             "type": "flawed_nonce_pattern",
             "severity": "medium",
@@ -15963,7 +17196,7 @@
             }
         },
         {
-            "id": "anom_37",
+            "id": "anom_49",
             "rule_id": "rule_03",
             "type": "flawed_nonce_pattern",
             "severity": "medium",
@@ -15976,7 +17209,7 @@
             }
         },
         {
-            "id": "anom_38",
+            "id": "anom_50",
             "rule_id": "rule_09",
             "type": "unsafe_redirect",
             "severity": "medium",
@@ -15989,7 +17222,7 @@
             }
         },
         {
-            "id": "anom_39",
+            "id": "anom_51",
             "rule_id": "rule_09",
             "type": "unsafe_redirect",
             "severity": "medium",
@@ -16002,7 +17235,7 @@
             }
         },
         {
-            "id": "anom_40",
+            "id": "anom_52",
             "rule_id": "rule_09",
             "type": "unsafe_redirect",
             "severity": "medium",
@@ -16015,7 +17248,7 @@
             }
         },
         {
-            "id": "anom_41",
+            "id": "anom_53",
             "rule_id": "rule_09",
             "type": "unsafe_redirect",
             "severity": "medium",
@@ -16028,7 +17261,7 @@
             }
         },
         {
-            "id": "anom_42",
+            "id": "anom_54",
             "rule_id": "rule_09",
             "type": "unsafe_redirect",
             "severity": "medium",
@@ -16041,7 +17274,7 @@
             }
         },
         {
-            "id": "anom_43",
+            "id": "anom_55",
             "rule_id": "rule_09",
             "type": "unsafe_redirect",
             "severity": "medium",

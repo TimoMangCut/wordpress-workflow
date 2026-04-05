@@ -1,19 +1,152 @@
 # Phase 3 Gate Report - `backwpup`
 
-_Generated: 2026-04-05T01:24:34.222742+00:00_
+_Generated: 2026-04-05T13:56:46.280031+00:00_
 
 ## Plugin Overview
 - Plugin slug: `backwpup`
-- Phase 1: EPs `61`, anomalies `13`, sources `544`, sinks `958`
-- Phase 2: total `44`, TP `16`, FP `22`, REVIEW `6`
-- Phase 3: confirmed `0`, plausible `0`, uncertain `22`, likely_hallucination `0`
+- Phase 1: EPs `61`, anomalies `13`, sources `604`, sinks `1088`
+- Phase 2: total `44`, TP `17`, FP `22`, REVIEW `5`
+- Phase 3: confirmed `9`, plausible `0`, uncertain `13`, likely_hallucination `0`
 
 ## Tool Signals
 - Semgrep: `ok (47 results)`
 - Psalm: `ok (844 results)`
 
 ## Confirmed Findings
-None.
+### agent-a3-storages-bac
+- Type: `broken_access_control`
+- Minimum Role/Capability: `unknown`
+- Severity: `medium` | Confidence: `0.89`
+- Gate Verdict: `CONFIRMED`
+- Entry point: claimed `ep_rest___storages`, resolved `ep_rest___storages`
+- Trace: source `src/StorageProviders/API/Rest.php:316` -> sink `src/StorageProviders/API/Rest.php:354`
+- Description (2 sentences): Finding `agent-a3-storages-bac` flags `broken_access_control` at `src/StorageProviders/API/Rest.php:354` via entry point `ep_rest___storages`. Gate validation currently marks it as confirmed with confidence `0.89` based on available static evidence.
+- Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
+  - Step 3 (Attack): Use entry point `ep_rest___storages` and send crafted input from source `src/StorageProviders/API/Rest.php:316` toward sink `src/StorageProviders/API/Rest.php:354`.
+  - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
+
+### agent-a3-updatejob-bac
+- Type: `broken_access_control`
+- Minimum Role/Capability: `unknown`
+- Severity: `medium` | Confidence: `0.86`
+- Gate Verdict: `CONFIRMED`
+- Entry point: claimed `ep_rest___updatejob`, resolved `ep_rest___updatejob`
+- Trace: source `src/Jobs/API/Rest.php:381` -> sink `src/Jobs/API/Rest.php:392`
+- Description (2 sentences): Finding `agent-a3-updatejob-bac` flags `broken_access_control` at `src/Jobs/API/Rest.php:392` via entry point `ep_rest___updatejob`. Gate validation currently marks it as confirmed with confidence `0.86` based on available static evidence.
+- Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
+  - Step 3 (Attack): Use entry point `ep_rest___updatejob` and send crafted input from source `src/Jobs/API/Rest.php:381` toward sink `src/Jobs/API/Rest.php:392`.
+  - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
+
+### agent-a3-update-job-title-bac
+- Type: `broken_access_control`
+- Minimum Role/Capability: `unknown`
+- Severity: `medium` | Confidence: `0.89`
+- Gate Verdict: `CONFIRMED`
+- Entry point: claimed `ep_rest___update_job_title`, resolved `ep_rest___update_job_title`
+- Trace: source `src/Jobs/API/Rest.php:469` -> sink `src/Jobs/API/Rest.php:473`
+- Description (2 sentences): Finding `agent-a3-update-job-title-bac` flags `broken_access_control` at `src/Jobs/API/Rest.php:473` via entry point `ep_rest___update_job_title`. Gate validation currently marks it as confirmed with confidence `0.89` based on available static evidence.
+- Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
+  - Step 3 (Attack): Use entry point `ep_rest___update_job_title` and send crafted input from source `src/Jobs/API/Rest.php:469` toward sink `src/Jobs/API/Rest.php:473`.
+  - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
+
+### agent-a3-addjob-bac
+- Type: `broken_access_control`
+- Minimum Role/Capability: `unknown`
+- Severity: `medium` | Confidence: `0.86`
+- Gate Verdict: `CONFIRMED`
+- Entry point: claimed `ep_rest___addjob`, resolved `ep_rest___addjob`
+- Trace: source `src/Jobs/API/Rest.php:493` -> sink `src/Jobs/API/Rest.php:524`
+- Description (2 sentences): Finding `agent-a3-addjob-bac` flags `broken_access_control` at `src/Jobs/API/Rest.php:524` via entry point `ep_rest___addjob`. Gate validation currently marks it as confirmed with confidence `0.86` based on available static evidence.
+- Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
+  - Step 3 (Attack): Use entry point `ep_rest___addjob` and send crafted input from source `src/Jobs/API/Rest.php:493` toward sink `src/Jobs/API/Rest.php:524`.
+  - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
+
+### agent-a3-delete-job-bac
+- Type: `broken_access_control`
+- Minimum Role/Capability: `unknown`
+- Severity: `medium` | Confidence: `0.86`
+- Gate Verdict: `CONFIRMED`
+- Entry point: claimed `ep_rest___delete_job`, resolved `ep_rest___delete_job`
+- Trace: source `src/Jobs/API/Rest.php:553` -> sink `src/Jobs/API/Rest.php:570`
+- Description (2 sentences): Finding `agent-a3-delete-job-bac` flags `broken_access_control` at `src/Jobs/API/Rest.php:570` via entry point `ep_rest___delete_job`. Gate validation currently marks it as confirmed with confidence `0.86` based on available static evidence.
+- Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
+  - Step 3 (Attack): Use entry point `ep_rest___delete_job` and send crafted input from source `src/Jobs/API/Rest.php:553` toward sink `src/Jobs/API/Rest.php:570`.
+  - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
+
+### agent-a3-save-job-settings-bac
+- Type: `broken_access_control`
+- Minimum Role/Capability: `unknown`
+- Severity: `medium` | Confidence: `0.83`
+- Gate Verdict: `CONFIRMED`
+- Entry point: claimed `ep_rest___save_job_settings`, resolved `ep_rest___save_job_settings`
+- Trace: source `src/Jobs/API/Rest.php:591` -> sink `src/Jobs/API/Rest.php:633`
+- Description (2 sentences): Finding `agent-a3-save-job-settings-bac` flags `broken_access_control` at `src/Jobs/API/Rest.php:633` via entry point `ep_rest___save_job_settings`. Gate validation currently marks it as confirmed with confidence `0.83` based on available static evidence.
+- Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
+  - Step 3 (Attack): Use entry point `ep_rest___save_job_settings` and send crafted input from source `src/Jobs/API/Rest.php:591` toward sink `src/Jobs/API/Rest.php:633`.
+  - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
+
+### agent-a3-save-job-format-bac
+- Type: `broken_access_control`
+- Minimum Role/Capability: `unknown`
+- Severity: `medium` | Confidence: `0.86`
+- Gate Verdict: `CONFIRMED`
+- Entry point: claimed `ep_rest___save_job_format`, resolved `ep_rest___save_job_format`
+- Trace: source `src/Jobs/API/Rest.php:677` -> sink `src/Jobs/API/Rest.php:708`
+- Description (2 sentences): Finding `agent-a3-save-job-format-bac` flags `broken_access_control` at `src/Jobs/API/Rest.php:708` via entry point `ep_rest___save_job_format`. Gate validation currently marks it as confirmed with confidence `0.86` based on available static evidence.
+- Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
+  - Step 3 (Attack): Use entry point `ep_rest___save_job_format` and send crafted input from source `src/Jobs/API/Rest.php:677` toward sink `src/Jobs/API/Rest.php:708`.
+  - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
+
+### agent-a3-update-backup-type-bac
+- Type: `broken_access_control`
+- Minimum Role/Capability: `unknown`
+- Severity: `medium` | Confidence: `0.86`
+- Gate Verdict: `CONFIRMED`
+- Entry point: claimed `ep_rest___backups___P_id__d___type`, resolved `ep_rest___backups___P_id__d___type`
+- Trace: source `src/Jobs/API/Rest.php:436` -> sink `src/Jobs/API/Rest.php:451`
+- Description (2 sentences): Finding `agent-a3-update-backup-type-bac` flags `broken_access_control` at `src/Jobs/API/Rest.php:451` via entry point `ep_rest___backups___P_id__d___type`. Gate validation currently marks it as confirmed with confidence `0.86` based on available static evidence.
+- Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
+  - Step 3 (Attack): Use entry point `ep_rest___backups___P_id__d___type` and send crafted input from source `src/Jobs/API/Rest.php:436` toward sink `src/Jobs/API/Rest.php:451`.
+  - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
+
+### agent-a3-startbackup-bac
+- Type: `broken_access_control`
+- Minimum Role/Capability: `unknown`
+- Severity: `medium` | Confidence: `0.83`
+- Gate Verdict: `CONFIRMED`
+- Entry point: claimed `ep_rest_backwpup_v1__startbackup`, resolved `ep_rest_backwpup_v1__startbackup`
+- Trace: source `src/Backups/API/Rest.php:157` -> sink `src/Backups/API/Rest.php:260`
+- Description (2 sentences): Finding `agent-a3-startbackup-bac` flags `broken_access_control` at `src/Backups/API/Rest.php:260` via entry point `ep_rest_backwpup_v1__startbackup`. Gate validation currently marks it as confirmed with confidence `0.83` based on available static evidence.
+- Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
+  - Step 3 (Attack): Use entry point `ep_rest_backwpup_v1__startbackup` and send crafted input from source `src/Backups/API/Rest.php:157` toward sink `src/Backups/API/Rest.php:260`.
+  - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
 
 ## Needs Dynamic Verification
 ### agent-a2-f001
@@ -22,8 +155,8 @@ None.
 - Severity: `low` | Confidence: `0.72`
 - Gate Verdict: `UNCERTAIN`
 - Entry point: claimed `ep_ajax_priv_wp_ajax_backwpup_debug_info`, resolved `ep_ajax_priv_wp_ajax_backwpup_debug_info`
-- Trace: source `inc/class-admin.php:283` -> sink `inc/class-page-settings.php:109`
-- Description (2 sentences): Finding `agent-a2-f001` flags `sensitive_information_disclosure` at `inc/class-page-settings.php:109` via entry point `ep_ajax_priv_wp_ajax_backwpup_debug_info`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.72`), so dynamic verification is still required.
+- Trace: source `inc/class-admin.php:281` -> sink `inc/class-admin.php:287`
+- Description (2 sentences): Finding `agent-a2-f001` flags `sensitive_information_disclosure` at `inc/class-admin.php:287` via entry point `ep_ajax_priv_wp_ajax_backwpup_debug_info`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.72`), so dynamic verification is still required.
 - Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `subscriber`.
 - Validation issues: `guard_contradiction, insufficient_evidence_to_confirm`
 - PoC (Setup -> Activate -> Attack -> Verify):
@@ -38,7 +171,7 @@ None.
 - Severity: `low` | Confidence: `0.56`
 - Gate Verdict: `UNCERTAIN`
 - Entry point: claimed `ep_admin_post_admin_post_backwpup`, resolved `ep_admin_post_admin_post_backwpup`
-- Trace: source `inc/class-admin.php:827` -> sink `inc/class-page-onboarding.php:127`
+- Trace: source `inc/class-admin.php:838` -> sink `inc/class-page-onboarding.php:127`
 - Description (2 sentences): Finding `agent-a2-f002` flags `broken_access_control` at `inc/class-page-onboarding.php:127` via entry point `ep_admin_post_admin_post_backwpup`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.56`), so dynamic verification is still required.
 - Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
 - Validation issues: `guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak`
@@ -67,13 +200,13 @@ None.
 ### agent-a3-getblock-secret-disclosure
 - Type: `sensitive_data_exposure`
 - Minimum Role/Capability: `unknown`
-- Severity: `high` | Confidence: `0.67`
+- Severity: `high` | Confidence: `0.78`
 - Gate Verdict: `UNCERTAIN`
 - Entry point: claimed `ep_rest___getblock`, resolved `ep_rest___getblock`
 - Trace: source `src/Frontend/API/Rest.php:83` -> sink `parts/sidebar/storage-FTP.php:178`
-- Description (2 sentences): Finding `agent-a3-getblock-secret-disclosure` flags `sensitive_data_exposure` at `parts/sidebar/storage-FTP.php:178` via entry point `ep_rest___getblock`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.67`), so dynamic verification is still required.
+- Description (2 sentences): Finding `agent-a3-getblock-secret-disclosure` flags `sensitive_data_exposure` at `parts/sidebar/storage-FTP.php:178` via entry point `ep_rest___getblock`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.78`), so dynamic verification is still required.
 - Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
-- Validation issues: `guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak`
+- Validation issues: `insufficient_evidence_to_confirm`
 - PoC (Setup -> Activate -> Attack -> Verify):
   - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
   - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
@@ -83,29 +216,29 @@ None.
 ### agent-a3-authenticate-cloud-bac
 - Type: `broken_access_control`
 - Minimum Role/Capability: `unknown`
-- Severity: `medium` | Confidence: `0.57`
+- Severity: `medium` | Confidence: `0.81`
 - Gate Verdict: `UNCERTAIN`
 - Entry point: claimed `ep_rest___authenticate_cloud`, resolved `ep_rest___authenticate_cloud`
-- Trace: source `src/StorageProviders/API/Rest.php:96` -> sink `src/StorageProviders/SugarSync/SugarSyncProvider.php:134`
-- Description (2 sentences): Finding `agent-a3-authenticate-cloud-bac` flags `broken_access_control` at `src/StorageProviders/SugarSync/SugarSyncProvider.php:134` via entry point `ep_rest___authenticate_cloud`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.57`), so dynamic verification is still required.
+- Trace: source `src/StorageProviders/API/Rest.php:194` -> sink `src/StorageProviders/SugarSync/SugarSyncProvider.php:134`
+- Description (2 sentences): Finding `agent-a3-authenticate-cloud-bac` flags `broken_access_control` at `src/StorageProviders/SugarSync/SugarSyncProvider.php:134` via entry point `ep_rest___authenticate_cloud`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.81`), so dynamic verification is still required.
 - Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
-- Validation issues: `code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak`
+- Validation issues: `insufficient_evidence_to_confirm`
 - PoC (Setup -> Activate -> Attack -> Verify):
   - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
   - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
-  - Step 3 (Attack): Use entry point `ep_rest___authenticate_cloud` and send crafted input from source `src/StorageProviders/API/Rest.php:96` toward sink `src/StorageProviders/SugarSync/SugarSyncProvider.php:134`.
+  - Step 3 (Attack): Use entry point `ep_rest___authenticate_cloud` and send crafted input from source `src/StorageProviders/API/Rest.php:194` toward sink `src/StorageProviders/SugarSync/SugarSyncProvider.php:134`.
   - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
 
 ### agent-a3-delete-auth-cloud-bac
 - Type: `broken_access_control`
 - Minimum Role/Capability: `unknown`
-- Severity: `medium` | Confidence: `0.57`
+- Severity: `medium` | Confidence: `0.81`
 - Gate Verdict: `UNCERTAIN`
 - Entry point: claimed `ep_rest___delete_auth_cloud`, resolved `ep_rest___delete_auth_cloud`
 - Trace: source `src/StorageProviders/API/Rest.php:231` -> sink `src/StorageProviders/Dropbox/DropboxProvider.php:100`
-- Description (2 sentences): Finding `agent-a3-delete-auth-cloud-bac` flags `broken_access_control` at `src/StorageProviders/Dropbox/DropboxProvider.php:100` via entry point `ep_rest___delete_auth_cloud`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.57`), so dynamic verification is still required.
+- Description (2 sentences): Finding `agent-a3-delete-auth-cloud-bac` flags `broken_access_control` at `src/StorageProviders/Dropbox/DropboxProvider.php:100` via entry point `ep_rest___delete_auth_cloud`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.81`), so dynamic verification is still required.
 - Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
-- Validation issues: `code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak`
+- Validation issues: `insufficient_evidence_to_confirm`
 - PoC (Setup -> Activate -> Attack -> Verify):
   - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
   - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
@@ -115,205 +248,61 @@ None.
 ### agent-a3-cloudsaveandtest-bac
 - Type: `broken_access_control`
 - Minimum Role/Capability: `unknown`
-- Severity: `high` | Confidence: `0.67`
+- Severity: `high` | Confidence: `0.78`
 - Gate Verdict: `UNCERTAIN`
 - Entry point: claimed `ep_rest___cloudsaveandtest`, resolved `ep_rest___cloudsaveandtest`
 - Trace: source `src/StorageProviders/API/Rest.php:262` -> sink `inc/class-destination-ftp.php:65`
-- Description (2 sentences): Finding `agent-a3-cloudsaveandtest-bac` flags `broken_access_control` at `inc/class-destination-ftp.php:65` via entry point `ep_rest___cloudsaveandtest`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.67`), so dynamic verification is still required.
+- Description (2 sentences): Finding `agent-a3-cloudsaveandtest-bac` flags `broken_access_control` at `inc/class-destination-ftp.php:65` via entry point `ep_rest___cloudsaveandtest`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.78`), so dynamic verification is still required.
 - Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
-- Validation issues: `guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak`
+- Validation issues: `insufficient_evidence_to_confirm`
 - PoC (Setup -> Activate -> Attack -> Verify):
   - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
   - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
   - Step 3 (Attack): Use entry point `ep_rest___cloudsaveandtest` and send crafted input from source `src/StorageProviders/API/Rest.php:262` toward sink `inc/class-destination-ftp.php:65`.
   - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
 
-### agent-a3-storages-bac
-- Type: `broken_access_control`
-- Minimum Role/Capability: `unknown`
-- Severity: `medium` | Confidence: `0.57`
-- Gate Verdict: `UNCERTAIN`
-- Entry point: claimed `ep_rest___storages`, resolved `ep_rest___storages`
-- Trace: source `src/StorageProviders/API/Rest.php:316` -> sink `src/StorageProviders/API/Rest.php:354`
-- Description (2 sentences): Finding `agent-a3-storages-bac` flags `broken_access_control` at `src/StorageProviders/API/Rest.php:354` via entry point `ep_rest___storages`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.57`), so dynamic verification is still required.
-- Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
-- Validation issues: `code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak`
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
-  - Step 3 (Attack): Use entry point `ep_rest___storages` and send crafted input from source `src/StorageProviders/API/Rest.php:316` toward sink `src/StorageProviders/API/Rest.php:354`.
-  - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
-
-### agent-a3-updatejob-bac
-- Type: `broken_access_control`
-- Minimum Role/Capability: `unknown`
-- Severity: `medium` | Confidence: `0.55`
-- Gate Verdict: `UNCERTAIN`
-- Entry point: claimed `ep_rest___updatejob`, resolved `ep_rest___updatejob`
-- Trace: source `src/Jobs/API/Rest.php:381` -> sink `src/Jobs/API/Rest.php:392`
-- Description (2 sentences): Finding `agent-a3-updatejob-bac` flags `broken_access_control` at `src/Jobs/API/Rest.php:392` via entry point `ep_rest___updatejob`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.55`), so dynamic verification is still required.
-- Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
-- Validation issues: `code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak`
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
-  - Step 3 (Attack): Use entry point `ep_rest___updatejob` and send crafted input from source `src/Jobs/API/Rest.php:381` toward sink `src/Jobs/API/Rest.php:392`.
-  - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
-
-### agent-a3-update-job-title-bac
-- Type: `broken_access_control`
-- Minimum Role/Capability: `unknown`
-- Severity: `medium` | Confidence: `0.57`
-- Gate Verdict: `UNCERTAIN`
-- Entry point: claimed `ep_rest___update_job_title`, resolved `ep_rest___update_job_title`
-- Trace: source `src/Jobs/API/Rest.php:469` -> sink `src/Jobs/API/Rest.php:473`
-- Description (2 sentences): Finding `agent-a3-update-job-title-bac` flags `broken_access_control` at `src/Jobs/API/Rest.php:473` via entry point `ep_rest___update_job_title`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.57`), so dynamic verification is still required.
-- Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
-- Validation issues: `code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak`
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
-  - Step 3 (Attack): Use entry point `ep_rest___update_job_title` and send crafted input from source `src/Jobs/API/Rest.php:469` toward sink `src/Jobs/API/Rest.php:473`.
-  - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
-
-### agent-a3-addjob-bac
-- Type: `broken_access_control`
-- Minimum Role/Capability: `unknown`
-- Severity: `medium` | Confidence: `0.55`
-- Gate Verdict: `UNCERTAIN`
-- Entry point: claimed `ep_rest___addjob`, resolved `ep_rest___addjob`
-- Trace: source `src/Jobs/API/Rest.php:493` -> sink `src/Jobs/API/Rest.php:524`
-- Description (2 sentences): Finding `agent-a3-addjob-bac` flags `broken_access_control` at `src/Jobs/API/Rest.php:524` via entry point `ep_rest___addjob`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.55`), so dynamic verification is still required.
-- Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
-- Validation issues: `code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak`
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
-  - Step 3 (Attack): Use entry point `ep_rest___addjob` and send crafted input from source `src/Jobs/API/Rest.php:493` toward sink `src/Jobs/API/Rest.php:524`.
-  - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
-
-### agent-a3-delete-job-bac
-- Type: `broken_access_control`
-- Minimum Role/Capability: `unknown`
-- Severity: `medium` | Confidence: `0.55`
-- Gate Verdict: `UNCERTAIN`
-- Entry point: claimed `ep_rest___delete_job`, resolved `ep_rest___delete_job`
-- Trace: source `src/Jobs/API/Rest.php:553` -> sink `src/Jobs/API/Rest.php:570`
-- Description (2 sentences): Finding `agent-a3-delete-job-bac` flags `broken_access_control` at `src/Jobs/API/Rest.php:570` via entry point `ep_rest___delete_job`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.55`), so dynamic verification is still required.
-- Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
-- Validation issues: `code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak`
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
-  - Step 3 (Attack): Use entry point `ep_rest___delete_job` and send crafted input from source `src/Jobs/API/Rest.php:553` toward sink `src/Jobs/API/Rest.php:570`.
-  - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
-
-### agent-a3-save-job-settings-bac
-- Type: `broken_access_control`
-- Minimum Role/Capability: `unknown`
-- Severity: `medium` | Confidence: `0.52`
-- Gate Verdict: `UNCERTAIN`
-- Entry point: claimed `ep_rest___save_job_settings`, resolved `ep_rest___save_job_settings`
-- Trace: source `src/Jobs/API/Rest.php:591` -> sink `src/Jobs/API/Rest.php:633`
-- Description (2 sentences): Finding `agent-a3-save-job-settings-bac` flags `broken_access_control` at `src/Jobs/API/Rest.php:633` via entry point `ep_rest___save_job_settings`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.52`), so dynamic verification is still required.
-- Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
-- Validation issues: `code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak`
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
-  - Step 3 (Attack): Use entry point `ep_rest___save_job_settings` and send crafted input from source `src/Jobs/API/Rest.php:591` toward sink `src/Jobs/API/Rest.php:633`.
-  - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
-
-### agent-a3-save-job-format-bac
-- Type: `broken_access_control`
-- Minimum Role/Capability: `unknown`
-- Severity: `medium` | Confidence: `0.55`
-- Gate Verdict: `UNCERTAIN`
-- Entry point: claimed `ep_rest___save_job_format`, resolved `ep_rest___save_job_format`
-- Trace: source `src/Jobs/API/Rest.php:677` -> sink `src/Jobs/API/Rest.php:708`
-- Description (2 sentences): Finding `agent-a3-save-job-format-bac` flags `broken_access_control` at `src/Jobs/API/Rest.php:708` via entry point `ep_rest___save_job_format`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.55`), so dynamic verification is still required.
-- Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
-- Validation issues: `code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak`
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
-  - Step 3 (Attack): Use entry point `ep_rest___save_job_format` and send crafted input from source `src/Jobs/API/Rest.php:677` toward sink `src/Jobs/API/Rest.php:708`.
-  - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
-
 ### agent-a3-save-files-exclusions-bac
 - Type: `broken_access_control`
 - Minimum Role/Capability: `unknown`
-- Severity: `medium` | Confidence: `0.55`
+- Severity: `medium` | Confidence: `0.78`
 - Gate Verdict: `UNCERTAIN`
 - Entry point: claimed `ep_rest___save_files_exclusions`, resolved `ep_rest___save_files_exclusions`
-- Trace: source `src/Jobs/API/Rest.php:219` -> sink `src/Jobs/API/Rest.php:219`
-- Description (2 sentences): Finding `agent-a3-save-files-exclusions-bac` flags `broken_access_control` at `src/Jobs/API/Rest.php:219` via entry point `ep_rest___save_files_exclusions`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.55`), so dynamic verification is still required.
+- Trace: source `src/Jobs/API/Rest.php:736` -> sink `inc/class-jobtype-file.php:217`
+- Description (2 sentences): Finding `agent-a3-save-files-exclusions-bac` flags `broken_access_control` at `inc/class-jobtype-file.php:217` via entry point `ep_rest___save_files_exclusions`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.78`), so dynamic verification is still required.
 - Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
-- Validation issues: `code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak`
+- Validation issues: `insufficient_evidence_to_confirm`
 - PoC (Setup -> Activate -> Attack -> Verify):
   - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
   - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
-  - Step 3 (Attack): Use entry point `ep_rest___save_files_exclusions` and send crafted input from source `src/Jobs/API/Rest.php:219` toward sink `src/Jobs/API/Rest.php:219`.
+  - Step 3 (Attack): Use entry point `ep_rest___save_files_exclusions` and send crafted input from source `src/Jobs/API/Rest.php:736` toward sink `inc/class-jobtype-file.php:217`.
   - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
 
 ### agent-a3-save-excluded-tables-bac
 - Type: `broken_access_control`
 - Minimum Role/Capability: `unknown`
-- Severity: `medium` | Confidence: `0.67`
+- Severity: `medium` | Confidence: `0.78`
 - Gate Verdict: `UNCERTAIN`
 - Entry point: claimed `ep_rest___save_excluded_tables`, resolved `ep_rest___save_excluded_tables`
-- Trace: source `src/Jobs/API/Rest.php:762` -> sink `inc/class-jobtype-dbdump.php:172`
-- Description (2 sentences): Finding `agent-a3-save-excluded-tables-bac` flags `broken_access_control` at `inc/class-jobtype-dbdump.php:172` via entry point `ep_rest___save_excluded_tables`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.67`), so dynamic verification is still required.
+- Trace: source `src/Jobs/API/Rest.php:762` -> sink `inc/class-jobtype-dbdump.php:149`
+- Description (2 sentences): Finding `agent-a3-save-excluded-tables-bac` flags `broken_access_control` at `inc/class-jobtype-dbdump.php:149` via entry point `ep_rest___save_excluded_tables`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.78`), so dynamic verification is still required.
 - Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
-- Validation issues: `guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak`
+- Validation issues: `insufficient_evidence_to_confirm`
 - PoC (Setup -> Activate -> Attack -> Verify):
   - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
   - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
-  - Step 3 (Attack): Use entry point `ep_rest___save_excluded_tables` and send crafted input from source `src/Jobs/API/Rest.php:762` toward sink `inc/class-jobtype-dbdump.php:172`.
-  - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
-
-### agent-a3-update-backup-type-bac
-- Type: `broken_access_control`
-- Minimum Role/Capability: `unknown`
-- Severity: `medium` | Confidence: `0.55`
-- Gate Verdict: `UNCERTAIN`
-- Entry point: claimed `ep_rest___backups___P_id__d___type`, resolved `ep_rest___backups___P_id__d___type`
-- Trace: source `src/Jobs/API/Rest.php:436` -> sink `src/Jobs/API/Rest.php:451`
-- Description (2 sentences): Finding `agent-a3-update-backup-type-bac` flags `broken_access_control` at `src/Jobs/API/Rest.php:451` via entry point `ep_rest___backups___P_id__d___type`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.55`), so dynamic verification is still required.
-- Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
-- Validation issues: `code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak`
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
-  - Step 3 (Attack): Use entry point `ep_rest___backups___P_id__d___type` and send crafted input from source `src/Jobs/API/Rest.php:436` toward sink `src/Jobs/API/Rest.php:451`.
-  - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
-
-### agent-a3-startbackup-bac
-- Type: `broken_access_control`
-- Minimum Role/Capability: `unknown`
-- Severity: `medium` | Confidence: `0.52`
-- Gate Verdict: `UNCERTAIN`
-- Entry point: claimed `ep_rest_backwpup_v1__startbackup`, resolved `ep_rest_backwpup_v1__startbackup`
-- Trace: source `src/Backups/API/Rest.php:157` -> sink `src/Backups/API/Rest.php:260`
-- Description (2 sentences): Finding `agent-a3-startbackup-bac` flags `broken_access_control` at `src/Backups/API/Rest.php:260` via entry point `ep_rest_backwpup_v1__startbackup`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.52`), so dynamic verification is still required.
-- Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
-- Validation issues: `code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak`
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
-  - Step 3 (Attack): Use entry point `ep_rest_backwpup_v1__startbackup` and send crafted input from source `src/Backups/API/Rest.php:157` toward sink `src/Backups/API/Rest.php:260`.
+  - Step 3 (Attack): Use entry point `ep_rest___save_excluded_tables` and send crafted input from source `src/Jobs/API/Rest.php:762` toward sink `inc/class-jobtype-dbdump.php:149`.
   - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
 
 ### agent-a3-process-bulk-actions-needs-proof
 - Type: `broken_access_control`
 - Minimum Role/Capability: `unknown`
-- Severity: `medium` | Confidence: `0.55`
+- Severity: `medium` | Confidence: `0.78`
 - Gate Verdict: `UNCERTAIN`
 - Entry point: claimed `ep_rest_backwpup_v1__process_bulk_actions`, resolved `ep_rest_backwpup_v1__process_bulk_actions`
 - Trace: source `src/Backups/API/Rest.php:360` -> sink `src/Backups/API/Rest.php:420`
-- Description (2 sentences): Finding `agent-a3-process-bulk-actions-needs-proof` flags `broken_access_control` at `src/Backups/API/Rest.php:420` via entry point `ep_rest_backwpup_v1__process_bulk_actions`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.55`), so dynamic verification is still required.
+- Description (2 sentences): Finding `agent-a3-process-bulk-actions-needs-proof` flags `broken_access_control` at `src/Backups/API/Rest.php:420` via entry point `ep_rest_backwpup_v1__process_bulk_actions`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.78`), so dynamic verification is still required.
 - Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
-- Validation issues: `code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak`
+- Validation issues: `insufficient_evidence_to_confirm`
 - PoC (Setup -> Activate -> Attack -> Verify):
   - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
   - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
@@ -323,13 +312,13 @@ None.
 ### agent-c-anom_13
 - Type: `inconsistency`
 - Minimum Role/Capability: `unknown`
-- Severity: `high` | Confidence: `0.50`
+- Severity: `high` | Confidence: `0.57`
 - Gate Verdict: `UNCERTAIN`
 - Entry point: claimed `ep_admin_post_admin_post_backwpup_support`, resolved `ep_admin_post_admin_post_backwpup_support`
 - Trace: source `inc/class-admin.php:1177` -> sink `inc/class-admin.php:1177`
-- Description (2 sentences): Finding `agent-c-anom_13` flags `inconsistency` at `inc/class-admin.php:1177` via entry point `ep_admin_post_admin_post_backwpup_support`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.50`), so dynamic verification is still required.
+- Description (2 sentences): Finding `agent-c-anom_13` flags `inconsistency` at `inc/class-admin.php:1177` via entry point `ep_admin_post_admin_post_backwpup_support`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.57`), so dynamic verification is still required.
 - Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
-- Validation issues: `code_evidence_missing_or_mismatch, guard_contradiction, path_reachability_weak`
+- Validation issues: `guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak`
 - PoC (Setup -> Activate -> Attack -> Verify):
   - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
   - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
@@ -355,13 +344,13 @@ None.
 ### agent-d-cg-002
 - Type: `missing_authentication_ajax_handler`
 - Minimum Role/Capability: `unknown`
-- Severity: `high` | Confidence: `0.66`
+- Severity: `high` | Confidence: `0.54`
 - Gate Verdict: `UNCERTAIN`
-- Entry point: claimed `None`, resolved `None`
+- Entry point: claimed `ep_ajax_priv_wp_ajax_download_backup_file`, resolved `ep_ajax_priv_wp_ajax_download_backup_file`
 - Trace: source `inc/class-destination-downloader.php:58` -> sink `inc/class-destination-downloader.php:95`
-- Description (2 sentences): Finding `agent-d-cg-002` flags `missing_authentication_ajax_handler` at `inc/class-destination-downloader.php:95` via entry point `N/A`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.66`), so dynamic verification is still required.
+- Description (2 sentences): Finding `agent-d-cg-002` flags `missing_authentication_ajax_handler` at `inc/class-destination-downloader.php:95` via entry point `ep_ajax_priv_wp_ajax_download_backup_file`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.54`), so dynamic verification is still required.
 - Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
-- Validation issues: `insufficient_evidence_to_confirm, path_reachability_weak, reasoning_quality_low`
+- Validation issues: `guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak, reasoning_quality_low`
 - PoC (Setup -> Activate -> Attack -> Verify):
   - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
   - Step 2 (Activate): Install and activate plugin `backwpup`, then create/login with minimum role `unknown` required by this path.
@@ -706,25 +695,16 @@ None.
 - `agent-a2-f001`: guard_contradiction, insufficient_evidence_to_confirm
 - `agent-a2-f002`: guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
 - `agent-a2-f008`: code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm
-- `agent-a3-getblock-secret-disclosure`: guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
-- `agent-a3-authenticate-cloud-bac`: code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
-- `agent-a3-delete-auth-cloud-bac`: code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
-- `agent-a3-cloudsaveandtest-bac`: guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
-- `agent-a3-storages-bac`: code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
-- `agent-a3-updatejob-bac`: code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
-- `agent-a3-update-job-title-bac`: code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
-- `agent-a3-addjob-bac`: code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
-- `agent-a3-delete-job-bac`: code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
-- `agent-a3-save-job-settings-bac`: code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
-- `agent-a3-save-job-format-bac`: code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
-- `agent-a3-save-files-exclusions-bac`: code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
-- `agent-a3-save-excluded-tables-bac`: guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
-- `agent-a3-update-backup-type-bac`: code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
-- `agent-a3-startbackup-bac`: code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
-- `agent-a3-process-bulk-actions-needs-proof`: code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
-- `agent-c-anom_13`: code_evidence_missing_or_mismatch, guard_contradiction, path_reachability_weak
+- `agent-a3-getblock-secret-disclosure`: insufficient_evidence_to_confirm
+- `agent-a3-authenticate-cloud-bac`: insufficient_evidence_to_confirm
+- `agent-a3-delete-auth-cloud-bac`: insufficient_evidence_to_confirm
+- `agent-a3-cloudsaveandtest-bac`: insufficient_evidence_to_confirm
+- `agent-a3-save-files-exclusions-bac`: insufficient_evidence_to_confirm
+- `agent-a3-save-excluded-tables-bac`: insufficient_evidence_to_confirm
+- `agent-a3-process-bulk-actions-needs-proof`: insufficient_evidence_to_confirm
+- `agent-c-anom_13`: guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
 - `agent-d-uh-004`: code_evidence_missing_or_mismatch, file_not_found_or_unresolvable, path_reachability_weak, reasoning_quality_low
-- `agent-d-cg-002`: insufficient_evidence_to_confirm, path_reachability_weak, reasoning_quality_low
+- `agent-d-cg-002`: guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak, reasoning_quality_low
 
 ## Stored/Second-order Notes
 No stored/second-order findings in this plugin.

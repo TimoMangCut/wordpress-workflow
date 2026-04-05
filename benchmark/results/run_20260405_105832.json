@@ -1,0 +1,28 @@
+{
+  "run_timestamp": "2026-04-05T10:58:32Z",
+  "benchmark_version": "option_d",
+  "plugins": [
+    {
+      "slug": "backwpup",
+      "tp": 0,
+      "fp": 0,
+      "fn": 2,
+      "uncertain": 22,
+      "accepted_fp": 22,
+      "quality_score": 0.0,
+      "decision_rate": 0.0,
+      "gt_findings_count": 2,
+      "pipeline_decided_count": 0,
+      "tp_details": []
+    }
+  ],
+  "aggregate": {
+    "total_tp": 0,
+    "total_fp": 0,
+    "total_fn": 2,
+    "total_uncertain": 22,
+    "total_accepted_fp": 22,
+    "quality_score": 0.0,
+    "decision_rate": 0.0
+  }
+}

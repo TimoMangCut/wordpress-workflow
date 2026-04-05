@@ -1,0 +1,290 @@
+{
+  "plugin_slug": "pretty-link",
+  "profiles_source": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/tools/data/threat-profiles.json",
+  "matched_categories": [
+    "payment",
+    "user_management",
+    "file_management",
+    "api_integration"
+  ],
+  "priority_vulns": [
+    "sqli_in_order_processing",
+    "auth_bypass_checkout",
+    "price_manipulation",
+    "unprotected_webhook",
+    "order_status_idor",
+    "privilege_escalation",
+    "auth_bypass",
+    "account_takeover",
+    "insecure_password_reset",
+    "idor_user_data",
+    "arbitrary_file_upload",
+    "path_traversal",
+    "local_file_inclusion",
+    "remote_file_inclusion",
+    "file_deletion",
+    "ssrf",
+    "exposed_api_credentials",
+    "unvalidated_webhook",
+    "broken_object_level_auth",
+    "insecure_direct_object_reference"
+  ],
+  "categories": {
+    "payment": {
+      "matched": true,
+      "matched_keywords": [
+        "billing",
+        "cart",
+        "checkout",
+        "invoice",
+        "order",
+        "payment",
+        "paypal",
+        "stripe",
+        "subscription",
+        "transaction"
+      ],
+      "evidence": [
+        {
+          "file": "app/controllers/PrliAppController.php",
+          "keyword": "stripe",
+          "line": 192
+        },
+        {
+          "file": "app/controllers/PrliAppController.php",
+          "keyword": "order",
+          "line": 28
+        },
+        {
+          "file": "app/controllers/PrliLinksController.php",
+          "keyword": "payment",
+          "line": 1280
+        },
+        {
+          "file": "app/controllers/PrliStripeConnectController.php",
+          "keyword": "checkout",
+          "line": 311
+        },
+        {
+          "file": "app/controllers/PrliStripeConnectController.php",
+          "keyword": "cart",
+          "line": 307
+        },
+        {
+          "file": "app/controllers/PrliStripeConnectController.php",
+          "keyword": "transaction",
+          "line": 311
+        },
+        {
+          "file": "app/controllers/PrliStripeController.php",
+          "keyword": "billing",
+          "line": 36
+        },
+        {
+          "file": "app/controllers/PrliStripeController.php",
+          "keyword": "invoice",
+          "line": 16
+        },
+        {
+          "file": "app/controllers/PrliStripeController.php",
+          "keyword": "subscription",
+          "line": 337
+        },
+        {
+          "file": "readme.txt",
+          "keyword": "paypal",
+          "line": 109
+        }
+      ],
+      "priority_vulns": [
+        "sqli_in_order_processing",
+        "auth_bypass_checkout",
+        "price_manipulation",
+        "unprotected_webhook",
+        "order_status_idor"
+      ]
+    },
+    "user_management": {
+      "matched": true,
+      "matched_keywords": [
+        "account",
+        "authenticate",
+        "capability",
+        "login",
+        "password",
+        "profile",
+        "register",
+        "role",
+        "session",
+        "user_meta"
+      ],
+      "evidence": [
+        {
+          "file": "app/controllers/PrliAppController.php",
+          "keyword": "register",
+          "line": 38
+        },
+        {
+          "file": "app/controllers/PrliAppController.php",
+          "keyword": "role",
+          "line": 182
+        },
+        {
+          "file": "app/controllers/PrliAuthenticatorController.php",
+          "keyword": "account",
+          "line": 48
+        },
+        {
+          "file": "app/controllers/PrliAuthenticatorController.php",
+          "keyword": "authenticate",
+          "line": 259
+        },
+        {
+          "file": "app/controllers/PrliPopupController.php",
+          "keyword": "user_meta",
+          "line": 130
+        },
+        {
+          "file": "app/controllers/PrliStripeController.php",
+          "keyword": "login",
+          "line": 941
+        },
+        {
+          "file": "app/controllers/PrliStripeController.php",
+          "keyword": "profile",
+          "line": 1037
+        },
+        {
+          "file": "app/controllers/PrliStripeController.php",
+          "keyword": "session",
+          "line": 370
+        },
+        {
+          "file": "app/controllers/PrliUpdateController.php",
+          "keyword": "password",
+          "line": 236
+        },
+        {
+          "file": "js/tooltipster.bundle.min.js",
+          "keyword": "capability",
+          "line": 1
+        }
+      ],
+      "priority_vulns": [
+        "privilege_escalation",
+        "auth_bypass",
+        "account_takeover",
+        "insecure_password_reset",
+        "idor_user_data"
+      ]
+    },
+    "file_management": {
+      "matched": true,
+      "matched_keywords": [
+        "attachment",
+        "basename",
+        "download",
+        "file",
+        "media",
+        "upload"
+      ],
+      "evidence": [
+        {
+          "file": "app/controllers/PrliAddonsController.php",
+          "keyword": "file",
+          "line": 156
+        },
+        {
+          "file": "app/controllers/PrliAddonsController.php",
+          "keyword": "download",
+          "line": 170
+        },
+        {
+          "file": "app/controllers/PrliAddonsController.php",
+          "keyword": "basename",
+          "line": 179
+        },
+        {
+          "file": "app/controllers/PrliStripeController.php",
+          "keyword": "media",
+          "line": 1026
+        },
+        {
+          "file": "app/views/clicks/csv.php",
+          "keyword": "attachment",
+          "line": 10
+        },
+        {
+          "file": "app/views/links/form_product_display.php",
+          "keyword": "upload",
+          "line": 45
+        }
+      ],
+      "priority_vulns": [
+        "arbitrary_file_upload",
+        "path_traversal",
+        "local_file_inclusion",
+        "remote_file_inclusion",
+        "file_deletion"
+      ]
+    },
+    "api_integration": {
+      "matched": true,
+      "matched_keywords": [
+        "bearer",
+        "callback",
+        "endpoint",
+        "token",
+        "webhook",
+        "wp_remote_get",
+        "wp_remote_post"
+      ],
+      "evidence": [
+        {
+          "file": "app/controllers/PrliAuthenticatorController.php",
+          "keyword": "token",
+          "line": 48
+        },
+        {
+          "file": "app/controllers/PrliAuthenticatorController.php",
+          "keyword": "wp_remote_get",
+          "line": 96
+        },
+        {
+          "file": "app/controllers/PrliStripeConnectController.php",
+          "keyword": "webhook",
+          "line": 38
+        },
+        {
+          "file": "app/controllers/PrliStripeConnectController.php",
+          "keyword": "wp_remote_post",
+          "line": 77
+        },
+        {
+          "file": "app/controllers/PrliStripeController.php",
+          "keyword": "endpoint",
+          "line": 543
+        },
+        {
+          "file": "app/controllers/PrliUpdateController.php",
+          "keyword": "callback",
+          "line": 347
+        },
+        {
+          "file": "app/models/PrliUtils.php",
+          "keyword": "bearer",
+          "line": 1363
+        }
+      ],
+      "priority_vulns": [
+        "ssrf",
+        "exposed_api_credentials",
+        "unvalidated_webhook",
+        "broken_object_level_auth",
+        "insecure_direct_object_reference"
+      ]
+    }
+  },
+  "generator": "generate_threat_context.py",
+  "method": "deterministic_keyword_matching"
+}

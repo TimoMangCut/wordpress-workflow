@@ -1,0 +1,3106 @@
+Reading additional input from stdin...
+OpenAI Codex v0.118.0 (research preview)
+--------
+workdir: /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+model: gpt-5.4
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR, /Users/timomangcut/.codex/memories]
+reasoning effort: xhigh
+reasoning summaries: none
+session id: 019d5e06-eb83-7890-a802-a56afe2319ee
+--------
+user
+# System Prompt - Phase 3 LLM Skeptic Review (Project Local)
+
+Ban la skeptic reviewer cho WordPress security audit.
+Truoc khi phan tich, LUON load skill `$application-security`.
+
+Vai tro Phase 3b:
+- KHONG duoc tu confirm vulnerability.
+- Nhiem vu chinh: tim counter-evidence, kiem tra lai file:line, de xuat dynamic verification.
+- Gate deterministic (Phase 3a) la authoritative; LLM chi bo sung goc nhin phan bien.
+
+Nguyen tac:
+- Chi review finding co status PLAUSIBLE/UNCERTAIN tu gate.
+- Khong sua finding CONFIRMED/REJECTED khi chua co bang chung bo sung ro rang.
+- Moi nhan dinh counter-evidence phai co file:line that tu source code.
+- Neu de xuat correction thi correction phai testable (entry_point_id co trong IR, path co ton tai, line hop le).
+
+Yeu cau output:
+- JSON: `reports/phase3/<slug>-phase3-review.json`
+- Markdown: `reports/phase3/<index>-<slug>.llm.md`
+- Nhan manh phan "missing evidence" va "dynamic test plan".
+- Bat buoc hien thi ro tren moi finding:
+  - Type bug (vuln_type)
+  - Minimum role/capability
+  - Status transition theo format `UNCERTAIN -> downgrade|keep|upgrade` (hoac `PLAUSIBLE -> ...`)
+
+Taxonomy type bug (bat buoc dung nhan):
+- `Broken Access Control` phai la `Broken Access Control`.
+- `Privilege Escalation` phai la `Privilege Escalation`.
+- `Arbitrary Option Update` phai la `Arbitrary Option Update`.
+- Neu gap label cu `Broken Access Control to Change Option` thi CHUAN HOA thanh `Broken Access Control`.
+- Tuyet doi khong duoc tron lan `Broken Access Control` voi `Privilege Escalation`.
+- Voi `Arbitrary Option Update`, phai neu ro option key/value impact (key nao, value nao, co doi duoc key:value tuy y hay chi key gioi han).
+
+
+# Phase 3b LLM Skeptic Review — `pretty-link`
+
+Load skill `$application-security` first.
+
+## Role
+You are a SKEPTIC REVIEWER, not a confirmer. Your job is to find reasons
+findings might be WRONG, demand missing evidence, and propose dynamic tests.
+You CANNOT confirm findings — only Phase 3a deterministic gate can do that.
+
+## Inputs
+- Canonical review bundle JSON: `/var/folders/c4/4vtc_pmn0yd42n48vftt96600000gn/T/phase3-review-zubkyk8g/pretty-link-phase3-review-input.json`
+- Phase 2 JSON: `reports/phase2/pretty-link-phase2.json`
+- Phase 1 IR JSON: `reports/phase1/pretty-link-ir.json`
+- Phase 3a gate JSON: `reports/phase3/pretty-link-phase3.json` (top-level keys: `phase3_summary`, `validated_findings`, `actionable_findings`)
+- Semgrep JSON (optional): `reports/phase1/pretty-link-semgrep.json`
+- Psalm SARIF (optional): `reports/phase1/pretty-link-psalm.sarif`
+- Plugin source: `plugins/pretty-link`
+
+## CRITICAL CONSTRAINT
+Use `/var/folders/c4/4vtc_pmn0yd42n48vftt96600000gn/T/phase3-review-zubkyk8g/pretty-link-phase3-review-input.json` as the canonical review scope.
+It already contains the reviewable findings filtered from `validated_findings` with `validation_status in {"PLAUSIBLE", "UNCERTAIN"}`.
+Do NOT inspect or iterate `.findings[]` from the gate JSON.
+Do NOT review CONFIRMED or REJECTED findings.
+All `source_file_path` and `sink_file_path` values must stay relative to the plugin root, never prefixed with `plugins/pretty-link/`.
+
+## What You Must Do For Each Finding
+1. **Search for counter-evidence**: guards/sanitizers/checks the IR may have missed
+2. **Verify code evidence**: does the claimed function exist at the claimed line?
+   - If Phase 3a gate lists issues like missing/mismatched file/line, your FIRST JOB is to locate the correct lines.
+3. **Assess exploitability honestly**: if attacker succeeds, what MEASURABLY changes?
+4. **Propose dynamic tests**: exact HTTP requests to verify the finding
+5. **Recommend verdict change**: downgrade, keep, or (rarely) upgrade
+
+## Output — MUST be JSON first
+
+Write structured JSON to: `reports/phase3/pretty-link-phase3-review.codex.json`
+
+```json
+{{
+  "plugin_slug": "pretty-link",
+  "reviews": [
+    {{
+      "finding_id": "...",
+      "original_status": "PLAUSIBLE|UNCERTAIN",
+      "verdict_change": "downgrade|keep|upgrade",
+      "suggested_field_corrections": {{
+        "entry_point_id": "... (if Phase 2 used wrong/empty id)",
+        "source_file_path": "...",
+        "source_line_number": 0,
+        "sink_file_path": "...",
+        "sink_line_number": 0,
+        "storage_key": "... (for stored/second-order)"
+      }},
+      "reason": "1-2 sentences explaining why",
+      "counter_evidence": [
+        {{"type": "guard|sanitizer|unreachable", "file": "...", "line": 123, "detail": "..."}}
+      ],
+      "missing_evidence": ["what is needed to confirm/deny"],
+      "dynamic_test_plan": [
+        "Step 1: create subscriber user",
+        "Step 2: send POST to /wp-admin/admin-ajax.php?action=...",
+        "Step 3: observe response / database change"
+      ]
+    }}
+  ]
+}}
+```
+
+If `reviewable_findings` is empty in `/var/folders/c4/4vtc_pmn0yd42n48vftt96600000gn/T/phase3-review-zubkyk8g/pretty-link-phase3-review-input.json`, write:
+- JSON with `"reviews": []`
+- Markdown with Plugin Overview, Validation Summary showing zero reviewed findings, Negative Findings, and Overall Assessment
+- Do not invent findings
+
+Then ALSO write human-readable Markdown report to: `reports/phase3/10-pretty-link.codex.llm.md`
+
+Required Markdown sections:
+1. Plugin Overview
+2. Validation Summary (counts: reviewed, downgraded, kept, upgraded)
+3. Detailed Reviews (per finding: MUST use this exact field order and labels)
+   - Finding ID: `<id>`
+   - Type: `<vuln_type from phase2>`
+   - Minimum Role/Capability: `<auth_required from phase2>`
+   - Status Transition: `<original_status> -> <downgrade|keep|upgrade>`
+   - Description: exactly 2 sentences, concise and human-readable
+   - Highest Impact: one clear sentence on maximum measurable impact
+   - PoC: setup -> activate plugin -> attack -> verify impact
+   - Counter-evidence + dynamic test plan
+4. Negative Findings (why flagged areas are actually safe)
+5. Overall Assessment
+
+## Type Taxonomy (MANDATORY)
+- In each finding, `Type` must be one exact label. Do not merge labels and do not invent hybrid labels.
+- Keep these labels exact:
+  - `Broken Access Control` stays `Broken Access Control`.
+  - `Privilege Escalation` stays `Privilege Escalation`.
+  - `Arbitrary Option Update` stays `Arbitrary Option Update`.
+- Legacy normalization:
+  - If source text says `Broken Access Control to Change Option`, output `Type: Broken Access Control`.
+- For `Arbitrary Option Update`, you MUST explicitly describe option key/value impact:
+  - which option key is writable
+  - what value can be set
+  - whether attacker can modify arbitrary key:value or only bounded keys
+- Absolutely do NOT confuse `Broken Access Control` with `Privilege Escalation`.
+
+## Rules
+- Do NOT invent constants, nonce names, capability names, or route paths — look them up
+- Do NOT claim "confirmed" — you can only say "evidence supports" or "evidence insufficient"
+- Every counter-evidence claim MUST include file:line from actual source code
+- If you find a guard/sanitizer the IR missed, include it as counter_evidence with type "guard" or "sanitizer"
+- If you can correct Phase 2 mistakes (wrong entry_point_id or wrong file:line), populate suggested_field_corrections.
+- In Markdown "Detailed Reviews", if any finding misses Type, Role, or Status Transition, the report is invalid.
+
+2026-04-05T14:23:25.113273Z  WARN codex_core::shell_snapshot: Failed to delete shell snapshot at "/Users/timomangcut/.codex/shell_snapshots/019d5e06-eb83-7890-a802-a56afe2319ee.tmp-1775399005060748000": Os { code: 2, kind: NotFound, message: "No such file or directory" }
+codex
+Yeu cau la Phase 3b skeptic review cho `pretty-link`. Toi se load skill `application-security`, doc du an, va canonical review bundle truoc khi trace tung finding.
+exec
+/bin/zsh -lc "sed -n '1,220p' /Users/timomangcut/.codex/skills/application-security/SKILL.md" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "sed -n '1,240p' AGENTS.md" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+---
+name: application-security
+description: Reusable application security skill for code review, audit, exploitability analysis, authorization review, trust-boundary tracing, and evidence-based security reporting.
+---
+
+# Application Security
+
+Use this skill when the request involves:
+- security review
+- audit
+- vulnerability analysis
+- exploitability analysis
+- authorization or access control review
+- source-to-sink tracing
+- code-level AppSec triage
+
+## Read Order
+
+1. Read `<project>/AGENTS.md` if present.
+2. Read the relevant project docs in `docs/` or `references/`.
+3. Load `references/review-workflow.md` for the reusable workflow.
+4. Only then start tracing data flow and evaluating defenses.
+
+## Skill Responsibilities
+
+- Provide a reusable AppSec workflow across projects
+- Prioritize context over pattern matching
+- Enforce evidence-based reporting and refutation
+- Keep project-specific facts out of the skill itself
+
+## Output Contract
+
+- Every conclusion needs code references
+- Every mature finding needs at least one refutation attempt
+- Every severity needs a concrete "why not one level lower?"
+- If proof is incomplete, use `UNCERTAIN` instead of overstating confidence
+
+## Load On Demand
+
+- Reusable workflow: `references/review-workflow.md`
+- Project facts: `<project>/docs/*`
+
+ succeeded in 0ms:
+# AGENTS.md - WordPress Audit Workspace
+
+> This file contains project-local routing for this workspace.
+> Reusable AppSec identity and workflow belong in the home configuration and skills.
+> Project docs in `./docs` are shared with both Codex and Claude and should be treated as ground truth.
+
+## Read First
+
+- `docs/wp-context.md`
+- `docs/bug-bounty-rules-summary.md`
+
+If project docs conflict with generic assumptions, project docs win.
+
+## Workspace Purpose
+
+- This workspace is used for WordPress security review and audit work.
+- The main subjects are plugins and adjacent WordPress components inside this repository.
+- Reviews may be full-source audits or targeted component reviews.
+
+## Local Review Focus
+
+Prioritize:
+
+- unauthenticated entry points
+- AJAX and REST routes
+- nonce and capability enforcement
+- privilege escalation and authorization gaps
+- file upload, download, delete, and path construction
+- SQL, option/meta updates, and deserialization paths
+- SSRF, RCE, arbitrary write, arbitrary delete, and account takeover impact
+
+## Local Rules
+
+- Ground all exploitability judgments in WordPress behavior and the docs in this repo.
+- Separate exploitability from reportability; bounty rules may narrow what is actionable.
+- When reviewing a plugin or component, identify the relevant trust boundary before rating severity.
+- Note secure areas reviewed so coverage is visible.
+
+## Output Expectations
+
+- Use exactly one of `CONFIRMED`, `UNCERTAIN`, `RISK_NOTE`, or `REJECTED` for each issue.
+- Every mature conclusion must include code references and at least one refutation attempt.
+- If context is missing and cannot be inferred safely, state assumptions explicitly.
+
+## Keep This File Local
+
+This file should stay focused on project-specific context.
+Do not duplicate the global identity, reusable AppSec workflow, or long generic methodology here.
+
+exec
+/bin/zsh -lc "sed -n '1,220p' docs/wp-context.md" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "sed -n '1,220p' docs/bug-bounty-rules-summary.md" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+# Tóm tắt Bug Bounty Rules - Patchstack & Wordfence
+
+> Tài liệu này được viết lại theo bố cục gần giống file mẫu đính kèm, nhưng đã rút gọn để tập trung vào **quy tắc cốt lõi**, đặc biệt là **in-scope / out-of-scope**, điều kiện hợp lệ của report, tính duy nhất, và các lý do thường bị từ chối.
+>
+> Nguồn tham chiếu:
+> - Patchstack: https://patchstack.com/articles/bug-bounty-guidelines-rules/
+> - Wordfence: https://www.wordfence.com/threat-intel/bug-bounty-program/#scope
+
+---
+
+## Table of Contents
+- Introduction
+- Patchstack
+  - Reporting Protocol
+  - Scope
+  - Uniqueness Requirement
+  - Quality Assurance
+  - Rejection Criteria
+  - Disclosure / CVE
+- Wordfence
+  - Program Overview
+  - In-Scope Assets
+  - Out-of-Scope Assets
+  - Explicitly In-Scope Vulnerabilities
+  - Explicitly Out-of-Scope Vulnerabilities
+  - Submission Rules & Key Notes
+- Quick Comparison
+
+---
+
+# Introduction
+
+Tài liệu này tổng hợp hai chương trình bug bounty trong hệ sinh thái WordPress:
+
+1. **Patchstack Bug Bounty Program**
+2. **Wordfence Intelligence Bug Bounty Program**
+
+Mục tiêu của bản tóm tắt là giúp nhanh chóng xác định:
+- Report nào có khả năng **được chấp nhận**
+- Thành phần nào **in scope / out of scope**
+- Điều kiện nào khiến report **không đủ bounty** hoặc chỉ được **CVE / disclosure**
+- Những yêu cầu tối thiểu để report được xem là **valid**
+
+---
+
+# Patchstack
+
+## Reporting Protocol
+
+### Kênh gửi report
+- Chỉ chấp nhận report qua form chính thức: `https://patchstack.com/database/report`
+- Không chấp nhận qua email hoặc kênh khác.
+
+### Tài khoản & tư cách tham gia
+- Tài khoản researcher được tạo sau khi có ít nhất một report hợp lệ và in-scope.
+- Mỗi researcher chỉ được dùng **một account**.
+- Cá nhân và công ty đều có thể tham gia, nhưng **không hỗ trợ team submissions**.
+
+---
+
+## Scope
+
+### In scope
+Patchstack chấp nhận các thành phần trong hệ sinh thái WordPress, bao gồm:
+- **WordPress core**
+- **WordPress plugins**
+- **WordPress themes**
+
+Cả **free** và **premium** đều có thể được chấp nhận.
+- Với sản phẩm premium, cần cung cấp **bản archive gốc, không chỉnh sửa** để xác minh.
+- Nếu theme phụ thuộc plugin cụ thể, cần cung cấp cả plugin phụ thuộc đó.
+
+Một report chỉ được coi là hợp lệ nếu có **security impact rõ ràng và đo lường được**.
+
+### Out of scope / không được chấp nhận
+Các trường hợp sau thường bị loại:
+
+#### 1) Severity / CVSS quá thấp
+- Vulnerability có **CVSS v3.1 < 6.5** không được chấp nhận trực tiếp theo rules hiện tại.
+
+#### 2) Active installs quá thấp
+- Component có **< 1,000 active installs** nhìn chung là out of scope.
+- Ngoại lệ: có thể được xem xét nếu:
+  - có **CVSS >= 8.5**,
+  - yêu cầu quyền không vượt quá **Unauthenticated / Subscriber / Customer**,
+  - và component có **ít nhất 100 active installs**.
+
+#### 3) Quyền khai thác quá cao
+- Chỉ ưu tiên lỗ hổng khai thác được bởi:
+  - **Unauthenticated**
+  - **Subscriber / Customer**
+- **Contributor** chỉ được chấp nhận nếu severity đủ cao.
+- Các lỗ hổng yêu cầu **Admin / quyền cao hơn** là out of scope.
+- Với **custom roles**, chỉ chấp nhận nếu capability tương đương gần với Subscriber/Customer; nếu mạnh hơn thì không chấp nhận.
+
+#### 4) Các loại issue thường không được chấp nhận
+- **CSV Injection**
+- **IP spoofing** (trừ khi trực tiếp phá vỡ một cơ chế bảo vệ phụ thuộc vào IP)
+- **Race condition** có tác động không rõ ràng hoặc severity thấp
+- **CAPTCHA / Turing test bypass**
+- **Arbitrary user registration** nếu không dẫn đến tạo được **admin account**
+- **Authenticated shortcode preview issues** ở mức Contributor trở lên, trừ khi lộ dữ liệu nhạy cảm có tác động rõ ràng
+- **CSRF / Broken Access Control** chỉ dùng để dismiss notice mà không có security impact thực tế
+- **IP bypass** cho các thao tác không quan trọng như likes/views/counters
+
+#### 5) Thành phần không đủ điều kiện
+- Phiên bản cuối cùng phát hành đã quá **3 năm**
+- Lỗ hổng **không còn tồn tại ở phiên bản mới nhất**
+- Component **không public**
+- Component là hàng **custom / modified / private**, không được phân phối công khai qua:
+  - WordPress.org
+  - website chính thức của vendor
+  - GitHub
+  - CodeCanyon / ThemeForest
+  - hoặc nguồn public tương đương
+
+---
+
+## Uniqueness Requirement
+
+- Report phải là **mới**, **unique**, chưa từng được public hoặc báo trước đó.
+- Nếu nhiều người báo cùng một issue, **người gửi valid report đầu tiên** sẽ được tính.
+- Nếu issue đã được báo trực tiếp cho vendor trước đó, Patchstack chỉ chấp nhận nếu:
+  - vendor xác nhận issue,
+  - và vendor có ý định vá.
+- Với sản phẩm của **Automattic**, phải report qua **HackerOne của Automattic** trước.
+- Incomplete patch đã public thường **không được xem là issue mới**, trừ khi tạo ra attack vector mới.
+
+---
+
+## Quality Assurance
+
+Một report Patchstack cần có tối thiểu:
+- PoC dạng text, từng bước rõ ràng
+- Các bước từ lúc cài plugin/theme cho đến khi exploit thành công
+- Raw HTTP request cần thiết
+- Payload chính xác đã dùng
+- Video screenshot là điểm cộng
+
+### Rủi ro khi gửi report kém chất lượng
+- Report không đầy đủ, không tái hiện được, hoặc sai sẽ bị reject.
+- Gửi lặp lại false positive / AI-generated false positive có thể dẫn tới:
+  - cooldown,
+  - bị khóa dashboard tạm thời,
+  - hoặc khóa vĩnh viễn.
+
+---
+
+## Rejection Criteria
+
+Các lý do reject phổ biến:
+- Thông tin không đầy đủ hoặc không chính xác
+- Claim không phải vulnerability hợp lệ
+- Dùng role không chuẩn / role đã chỉnh sửa
+- Plugin/theme đã đóng hoặc không truy cập được
+- Component không được phân phối công khai qua nguồn đáng tin cậy
+- Developer/vendor gửi issue cho chính sản phẩm của họ: có thể dùng cho disclosure nhưng **không đủ điều kiện bounty**
+
+---
+
+## Disclosure / CVE
+
+- Patchstack là **CNA**, nên issue hợp lệ có thể được cấp **CVE**.
+- Việc cấp CVE có thể bị trì hoãn để tránh trùng với CNA khác.
+- Tất cả valid in-scope reports sẽ được đưa vào **Patchstack Vulnerability Database**.
+- Researcher không được public vulnerability cho bên thứ ba trước khi Patchstack công bố chính thức.
+
+---
+
+# Wordfence
+
+## Program Overview
+
+Wordfence tập trung vào bug bounty cho **WordPress plugins và themes**. Chương trình phân scope khá mạnh dựa trên:
+- loại vulnerability,
+- mức quyền yêu cầu,
+- active installs,
+- và **researcher tier**.
+
+Wordfence cũng có thể cấp **CVE** cho cả một số report out of scope, nhưng **không phải report nào cũng đủ điều kiện nhận bounty**.
+
+---
+
+## In-Scope Assets
+
+### Nhóm 1: High Threat Vulnerabilities
+Tất cả plugin/theme WordPress (free và premium), trừ các asset bị liệt kê out of scope, sẽ in scope nếu có:
+- **>= 25 active installs**
+- khai thác được bởi **unauthenticated** hoặc **low-level authenticated** (Subscriber/Customer)
+- thuộc một trong các loại sau:
+  - Arbitrary PHP File Upload or Read
+  - Arbitrary PHP File Deletion
+  - Arbitrary Options Update
+  - Remote Code Execution
+  - Authentication Bypass to Admin
+  - Privilege Escalation to Admin
+
+Ghi chú:
+- Nếu plugin/theme có từ **25 đến 999 installs**, nó phải có trên **WordPress.org Plugin Repository** mới được tính in scope.
+
+### Nhóm 2: Common and Dangerous Vulnerabilities
+Tất cả plugin/theme WordPress (free và premium), trừ asset out of scope, sẽ in scope nếu có:
+- **>= 500 active installs**
+- khai thác được bởi **unauthenticated** hoặc **Subscriber/Customer**
+- thuộc một trong các loại:
+  - **Stored XSS**
+  - **SQL Injection**
+
+Ghi chú:
+- Với mốc **500 đến 999 installs**, component phải có trên **WordPress.org Plugin Repository**.
+- **Premium plugin/theme** bị loại khỏi nhóm này nếu **< 1,000 installs**.
+
+### Nhóm 3: All Other Vulnerabilities
+Các vulnerability khác có thể in scope, nhưng phụ thuộc vào **researcher tier**:
+- **Standard Researchers**: component cần **>= 50,000 installs**
+- **Resourceful Researchers**: component cần **>= 10,000 installs**
+- **1337 Researchers**: component cần **>= 500 installs**
+
+---
+
+
+ succeeded in 0ms:
+# WordPress plugin security audit knowledge base
+
+**This is a comprehensive, technically precise reference for auditing WordPress 6.x plugins**, synthesizing real CVE data from 2023–2025, official WordPress developer documentation, and research from Wordfence, Patchstack, and WPScan. The WordPress plugin ecosystem saw **7,966 new vulnerabilities in 2024 alone** (a 34% increase over 2023), with XSS accounting for 47.7% of all findings, broken access control at 14.2%, and CSRF at 11.4%. REST API and AJAX endpoints are the most critically exploited attack surfaces. What follows is every detail a professional security auditor needs.
+
+---
+
+## 1. Exhaustive plugin attack surface catalog
+
+### AJAX handlers (wp_ajax_*, wp_ajax_nopriv_*)
+
+WordPress routes all AJAX through `wp-admin/admin-ajax.php`. Plugins register handlers via `add_action('wp_ajax_{action}', 'callback')` for authenticated users, and `add_action('wp_ajax_nopriv_{action}', 'callback')` for unauthenticated users. **WordPress provides zero built-in authorization for AJAX handlers** — no automatic nonce check, no capability check. The plugin developer must implement both `wp_verify_nonce()` and `current_user_can()`.
+
+The `nopriv` variant is especially dangerous: it makes the endpoint accessible to anyone on the internet without authentication. Many plugins register `nopriv` variants unnecessarily, exposing admin-level functionality. The WPForms vulnerability CVE-2024-11205 (CVSS 8.5) exemplifies this: the `wpforms_is_admin_ajax()` function verified the nonce but never checked user capabilities, allowing **subscriber-level users to issue Stripe refunds and cancel subscriptions**. Similarly, Essential Addons for Elementor (CVE-2023-32243, CVSS 9.8) exposed password reset functionality via an AJAX handler that never validated the reset key.
+
+**Required security controls for every AJAX handler:**
+- `check_ajax_referer('action_name', 'security')` or `wp_verify_nonce()` for CSRF protection
+- `current_user_can('required_capability')` for authorization
+- Sanitization of all `$_POST`/`$_GET` parameters
+- `wp_send_json_success()`/`wp_send_json_error()` for safe responses
+
+### REST API routes (register_rest_route)
+
+The REST API is the **single most critically exploited attack surface** in WordPress plugins during 2023–2025. The most impactful CVEs of this period — Really Simple Security (CVE-2024-10924, CVSS 9.8), WooCommerce Payments (CVE-2023-28121, CVSS 9.8), LiteSpeed Cache (CVE-2024-28000, CVSS 9.8), and AIOSEO (CVE-2021-25036, CVSS 9.9) — all exploited REST API endpoints with broken permission callbacks.
+
+Routes are registered via `register_rest_route('namespace/v1', '/path', $args)`. Since **WordPress 5.5**, omitting `permission_callback` triggers a `_doing_it_wrong` notice, but the endpoint still functions as public. The notice is informational only. Using `'permission_callback' => '__return_true'` explicitly makes endpoints public — this was found in production plugins like Download Monitor.
+
+Permission callbacks execute after authentication is resolved. For cookie-based auth, the `wp_rest` nonce must be passed via `X-WP-Nonce` header or `_wpnonce` parameter — without it, the current user is set to ID 0 (unauthenticated), even if the user has valid cookies. Application Passwords authenticate via HTTP Basic Auth before permission callbacks run.
+
+**REST API namespace discovery** at `/wp-json/` exposes all registered namespaces, and `/wp-json/namespace/v1` lists all routes with their methods and argument schemas. This provides attackers a complete map of available endpoints.
+
+### Shortcodes
+
+Shortcodes (`add_shortcode('name', 'callback')`) are parsed from post content and executed server-side. Their primary attack surface is **attribute injection**: shortcode attributes are passed as an array to the callback without any automatic sanitization. The `shortcode_atts()` function provides default merging but no security filtering. Contributors can embed shortcodes in post content, making contributor-level Stored XSS the dominant vulnerability pattern.
+
+Common vulnerability: `extract(shortcode_atts(['style' => ''], $atts))` followed by `echo '<div style="' . $style . '">'` — the `$style` attribute reaches HTML output unescaped. Every shortcode attribute must be escaped with the context-appropriate function (`esc_attr()`, `esc_html()`, `esc_url()`).
+
+### Gutenberg blocks (detailed in Section 7)
+
+The block editor introduces multiple attack surfaces: `render_callback` functions that output unescaped attributes, **block comment delimiter JSON** that bypasses wp_kses filtering, the `/wp/v2/block-renderer/` REST endpoint accessible to contributors, and `ServerSideRender` which can trigger server-side execution of block rendering with attacker-controlled attributes.
+
+### Admin pages and menus
+
+`admin_menu`, `admin_init`, `admin_post_*`, and `admin_post_nopriv_*` hooks create admin-side attack surfaces. **Critical misconception**: `is_admin()` checks whether the request targets wp-admin, not whether the user is an administrator. All authenticated AJAX requests go through `admin-ajax.php` in wp-admin, so `is_admin()` returns `true` for any logged-in user making AJAX calls. Always use `current_user_can()` instead.
+
+`admin_init` fires on every admin page load — including `admin-ajax.php` and `admin-post.php` — making it a particularly broad attack surface if permission checks are absent. `admin_post_nopriv_*` actions are accessible to unauthenticated users, identical in risk to `wp_ajax_nopriv_*`.
+
+### XML-RPC, WP-CLI, and Cron
+
+**XML-RPC** (`xmlrpc.php`) exposes methods for remote content management and pingbacks. Plugins extend it via `xmlrpc_methods` filter. The pingback feature was exploited for **blind SSRF via DNS rebinding** (CVE-2022-3590). XML-RPC authentication uses username/password per request (no session), enabling brute-force attacks. Best practice is to disable it entirely unless required.
+
+**WP-CLI commands** registered by plugins execute with the filesystem permissions of the CLI user (typically root or www-data), which may exceed WordPress capabilities. Commands should still validate input and use WordPress API functions rather than direct database/file operations.
+
+**Cron jobs** (`wp_schedule_event`) execute via `wp-cron.php`, triggered by site visits. WP-Cron requests are internal HTTP requests that may bypass authentication. If a cron callback performs privileged operations without validation, it could be exploited. LiteSpeed Cache's crawler simulation feature (CVE-2024-28000) demonstrates how cron/crawler functions can create critical attack surfaces.
+
+### Elementor and WooCommerce attack surfaces
+
+**Elementor** adds an extensive secondary attack surface: widget controls, template import/export, AJAX handlers for the editor, and custom CSS/JS fields. CVE-2023-48777 (CVSS 8.8) exploited the template import AJAX handler for arbitrary file upload → RCE, and CVE-2023-3124 (CVSS 8.8) exploited `update_page_option` AJAX handler for subscriber-level arbitrary options update.
+
+**WooCommerce** payment gateway integrations create critical surfaces: order status manipulation, price/quantity modification via checkout hooks, and payment callback endpoints. CVE-2023-28121 (CVSS 9.8) demonstrated that trusting a custom HTTP header (`X-WCPAY-PLATFORM-CHECKOUT-USER`) for authentication enabled unauthenticated admin access.
+
+### Multisite-specific attack surfaces
+
+In multisite, Site Admins have a restricted capability set compared to Super Admins. They lack `install_plugins`, `edit_plugins`, `edit_themes`, `unfiltered_html`, and all `manage_network_*` capabilities. Vulnerabilities that are "by design" for single-site admins become legitimate security issues in multisite because Site Admins should not be able to affect other sites or escalate to Super Admin. Cross-site data access and network-wide option modification are key multisite attack vectors.
+
+### Additional entry points
+
+- **Webhook/callback endpoints**: Payment gateways (Stripe, PayPal) require publicly accessible callback URLs. These must validate signatures/tokens from the payment provider, not just check for expected parameters.
+- **oEmbed providers**: Custom oEmbed endpoints registered via `wp_oembed_add_provider()` can introduce SSRF if they fetch user-controlled URLs server-side.
+- **Custom rewrite rules**: `add_rewrite_rule()` and `template_redirect` hook can create custom URL endpoints. Missing auth checks make these exploitable.
+- **wp_mail**: Email header injection via unsanitized `To`, `From`, `CC`, `BCC` headers. Carriage returns (`\r\n`) in header values inject additional headers.
+- **Filesystem API**: `WP_Filesystem` and direct PHP file functions. Path traversal via `../` sequences targets `wp-config.php`, `.htaccess`, and `wp-content/debug.log`.
+- **Transient API**: `set_transient()`/`get_transient()` stores data in `wp_options` (or object cache). Transients with user-controlled keys can be overwritten. If transient data is used unsanitized in output or queries, it becomes a stored attack vector.
+- **Object cache**: `wp_cache_set()`/`wp_cache_get()` data can be poisoned if cache keys are predictable and the caching backend (Redis, Memcached) is accessible.
+- **wp_options autoload**: Options with `autoload=yes` load on every page request. Plugins storing large serialized data with autoload enabled create performance issues; storing user-controlled serialized data creates object injection risks.
+- **Custom database tables**: Direct `$wpdb->query()` calls on custom tables bypass WordPress's built-in sanitization. Every variable in SQL must use `$wpdb->prepare()`.
+- **Import/Export**: File upload (ZIP, XML, CSV) combined with parsing creates surfaces for XXE, Zip Slip, CSV injection, and path traversal.
+- **Bulk action handlers**: `admin_action_*` hooks for bulk operations often lack per-item capability checks, enabling mass manipulation.
+
+---
+
+## 2. WordPress 6.x security mechanisms reference
+
+### Nonce system behavior and edge cases
+
+WordPress nonces are **HMAC hashes, not true one-time tokens**. They are generated from `$tick | $action | $user_id | $session_token` using `wp_hash()`. The default lifetime is **24 hours** (configurable via `nonce_life` filter), split into two 12-hour ticks. `wp_verify_nonce()` returns **1** for current tick (0–12h old), **2** for previous tick (12–24h old), or **false** for expired/invalid.
+
+**Critical limitations:**
+- **Not one-time-use**: The same nonce is generated for the same user+action during an entire tick period. This means nonces do not prevent replay attacks.
+- **Guest users (ID 0) all receive identical nonces** — providing zero CSRF protection for unauthenticated forms. The `nonce_user_logged_out` filter can mitigate this.
+- **Nonces verify intent, not authorization**. A valid nonce only proves the request originated from a page WordPress generated for that user. Any logged-in user can obtain valid nonces for any action. **Always pair `wp_verify_nonce()` with `current_user_can()`**.
+
+**Core nonce functions:**
+- `wp_create_nonce($action)` — Returns ~10-char alphanumeric hash
+- `wp_verify_nonce($nonce, $action)` — Returns 1, 2, or false; does NOT terminate execution
+- `check_admin_referer($action, $query_arg)` — Verifies nonce AND HTTP referer; calls `wp_die()` on failure
+- `check_ajax_referer($action, $query_arg, $stop)` — Checks nonce only (not referer); inspects `_wpnonce`, `_ajax_nonce` params and `X-WP-Nonce` header
+
+### REST API permission_callback enforcement (WP 5.5+)
+
+Since WordPress 5.5, `register_rest_route()` issues a `_doing_it_wrong` notice when `permission_callback` is omitted. **The endpoint still functions as public** — the notice is informational only. WordPress cannot distinguish intentional public endpoints from accidental omissions. Using `'permission_callback' => '__return_true'` explicitly documents public intent.
+
+Permission callbacks run **after** authentication is resolved. For cookie-based auth, the `wp_rest` nonce must be present, or the user is treated as unauthenticated (ID 0). Permission callbacks should use `current_user_can()`, not manual nonce verification — the REST API handles the `wp_rest` nonce automatically via `rest_cookie_check_errors()`.
+
+### $wpdb->prepare() in WordPress 6.x
+
+**Placeholders**: `%s` (string, auto-quoted), `%d` (integer), `%f` (float), **`%i` (identifier, backtick-quoted — added in WP 6.2)**. The `%i` placeholder allows safe table/column name parameterization: `$wpdb->prepare('SELECT * FROM %i WHERE %i = %s', $table, $column, $value)` produces `` SELECT * FROM `table` WHERE `column` = 'value' ``.
+
+**Validation rules**: placeholder count must match argument count; positional placeholders (`%1$s`) are supported but do not auto-quote; `%%` produces literal `%`; for LIKE: `'%' . $wpdb->esc_like($search) . '%'` inside `prepare()`; IN clauses require dynamic placeholder construction; **named placeholders are NOT supported**.
+
+### WordPress 6.x security changes
+
+- **WP 6.2** (March 2023): `%i` identifier placeholder in `$wpdb->prepare()`
+- **WP 6.4.3** (January 2024): POP chain vulnerability fix (potential RCE via WP_HTML_TOKEN deserialization)
+- **WP 6.5** (March 2024): Block Bindings API with `edit_block_binding` capability; Interactivity API
+- **WP 6.8** (April 2025): **Major password hashing overhaul** — phpass replaced by **bcrypt with SHA-384 pre-hashing** (prefix `$wp$2y$`). Application passwords and security keys use **BLAKE2b via Sodium**. Old `$P$` hashes remain valid and auto-rehash on login. Optional Argon2 support via `wp_hash_password_algorithm` filter.
+
+### wp_safe_redirect vs wp_redirect
+
+`wp_redirect($location)` sets the Location header with **no host validation** — vulnerable to open redirect with user-supplied URLs. `wp_safe_redirect($location)` validates the target host against an allowlist via `wp_validate_redirect()` (default: current site host only; extensible via `allowed_redirect_hosts` filter). If the host is not allowed, it falls back to `admin_url()`. **Neither function calls `exit`** — the developer must follow with `exit;` or `die;`.
+
+### REST API authentication methods
+
+- **Cookie + Nonce (built-in)**: Default for same-origin requests. Nonce action: `wp_rest`. Pass via `X-WP-Nonce` header or `_wpnonce` parameter. No valid nonce = user set to 0.
+- **Application Passwords (WP 5.6+, built-in)**: HTTP Basic Auth (`Authorization: Basic base64(username:app_password)`). HTTPS required by default. 24-character passwords (~142 bits entropy), stored hashed (BLAKE2b in WP 6.8). Cannot be used for wp-login.php. Individually revocable.
+- **OAuth (plugin-required)**: OAuth 1.0a or 2.0. Best for third-party integrations.
+- **JWT (plugin-required)**: Stateless token-based. Not native to WordPress.
+
+---
+
+## 3. Complete WordPress security functions reference
+
+### Sanitization functions
+
+| Function | Behavior | Use case | Does NOT protect against |
+|----------|----------|----------|-------------------------|
+| `sanitize_text_field($str)` | Strips tags, removes line breaks/tabs/extra whitespace, strips octets | Single-line text input | SQL injection |
+| `sanitize_textarea_field($str)` | Same as above but preserves line breaks | Multi-line text | SQL injection |
+| `sanitize_email($email)` | Strips disallowed chars; does NOT validate format (use `is_email()`) | Email addresses | Invalid emails |
+| `sanitize_file_name($filename)` | Removes special chars, replaces whitespace with dashes | File uploads | Path traversal (add `validate_file()`) |
+| `sanitize_html_class($class)` | Keeps only A-Za-z0-9_- | CSS class names | — |
+| `sanitize_key($key)` | Lowercases, keeps only a-z0-9_- | Option/meta keys | — |
+| `sanitize_mime_type($mime)` | Keeps only a-zA-Z0-9._+-/ | MIME type strings | Fake MIME types |
+| `sanitize_sql_orderby($orderby)` | Validates ORDER BY pattern; returns false if invalid | SQL ORDER BY | Complex injection patterns |
+| `sanitize_title($title)` | Generates URL slug; strips tags, converts accents | URL slugs | NOT for display |
+| `sanitize_url($url)` | Strips invalid chars, removes dangerous protocols | URL storage | Open redirects |
+| `sanitize_user($username, $strict)` | Strips tags; strict: a-zA-Z0-9 _.@- only | Usernames | — |
+| `absint($value)` | `abs(intval($value))` | Non-negative integers | Range validation |
+| `wp_kses($content, $allowed_html)` | HTML filter keeping only specified tags/attributes | Rich HTML input | — |
+| `wp_kses_post($data)` | wp_kses with 'post' context (extensive allowed tags) | Post content | XSS in allowed attributes |
+| `wp_filter_nohtml_kses($data)` | Strips ALL HTML | Plain text only | — |
+
+### Escaping functions
+
+| Function | Context | Behavior |
+|----------|---------|----------|
+| `esc_html($text)` | Text inside HTML elements | Converts `& < > " '` to HTML entities |
+| `esc_attr($text)` | HTML attribute values | Same entity conversion; does NOT double-encode |
+| `esc_url($url)` | `href`/`src` attributes | Validates URL, strips dangerous protocols (javascript:, data:), encodes entities |
+| `esc_url_raw($url)` | Database storage, API calls | Same as `esc_url` without entity encoding |
+| `esc_js($text)` | Inline JS string literals | Escapes `' " & < >`, adds slashes |
+| `esc_textarea($text)` | Inside `<textarea>` tags | `htmlspecialchars` with double-encoding |
+| `esc_sql($data)` | **DEPRECATED** — use `$wpdb->prepare()` | `mysqli_real_escape_string` wrapper; does NOT add quotes |
+| `esc_xml($text)` | XML content | Escapes for XML context |
+| `wp_json_encode($data)` | JavaScript data embedding | `json_encode` with `JSON_HEX_TAG\|JSON_HEX_AMP\|JSON_HEX_APOS\|JSON_HEX_QUOT` — safe for `<script>` blocks |
+| `tag_escape($tag_name)` | HTML tag names | Lowercases, strips non-alphanumeric chars except `_:` |
+
+### Database security ($wpdb methods)
+
+`$wpdb->prepare()` is the primary SQL injection defense. `$wpdb->insert()`, `$wpdb->update()`, `$wpdb->delete()`, and `$wpdb->replace()` use `prepare()` internally and are safe when used correctly. `$wpdb->query()`, `$wpdb->get_var()`, `$wpdb->get_row()`, `$wpdb->get_col()`, and `$wpdb->get_results()` require explicit `prepare()` for any variable data. `$wpdb->esc_like($text)` escapes `%` and `_` for LIKE queries — must be used inside `prepare()`.
+
+### File upload security
+
+- `wp_check_filetype($filename, $mimes)` — Extension-based only; does NOT examine file contents
+- `wp_check_filetype_and_ext($file, $filename, $mimes)` — Checks actual file content via `finfo`/`getimagesize` plus extension
+- `wp_handle_upload($file, $overrides)` — Complete upload handler: validates MIME type, moves to uploads dir, returns result array
+- `validate_file($file, $allowed_files)` — Returns 0 (valid), 1 (contains `..`), 2 (contains `:/` or starts with `/`), 3 (not in allowed list) — **critical for preventing directory traversal**
+
+### Cryptographic functions
+
+- `wp_hash_password($password)` — As of WP 6.8: **bcrypt with SHA-384 pre-hashing** (prefix `$wp$2y$`). Previously phpass (MD5-based). Password length limit: 4096 chars.
+- `wp_check_password($password, $hash, $user_id)` — Verifies password against hash; auto-rehashes old `$P$` format to bcrypt on verification
+- `wp_generate_password($length, $special_chars, $extra_special_chars)` — Uses `wp_rand()` (cryptographically secure via `random_int()`)
+- `wp_hash($data, $scheme)` — HMAC-MD5 using salts from wp-config.php
+- `wp_rand($min, $max)` — CSPRNG wrapper using `random_int()` (PHP 7+)
+- `wp_generate_uuid4()` — RFC 4122 UUID v4 using `random_bytes()`
+
+---
+
+## 4. Real CVEs and vulnerability patterns in major plugins (2023–2025)
+
+### The most dangerous vulnerabilities of this period
+
+**CVE-2024-10924 — Really Simple Security authentication bypass (CVSS 9.8)**. Affected 4 million installations. The `check_login_and_get_user()` function in the 2FA REST API returned a valid user object even on error conditions. Unauthenticated attackers could log in as any user, including admin, by sending crafted REST API requests with a `user_id` and invalid nonce. Wordfence called this "the most dangerous vulnerability they've seen in 12 years." WordPress.org forced an automatic security update.
+
+**CVE-2023-28121 — WooCommerce Payments authentication bypass (CVSS 9.8)**. The `determine_current_user_for_platform_checkout()` function hooked into WordPress's `determine_current_user` filter and returned the user ID from the `X-WCPAY-PLATFORM-CHECKOUT-USER` HTTP header **without any validation**. Adding `X-WCPAY-PLATFORM-CHECKOUT-USER: 1` to any request authenticated as user ID 1 (admin). Wordfence detected **1.3 million attacks against 157,000 sites** on July 16, 2023.
+
+**CVE-2024-28000 — LiteSpeed Cache privilege escalation (CVSS 9.8)**. The crawler simulation feature used `mt_rand()` seeded with microsecond time to generate security hashes — producing only ~1 million possible values. An unauthenticated AJAX endpoint (`async_litespeed`) had no capability or nonce checks, allowing anyone to trigger hash generation. The hash could then be brute-forced within hours to create admin accounts via the REST API.
+
+**CVE-2023-32243 — Essential Addons for Elementor privilege escalation (CVSS 9.8)**. The password reset function in the Login/Register Form widget never validated the `rp_key` (reset key). It directly changed the user's password without calling `check_password_reset_key()`. The nonce was obtainable from the frontend page source. Wordfence blocked 6,900+ exploit attempts within days; Sucuri observed mass infection campaigns.
+
+**CVE-2023-48777 — Elementor arbitrary file upload to RCE (CVSS 8.8)**. The template import AJAX handler allowed contributor-level users to upload files via base64-encoded `fileData`. A path traversal in the filename parameter (`/../../../../shell.php`) placed PHP webshells in web-accessible directories.
+
+### Recurring vulnerability patterns
+
+**Pattern 1: Missing/broken authorization on AJAX handlers** — The single most dangerous recurring pattern. Functions hooked to `wp_ajax_*` that check nonces but not capabilities. Affects WPForms, LiteSpeed Cache, Elementor Pro, and hundreds of smaller plugins.
+
+**Pattern 2: XSS via insufficient output escaping** — 47.7% of all vulnerabilities in 2024. Most commonly Stored XSS at contributor+ level via shortcode attributes, widget settings, custom field values, and block attributes. Direct concatenation of user input into HTML output without `esc_attr()`, `esc_html()`, or `wp_kses()`.
+
+**Pattern 3: Authentication bypass via REST API** — Improper `permission_callback` implementations, custom authentication hooks trusting user-supplied headers, error handling that falls through to success states, and case-sensitivity mismatches in route matching.
+
+**Pattern 4: Weak/predictable security tokens** — Using `mt_rand()` with predictable seeds, empty API key hash comparisons (CleanTalk CVE-2024-10781), and non-constant-time string comparison for tokens.
+
+**Pattern 5: PHP Object Injection** — Growing trend. UpdraftPlus (CVE-2024-10957), GiveWP (CVE-2024-9634), SEOPress (CVE-2024-5488). Using `unserialize()` or `maybe_unserialize()` on user-controlled data, combinable with POP chains in bundled libraries for RCE.
+
+### Vulnerability statistics
+
+| Metric | 2023 | 2024 | H1 2025 |
+|--------|------|------|---------|
+| Total new vulnerabilities | ~5,943 | 7,966 | ~6,700 |
+| XSS percentage | ~45% | 47.7% | — |
+
+codex
+Toi da nap skill va project docs. Buoc tiep theo la doc reusable review workflow va canonical input de khoa pham vi review vao dung cac finding `PLAUSIBLE/UNCERTAIN`.
+exec
+/bin/zsh -lc "sed -n '1,240p' references/review-workflow.md" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ exited 1 in 0ms:
+sed: references/review-workflow.md: No such file or directory
+
+exec
+/bin/zsh -lc "sed -n '1,260p' reports/phase2/pretty-link-phase2.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "sed -n '1,260p' /var/folders/c4/4vtc_pmn0yd42n48vftt96600000gn/T/phase3-review-zubkyk8g/pretty-link-phase3-review-input.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+{
+  "plugin_slug": "pretty-link",
+  "merge_timestamp": "2026-04-05T14:23:24.692772Z",
+  "findings": [
+    {
+      "finding_id": "agent-a2-f001",
+      "verdict": "FP",
+      "vuln_type": "sensitive_information_disclosure",
+      "cwe_id": "CWE-200",
+      "severity": "informational",
+      "auth_required": "editor",
+      "confidence": 0.83,
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_for_links",
+      "fp_reason": "`search_results()` is an intentional editor/admin autocomplete endpoint, not an unintended disclosure primitive. The callback only performs a read-only prepared query over enabled links, and the same `prli_search_for_links` action is consumed by the plugin's block-editor URL input, which `enqueue_admin_scripts()` loads on block-editor screens.",
+      "fp_evidence": {
+        "defense": "The plugin intentionally exposes this AJAX action to the block editor, while the query itself is read-only and prepared.",
+        "file": "app/controllers/PrliAppController.php",
+        "line": 434
+      },
+      "source_agents": [
+        "agent-a2"
+      ]
+    },
+    {
+      "finding_id": "agent-a2-f002",
+      "verdict": "FP",
+      "vuln_type": "broken_access_control",
+      "cwe_id": "CWE-862",
+      "severity": "informational",
+      "auth_required": "unknown",
+      "confidence": 0.95,
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+      "fp_reason": "`process_refresh_tokens()` is gated by `wp_verify_nonce('stripe-refresh')` and `PrliUtils::is_authorized()` before any refresh or option update occurs. The flagged redirect is also not attacker-controlled because it is constructed from a fixed `admin_url(...#payments)` target.",
+      "fp_evidence": {
+        "defense": "Nonce verification, Pretty Links authorization, and a fixed admin redirect all precede the update/redirect path.",
+        "file": "app/controllers/PrliStripeConnectController.php",
+        "line": 168
+      },
+      "source_agents": [
+        "agent-a2"
+      ]
+    },
+    {
+      "finding_id": "agent-a2-f003",
+      "verdict": "FP",
+      "vuln_type": "broken_access_control",
+      "cwe_id": "CWE-862",
+      "severity": "informational",
+      "auth_required": "admin",
+      "confidence": 0.94,
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_stripe_prices",
+      "fp_reason": "`search_stripe_prices()` is not an exploitable `$die=false` nonce pattern. The combined GET/admin/nonce check throws before any remote Stripe request or JSON response is produced, and the failure path terminates via `wp_send_json_error()` in the catch block.",
+      "fp_evidence": {
+        "defense": "The guard throws before the sink, and the catch path exits through `wp_send_json_error()`.",
+        "file": "app/controllers/PrliStripeController.php",
+        "line": 603
+      },
+      "source_agents": [
+        "agent-a2"
+      ]
+    },
+    {
+      "finding_id": "agent-a2-f004",
+      "verdict": "FP",
+      "vuln_type": "cross_site_request_forgery",
+      "cwe_id": "CWE-352",
+      "severity": "informational",
+      "auth_required": "admin",
+      "confidence": 0.94,
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_customer_portal_notice",
+      "fp_reason": "`dismiss_customer_portal_notice()` only updates the dismiss flag after POST, admin, and nonce checks pass. On failure it immediately calls `wp_send_json_error()`, so the write at line 1144 is not reachable with an invalid nonce or insufficient privilege.",
+      "fp_evidence": {
+        "defense": "The failed guard branch exits through `wp_send_json_error()` before `update_option()` is reached.",
+        "file": "app/controllers/PrliStripeController.php",
+        "line": 1140
+      },
+      "source_agents": [
+        "agent-a2"
+      ]
+    },
+    {
+      "finding_id": "agent-a2-f005",
+      "verdict": "FP",
+      "vuln_type": "cross_site_request_forgery",
+      "cwe_id": "CWE-352",
+      "severity": "informational",
+      "auth_required": "unknown",
+      "confidence": 0.96,
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_review_prompt",
+      "fp_reason": "`dismiss_review_prompt()` verifies the `pl_dismiss_review_prompt` nonce first and then requires `PrliUtils::is_authorized()` before either review-prompt option is updated. The IR's missing-guard signal does not hold after source verification.",
+      "fp_evidence": {
+        "defense": "A hard-fail nonce check and Pretty Links authorization gate both precede the option writes.",
+        "file": "app/controllers/PrliReviewNoticeController.php",
+        "line": 15
+      },
+      "source_agents": [
+        "agent-a2"
+      ]
+    },
+    {
+      "finding_id": "agent-a2-f006",
+      "verdict": "FP",
+      "vuln_type": "cross_site_request_forgery",
+      "cwe_id": "CWE-352",
+      "severity": "informational",
+      "auth_required": "unknown",
+      "confidence": 0.95,
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_upgrade_header",
+      "fp_reason": "`dismiss_upgrade_header()` does not expose an unguarded state change. It rejects missing or invalid nonces with `die()` and then requires `PrliUtils::is_authorized()` before writing `pl_dismiss_upgrade_header`.",
+      "fp_evidence": {
+        "defense": "Manual nonce verification and Pretty Links authorization both run before the option write.",
+        "file": "app/controllers/PrliAppController.php",
+        "line": 69
+      },
+      "source_agents": [
+        "agent-a2"
+      ]
+    },
+    {
+      "finding_id": "agent-a2-f007",
+      "verdict": "FP",
+      "vuln_type": "broken_access_control",
+      "cwe_id": "CWE-862",
+      "severity": "informational",
+      "auth_required": "unknown",
+      "confidence": 0.94,
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_create_pretty_link",
+      "fp_reason": "`create_pretty_link()` is not an unguarded link-creation primitive. Failed nonce checks terminate via `wp_send_json_error()`, the caller must still satisfy `PrliUtils::is_authorized()`, and the target, slug, and redirect inputs are sanitized before `prli_create_pretty_link()` is called.",
+      "fp_evidence": {
+        "defense": "Nonce failure exits before the sink, and the create path is still gated by Pretty Links authorization with per-field sanitization.",
+        "file": "app/controllers/PrliPostsController.php",
+        "line": 184
+      },
+      "source_agents": [
+        "agent-a2"
+      ]
+    },
+    {
+      "finding_id": "agent-a2-f008",
+      "verdict": "FP",
+      "vuln_type": "cross_site_request_forgery",
+      "cwe_id": "CWE-352",
+      "severity": "informational",
+      "auth_required": "unknown",
+      "confidence": 0.95,
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_quick_create",
+      "fp_reason": "`ajax_quick_create()` rejects malformed requests, unauthorized users, and invalid nonces with `wp_send_json_error()` before the link-creation sink. The `$die=false` nonce helper does not leave the create path reachable in this callback.",
+      "fp_evidence": {
+        "defense": "The failed nonce branch exits through `wp_send_json_error()` before `$prli_link->create($_POST)` can run.",
+        "file": "app/controllers/PrliLinksController.php",
+        "line": 870
+      },
+      "source_agents": [
+        "agent-a2"
+      ]
+    },
+    {
+      "finding_id": "agent-a2-f009",
+      "verdict": "FP",
+      "vuln_type": "arbitrary_plugin_install",
+      "cwe_id": "CWE-862",
+      "severity": "informational",
+      "auth_required": "admin",
+      "confidence": 0.96,
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_install",
+      "fp_reason": "`ajax_addon_install()` is restricted to users with both `install_plugins` and `activate_plugins`. Failed nonce or filesystem checks terminate through `wp_send_json_error()` before the upgrader is loaded, so this is not a low-privilege plugin-install path.",
+      "fp_evidence": {
+        "defense": "Plugin-management capabilities and the nonce check both precede `Plugin_Upgrader` execution.",
+        "file": "app/controllers/PrliAddonsController.php",
+        "line": 127
+      },
+      "source_agents": [
+        "agent-a2"
+      ]
+    },
+    {
+      "finding_id": "agent-a2-f010",
+      "verdict": "FP",
+      "vuln_type": "cross_site_request_forgery",
+      "cwe_id": "CWE-352",
+      "severity": "informational",
+      "auth_required": "unknown",
+      "confidence": 0.94,
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_notice",
+      "fp_reason": "`dismiss_notice()` only writes the dismiss flag when both `check_ajax_referer('prli_dismiss_notice')` and `PrliUtils::is_authorized()` succeed. If either condition fails, the function simply returns a success response without performing the option update.",
+      "fp_evidence": {
+        "defense": "The side effect is nested under the nonce and authorization checks rather than occurring unconditionally.",
+        "file": "app/controllers/PrliAppController.php",
+        "line": 131
+      },
+      "source_agents": [
+        "agent-a2"
+      ]
+    },
+    {
+      "finding_id": "agent-a2-f011",
+      "verdict": "FP",
+      "vuln_type": "broken_access_control",
+      "cwe_id": "CWE-862",
+      "severity": "informational",
+      "auth_required": "admin",
+      "confidence": 0.95,
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_onboarding_finish",
+      "fp_reason": "`finish()` inherits the shared onboarding `validate_request()` gate, which requires POST, an authenticated admin session, and a valid per-action nonce before `prli_onboarding_complete` is updated. The missing-capability/missing-nonce anomaly does not survive source tracing.",
+      "fp_evidence": {
+        "defense": "The shared `validate_request()` helper is an effective front-door guard for onboarding AJAX actions.",
+        "file": "app/controllers/PrliOnboardingController.php",
+        "line": 194
+      },
+      "source_agents": [
+        "agent-a2"
+      ]
+    },
+    {
+      "finding_id": "agent-a2-f012",
+      "verdict": "FP",
+      "vuln_type": "arbitrary_plugin_install",
+      "cwe_id": "CWE-862",
+      "severity": "informational",
+      "auth_required": "admin",
+      "confidence": 0.95,
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_install_license_edition",
+      "fp_reason": "`ajax_install_license_edition()` only reaches the upgrader after `current_user_can('update_plugins')` and `check_ajax_referer('prli_install_license_edition')` succeed. The IR's flawed-nonce signal is refuted by the early `wp_send_json_error()` exits on failed checks.",
+      "fp_evidence": {
+        "defense": "The edition-install sink is behind plugin-update capability and a terminating nonce check.",
+        "file": "app/controllers/PrliUpdateController.php",
+        "line": 203
+      },
+      "source_agents": [
+        "agent-a2"
+      ]
+    },
+    {
+      "finding_id": "agent-a2-f013",
+      "verdict": "FP",
+      "vuln_type": "broken_access_control",
+      "cwe_id": "CWE-862",
+      "severity": "informational",
+      "auth_required": "admin",
+      "confidence": 0.96,
+      "entry_point_id": "ep_ajax_priv_wp_ajax_plp_edge_updates",
+      "fp_reason": "`plp_edge_updates()` is protected by `PrliUtils::is_prli_admin()` and `wp_verify_nonce($_POST['wpnonce'], 'wp-edge-updates')` before it flips the edge-update setting. The `null` IR guard resolves to an effective source-level authorization and nonce check.",
+      "fp_evidence": {
+        "defense": "The callback hard-fails unless the caller has the plugin-admin capability and a valid nonce.",
+        "file": "app/controllers/PrliUpdateController.php",
+        "line": 666
+      },
+      "source_agents": [
+        "agent-a2"
+      ]
+    },
+    {
+      "finding_id": "agent-a2-f014",
+      "verdict": "FP",
+      "vuln_type": "arbitrary_plugin_install",
+      "cwe_id": "CWE-862",
+      "severity": "informational",
+      "auth_required": "admin",
+      "confidence": 0.96,
+      "entry_point_id": "ep_ajax_priv_wp_ajax_mosh_addon_install",
+
+ succeeded in 0ms:
+{
+  "plugin_slug": "pretty-link",
+  "phase3_summary": {
+    "confirmed": 0,
+    "plausible": 0,
+    "uncertain": 1,
+    "accepted_fp": 63,
+    "likely_hallucination": 0
+  },
+  "reviewable_count": 1,
+  "reviewable_findings": [
+    {
+      "finding_id": "agent-d-unresolved-001",
+      "validation_status": "UNCERTAIN",
+      "gate_finding": {
+        "finding_id": "agent-d-unresolved-001",
+        "verdict": "REVIEW",
+        "validation_status": "UNCERTAIN",
+        "confidence_score": 0.4164,
+        "resolved_entry_point_id": null,
+        "entry_point_exact": false,
+        "suggested_entry_point_id": null,
+        "entry_point_resolution_notes": "no EP resolved",
+        "checks": {
+          "file_exists": false,
+          "path_reachable": false,
+          "auth_consistent": true,
+          "guard_consistent": true,
+          "sanitizer_claim": true,
+          "semgrep_corroborates": true,
+          "psalm_corroborates": true,
+          "code_evidence": false,
+          "reasoning_quality": false,
+          "cvss_plausible": true,
+          "patchstack_eligible": true,
+          "no_hallucination": true
+        },
+        "check_scores": {
+          "file_exists": 0.0,
+          "path_reachable": 0.45,
+          "auth_consistent": 0.6,
+          "guard_consistent": 0.6,
+          "sanitizer_claim": 0.8,
+          "semgrep_corroborates": 0.5,
+          "psalm_corroborates": 0.5,
+          "code_evidence": 0.0,
+          "reasoning_quality": 0.0,
+          "cvss_plausible": 0.8,
+          "patchstack_eligible": 0.8,
+          "no_hallucination": 0.75
+        },
+        "check_notes": {
+          "file_exists": "missing file_path/sink_file_path/source_file_path",
+          "path_reachable": "no entry point resolved (missing/invalid entry_point_id + fuzzy resolution failed)",
+          "auth_consistent": "EP unresolved \u2192 cannot disprove auth claim",
+          "guard_consistent": "EP unresolved \u2192 cannot validate guards precisely",
+          "sanitizer_claim": "sanitizer claim not contradicted",
+          "semgrep_corroborates": "Semgrep available but finding missing file path",
+          "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
+          "code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number",
+          "reasoning_quality": "evidence-binding + refute-first heuristics",
+          "cvss_plausible": "cvss_vector omitted (allowed)",
+          "patchstack_eligible": "patchstack_eligible not provided (allowed)",
+          "no_hallucination": "1 hallucination signal: file_not_found",
+          "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+        },
+        "issues": [
+          "code_evidence_missing_or_mismatch",
+          "file_not_found_or_unresolvable",
+          "path_reachability_weak",
+          "reasoning_quality_low"
+        ],
+        "sink_file_path": null,
+        "sink_line_number": null,
+        "sink_function": null,
+        "source_file_path": null,
+        "source_line_number": null,
+        "vuln_type": "unresolved_dynamic_hook"
+      },
+      "phase2_finding": {
+        "finding_id": "agent-d-unresolved-001",
+        "verdict": "REVIEW",
+        "vuln_type": "unresolved_dynamic_hook",
+        "cwe_id": null,
+        "severity": "informational",
+        "auth_required": "unknown",
+        "confidence": 0.0,
+        "entry_point_id": "unresolved:app/lib/PrliAddonUpdates.php:17",
+        "store_entry_point_id": null,
+        "load_entry_point_id": null,
+        "source_function": null,
+        "source_file_path": null,
+        "source_line_number": null,
+        "sink_function": null,
+        "sink_file_path": null,
+        "sink_line_number": null,
+        "reasoning": null,
+        "fp_reason": null,
+        "fp_evidence": null,
+        "review_reason": "Dynamic hook 'in_plugin_update_message-$main_file' at app/lib/PrliAddonUpdates.php:17 \u2014 resolution failed, manual trace required. The hook expression is 'in_plugin_update_message-' . $this->main_file where $main_file is a constructor parameter (class PrliAddonUpdates, line 8). Attempted: searched all PHP files in the plugin for 'new PrliAddonUpdates' \u2014 zero results found. The class is defined in app/lib/PrliAddonUpdates.php but is never instantiated within the lite plugin codebase. Instantiation is expected to occur inside the Pro add-on (pretty-link-pro.php) which is not present in the analyzed source tree. The $main_file value \u2014 and therefore the concrete hook name \u2014 cannot be determined from the available source. Resolution requires access to the Pro add-on source or runtime observation of the constructor call.",
+        "poc_description": null,
+        "storage_key": null,
+        "patchstack_eligible": null,
+        "remediation": null,
+        "source_agents": [
+          "agent-d"
+        ]
+      }
+    }
+  ],
+  "phase2_findings_by_id": {
+    "agent-a2-f001": {
+      "finding_id": "agent-a2-f001",
+      "verdict": "FP",
+      "vuln_type": "sensitive_information_disclosure",
+      "cwe_id": "CWE-200",
+      "severity": "informational",
+      "auth_required": "editor",
+      "confidence": 0.83,
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_for_links",
+      "fp_reason": "`search_results()` is an intentional editor/admin autocomplete endpoint, not an unintended disclosure primitive. The callback only performs a read-only prepared query over enabled links, and the same `prli_search_for_links` action is consumed by the plugin's block-editor URL input, which `enqueue_admin_scripts()` loads on block-editor screens.",
+      "fp_evidence": {
+        "defense": "The plugin intentionally exposes this AJAX action to the block editor, while the query itself is read-only and prepared.",
+        "file": "app/controllers/PrliAppController.php",
+        "line": 434
+      },
+      "source_agents": [
+        "agent-a2"
+      ]
+    },
+    "agent-a2-f002": {
+      "finding_id": "agent-a2-f002",
+      "verdict": "FP",
+      "vuln_type": "broken_access_control",
+      "cwe_id": "CWE-862",
+      "severity": "informational",
+      "auth_required": "unknown",
+      "confidence": 0.95,
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+      "fp_reason": "`process_refresh_tokens()` is gated by `wp_verify_nonce('stripe-refresh')` and `PrliUtils::is_authorized()` before any refresh or option update occurs. The flagged redirect is also not attacker-controlled because it is constructed from a fixed `admin_url(...#payments)` target.",
+      "fp_evidence": {
+        "defense": "Nonce verification, Pretty Links authorization, and a fixed admin redirect all precede the update/redirect path.",
+        "file": "app/controllers/PrliStripeConnectController.php",
+        "line": 168
+      },
+      "source_agents": [
+        "agent-a2"
+      ]
+    },
+    "agent-a2-f003": {
+      "finding_id": "agent-a2-f003",
+      "verdict": "FP",
+      "vuln_type": "broken_access_control",
+      "cwe_id": "CWE-862",
+      "severity": "informational",
+      "auth_required": "admin",
+      "confidence": 0.94,
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_stripe_prices",
+      "fp_reason": "`search_stripe_prices()` is not an exploitable `$die=false` nonce pattern. The combined GET/admin/nonce check throws before any remote Stripe request or JSON response is produced, and the failure path terminates via `wp_send_json_error()` in the catch block.",
+      "fp_evidence": {
+        "defense": "The guard throws before the sink, and the catch path exits through `wp_send_json_error()`.",
+        "file": "app/controllers/PrliStripeController.php",
+        "line": 603
+      },
+      "source_agents": [
+        "agent-a2"
+      ]
+    },
+    "agent-a2-f004": {
+      "finding_id": "agent-a2-f004",
+      "verdict": "FP",
+      "vuln_type": "cross_site_request_forgery",
+      "cwe_id": "CWE-352",
+      "severity": "informational",
+      "auth_required": "admin",
+      "confidence": 0.94,
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_customer_portal_notice",
+      "fp_reason": "`dismiss_customer_portal_notice()` only updates the dismiss flag after POST, admin, and nonce checks pass. On failure it immediately calls `wp_send_json_error()`, so the write at line 1144 is not reachable with an invalid nonce or insufficient privilege.",
+      "fp_evidence": {
+        "defense": "The failed guard branch exits through `wp_send_json_error()` before `update_option()` is reached.",
+        "file": "app/controllers/PrliStripeController.php",
+        "line": 1140
+      },
+      "source_agents": [
+        "agent-a2"
+      ]
+    },
+    "agent-a2-f005": {
+      "finding_id": "agent-a2-f005",
+      "verdict": "FP",
+      "vuln_type": "cross_site_request_forgery",
+      "cwe_id": "CWE-352",
+      "severity": "informational",
+      "auth_required": "unknown",
+      "confidence": 0.96,
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_review_prompt",
+      "fp_reason": "`dismiss_review_prompt()` verifies the `pl_dismiss_review_prompt` nonce first and then requires `PrliUtils::is_authorized()` before either review-prompt option is updated. The IR's missing-guard signal does not hold after source verification.",
+      "fp_evidence": {
+        "defense": "A hard-fail nonce check and Pretty Links authorization gate both precede the option writes.",
+        "file": "app/controllers/PrliReviewNoticeController.php",
+        "line": 15
+      },
+      "source_agents": [
+        "agent-a2"
+      ]
+    },
+    "agent-a2-f006": {
+      "finding_id": "agent-a2-f006",
+      "verdict": "FP",
+      "vuln_type": "cross_site_request_forgery",
+      "cwe_id": "CWE-352",
+      "severity": "informational",
+      "auth_required": "unknown",
+      "confidence": 0.95,
+      "entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_upgrade_header",
+      "fp_reason": "`dismiss_upgrade_header()` does not expose an unguarded state change. It rejects missing or invalid nonces with `die()` and then requires `PrliUtils::is_authorized()` before writing `pl_dismiss_upgrade_header`.",
+      "fp_evidence": {
+        "defense": "Manual nonce verification and Pretty Links authorization both run before the option write.",
+        "file": "app/controllers/PrliAppController.php",
+        "line": 69
+      },
+      "source_agents": [
+        "agent-a2"
+      ]
+    },
+    "agent-a2-f007": {
+      "finding_id": "agent-a2-f007",
+      "verdict": "FP",
+      "vuln_type": "broken_access_control",
+      "cwe_id": "CWE-862",
+      "severity": "informational",
+      "auth_required": "unknown",
+      "confidence": 0.94,
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_create_pretty_link",
+      "fp_reason": "`create_pretty_link()` is not an unguarded link-creation primitive. Failed nonce checks terminate via `wp_send_json_error()`, the caller must still satisfy `PrliUtils::is_authorized()`, and the target, slug, and redirect inputs are sanitized before `prli_create_pretty_link()` is called.",
+      "fp_evidence": {
+        "defense": "Nonce failure exits before the sink, and the create path is still gated by Pretty Links authorization with per-field sanitization.",
+        "file": "app/controllers/PrliPostsController.php",
+        "line": 184
+      },
+      "source_agents": [
+        "agent-a2"
+      ]
+    },
+    "agent-a2-f008": {
+      "finding_id": "agent-a2-f008",
+      "verdict": "FP",
+      "vuln_type": "cross_site_request_forgery",
+      "cwe_id": "CWE-352",
+      "severity": "informational",
+      "auth_required": "unknown",
+      "confidence": 0.95,
+      "entry_point_id": "ep_ajax_priv_wp_ajax_prli_quick_create",
+      "fp_reason": "`ajax_quick_create()` rejects malformed requests, unauthorized users, and invalid nonces with `wp_send_json_error()` before the link-creation sink. The `$die=false` nonce helper does not leave the create path reachable in this callback.",
+      "fp_evidence": {
+        "defense": "The failed nonce branch exits through `wp_send_json_error()` before `$prli_link->create($_POST)` can run.",
+        "file": "app/controllers/PrliLinksController.php",
+        "line": 870
+      },
+      "source_agents": [
+
+exec
+/bin/zsh -lc "sed -n '1,260p' reports/phase1/pretty-link-ir.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+{
+    "metadata": {
+        "plugin_slug": "pretty-link",
+        "plugin_name": "PrettyLinks",
+        "version": "3.6.21",
+        "active_installs": null,
+        "files_analyzed": 198,
+        "total_loc": 26953,
+        "extraction_time_ms": 481,
+        "extractor_version": "1.0.0"
+    },
+    "entry_points": [
+        {
+            "id": "ep_ajax_priv_wp_ajax_prli_stop_popup",
+            "type": "ajax_priv",
+            "hook_name": "wp_ajax_prli_stop_popup",
+            "callback": {
+                "type": "method",
+                "name": "ajax_stop_or_delay_popup",
+                "class": "PrliPopupController",
+                "file": "app/controllers/PrliPopupController.php",
+                "line_start": 90,
+                "line_end": 118
+            },
+            "auth_level": "subscriber",
+            "file": "app/controllers/PrliPopupController.php",
+            "line": 39
+        },
+        {
+            "id": "ep_ajax_priv_wp_ajax_prli_delay_popup",
+            "type": "ajax_priv",
+            "hook_name": "wp_ajax_prli_delay_popup",
+            "callback": {
+                "type": "method",
+                "name": "ajax_stop_or_delay_popup",
+                "class": "PrliPopupController",
+                "file": "app/controllers/PrliPopupController.php",
+                "line_start": 90,
+                "line_end": 118
+            },
+            "auth_level": "subscriber",
+            "file": "app/controllers/PrliPopupController.php",
+            "line": 40
+        },
+        {
+            "id": "ep_admin_init_admin_init",
+            "type": "admin_init",
+            "hook_name": "admin_init",
+            "callback": {
+                "type": "method",
+                "name": "persist_display_keys",
+                "class": "PrliStripeConnectController",
+                "file": "app/controllers/PrliStripeConnectController.php",
+                "line_start": 31,
+                "line_end": 35
+            },
+            "auth_level": "subscriber",
+            "file": "app/controllers/PrliStripeConnectController.php",
+            "line": 17
+        },
+        {
+            "id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
+            "type": "ajax_priv",
+            "hook_name": "wp_ajax_prli_stripe_connect_update_creds",
+            "callback": {
+                "type": "method",
+                "name": "process_update_creds",
+                "class": "PrliStripeConnectController",
+                "file": "app/controllers/PrliStripeConnectController.php",
+                "line_start": 96,
+                "line_end": 128
+            },
+            "auth_level": "subscriber",
+            "file": "app/controllers/PrliStripeConnectController.php",
+            "line": 21
+        },
+        {
+            "id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
+            "type": "ajax_priv",
+            "hook_name": "wp_ajax_prli_stripe_connect_refresh",
+            "callback": {
+                "type": "method",
+                "name": "process_refresh_tokens",
+                "class": "PrliStripeConnectController",
+                "file": "app/controllers/PrliStripeConnectController.php",
+                "line_start": 165,
+                "line_end": 218
+            },
+            "auth_level": "subscriber",
+            "file": "app/controllers/PrliStripeConnectController.php",
+            "line": 22
+        },
+        {
+            "id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_disconnect",
+            "type": "ajax_priv",
+            "hook_name": "wp_ajax_prli_stripe_connect_disconnect",
+            "callback": {
+                "type": "method",
+                "name": "process_disconnect",
+                "class": "PrliStripeConnectController",
+                "file": "app/controllers/PrliStripeConnectController.php",
+                "line_start": 225,
+                "line_end": 253
+            },
+            "auth_level": "subscriber",
+            "file": "app/controllers/PrliStripeConnectController.php",
+            "line": 23
+        },
+        {
+            "id": "ep_ajax_priv_wp_ajax_prli_search_stripe_prices",
+            "type": "ajax_priv",
+            "hook_name": "wp_ajax_prli_search_stripe_prices",
+            "callback": {
+                "type": "method",
+                "name": "search_stripe_prices",
+                "class": "PrliStripeController",
+                "file": "app/controllers/PrliStripeController.php",
+                "line_start": 601,
+                "line_end": 700
+            },
+            "auth_level": "subscriber",
+            "file": "app/controllers/PrliStripeController.php",
+            "line": 14
+        },
+        {
+            "id": "ep_ajax_priv_wp_ajax_prli_stripe_add_product",
+            "type": "ajax_priv",
+            "hook_name": "wp_ajax_prli_stripe_add_product",
+            "callback": {
+                "type": "method",
+                "name": "add_product",
+                "class": "PrliStripeController",
+                "file": "app/controllers/PrliStripeController.php",
+                "line_start": 738,
+                "line_end": 775
+            },
+            "auth_level": "subscriber",
+            "file": "app/controllers/PrliStripeController.php",
+            "line": 15
+        },
+        {
+            "id": "ep_filter_output_the_content",
+            "type": "filter_output",
+            "hook_name": "the_content",
+            "callback": {
+                "type": "method",
+                "name": "display_invoice",
+                "class": "PrliStripeController",
+                "file": "app/controllers/PrliStripeController.php",
+                "line_start": 883,
+                "line_end": 953
+            },
+            "auth_level": "contributor",
+            "file": "app/controllers/PrliStripeController.php",
+            "line": 17
+        },
+        {
+            "id": "ep_ajax_priv_wp_ajax_prli_dismiss_customer_portal_notice",
+            "type": "ajax_priv",
+            "hook_name": "wp_ajax_prli_dismiss_customer_portal_notice",
+            "callback": {
+                "type": "method",
+                "name": "dismiss_customer_portal_notice",
+                "class": "PrliStripeController",
+                "file": "app/controllers/PrliStripeController.php",
+                "line_start": 1139,
+                "line_end": 1147
+            },
+            "auth_level": "subscriber",
+            "file": "app/controllers/PrliStripeController.php",
+            "line": 22
+        },
+        {
+            "id": "ep_init_init",
+            "type": "init",
+            "hook_name": "init",
+            "callback": {
+                "type": "method",
+                "name": "redirect",
+                "class": "PrliToolsController",
+                "file": "app/controllers/PrliToolsController.php",
+                "line_start": 72,
+                "line_end": 88
+            },
+            "auth_level": "none",
+            "file": "app/controllers/PrliToolsController.php",
+            "line": 6
+        },
+        {
+            "id": "ep_ajax_priv_wp_ajax_pl_dismiss_review_prompt",
+            "type": "ajax_priv",
+            "hook_name": "wp_ajax_pl_dismiss_review_prompt",
+            "callback": {
+                "type": "method",
+                "name": "dismiss_review_prompt",
+                "class": "PrliReviewNoticeController",
+                "file": "app/controllers/PrliReviewNoticeController.php",
+                "line_start": 13,
+                "line_end": 39
+            },
+            "auth_level": "subscriber",
+            "file": "app/controllers/PrliReviewNoticeController.php",
+            "line": 10
+        },
+        {
+            "id": "ep_init_init",
+            "type": "init",
+            "hook_name": "init",
+            "callback": {
+                "type": "method",
+                "name": "process_connect",
+                "class": "PrliAuthenticatorController",
+                "file": "app/controllers/PrliAuthenticatorController.php",
+                "line_start": 74,
+                "line_end": 150
+            },
+            "auth_level": "none",
+            "file": "app/controllers/PrliAuthenticatorController.php",
+            "line": 16
+        },
+        {
+            "id": "ep_init_init",
+            "type": "init",
+            "hook_name": "init",
+            "callback": {
+                "type": "method",
+                "name": "process_disconnect",
+                "class": "PrliAuthenticatorController",
+                "file": "app/controllers/PrliAuthenticatorController.php",
+                "line_start": 158,
+                "line_end": 206
+            },
+            "auth_level": "none",
+            "file": "app/controllers/PrliAuthenticatorController.php",
+            "line": 17
+        },
+        {
+            "id": "ep_admin_init_admin_init",
+            "type": "admin_init",
+            "hook_name": "admin_init",
+            "callback": {
+                "type": "method",
+                "name": "delete_connection_data",
+                "class": "PrliAuthenticatorController",
+                "file": "app/controllers/PrliAuthenticatorController.php",
+                "line_start": 27,
+                "line_end": 54
+            },
+            "auth_level": "subscriber",
+            "file": "app/controllers/PrliAuthenticatorController.php",
+            "line": 18
+        },
+        {
+            "id": "ep_init_init",
+            "type": "init",
+            "hook_name": "init",
+            "callback": {
+                "type": "method",
+                "name": "add_tinymce_buttons",
+                "class": "PrliPostsController",
+
+codex
+Scope hien tai co 1 finding reviewable duy nhat: `agent-d-unresolved-001`, va van de chinh la file/line/entry point bi unresolved quanh dynamic hook trong `app/lib/PrliAddonUpdates.php`. Toi se dinh vi hook nay trong source, tim counter-evidence ve kha nang khong reachable trong lite plugin, roi map lai cac truong co the sua mot cach testable.
+Loaded the required AppSec skill and project docs; now tracing the single reviewable finding from the canonical Phase 3 input.
+  → Locate the referenced dynamic hook and any instantiation or call sites inside the pretty-link plugin
+  • Assess counter-evidence, exploitability limits, and any testable field corrections using Phase 1/2 context
+  • Write the required JSON and Markdown Phase 3b review artifacts under reports/phase3
+exec
+/bin/zsh -lc "sed -n '1,220p' plugins/pretty-link/app/lib/PrliAddonUpdates.php" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+<?php
+
+if(!defined('ABSPATH')) { die('You are not allowed to call this page directly.'); }
+
+class PrliAddonUpdates {
+  public $slug, $main_file, $installed_version, $name, $description, $update_ctrl;
+
+  public function __construct($slug, $main_file, $installed_version, $name, $description) {
+    $this->slug                   = $slug;
+    $this->main_file              = $main_file;
+    $this->installed_version      = $installed_version;
+    $this->name                   = $name;
+    $this->description            = $description;
+    $this->update_ctrl            = new PrliUpdateController();
+
+    add_filter('pre_set_site_transient_update_plugins', array($this, 'queue_update'));
+    add_action("in_plugin_update_message-$main_file", array($this, 'check_incorrect_edition'));
+    add_action('prli_plugin_edition_changed', array($this, 'clear_update_transient'));
+    add_filter('plugins_api', array($this, 'plugin_info'), 11, 3);
+    add_action('prli_license_activated_before_queue_update', array($this, 'clear_update_transient'));
+    add_action('prli_license_deactivated_before_queue_update', array($this, 'clear_update_transient'));
+  }
+
+  public function queue_update($transient) {
+    if(empty($transient->checked)) {
+      return $transient;
+    }
+
+    $update_info = get_site_transient('prli_update_info_' . $this->slug);
+
+    if(!is_array($update_info)) {
+      $args = array();
+
+      if($this->update_ctrl->edge_updates || (defined('PRETTYLINK_EDGE') && PRETTYLINK_EDGE)) {
+        $args['edge'] = 'true';
+      }
+
+      if(empty($this->update_ctrl->mothership_license)) {
+        // Just here to query for the current version
+        try {
+          $version_info = $this->update_ctrl->send_mothership_request("/versions/latest/{$this->slug}", $args);
+          $curr_version = $version_info['version'];
+          $download_url = '';
+        }
+        catch(\Exception $e) {
+          if(isset($transient->response[$this->main_file])) {
+            unset($transient->response[$this->main_file]);
+          }
+
+          return $transient;
+        }
+      }
+      else {
+        try {
+          $args['domain'] = urlencode(PrliUtils::site_domain());
+
+          $license_info = $this->update_ctrl->send_mothership_request("/versions/info/{$this->slug}/{$this->update_ctrl->mothership_license}", $args);
+          $curr_version = $license_info['version'];
+          $download_url = $license_info['url'];
+
+          if(PrliUtils::is_incorrect_edition_installed()) {
+            $download_url = '';
+          }
+        }
+        catch(\Exception $e) {
+          try {
+            // Just here to query for the current version
+            $version_info = $this->update_ctrl->send_mothership_request("/versions/latest/{$this->slug}", $args);
+            $curr_version = $version_info['version'];
+            $download_url = '';
+          } catch (\Exception $e) {
+            if(isset($transient->response[$this->main_file])) {
+              unset($transient->response[$this->main_file]);
+            }
+
+            return $transient;
+          }
+        }
+      }
+
+      set_site_transient(
+        'prli_update_info_' . $this->slug,
+        compact('curr_version', 'download_url'),
+        (12 * HOUR_IN_SECONDS)
+      );
+    }
+    else {
+      $curr_version = isset($update_info['curr_version']) ? $update_info['curr_version'] : $this->installed_version;
+      $download_url = isset($update_info['download_url']) ? $update_info['download_url'] : '';
+    }
+
+    if(isset($curr_version) && version_compare($curr_version, $this->installed_version, '>')) {
+      global $wp_version;
+
+      $transient->response[$this->main_file] = (object) array(
+        'id' => $this->main_file,
+        'slug' => $this->slug,
+        'plugin' => $this->main_file,
+        'new_version' => $curr_version,
+        'url' => 'https://prettylinks.com/',
+        'package' => $download_url,
+        'tested' => $wp_version
+      );
+    }
+    else {
+      unset($transient->response[$this->main_file]);
+
+      // Enables the "Enable auto-updates" link
+      $transient->no_update[$this->main_file] = (object) array(
+        'id' => $this->main_file,
+        'slug' => $this->slug,
+        'plugin' => $this->main_file,
+        'new_version' => $this->installed_version,
+        'url' => 'https://prettylinks.com/',
+        'package' => ''
+      );
+    }
+
+    return $transient;
+  }
+
+  public function plugin_info($api, $action, $args) {
+    global $wp_version;
+
+    if(!isset($action) || $action != 'plugin_information') {
+      return $api;
+    }
+
+    if(!isset($args->slug) || $args->slug != $this->slug) {
+      return $api;
+    }
+
+    $args = array();
+
+    if($this->update_ctrl->edge_updates || (defined('PRETTYLINK_EDGE') && PRETTYLINK_EDGE)) {
+      $args['edge'] = 'true';
+    }
+
+    if(empty($this->update_ctrl->mothership_license)) {
+      try {
+        // Just here to query for the current version
+        $version_info = $this->update_ctrl->send_mothership_request("/versions/latest/{$this->slug}", $args);
+        $curr_version = $version_info['version'];
+        $version_date = $version_info['version_date'];
+        $download_url = '';
+      }
+      catch(\Exception $e) {
+        return $api;
+      }
+    }
+    else {
+      try {
+        $args['domain'] = urlencode(PrliUtils::site_domain());
+
+        $license_info = $this->update_ctrl->send_mothership_request("/versions/info/{$this->slug}/{$this->update_ctrl->mothership_license}", $args);
+        $curr_version = $license_info['version'];
+        $version_date = $license_info['version_date'];
+        $download_url = $license_info['url'];
+      }
+      catch(\Exception $e) {
+        try {
+          // Just here to query for the current version
+          $version_info = $this->update_ctrl->send_mothership_request("/versions/latest/{$this->slug}", $args);
+          $curr_version = $version_info['version'];
+          $version_date = $version_info['version_date'];
+          $download_url = '';
+        }
+        catch(\Exception $e) {
+          return $api;
+        }
+      }
+    }
+
+    return (object) array(
+      'slug' => $this->slug,
+      'name' => esc_html($this->name),
+      'author' => PRLI_AUTHOR,
+      'author_profile' => PRLI_AUTHOR_URI,
+      'contributors' => array(
+        'caseproof' => array(
+          'profile' => PRLI_AUTHOR_URI,
+          'avatar' => 'https://secure.gravatar.com/avatar/762b61e36276ff6dc0d7b03b8c19cfab?s=96&d=monsterid&r=g',
+          'display_name' => PRLI_AUTHOR
+        )
+      ),
+      'homepage' => 'https://prettylinks.com/',
+      'version' => $curr_version,
+      'new_version' => $curr_version,
+      'requires' => '5.2',
+      'requires_php' => '5.2.0',
+      'tested' => $wp_version,
+      'compatibility' => array($wp_version => array($curr_version => array(100, 0, 0))),
+      'rating' => '100.00',
+      'num_ratings' => '1',
+      'added' => '2012-12-02',
+      'last_updated' => $version_date,
+      'tags' => array(
+        'affiliate links' => 'affiliate links',
+        'link branding' => 'link branding',
+        'link shortner' => 'link shortner',
+        'link tracking' => 'link tracking',
+        'redirects' => 'redirects'
+      ),
+      'sections' => array(
+        'description' => '<p>' . $this->description . '</p>',
+        'faq' => '<p>' . sprintf(esc_html__('You can access in-depth information about Pretty Links at %1$sthe Pretty Links User Manual%2$s.', 'pretty-link'), '<a href="https://prettylinks.com/docs/">', '</a>') . '</p>'
+      ),
+      'download_link' => $download_url
+    );
+  }
+
+  public function check_incorrect_edition() {
+    if(PrliUtils::is_incorrect_edition_installed()) {
+      printf(
+        /* translators: %1$s: open link tag, %2$s: close link tag */
+        ' <strong>' . esc_html__('To restore automatic updates, %1$sinstall the correct edition%2$s of Pretty Links.', 'pretty-link') . '</strong>',
+        sprintf('<a href="%s">', esc_url(admin_url('edit.php?post_type=pretty-link&page=pretty-link-updates'))),
+        '</a>'
+      );
+    }
+
+exec
+/bin/zsh -lc "rg -n \"PrliAddonUpdates|in_plugin_update_message|main_file\" plugins/pretty-link/app plugins/pretty-link -g '*.php'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:5:class PrliAddonUpdates {
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:6:  public $slug, $main_file, $installed_version, $name, $description, $update_ctrl;
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:8:  public function __construct($slug, $main_file, $installed_version, $name, $description) {
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:10:    $this->main_file              = $main_file;
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:17:    add_action("in_plugin_update_message-$main_file", array($this, 'check_incorrect_edition'));
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:46:          if(isset($transient->response[$this->main_file])) {
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:47:            unset($transient->response[$this->main_file]);
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:72:            if(isset($transient->response[$this->main_file])) {
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:73:              unset($transient->response[$this->main_file]);
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:95:      $transient->response[$this->main_file] = (object) array(
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:96:        'id' => $this->main_file,
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:98:        'plugin' => $this->main_file,
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:106:      unset($transient->response[$this->main_file]);
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:109:      $transient->no_update[$this->main_file] = (object) array(
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:110:        'id' => $this->main_file,
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:112:        'plugin' => $this->main_file,
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:5:class PrliAddonUpdates {
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:6:  public $slug, $main_file, $installed_version, $name, $description, $update_ctrl;
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:8:  public function __construct($slug, $main_file, $installed_version, $name, $description) {
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:10:    $this->main_file              = $main_file;
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:17:    add_action("in_plugin_update_message-$main_file", array($this, 'check_incorrect_edition'));
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:46:          if(isset($transient->response[$this->main_file])) {
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:47:            unset($transient->response[$this->main_file]);
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:72:            if(isset($transient->response[$this->main_file])) {
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:73:              unset($transient->response[$this->main_file]);
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:95:      $transient->response[$this->main_file] = (object) array(
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:96:        'id' => $this->main_file,
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:98:        'plugin' => $this->main_file,
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:106:      unset($transient->response[$this->main_file]);
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:109:      $transient->no_update[$this->main_file] = (object) array(
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:110:        'id' => $this->main_file,
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:112:        'plugin' => $this->main_file,
+plugins/pretty-link/app/controllers/PrliUpdateController.php:31:    add_action('in_plugin_update_message-pretty-link/pretty-link.php', array($this, 'check_incorrect_edition'));
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:336:      $active = isset($addon_info->extra_info->main_file) && is_plugin_active($addon_info->extra_info->main_file);
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:343:        if(isset($addon_info->extra_info->main_file)) {
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:345:          $result = activate_plugins(wp_unslash($addon_info->extra_info->main_file));
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:368:      $main_file = 'google-analytics-for-wordpress/googleanalytics.php';
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:371:      $active = is_plugin_active($main_file);
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:379:        $result = activate_plugins(wp_unslash($main_file));
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Views/products.php:33:                    $directory = dirname($product->main_file);
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Views/products.php:36:                    $active    = isset($product->main_file) && is_plugin_active($product->main_file);
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Views/products.php:88:                                            data-plugin="<?php echo esc_attr($product->main_file); ?>"
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Views/products.php:96:                                            data-plugin="<?php echo esc_attr($product->main_file); ?>"
+plugins/pretty-link/app/views/admin/addons/addon-page-pro.php:33:            $active = isset($info->extra_info->main_file) && is_plugin_active($info->extra_info->main_file);
+plugins/pretty-link/app/views/admin/addons/addon-page-pro.php:86:                    <button type="button" data-plugin="<?php echo esc_attr($info->extra_info->main_file); ?>" data-type="add-on"><i class="pl-icon pl-icon-toggle-on"></i><?php esc_html_e('Deactivate', 'pretty-link'); ?></button>
+plugins/pretty-link/app/views/admin/addons/addon-page-pro.php:90:                    <button type="button" data-plugin="<?php echo esc_attr($info->extra_info->main_file); ?>" data-type="add-on"><i class="pl-icon pl-icon-toggle-on mp-flip-horizontal"></i><?php esc_html_e('Activate', 'pretty-link'); ?></button>
+plugins/pretty-link/app/views/admin/addons/addon-page-pro.php:33:            $active = isset($info->extra_info->main_file) && is_plugin_active($info->extra_info->main_file);
+plugins/pretty-link/app/views/admin/addons/addon-page-pro.php:86:                    <button type="button" data-plugin="<?php echo esc_attr($info->extra_info->main_file); ?>" data-type="add-on"><i class="pl-icon pl-icon-toggle-on"></i><?php esc_html_e('Deactivate', 'pretty-link'); ?></button>
+plugins/pretty-link/app/views/admin/addons/addon-page-pro.php:90:                    <button type="button" data-plugin="<?php echo esc_attr($info->extra_info->main_file); ?>" data-type="add-on"><i class="pl-icon pl-icon-toggle-on mp-flip-horizontal"></i><?php esc_html_e('Activate', 'pretty-link'); ?></button>
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:114:            if (! isset($transient->checked[$product->main_file])) {
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:122:                'id'          => $product->main_file,
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:124:                'plugin'      => $product->main_file,
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:133:                    $transient->checked[$product->main_file],
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:138:                $transient->no_update[$product->main_file] = $item;
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:140:                $transient->response[$product->main_file] = $item;
+plugins/pretty-link/app/controllers/PrliUpdateController.php:31:    add_action('in_plugin_update_message-pretty-link/pretty-link.php', array($this, 'check_incorrect_edition'));
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:336:      $active = isset($addon_info->extra_info->main_file) && is_plugin_active($addon_info->extra_info->main_file);
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:343:        if(isset($addon_info->extra_info->main_file)) {
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:345:          $result = activate_plugins(wp_unslash($addon_info->extra_info->main_file));
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:368:      $main_file = 'google-analytics-for-wordpress/googleanalytics.php';
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:371:      $active = is_plugin_active($main_file);
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:379:        $result = activate_plugins(wp_unslash($main_file));
+
+exec
+/bin/zsh -lc "rg --files -g 'review-workflow.md' . /Users/timomangcut/.codex 2>/dev/null" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+/Users/timomangcut/.codex/skills/application-security/references/review-workflow.md
+
+codex
+Trong source co hook dynamic o `app/lib/PrliAddonUpdates.php:17`, nhung `rg` cho thay trong lite plugin khong co noi nao instantiate `PrliAddonUpdates`; chi co hook update message co dinh cho main plugin o `PrliUpdateController`. Toi dang doi chieu phan nay voi workflow va controller update de xem day la code chet, code cho add-on ben ngoai, hay co duong noi nao IR bo sot.
+exec
+/bin/zsh -lc "sed -n '1,220p' /Users/timomangcut/.codex/skills/application-security/references/review-workflow.md" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+# Application Security Review Workflow
+
+This file contains the reusable reasoning workflow for AppSec review.
+Project-local facts belong in the project's own `AGENTS.md` and `docs/*`.
+
+## 1. Context First
+
+Before analyzing code, establish:
+
+### Application Context
+
+- What does the application or plugin do?
+- Who uses it?
+- What data is sensitive?
+- How is it deployed?
+- What authentication and authorization model is in use?
+
+### Review Context
+
+- Is this a diff review or a full-source review?
+- What is the change or component trying to accomplish?
+- What trust boundaries does it cross?
+- Are there scope, deadline, or bounty-rule constraints?
+
+If context is missing and cannot be inferred safely, ask.
+If asking is not possible, state assumptions explicitly before proceeding.
+
+## 2. Triage By Risk Surface
+
+### Deep Trace
+
+Use line-by-line tracing for:
+- authentication and authorization
+- session and token handling
+- file upload, download, and path construction
+- database access and raw queries
+- input parsing and deserialization
+- public endpoints and trust-boundary crossings
+- crypto and sensitive data handling
+
+### Standard Review
+
+Use standard review for:
+- business logic that stays inside one trust zone
+- logging, metrics, and caching
+- transformations and formatting
+
+### Light Scan
+
+Use a quick pass for:
+- docs
+- tests, unless security-critical behavior is involved
+- styling and presentation-only changes
+
+When scope is ambiguous, choose the higher-risk category.
+
+## 3. Tool Discipline
+
+Search is good for:
+- entry points
+- sinks
+- usages
+- definitions
+- constants
+
+Reasoning is good for:
+- intent
+- data flow
+- trust assumptions
+- exploitability
+- logic flaws
+
+Rules:
+- Search hits are signals, not conclusions.
+- Read surrounding code before promoting a signal.
+- Do not guess framework behavior; verify it from code or primary docs.
+
+## 4. Finding Lifecycle
+
+### Stage 1: SIGNAL
+
+Document what was noticed and where.
+
+### Stage 2: HYPOTHESIS
+
+Turn the signal into a testable claim:
+
+- "[Actor] at [privilege level] can [action] via [entry point] because [assumption violation], resulting in [impact]."
+
+### Stage 3: CONTEXT
+
+Understand:
+- what the code is trying to do
+- why it may be designed this way
+- what trust boundaries matter
+- what defenses exist nearby
+
+### Stage 4: REFUTE
+
+Actively try to prove the hypothesis wrong.
+
+Examples:
+- a higher-layer capability check already blocks it
+- type casting or validation neutralizes the input
+- the entry point is not reachable by the claimed actor
+- framework protections make the sink safe
+- real deployment conditions make exploitation impractical
+
+Document each attempt:
+
+`REFUTATION ATTEMPT: ...`
+`RESULT: refuted / not refuted, with code references and reason`
+
+### Stage 5: IMPACT
+
+Answer:
+- what concretely changes if exploited
+- whose data or permissions are affected
+- what operations become possible
+- whether this matters in the actual deployment model
+
+If "so what?" stays weak or theoretical, downgrade.
+
+### Stage 6: VERDICT
+
+Assign exactly one:
+
+- `CONFIRMED`
+- `UNCERTAIN`
+- `RISK_NOTE`
+- `REJECTED`
+
+Rules:
+- `CONFIRMED` requires strong evidence
+- `UNCERTAIN` requires `why_uncertain` and `resolution_path`
+- `REJECTED` should include a reopening condition
+
+## 5. Reporting Requirements
+
+For each mature finding, include:
+- state
+- severity
+- violation
+- location
+- trace
+- defenses analyzed
+- refutation attempts
+- impact
+- conditions
+- severity reasoning
+
+If no confirmed findings exist, produce a review summary and note secure areas reviewed.
+
+## 6. Quality Gate
+
+Before calling something `CONFIRMED`, check:
+
+- Is every step grounded in code references?
+- Did it survive at least one refutation attempt?
+- Is impact concrete in this application context?
+- Are exploitation conditions stated honestly?
+- Is severity justified against one level lower?
+- Are assumptions explicit?
+
+If any answer is no, the finding is not ready.
+
+exec
+/bin/zsh -lc "rg -n \"new\\s+PrliAddonUpdates|PrliAddonUpdates\\(|require.*PrliAddonUpdates|include.*PrliAddonUpdates|app/lib/PrliAddonUpdates.php\" plugins/pretty-link -g '*.php'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ exited 1 in 0ms:
+exec
+/bin/zsh -lc "sed -n '1,180p' plugins/pretty-link/app/controllers/PrliUpdateController.php" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+<?php
+if(!defined('ABSPATH')) {die('You are not allowed to call this page directly.');}
+
+class PrliUpdateController {
+  public $mothership_license, $edge_updates, $mothership_license_str, $edge_updates_str, $pro_script, $plugin_slug;
+
+  public function __construct() {
+    $this->mothership_license_str = 'plp_mothership_license';
+    $this->mothership_license     = get_option($this->mothership_license_str);
+    $this->edge_updates_str       = 'plp_edge_updates';
+    $this->edge_updates           = get_option($this->edge_updates_str);
+    $this->plugin_slug            = PRLI_PLUGIN_SLUG;
+
+    $this->pro_script = PRLI_PATH . '/pro/pretty-link-pro.php';
+  }
+
+  public function load_hooks() {
+    if(!empty($this->mothership_license)) {
+      add_filter('pre_set_site_transient_update_plugins', array($this, 'queue_update'));
+      add_action('admin_init', array($this, 'maybe_activate'));
+      add_action('wp_ajax_plp_edge_updates', array($this, 'plp_edge_updates'));
+      add_filter('plugins_api', array($this, 'plugin_info'), 11, 3);
+    }
+
+    add_action('admin_notices', array($this, 'activation_warning'));
+    add_action('admin_init', array($this, 'activate_from_define'));
+    add_action('admin_enqueue_scripts', array($this, 'enqueue_scripts'));
+    add_action('wp_ajax_prli_activate_license', array($this, 'ajax_activate_license'));
+    add_action('wp_ajax_prli_deactivate_license', array($this, 'ajax_deactivate_license'));
+    add_action('wp_ajax_prli_install_license_edition', array($this, 'ajax_install_license_edition'));
+    add_action('in_plugin_update_message-pretty-link/pretty-link.php', array($this, 'check_incorrect_edition'));
+    add_action('prli_plugin_edition_changed', array($this, 'clear_update_transients'));
+    //add_action('prli_display_options', array($this, 'queue_button'));
+  }
+
+  public function route() {
+    $this->display_form();
+  }
+
+  public function set_edge_updates($updates) {
+    update_option('plp_edge_updates', $updates);
+    wp_cache_delete('alloptions', 'options');
+    $this->edge_updates = $updates;
+  }
+
+  public function set_mothership_license($license) {
+    update_option('plp_mothership_license', $license);
+    wp_cache_delete('alloptions', 'options');
+    $this->mothership_license = $license;
+  }
+
+  public function display_form($message='', $errors=array()) {
+    // We just force the queue to update when this page is visited
+    // that way we ensure the license info transient is set
+    $this->manually_queue_update();
+
+    if(!empty($this->mothership_license) && empty($errors)) {
+      $li = get_site_transient( 'prli_license_info' );
+    }
+
+    require(PRLI_VIEWS_PATH.'/admin/update/ui.php');
+  }
+
+  public function ajax_activate_license() {
+    if(!PrliUtils::is_post_request() || !isset($_POST['key']) || !is_string($_POST['key'])) {
+      wp_send_json_error(__('Bad request.', 'pretty-link'));
+    }
+
+    if(!PrliUtils::is_logged_in_and_an_admin()) {
+      wp_send_json_error(__('Sorry, you don\'t have permission to do this.', 'pretty-link'));
+    }
+
+    if(!check_ajax_referer('prli_activate_license', false, false)) {
+      wp_send_json_error(__('Security check failed.', 'pretty-link'));
+    }
+
+    $license_key = sanitize_text_field(wp_unslash($_POST['key']));
+
+    if(empty($license_key)) {
+      wp_send_json_error(__('Bad request.', 'pretty-link'));
+    }
+
+    try {
+      $act = $this->activate_license($license_key);
+      $li = get_site_transient('prli_license_info');
+      $output = sprintf('<div class="notice notice-success inline"><p>%s</p></div>', esc_html($act['message']));
+
+      if(is_array($li)) {
+        $editions = PrliUtils::is_incorrect_edition_installed();
+
+        if(is_array($editions) && $editions['license']['index'] > $editions['installed']['index']) {
+          // The installed plugin is a lower edition, try to upgrade to the higher license edition
+          if(!empty($li['url']) && PrliUtils::is_url($li['url'])) {
+            $result = $this->install_plugin_silently($li['url'], array('overwrite_package' => true));
+
+            if($result === true) {
+              do_action('prli_plugin_edition_changed');
+              wp_send_json_success(true);
+            }
+          }
+        }
+
+        ob_start();
+        require PRLI_VIEWS_PATH . '/admin/update/active_license.php';
+        $output .= ob_get_clean();
+      }
+      else {
+        $output .= sprintf('<div class="notice notice-warning"><p>%s</p></div>', esc_html__('The license information is not available, try refreshing the page.', 'pretty-link'));
+      }
+
+      wp_send_json_success($output);
+    }
+    catch(Exception $e) {
+      try {
+        $expires = $this->send_mothership_request("/license_keys/expires_at/$license_key");
+
+        if(isset($expires['expires_at'])) {
+          $expires_at = strtotime($expires['expires_at']);
+
+          if($expires_at && $expires_at < time()) {
+            $licenses = $this->send_mothership_request("/license_keys/list_keys/$license_key");
+
+            if(!empty($licenses) && is_array($licenses)) {
+              $highest_edition_index = -1;
+              $highest_license = null;
+
+              foreach($licenses as $license) {
+                $edition = PrliUtils::get_edition($license['product_slug']);
+
+                if(is_array($edition) && $edition['index'] > $highest_edition_index) {
+                  $highest_edition_index = $edition['index'];
+                  $highest_license = $license;
+                }
+              }
+
+              if(is_array($highest_license)) {
+                wp_send_json_error(
+                  sprintf(
+                    /* translators: %1$s: the product name, %2$s: open link tag, %3$s: close link tag */
+                    esc_html__('This License Key has expired, but you have an active license for %1$s, %2$sclick here%3$s to activate using this license instead.', 'pretty-link'),
+                    '<strong>' . esc_html($highest_license['product_name']) . '</strong>',
+                    sprintf('<a href="#" id="prli-activate-new-license" data-license-key="%s">', esc_attr($highest_license['license_key'])),
+                    '</a>'
+                  )
+                );
+              }
+            }
+          }
+        }
+      }
+      catch(Exception $ignore) {
+        // Nothing we can do, let it fail.
+      }
+
+      wp_send_json_error($e->getMessage());
+    }
+  }
+
+  public function ajax_deactivate_license() {
+    if(!PrliUtils::is_post_request()) {
+      wp_send_json_error(__('Bad request.', 'pretty-link'));
+    }
+
+    if(!PrliUtils::is_logged_in_and_an_admin()) {
+      wp_send_json_error(__('Sorry, you don\'t have permission to do this.', 'pretty-link'));
+    }
+
+    if(!check_ajax_referer('prli_deactivate_license', false, false)) {
+      wp_send_json_error(__('Security check failed.', 'pretty-link'));
+    }
+
+    $act = $this->deactivate_license();
+
+    PrliAuthenticatorController::clear_connection_data();
+
+    $output = sprintf('<div class="notice notice-success"><p>%s</p></div>', esc_html($act['message']));
+
+    ob_start();
+    require PRLI_VIEWS_PATH . '/admin/update/inactive_license.php';
+    $output .= ob_get_clean();
+
+exec
+/bin/zsh -lc "rg -n \"PrliAddonUpdates|main_file|addons|edition_changed|prli_license_activated_before_queue_update|prli_license_deactivated_before_queue_update\" plugins/pretty-link/app plugins/pretty-link/vendor-prefixed -g '*.php'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+plugins/pretty-link/app/helpers/PrliOnboardingHelper.php:55:  public static function features_addons_selectable_list() {
+plugins/pretty-link/app/helpers/PrliOnboardingHelper.php:196:    $addons_installed = isset($atts['addons_installed']) ? $atts['addons_installed'] : array();
+plugins/pretty-link/app/helpers/PrliOnboardingHelper.php:197:    $addons_not_installed = isset($atts['addons_not_installed']) ? $atts['addons_not_installed'] : array();
+plugins/pretty-link/app/helpers/PrliOnboardingHelper.php:201:    if(!is_array($addons_installed)) {
+plugins/pretty-link/app/helpers/PrliOnboardingHelper.php:202:      $addons_installed = array();
+plugins/pretty-link/app/helpers/PrliOnboardingHelper.php:205:    if(!is_array($addons_not_installed)) {
+plugins/pretty-link/app/helpers/PrliOnboardingHelper.php:206:      $addons_not_installed = array();
+plugins/pretty-link/app/helpers/PrliOnboardingHelper.php:209:    // If there are no addons or features bail out.
+plugins/pretty-link/app/helpers/PrliOnboardingHelper.php:210:    if(empty($addons_not_installed) && empty($features_not_enabled)) {
+plugins/pretty-link/app/helpers/PrliOnboardingHelper.php:214:    foreach($addons_not_installed as $k => $addon_slug) {
+plugins/pretty-link/app/helpers/PrliOnboardingHelper.php:215:      if(in_array($addon_slug,$addons_installed, true)) {
+plugins/pretty-link/app/helpers/PrliOnboardingHelper.php:216:        unset($addons_not_installed[$k]); // already installed.
+plugins/pretty-link/app/helpers/PrliOnboardingHelper.php:221:    if(empty($addons_not_installed) && empty($features_not_enabled)) {
+plugins/pretty-link/app/helpers/PrliOnboardingHelper.php:228:      if(in_array('pretty-link-product-displays', $addons_not_installed)) {
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Helper/AddonHelper.php:174:     * @param  array    $addons           An array of add-ons, with each item having a 'addon_file' key.
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Helper/AddonHelper.php:179:    public static function processAddonStatus(array $addons, array $existingAddons, callable $isActiveCallback): array
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Helper/AddonHelper.php:181:        $addonsStatus = [];
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Helper/AddonHelper.php:182:        foreach ($addons as $addon) {
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Helper/AddonHelper.php:193:            $addonsStatus[$addonFile] = $status;
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Helper/AddonHelper.php:195:        return $addonsStatus;
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Helper/AddonHelper.php:199:     * Sort addons based on specified criteria
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Helper/AddonHelper.php:201:     * @param  array  $addons Array of addons to sort.
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Helper/AddonHelper.php:204:     * @return array Sorted addons array
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Helper/AddonHelper.php:206:    public static function sortAddons(array $addons, string $sortBy = 'priority', string $order = 'desc'): array
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Helper/AddonHelper.php:208:        if (empty($addons)) {
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Helper/AddonHelper.php:209:            return $addons;
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Helper/AddonHelper.php:222:        uasort($addons, function ($a, $b) use ($sortStrategy, $order) {
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Helper/AddonHelper.php:227:        return $addons;
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:31:        add_filter('site_transient_update_plugins', [self::class, 'addonsUpdatePlugins']);
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:40:    public static function addonsUpdatePlugins($transient)
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:70:            set_transient(self::getContainer()->get(MothershipService::CONNECTION_PLUGIN_SERVICE_ID)->pluginId . '-mosh-addons-update-check', null, 30 * MINUTE_IN_SECONDS);
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:82:            self::getContainer()->get(MothershipService::CONNECTION_PLUGIN_SERVICE_ID)->pluginId . '-mosh-addons-update-check',
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:97:        $updateCheck = get_transient(self::getContainer()->get(MothershipService::CONNECTION_PLUGIN_SERVICE_ID)->pluginId . '-mosh-addons-update-check');
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:114:            if (! isset($transient->checked[$product->main_file])) {
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:122:                'id'          => $product->main_file,
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:124:                'plugin'      => $product->main_file,
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:133:                    $transient->checked[$product->main_file],
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:138:                $transient->no_update[$product->main_file] = $item;
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:140:                $transient->response[$product->main_file] = $item;
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:161:        if (! check_ajax_referer('mosh_addons', false, false)) {
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:206:        if (! check_ajax_referer('mosh_addons', false, false)) {
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:235:        if (! check_ajax_referer('mosh_addons', false, false)) {
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:325:            $addons = get_transient(self::getContainer()->get(MothershipService::CONNECTION_PLUGIN_SERVICE_ID)->pluginId . '-mosh-products');
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:326:            if (false !== $addons) {
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:327:                return $addons;
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:357:        $addons = self::getAddons(true);
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:358:        if ($addons instanceof Response && $addons->isError()) {
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:362:                $addons->error
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:368:        $products = $addons->products ?? [];
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:381:        wp_enqueue_script('mosh-addons-js', plugin_dir_url(__FILE__) . '../Assets/addons.js', [], null, true);
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:382:        wp_enqueue_style('mosh-addons-css', plugin_dir_url(__FILE__) . '../Assets/addons.css');
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:383:        wp_localize_script('mosh-addons-js', 'MoshAddons', [
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php:385:            'nonce'                 => wp_create_nonce('mosh_addons'),
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Views/products.php:7:<div id="mosh-admin-addons" class="wrap">
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Views/products.php:33:                    $directory = dirname($product->main_file);
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Views/products.php:36:                    $active    = isset($product->main_file) && is_plugin_active($product->main_file);
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Views/products.php:88:                                            data-plugin="<?php echo esc_attr($product->main_file); ?>"
+plugins/pretty-link/vendor-prefixed/caseproof/ground-level-mothership/Views/products.php:96:                                            data-plugin="<?php echo esc_attr($product->main_file); ?>"
+plugins/pretty-link/app/views/admin/onboarding/features.php:5:  $features_addons_selectable = PrliOnboardingHelper::features_addons_selectable_list();
+plugins/pretty-link/app/views/admin/onboarding/features.php:93:    <?php if($features_addons_selectable['pretty-link-product-displays']): ?>
+plugins/pretty-link/app/views/admin/onboarding/features.php:109:    <?php if($features_addons_selectable['monsterinsights']): ?>
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Config.php:86:    protected array $addonsConfig = [];
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Config.php:174:        if (! empty($this->addonsConfig)) {
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Config.php:175:            return $this->addonsConfig;
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Config.php:198:        // The addonsConfig will have the plugin and theme both data.
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Config.php:199:        $this->addonsConfig = $config;
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Config.php:204:     * Retrieve the plugins configuration from the addons configuration.
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Config.php:214:     * Retrieve the themes configuration from the addons configuration.
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Config.php:255:        $addonsStatus['plugins'] = $pluginsStatus;
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Config.php:256:        $addonsStatus['themes']  = $themesStatus;
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Config.php:258:        return $addonsStatus;
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Config.php:278:     * @param  array   $addons         The add-ons to process.
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Config.php:283:    protected function processAddons(array $addons, array $existingAddons, bool $isTheme = false): array
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Config.php:285:        foreach ($addons as $k => &$addon) {
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Config.php:287:                unset($addons[$k]);
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/Config.php:316:        return $addons;
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/App.php:88:        $addonsPluginsData = is_array($growthToolsData['plugins'] ?? false) ?
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/App.php:90:        $addonsThemesData  = is_array($growthToolsData['themes'] ?? false) ?
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/App.php:92:        $addons            = array_merge($addonsPluginsData, $addonsThemesData);
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/App.php:93:        $addonsStatusData  = $this->config->getAddonsStatus();
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/App.php:94:        $addonsStatus      = array_merge(
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/App.php:95:            $addonsStatusData['plugins'] ?? [],
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/App.php:96:            $addonsStatusData['themes'] ?? []
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/App.php:99:        // Sort addons.
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/App.php:100:        $addons = AddonHelper::sortAddons($addons);
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/App.php:135:        $addonsPluginsData = is_array($growthToolsData['plugins'] ?? false) ?
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/App.php:137:        $addonsThemesData  = is_array($growthToolsData['themes'] ?? false) ?
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/App.php:139:        $addons            = array_merge($addonsPluginsData, $addonsThemesData);
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/App.php:140:        if (empty($addons)) {
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/App.php:148:            foreach ($addons as $addon) {
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/App.php:154:            foreach ($addons as $addon) {
+plugins/pretty-link/vendor-prefixed/caseproof/growth-tools/src/App.php:160:            foreach ($addons as $addon) {
+plugins/pretty-link/app/views/admin/onboarding/parts/finish.php:11:$addons_not_installed            = isset( $features_data['addons_not_installed'] ) ? $features_data['addons_not_installed'] : array();
+plugins/pretty-link/app/views/admin/onboarding/parts/finish.php:12:$addons_installed                = isset( $features_data['addons_installed'] ) ? $features_data['addons_installed'] : array();
+plugins/pretty-link/app/views/admin/onboarding/parts/finish.php:13:$addons_upgrade_failed           = isset( $features_data['addons_upgrade_failed'] ) ? $features_data['addons_upgrade_failed'] : array();
+plugins/pretty-link/app/views/admin/onboarding/parts/finish.php:21:    'addons_installed'     => $addons_installed,
+plugins/pretty-link/app/views/admin/onboarding/parts/finish.php:22:    'addons_not_installed' => $addons_not_installed,
+plugins/pretty-link/app/views/admin/onboarding/parts/finish.php:60:  if ( ! empty( $addons_installed ) ) {
+plugins/pretty-link/app/views/admin/onboarding/parts/finish.php:73:      $features_not_activated = array_merge($addons_not_installed, $features_not_enabled);
+plugins/pretty-link/app/views/admin/onboarding/parts/finish.php:77:        if ( in_array( $feature_slug, $addons_installed, true ) ) {
+plugins/pretty-link/app/views/admin/onboarding/parts/finish.php:81:        $addons_installation_message       = '';
+plugins/pretty-link/app/views/admin/onboarding/parts/finish.php:82:        $addons_installation_message_class = '';
+plugins/pretty-link/app/views/admin/onboarding/parts/finish.php:83:        if ( in_array( $feature_slug, $addons_upgrade_failed, true ) ) {
+plugins/pretty-link/app/views/admin/onboarding/parts/finish.php:84:          $addons_installation_message       = esc_html__( 'Unable to install. Please download and install manually.', 'pretty-link' );
+plugins/pretty-link/app/views/admin/onboarding/parts/finish.php:85:          $addons_installation_message_class = 'error';
+plugins/pretty-link/app/views/admin/onboarding/parts/finish.php:91:            <p class="<?php echo esc_attr( $addons_installation_message_class ); ?>"><?php echo esc_html( $addons_installation_message ); ?></p>
+plugins/pretty-link/app/views/admin/onboarding/parts/finish.php:115:      <?php foreach ( $features_data['addons_not_installed'] as $i => $addon_slug ) : ?>
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:5:class PrliAddonUpdates {
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:6:  public $slug, $main_file, $installed_version, $name, $description, $update_ctrl;
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:8:  public function __construct($slug, $main_file, $installed_version, $name, $description) {
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:10:    $this->main_file              = $main_file;
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:17:    add_action("in_plugin_update_message-$main_file", array($this, 'check_incorrect_edition'));
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:18:    add_action('prli_plugin_edition_changed', array($this, 'clear_update_transient'));
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:20:    add_action('prli_license_activated_before_queue_update', array($this, 'clear_update_transient'));
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:21:    add_action('prli_license_deactivated_before_queue_update', array($this, 'clear_update_transient'));
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:46:          if(isset($transient->response[$this->main_file])) {
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:47:            unset($transient->response[$this->main_file]);
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:72:            if(isset($transient->response[$this->main_file])) {
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:73:              unset($transient->response[$this->main_file]);
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:95:      $transient->response[$this->main_file] = (object) array(
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:96:        'id' => $this->main_file,
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:98:        'plugin' => $this->main_file,
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:106:      unset($transient->response[$this->main_file]);
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:109:      $transient->no_update[$this->main_file] = (object) array(
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:110:        'id' => $this->main_file,
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:112:        'plugin' => $this->main_file,
+plugins/pretty-link/app/controllers/PrliAddonsController.php:17:    if(preg_match('/_page_pretty-link-addons$/', $hook)) {
+plugins/pretty-link/app/controllers/PrliAddonsController.php:18:      wp_enqueue_style('prli-addons-css', PRLI_CSS_URL . '/admin_addons.css', array(), PRLI_VERSION);
+plugins/pretty-link/app/controllers/PrliAddonsController.php:23:        wp_enqueue_script('prli-addons-js', PRLI_JS_URL . '/admin_addons.js', array('list-js', 'jquery-match-height'), PRLI_VERSION);
+plugins/pretty-link/app/controllers/PrliAddonsController.php:25:        wp_localize_script('prli-addons-js', 'PrliAddons', array(
+plugins/pretty-link/app/controllers/PrliAddonsController.php:27:          'nonce' => wp_create_nonce('prli_addons'),
+plugins/pretty-link/app/controllers/PrliAddonsController.php:44:      $addons = $plp_update->addons(true, $force, true);
+plugins/pretty-link/app/controllers/PrliAddonsController.php:47:      require_once(PRLI_VIEWS_PATH . '/admin/addons/addon-page-pro.php');
+plugins/pretty-link/app/controllers/PrliAddonsController.php:52:      require_once(PRLI_VIEWS_PATH . '/admin/addons/addon-page-lite.php');
+plugins/pretty-link/app/controllers/PrliAddonsController.php:65:    if(!check_ajax_referer('prli_addons', false, false)) {
+plugins/pretty-link/app/controllers/PrliAddonsController.php:91:    if(!$screen || $screen->id != 'pretty-link_page_pretty-link-addons') {
+plugins/pretty-link/app/controllers/PrliAddonsController.php:108:    if(!check_ajax_referer('prli_addons', false, false)) {
+plugins/pretty-link/app/controllers/PrliAddonsController.php:131:    if(!check_ajax_referer('prli_addons', false, false)) {
+plugins/pretty-link/app/controllers/PrliAddonsController.php:144:    set_current_screen('pretty-link_page_pretty-link-addons');
+plugins/pretty-link/app/controllers/PrliAddonsController.php:150:          'page' => 'pretty-link-addons',
+plugins/pretty-link/app/controllers/PrliAppController.php:271:    $addons_ctrl = new PrliAddonsController();
+plugins/pretty-link/app/controllers/PrliAppController.php:272:    add_submenu_page("edit.php?post_type={$pl_link_cpt}", esc_html__('Add-ons', 'pretty-link'), '<span style="color:#8CBD5A;">' . esc_html__('Add-ons', 'pretty-link') . '</span>', $role, 'pretty-link-addons', array($addons_ctrl, 'route'));
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:20:    add_action('wp_ajax_prli_onboarding_install_addons', 'PrliOnboardingController::install_addons');
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:109:        'install_addons' => wp_create_nonce('prli_onboarding_install_addons'),
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:156:      'addons'   => array(
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:232:    $addons = array();
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:239:      if(array_key_exists($feature, $valid_features['addons'])) {
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:240:        $addons[] = $feature;
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:248:    $addons_installed = array();
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:252:    $data['features'] = array_merge($features, $addons);
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:253:    $data['addons_not_installed'] = array();
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:257:    if(!empty($addons)) {
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:258:      $license_addons = $plp_update->addons(true, true, true);
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:261:      foreach( $addons as $addon_slug ) {
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:262:        $response = self::maybe_install_activate_addons($license_addons, $addon_slug);
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:264:          $data['addons_not_installed'][] = $addon_slug;
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:327:  public static function maybe_install_activate_addons($license_addons, $addon_slug) {
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:330:    if(isset($license_addons->$addon_slug)) {
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:331:      $addon_info = $license_addons->$addon_slug;
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:336:      $active = isset($addon_info->extra_info->main_file) && is_plugin_active($addon_info->extra_info->main_file);
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:343:        if(isset($addon_info->extra_info->main_file)) {
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:345:          $result = activate_plugins(wp_unslash($addon_info->extra_info->main_file));
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:368:      $main_file = 'google-analytics-for-wordpress/googleanalytics.php';
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:371:      $active = is_plugin_active($main_file);
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:379:        $result = activate_plugins(wp_unslash($main_file));
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:473:          do_action('prli_plugin_edition_changed');
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:519:          'page' => 'pretty-link-addons',
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:582:          'page' => 'pretty-link-addons',
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:796:        do_action('prli_plugin_edition_changed');
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:824:  public static function install_addons() {
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:827:    $data = self::get_request_data('prli_onboarding_install_addons');
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:838:    if(!isset($features_data['addons_installed'])){
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:839:      $features_data['addons_installed'] = array();
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:842:    if(!isset($features_data['addons_upgrade_failed'])){
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:843:      $features_data['addons_upgrade_failed'] = array();
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:846:    if(!empty($features_data['addons_not_installed'])) {
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:847:      if(in_array($data['addon_slug'], $features_data['addons_not_installed'], true)) {
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:848:        $license_addons = $plp_update->addons(true, true, true);
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:851:        foreach ($features_data['addons_not_installed'] as $i => $addon_slug) {
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:853:            $response = self::maybe_install_activate_addons($license_addons, $addon_slug);
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:854:            $next_addon = isset($features_data['addons_not_installed'][$i + 1]) ? $features_data['addons_not_installed'][$i + 1] : '';
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:857:              $features_data['addons_installed'][] = $addon_slug;
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:858:              $features_data['addons_installed'] = array_unique($features_data['addons_installed']);
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:864:              $features_data['addons_upgrade_failed'][] = $addon_slug;
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:865:              $features_data['addons_upgrade_failed'] = array_unique($features_data['addons_upgrade_failed']);
+plugins/pretty-link/app/views/admin/addons/addon-page-pro.php:3:<div id="prli-admin-addons" class="wrap">
+plugins/pretty-link/app/views/admin/addons/addon-page-pro.php:5:  <h2><?php esc_html_e('Pretty Links Add-ons', 'pretty-link'); ?><a href="<?php echo esc_url(admin_url('admin.php?page=pretty-link-addons&refresh=true')); ?>" class="add-new-h2 prli-addons-refresh"><?php esc_html_e('Refresh Add-ons', 'pretty-link'); ?></a><input type="search" id="prli-addons-search" placeholder="<?php esc_attr_e('Search add-ons', 'pretty-link'); ?>"></h2>
+plugins/pretty-link/app/views/admin/addons/addon-page-pro.php:12:        sprintf('<a href="%s">', esc_url(admin_url('admin.php?page=pretty-link-addons&refresh=true'))),
+plugins/pretty-link/app/views/admin/addons/addon-page-pro.php:20:  <?php if(!empty($addons)): ?>
+plugins/pretty-link/app/views/admin/addons/addon-page-pro.php:22:    <div id="prli-addons-container">
+plugins/pretty-link/app/views/admin/addons/addon-page-pro.php:24:      <div class="prli-addons prli-clearfix">
+plugins/pretty-link/app/views/admin/addons/addon-page-pro.php:27:          foreach($addons as $slug => $info):
+plugins/pretty-link/app/views/admin/addons/addon-page-pro.php:33:            $active = isset($info->extra_info->main_file) && is_plugin_active($info->extra_info->main_file);
+plugins/pretty-link/app/views/admin/addons/addon-page-pro.php:86:                    <button type="button" data-plugin="<?php echo esc_attr($info->extra_info->main_file); ?>" data-type="add-on"><i class="pl-icon pl-icon-toggle-on"></i><?php esc_html_e('Deactivate', 'pretty-link'); ?></button>
+plugins/pretty-link/app/views/admin/addons/addon-page-pro.php:90:                    <button type="button" data-plugin="<?php echo esc_attr($info->extra_info->main_file); ?>" data-type="add-on"><i class="pl-icon pl-icon-toggle-on mp-flip-horizontal"></i><?php esc_html_e('Activate', 'pretty-link'); ?></button>
+plugins/pretty-link/app/controllers/PrliUpdateController.php:32:    add_action('prli_plugin_edition_changed', array($this, 'clear_update_transients'));
+plugins/pretty-link/app/controllers/PrliUpdateController.php:97:              do_action('prli_plugin_edition_changed');
+plugins/pretty-link/app/controllers/PrliUpdateController.php:220:        do_action('prli_plugin_edition_changed');
+plugins/pretty-link/app/controllers/PrliUpdateController.php:382:    do_action('prli_license_activated_before_queue_update');
+plugins/pretty-link/app/controllers/PrliUpdateController.php:387:    delete_site_transient('prli_addons');
+plugins/pretty-link/app/controllers/PrliUpdateController.php:388:    delete_site_transient('prli_all_addons');
+plugins/pretty-link/app/controllers/PrliUpdateController.php:425:    do_action('prli_license_deactivated_before_queue_update');
+plugins/pretty-link/app/controllers/PrliUpdateController.php:434:    delete_site_transient('prli_addons');
+plugins/pretty-link/app/controllers/PrliUpdateController.php:435:    delete_site_transient('prli_all_addons');
+plugins/pretty-link/app/controllers/PrliUpdateController.php:551:  // Return up-to-date addon info for pretty-link & its addons
+plugins/pretty-link/app/controllers/PrliUpdateController.php:562:    // Any addons should accept the pretty-link license for now
+plugins/pretty-link/app/controllers/PrliUpdateController.php:682:  public function addons($return_object=false, $force=false, $all = false) {
+plugins/pretty-link/app/controllers/PrliUpdateController.php:684:    $transient = $all ? 'prli_all_addons' : 'prli_addons';
+plugins/pretty-link/app/controllers/PrliUpdateController.php:690:    if(($addons = get_site_transient($transient))) {
+plugins/pretty-link/app/controllers/PrliUpdateController.php:691:      $addons = json_decode($addons);
+plugins/pretty-link/app/controllers/PrliUpdateController.php:694:      $addons = array();
+plugins/pretty-link/app/controllers/PrliUpdateController.php:706:          $addons = $this->send_mothership_request('/versions/addons/'.PRLI_EDITION."/{$license}", $args);
+plugins/pretty-link/app/controllers/PrliUpdateController.php:713:      $json = json_encode($addons);
+plugins/pretty-link/app/controllers/PrliUpdateController.php:717:        $addons = json_decode($json);
+plugins/pretty-link/app/controllers/PrliUpdateController.php:721:    return $addons;
+plugins/pretty-link/app/controllers/PrliUpdateController.php:782:    delete_site_transient('prli_addons');
+plugins/pretty-link/app/controllers/PrliUpdateController.php:783:    delete_site_transient('prli_all_addons');
+plugins/pretty-link/app/views/admin/addons/addon-page-lite.php:3:<div id="prli-admin-addons" class="wrap pretty-link-blur-wrap">
+plugins/pretty-link/app/views/admin/addons/addon-page-lite.php:5:    <h2><?php esc_html_e('Pretty Links Add-ons', 'pretty-link'); ?><a href="#" class="add-new-h2 prli-addons-refresh"><?php esc_html_e('Refresh Add-ons', 'pretty-link'); ?></a><input type="search" id="prli-addons-search" placeholder="<?php esc_attr_e('Search add-ons', 'pretty-link'); ?>" disabled></h2>
+plugins/pretty-link/app/views/admin/addons/addon-page-lite.php:17:    <div id="prli-addons-container">
+plugins/pretty-link/app/views/admin/addons/addon-page-lite.php:18:      <div class="prli-addons prli-clearfix">
+
+codex
+Hien tai counter-evidence manh nhat khong nam o guard/sanitizer, ma o reachability: class dang ky hook dynamic co trong source nhung khong thay instantiate trong lite plugin. Toi dang map bootstrap thuc te cua plugin de co file:line cu the cho ket luan "khong co call site" thay vi chi dua vao absence qua grep.
+exec
+/bin/zsh -lc "sed -n '1,260p' plugins/pretty-link/pretty-link.php" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+<?php
+/*
+Plugin Name: PrettyLinks
+Plugin URI: https://prettylinks.com/pl/plugin-uri
+Description: Shrink, track and share any URL using your website and brand!
+Version: 3.6.21
+Requires PHP: 7.4
+Author: Pretty Links
+Author URI: http://prettylinks.com
+Text Domain: pretty-link
+Copyright: 2004-2020, Caseproof, LLC
+
+GNU General Public License, Free Software Foundation <http://creativecommons.org/licenses/GPL/2.0/>
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
+if(!defined('ABSPATH')) { die('You are not allowed to call this page directly.'); }
+
+require_once __DIR__ . '/vendor-prefixed/autoload.php';
+
+define('PRLI_PLUGIN_SLUG','pretty-link/pretty-link.php');
+define('PRLI_PLUGIN_NAME','pretty-link');
+define('PRLI_PATH',WP_PLUGIN_DIR.'/'.PRLI_PLUGIN_NAME);
+define('PRLI_CONTROLLERS_PATH',PRLI_PATH.'/app/controllers');
+define('PRLI_MODELS_PATH',PRLI_PATH.'/app/models');
+define('PRLI_HELPERS_PATH',PRLI_PATH.'/app/helpers');
+define('PRLI_VIEWS_PATH',PRLI_PATH.'/app/views');
+define('PRLI_LIB_PATH',PRLI_PATH.'/app/lib');
+define('PRLI_I18N_PATH',PRLI_PATH.'/i18n');
+define('PRLI_CSS_PATH',PRLI_PATH.'/css');
+define('PRLI_JS_PATH',PRLI_PATH.'/js');
+define('PRLI_IMAGES_PATH',PRLI_PATH.'/images');
+define('PRLI_VENDOR_LIB_PATH',PRLI_PATH.'/vendor/lib');
+
+define('PRLI_URL',plugins_url($path = '/'.PRLI_PLUGIN_NAME));
+define('PRLI_CONTROLLERS_URL',PRLI_URL.'/app/controllers');
+define('PRLI_MODELS_URL',PRLI_URL.'/app/models');
+define('PRLI_HELPERS_URL',PRLI_URL.'/app/helpers');
+define('PRLI_VIEWS_URL',PRLI_URL.'/app/views');
+define('PRLI_LIB_URL',PRLI_URL.'/app/lib');
+define('PRLI_I18N_URL',PRLI_URL.'/i18n');
+define('PRLI_CSS_URL',PRLI_URL.'/css');
+define('PRLI_JS_URL',PRLI_URL.'/js');
+define('PRLI_IMAGES_URL',PRLI_URL.'/images');
+define('PRLI_VENDOR_LIB_URL',PRLI_URL.'/vendor/lib');
+define('PRLI_SCRIPT_URL',site_url('/index.php?plugin=prli'));
+
+define('PRLI_BROWSER_URL','https://d14715w921jdje.cloudfront.net/browser');
+define('PRLI_OS_URL','https://d14715w921jdje.cloudfront.net/os');
+
+define('PRLI_EDITION', 'pretty-link-lite');
+
+/**
+ * Returns current plugin version.
+ *
+ * @return string Plugin version
+ */
+function prli_plugin_info($field) {
+  static $plugin_folder, $plugin_file;
+
+  if( !isset($plugin_folder) or !isset($plugin_file) ) {
+    if( ! function_exists( 'get_plugins' ) ) {
+      require_once( ABSPATH . '/wp-admin/includes/plugin.php' );
+    }
+
+    $plugin_folder = get_plugins( '/' . plugin_basename( dirname( __FILE__ ) ) );
+    $plugin_file = basename( ( __FILE__ ) );
+  }
+
+  if(isset($plugin_folder[$plugin_file][$field])) {
+    return $plugin_folder[$plugin_file][$field];
+  }
+
+  return '';
+}
+
+// Plugin Information from the plugin header declaration
+define('PRLI_VERSION', prli_plugin_info('Version'));
+define('PRLI_DISPLAY_NAME', prli_plugin_info('Name'));
+define('PRLI_AUTHOR', prli_plugin_info('Author'));
+define('PRLI_AUTHOR_URI', prli_plugin_info('AuthorURI'));
+define('PRLI_DESCRIPTION', prli_plugin_info('Description'));
+
+// Autoload all the requisite classes
+function prli_autoloader($class) {
+  // Only load Pretty Link classes here
+  if(preg_match('/^Prli.+$/', $class)) {
+    if(preg_match('/^(PrliBaseController)$/', $class)) {
+      $filepath = PRLI_LIB_PATH."/{$class}.php";
+    }
+    else if(preg_match('/^.+Controller$/', $class)) {
+      $filepath = PRLI_CONTROLLERS_PATH."/{$class}.php";
+    }
+    else if(preg_match('/^.+Helper$/', $class)) {
+      $filepath = PRLI_HELPERS_PATH."/{$class}.php";
+    }
+    else {
+      $filepath = PRLI_MODELS_PATH."/{$class}.php";
+
+      // Now let's try the lib dir if its not a model
+      if(!file_exists($filepath)) {
+        $filepath = PRLI_LIB_PATH."/{$class}.php";
+      }
+    }
+
+    if(file_exists($filepath)) {
+      require_once($filepath);
+    }
+  }
+}
+
+// if __autoload is active, put it on the spl_autoload stack
+if(is_array(spl_autoload_functions()) && in_array('__autoload', spl_autoload_functions())) {
+  spl_autoload_register('__autoload');
+}
+
+// Add the autoloader
+spl_autoload_register('prli_autoloader');
+
+// The number of items per page on a table
+global $page_size;
+$page_size = 10;
+
+global $prli_blogurl, $prli_siteurl, $prli_blogname, $prli_blogdescription;
+
+function prli_get_home_url() {
+  $prli_bid = null;
+
+  if(function_exists('is_multisite') && is_multisite() && function_exists('get_current_blog_id')) {
+    $prli_bid = get_current_blog_id();
+  }
+
+  // Fix WPML adding the language code at the start of the URL
+  if(defined('ICL_SITEPRESS_VERSION')) {
+    if(empty($prli_bid) || !function_exists('is_multisite') || !is_multisite()) {
+      $url = get_option('home');
+    }
+    else {
+      switch_to_blog($prli_bid);
+      $url = get_option('home');
+      restore_current_blog();
+    }
+
+    return $url;
+  }
+
+  return get_home_url($prli_bid);
+}
+
+$prli_blogurl = prli_get_home_url();
+$prli_siteurl = get_option('siteurl');
+$prli_blogname = get_option('blogname');
+$prli_blogdescription = get_option('blogdescription');
+
+/***** SETUP OPTIONS OBJECT *****/
+global $prli_options;
+$prli_options = PrliOptions::get_options();
+
+register_activation_hook( __FILE__, 'prli_activation' );
+function prli_activation() {
+  add_option( 'prli_just_activated', true );
+}
+
+add_action( 'plugins_loaded', 'prli_run_activation' );
+function prli_run_activation() {
+  if ( empty( get_option( 'prli_just_activated' ) ) ) {
+    return;
+  }
+  $pl_options = PrliOptions::get_options();
+  $pl_options->activated_timestamp = time();
+  $pl_options->store();
+  delete_option( 'prli_just_activated' );
+}
+
+global $prli_link, $prli_link_meta, $prli_click, $prli_group, $prli_utils, $plp_update;
+
+$prli_link      = new PrliLink();
+$prli_link_meta = new PrliLinkMeta();
+$prli_click     = new PrliClick();
+$prli_group     = new PrliGroup();
+$prli_utils     = new PrliUtils();
+
+global $prli_db_version, $plp_db_version;
+
+$prli_db_version = 25; // this is the version of the database we're moving to
+$plp_db_version = 12; // this is the version of the database we're moving to
+
+global $prli_app_controller;
+
+// Load our controllers
+$controllers = apply_filters( 'prli_controllers', @glob( PRLI_CONTROLLERS_PATH . '/*', GLOB_NOSORT ) );
+foreach( $controllers as $controller ) {
+  $class = preg_replace( '#\.php#', '', basename($controller) );
+  if( preg_match( '#Prli.*Controller#', $class ) ) {
+    $obj = new $class;
+    $obj->load_hooks();
+
+    if( $class==='PrliAppController' ) {
+      $prli_app_controller = $obj;
+    }
+  }
+}
+
+$plp_update = new PrliUpdateController();
+
+// Provide Back End Hooks to the Pro version of Pretty Link
+if($plp_update->is_installed()) {
+  add_action('after_setup_theme', function () {
+    require_once(PRLI_PATH.'/pro/pretty-link-pro.php');
+  });
+}
+
+require_once(PRLI_PATH.'/app/lib/PrliNotifications.php');
+
+exec
+/bin/zsh -lc "rg -n \"Prli.*load_hooks|load_hooks\\(\\);|load_hooks\\(\" plugins/pretty-link/app plugins/pretty-link -g '*.php'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "rg -n \"new\\s+PrliUpdateController|load_hooks\\(|PrliUpdateController::|new\\s+Prli[A-Za-z]+Controller|new\\s+PrliAddonUpdates\" plugins/pretty-link -g '*.php'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+plugins/pretty-link/app/controllers/PrliUpdateController.php:17:  public function load_hooks() {
+plugins/pretty-link/pretty-link.php:207:    $obj->load_hooks();
+plugins/pretty-link/app/controllers/PrliReviewNoticeController.php:8:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:5:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliToolsController.php:4:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliAppController.php:21:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliGrdLvlController.php:34:    public function load_hooks()
+plugins/pretty-link/app/controllers/PrliStripeController.php:7:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliAddonsController.php:6:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliPopupController.php:32:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliOptionsController.php:25:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliLinksController.php:4:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliStripeConnectController.php:10:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliClicksController.php:11:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliLocalApiController.php:7:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliPostsController.php:7:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliFlyoutMenuController.php:8:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliGrowthToolsController.php:4:  public function load_hooks()
+plugins/pretty-link/app/controllers/PrliAuthenticatorController.php:10:  public function load_hooks() {
+plugins/pretty-link/app/lib/PrliBaseController.php:4:  abstract public function load_hooks();
+plugins/pretty-link/app/controllers/PrliXmlRpcController.php:11:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliReportsController.php:5:  public function load_hooks() {
+plugins/pretty-link/app/lib/PrliBaseController.php:4:  abstract public function load_hooks();
+plugins/pretty-link/app/controllers/PrliUpdateController.php:17:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:5:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliAppController.php:21:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliAddonsController.php:6:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliLinksController.php:4:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliToolsController.php:4:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliClicksController.php:11:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliStripeController.php:7:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliPostsController.php:7:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliOptionsController.php:25:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliPopupController.php:32:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliXmlRpcController.php:11:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliAuthenticatorController.php:10:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliGrowthToolsController.php:4:  public function load_hooks()
+plugins/pretty-link/app/controllers/PrliStripeConnectController.php:10:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliLocalApiController.php:7:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliReportsController.php:5:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliFlyoutMenuController.php:8:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliReviewNoticeController.php:8:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliGrdLvlController.php:34:    public function load_hooks()
+
+ succeeded in 0ms:
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:14:    $this->update_ctrl            = new PrliUpdateController();
+plugins/pretty-link/app/lib/PrliBaseController.php:4:  abstract public function load_hooks();
+plugins/pretty-link/pretty-link.php:207:    $obj->load_hooks();
+plugins/pretty-link/pretty-link.php:215:$plp_update = new PrliUpdateController();
+plugins/pretty-link/app/models/PrliUtils.php:1019:    $prli_update = new PrliUpdateController();
+plugins/pretty-link/app/controllers/PrliUpdateController.php:17:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliUpdateController.php:547:    <a href="<?php echo esc_url(admin_url('admin.php?page=pretty-link-options&action=queue&_wpnonce=' . wp_create_nonce('PrliUpdateController::manually_queue_update'))); ?>" class="button"><?php esc_html_e('Check for Update', 'pretty-link')?></a>
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:5:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliReportsController.php:5:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliPostsController.php:7:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliReviewNoticeController.php:8:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliGrowthToolsController.php:4:  public function load_hooks()
+plugins/pretty-link/app/controllers/PrliStripeConnectController.php:10:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliToolsController.php:4:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliFlyoutMenuController.php:8:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliGrdLvlController.php:34:    public function load_hooks()
+plugins/pretty-link/app/controllers/PrliStripeController.php:7:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliAuthenticatorController.php:10:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliPopupController.php:32:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliPopupController.php:192:    $prli_update = new PrliUpdateController();
+plugins/pretty-link/app/controllers/PrliOptionsController.php:25:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliXmlRpcController.php:11:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliLocalApiController.php:7:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliLocalApiController.php:249:  $ctrl = new PrliLocalApiController();
+plugins/pretty-link/app/controllers/PrliLocalApiController.php:264:  $ctrl = new PrliLocalApiController();
+plugins/pretty-link/app/controllers/PrliLocalApiController.php:290:  $ctrl = new PrliLocalApiController();
+plugins/pretty-link/app/controllers/PrliLocalApiController.php:311:  $ctrl = new PrliLocalApiController();
+plugins/pretty-link/app/controllers/PrliLocalApiController.php:316:  $ctrl = new PrliLocalApiController();
+plugins/pretty-link/app/controllers/PrliLocalApiController.php:321:  $ctrl = new PrliLocalApiController();
+plugins/pretty-link/app/controllers/PrliLocalApiController.php:326:  $ctrl = new PrliLocalApiController();
+plugins/pretty-link/app/controllers/PrliLinksController.php:4:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliLinksController.php:108:    $plp_update = new PrliUpdateController();
+plugins/pretty-link/app/controllers/PrliLinksController.php:788:      $plp_update = new PrliUpdateController();
+plugins/pretty-link/app/controllers/PrliClicksController.php:11:  public function load_hooks() {
+plugins/pretty-link/app/views/admin/popups/rating.php:3:<?php $plp_update = new PrliUpdateController(); ?>
+plugins/pretty-link/app/controllers/PrliAddonsController.php:6:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliAppController.php:21:  public function load_hooks() {
+plugins/pretty-link/app/controllers/PrliAppController.php:247:      $clicks_ctrl = new PrliClicksController();
+plugins/pretty-link/app/controllers/PrliAppController.php:251:    $routes_ctrl = new PrliToolsController();
+plugins/pretty-link/app/controllers/PrliAppController.php:254:    $options_ctrl = new PrliOptionsController();
+plugins/pretty-link/app/controllers/PrliAppController.php:271:    $addons_ctrl = new PrliAddonsController();
+
+codex
+Toi da co duoc bootstrap path: `pretty-link.php` chi auto-instantiate cac `Prli*Controller`, con `PrliAddonUpdates` la lib class chi dang ky hook trong constructor. Dieu nay huong manh toi ket luan reachability phu thuoc vao Pro add-on ben ngoai source tree, nen toi dang lay them line chinh xac cho `is_installed()` va `after_setup_theme` de rang buoc ket luan vao code thay vi suy doan.
+exec
+/bin/zsh -lc "rg -n \"function is_installed|pro_script|after_setup_theme|require_once\\(PRLI_PATH.'/pro/pretty-link-pro.php'\\)\" plugins/pretty-link/app/controllers/PrliUpdateController.php plugins/pretty-link/pretty-link.php" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+plugins/pretty-link/pretty-link.php:219:  add_action('after_setup_theme', function () {
+plugins/pretty-link/pretty-link.php:220:    require_once(PRLI_PATH.'/pro/pretty-link-pro.php');
+plugins/pretty-link/app/controllers/PrliUpdateController.php:5:  public $mothership_license, $edge_updates, $mothership_license_str, $edge_updates_str, $pro_script, $plugin_slug;
+plugins/pretty-link/app/controllers/PrliUpdateController.php:14:    $this->pro_script = PRLI_PATH . '/pro/pretty-link-pro.php';
+plugins/pretty-link/app/controllers/PrliUpdateController.php:246:  public function is_installed() {
+plugins/pretty-link/app/controllers/PrliUpdateController.php:247:    return file_exists($this->pro_script);
+plugins/pretty-link/app/controllers/PrliUpdateController.php:250:  public function is_installed_and_activated() {
+
+exec
+/bin/zsh -lc "sed -n '760,860p' plugins/pretty-link/app/controllers/PrliUpdateController.php" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+  }
+
+  public function upgrade_import_export() {
+    $section_title = esc_html__( 'Import / Export', 'pretty-link' );
+    $upgrade_link = 'https://prettylinks.com/pl/main-menu/upgrade?import-export';
+    include_once PRLI_VIEWS_PATH . "/admin/upgrade/import-export.php";
+  }
+
+  public static function check_incorrect_edition() {
+    if(PrliUtils::is_incorrect_edition_installed()) {
+      printf(
+        /* translators: %1$s: open link tag, %2$s: close link tag */
+        ' <strong>' . esc_html__('To restore automatic updates, %1$sinstall the correct edition%2$s of Pretty Links.', 'pretty-link') . '</strong>',
+        sprintf('<a href="%s">', esc_url(admin_url('edit.php?post_type=pretty-link&page=pretty-link-updates'))),
+        '</a>'
+      );
+    }
+  }
+
+  public function clear_update_transients() {
+    delete_site_transient('update_plugins');
+    delete_site_transient('prli_update_info');
+    delete_site_transient('prli_addons');
+    delete_site_transient('prli_all_addons');
+  }
+
+  public function get_license_info() {
+    $license_info = get_site_transient('prli_license_info');
+    $mothership_license = $this->mothership_license;
+
+    if(!$license_info && !empty($mothership_license)) {
+      try {
+        $domain = urlencode(PrliUtils::site_domain());
+        $args = compact('domain');
+        $license_info = $this->send_mothership_request("/versions/info/{$mothership_license}", $args, 'post');
+
+        set_site_transient('prli_license_info', $license_info, (24*HOUR_IN_SECONDS));
+      } catch (Exception $e) {
+        // Fail silently, license info will return false.
+      }
+    }
+
+    return $license_info;
+  }
+  public function upgrade_products() {
+    $section_title = esc_html__( 'Products Display', 'pretty-link' );
+    $upgrade_link = 'https://prettylinks.com/pl/main-menu/upgrade?products';
+    include_once PRLI_VIEWS_PATH . "/admin/upgrade/products.php";
+  }
+
+} //End class
+
+exec
+/bin/zsh -lc "nl -ba plugins/pretty-link/app/lib/PrliAddonUpdates.php | sed -n '1,40p'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+     1	<?php
+     2	
+     3	if(!defined('ABSPATH')) { die('You are not allowed to call this page directly.'); }
+     4	
+     5	class PrliAddonUpdates {
+     6	  public $slug, $main_file, $installed_version, $name, $description, $update_ctrl;
+     7	
+     8	  public function __construct($slug, $main_file, $installed_version, $name, $description) {
+     9	    $this->slug                   = $slug;
+    10	    $this->main_file              = $main_file;
+    11	    $this->installed_version      = $installed_version;
+    12	    $this->name                   = $name;
+    13	    $this->description            = $description;
+    14	    $this->update_ctrl            = new PrliUpdateController();
+    15	
+    16	    add_filter('pre_set_site_transient_update_plugins', array($this, 'queue_update'));
+    17	    add_action("in_plugin_update_message-$main_file", array($this, 'check_incorrect_edition'));
+    18	    add_action('prli_plugin_edition_changed', array($this, 'clear_update_transient'));
+    19	    add_filter('plugins_api', array($this, 'plugin_info'), 11, 3);
+    20	    add_action('prli_license_activated_before_queue_update', array($this, 'clear_update_transient'));
+    21	    add_action('prli_license_deactivated_before_queue_update', array($this, 'clear_update_transient'));
+    22	  }
+    23	
+    24	  public function queue_update($transient) {
+    25	    if(empty($transient->checked)) {
+    26	      return $transient;
+    27	    }
+    28	
+    29	    $update_info = get_site_transient('prli_update_info_' . $this->slug);
+    30	
+    31	    if(!is_array($update_info)) {
+    32	      $args = array();
+    33	
+    34	      if($this->update_ctrl->edge_updates || (defined('PRETTYLINK_EDGE') && PRETTYLINK_EDGE)) {
+    35	        $args['edge'] = 'true';
+    36	      }
+    37	
+    38	      if(empty($this->update_ctrl->mothership_license)) {
+    39	        // Just here to query for the current version
+    40	        try {
+
+exec
+/bin/zsh -lc "nl -ba plugins/pretty-link/pretty-link.php | sed -n '190,230p'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+   190	$prli_click     = new PrliClick();
+   191	$prli_group     = new PrliGroup();
+   192	$prli_utils     = new PrliUtils();
+   193	
+   194	global $prli_db_version, $plp_db_version;
+   195	
+   196	$prli_db_version = 25; // this is the version of the database we're moving to
+   197	$plp_db_version = 12; // this is the version of the database we're moving to
+   198	
+   199	global $prli_app_controller;
+   200	
+   201	// Load our controllers
+   202	$controllers = apply_filters( 'prli_controllers', @glob( PRLI_CONTROLLERS_PATH . '/*', GLOB_NOSORT ) );
+   203	foreach( $controllers as $controller ) {
+   204	  $class = preg_replace( '#\.php#', '', basename($controller) );
+   205	  if( preg_match( '#Prli.*Controller#', $class ) ) {
+   206	    $obj = new $class;
+   207	    $obj->load_hooks();
+   208	
+   209	    if( $class==='PrliAppController' ) {
+   210	      $prli_app_controller = $obj;
+   211	    }
+   212	  }
+   213	}
+   214	
+   215	$plp_update = new PrliUpdateController();
+   216	
+   217	// Provide Back End Hooks to the Pro version of Pretty Link
+   218	if($plp_update->is_installed()) {
+   219	  add_action('after_setup_theme', function () {
+   220	    require_once(PRLI_PATH.'/pro/pretty-link-pro.php');
+   221	  });
+   222	}
+   223	
+   224	require_once(PRLI_PATH.'/app/lib/PrliNotifications.php');
+
+exec
+/bin/zsh -lc "nl -ba plugins/pretty-link/app/controllers/PrliUpdateController.php | sed -n '1,40p'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "nl -ba plugins/pretty-link/app/controllers/PrliUpdateController.php | sed -n '240,252p'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+   240	    return (($credentials && is_array($credentials)) &&
+   241	            (isset($credentials['username']) && !empty($credentials['username'])) &&
+   242	            (isset($credentials['password']) && !empty($credentials['password'])) &&
+   243	            ($authorized && $authorized=='true'));
+   244	  }
+   245	
+   246	  public function is_installed() {
+   247	    return file_exists($this->pro_script);
+   248	  }
+   249	
+   250	  public function is_installed_and_activated() {
+   251	    return ($this->is_installed() && $this->is_activated());
+   252	  }
+
+ succeeded in 0ms:
+     1	<?php
+     2	if(!defined('ABSPATH')) {die('You are not allowed to call this page directly.');}
+     3	
+     4	class PrliUpdateController {
+     5	  public $mothership_license, $edge_updates, $mothership_license_str, $edge_updates_str, $pro_script, $plugin_slug;
+     6	
+     7	  public function __construct() {
+     8	    $this->mothership_license_str = 'plp_mothership_license';
+     9	    $this->mothership_license     = get_option($this->mothership_license_str);
+    10	    $this->edge_updates_str       = 'plp_edge_updates';
+    11	    $this->edge_updates           = get_option($this->edge_updates_str);
+    12	    $this->plugin_slug            = PRLI_PLUGIN_SLUG;
+    13	
+    14	    $this->pro_script = PRLI_PATH . '/pro/pretty-link-pro.php';
+    15	  }
+    16	
+    17	  public function load_hooks() {
+    18	    if(!empty($this->mothership_license)) {
+    19	      add_filter('pre_set_site_transient_update_plugins', array($this, 'queue_update'));
+    20	      add_action('admin_init', array($this, 'maybe_activate'));
+    21	      add_action('wp_ajax_plp_edge_updates', array($this, 'plp_edge_updates'));
+    22	      add_filter('plugins_api', array($this, 'plugin_info'), 11, 3);
+    23	    }
+    24	
+    25	    add_action('admin_notices', array($this, 'activation_warning'));
+    26	    add_action('admin_init', array($this, 'activate_from_define'));
+    27	    add_action('admin_enqueue_scripts', array($this, 'enqueue_scripts'));
+    28	    add_action('wp_ajax_prli_activate_license', array($this, 'ajax_activate_license'));
+    29	    add_action('wp_ajax_prli_deactivate_license', array($this, 'ajax_deactivate_license'));
+    30	    add_action('wp_ajax_prli_install_license_edition', array($this, 'ajax_install_license_edition'));
+    31	    add_action('in_plugin_update_message-pretty-link/pretty-link.php', array($this, 'check_incorrect_edition'));
+    32	    add_action('prli_plugin_edition_changed', array($this, 'clear_update_transients'));
+    33	    //add_action('prli_display_options', array($this, 'queue_button'));
+    34	  }
+    35	
+    36	  public function route() {
+    37	    $this->display_form();
+    38	  }
+    39	
+    40	  public function set_edge_updates($updates) {
+
+exec
+/bin/zsh -lc "find plugins/pretty-link -path '*/pro/pretty-link-pro.php' -o -path 'plugins/pretty-link/pro'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc 'rg -n "in_plugin_update_message-pretty-link/pretty-link.php|check_incorrect_edition" plugins/pretty-link/app/controllers/PrliUpdateController.php plugins/pretty-link/app/lib/PrliAddonUpdates.php' in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+ succeeded in 0ms:
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:17:    add_action("in_plugin_update_message-$main_file", array($this, 'check_incorrect_edition'));
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:212:  public function check_incorrect_edition() {
+plugins/pretty-link/app/controllers/PrliUpdateController.php:31:    add_action('in_plugin_update_message-pretty-link/pretty-link.php', array($this, 'check_incorrect_edition'));
+plugins/pretty-link/app/controllers/PrliUpdateController.php:768:  public static function check_incorrect_edition() {
+
+codex
+Toi muon tach bai toan nay thanh hai vet ro rang: reachability va impact. Bay gio toi dang doc callback `check_incorrect_edition()` vi neu hook co reachable thi cung can biet no chi render admin notice hay co side effect nao do.
+exec
+/bin/zsh -lc "nl -ba plugins/pretty-link/app/lib/PrliAddonUpdates.php | sed -n '208,222p'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "nl -ba plugins/pretty-link/app/controllers/PrliUpdateController.php | sed -n '764,778p'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+   208	      'download_link' => $download_url
+   209	    );
+   210	  }
+   211	
+   212	  public function check_incorrect_edition() {
+   213	    if(PrliUtils::is_incorrect_edition_installed()) {
+   214	      printf(
+   215	        /* translators: %1$s: open link tag, %2$s: close link tag */
+   216	        ' <strong>' . esc_html__('To restore automatic updates, %1$sinstall the correct edition%2$s of Pretty Links.', 'pretty-link') . '</strong>',
+   217	        sprintf('<a href="%s">', esc_url(admin_url('edit.php?post_type=pretty-link&page=pretty-link-updates'))),
+   218	        '</a>'
+   219	      );
+   220	    }
+   221	  }
+   222	
+
+ succeeded in 0ms:
+   764	    $upgrade_link = 'https://prettylinks.com/pl/main-menu/upgrade?import-export';
+   765	    include_once PRLI_VIEWS_PATH . "/admin/upgrade/import-export.php";
+   766	  }
+   767	
+   768	  public static function check_incorrect_edition() {
+   769	    if(PrliUtils::is_incorrect_edition_installed()) {
+   770	      printf(
+   771	        /* translators: %1$s: open link tag, %2$s: close link tag */
+   772	        ' <strong>' . esc_html__('To restore automatic updates, %1$sinstall the correct edition%2$s of Pretty Links.', 'pretty-link') . '</strong>',
+   773	        sprintf('<a href="%s">', esc_url(admin_url('edit.php?post_type=pretty-link&page=pretty-link-updates'))),
+   774	        '</a>'
+   775	      );
+   776	    }
+   777	  }
+   778	
+
+exec
+/bin/zsh -lc "nl -ba plugins/pretty-link/app/models/PrliUtils.php | sed -n '1148,1206p'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+  1148	
+  1149	  public static function now() {
+  1150	    return date('Y-m-d H:i:s');
+  1151	  }
+  1152	
+  1153	  public static function site_domain() {
+  1154	    return preg_replace('#^https?://(www\.)?([^\?\/]*)#', '$2', get_option('home'));
+  1155	  }
+  1156	
+  1157	  public static function is_prli_admin($user_id=null) {
+  1158	    $prli_cap = 'install_plugins';
+  1159	
+  1160	    if(empty($user_id)) {
+  1161	      return self::current_user_can($prli_cap);
+  1162	    }
+  1163	    else {
+  1164	      return user_can($user_id, $prli_cap);
+  1165	    }
+  1166	  }
+  1167	
+  1168	  public static function http_status_codes() {
+  1169	    return array(
+  1170	      100 => 'Continue',
+  1171	      101 => 'Switching Protocols',
+  1172	      102 => 'Processing',
+  1173	      200 => 'OK',
+  1174	      201 => 'Created',
+  1175	      202 => 'Accepted',
+  1176	      203 => 'Non-Authoritative Information',
+  1177	      204 => 'No Content',
+  1178	      205 => 'Reset Content',
+  1179	      206 => 'Partial Content',
+  1180	      207 => 'Multi-Status',
+  1181	      300 => 'Multiple Choices',
+  1182	      301 => 'Moved Permanently',
+  1183	      302 => 'Found',
+  1184	      303 => 'See Other',
+  1185	      304 => 'Not Modified',
+  1186	      305 => 'Use Proxy',
+  1187	      306 => 'Switch Proxy',
+  1188	      307 => 'Temporary Redirect',
+  1189	      400 => 'Bad Request',
+  1190	      401 => 'Unauthorized',
+  1191	      402 => 'Payment Required',
+  1192	      403 => 'Forbidden',
+  1193	      404 => 'Not Found',
+  1194	      405 => 'Method Not Allowed',
+  1195	      406 => 'Not Acceptable',
+  1196	      407 => 'Proxy Authentication Required',
+  1197	      408 => 'Request Timeout',
+  1198	      409 => 'Conflict',
+  1199	      410 => 'Gone',
+  1200	      411 => 'Length Required',
+  1201	      412 => 'Precondition Failed',
+  1202	      413 => 'Request Entity Too Large',
+  1203	      414 => 'Request-URI Too Long',
+  1204	      415 => 'Unsupported Media Type',
+  1205	      416 => 'Requested Range Not Satisfiable',
+  1206	      417 => 'Expectation Failed',
+
+exec
+/bin/zsh -lc "rg -n \"function is_incorrect_edition_installed|is_incorrect_edition_installed\\(\" plugins/pretty-link/app -g '*.php'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+plugins/pretty-link/app/controllers/PrliUpdateController.php:89:        $editions = PrliUtils::is_incorrect_edition_installed();
+plugins/pretty-link/app/controllers/PrliUpdateController.php:485:          if(PrliUtils::is_incorrect_edition_installed()) {
+plugins/pretty-link/app/controllers/PrliUpdateController.php:769:    if(PrliUtils::is_incorrect_edition_installed()) {
+plugins/pretty-link/app/controllers/PrliOnboardingController.php:467:      $editions = PrliUtils::is_incorrect_edition_installed();
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:61:          if(PrliUtils::is_incorrect_edition_installed()) {
+plugins/pretty-link/app/lib/PrliAddonUpdates.php:213:    if(PrliUtils::is_incorrect_edition_installed()) {
+plugins/pretty-link/app/models/PrliUtils.php:1326:  public static function is_incorrect_edition_installed() {
+plugins/pretty-link/app/views/admin/onboarding/parts/finish.php:107:    $editions = PrliUtils::is_incorrect_edition_installed();
+plugins/pretty-link/app/views/admin/update/active_license.php:4:    $editions = PrliUtils::is_incorrect_edition_installed();
+
+exec
+/bin/zsh -lc "nl -ba plugins/pretty-link/app/models/PrliUtils.php | sed -n '1320,1365p'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+  1320	
+  1321	  /**
+  1322	   * Is the installed edition of Pretty Links different from the edition in the license?
+  1323	   *
+  1324	   * @return array|false An array containing the installed edition and license edition data, false if the correct edition is installed
+  1325	   */
+  1326	  public static function is_incorrect_edition_installed() {
+  1327	    $license = get_site_transient('prli_license_info');
+  1328	    $license_product_slug = !empty($license) && !empty($license['product_slug']) ? $license['product_slug'] : '';
+  1329	
+  1330	    if(
+  1331	      empty($license_product_slug) ||
+  1332	      empty(PRLI_EDITION) ||
+  1333	      $license_product_slug == PRLI_EDITION ||
+  1334	      !current_user_can('update_plugins') ||
+  1335	      @is_dir(PRLI_PATH . '/.git')
+  1336	    ) {
+  1337	      return false;
+  1338	    }
+  1339	
+  1340	    $installed_edition = self::get_edition(PRLI_EDITION);
+  1341	    $license_edition = self::get_edition($license_product_slug);
+  1342	
+  1343	    if(!is_array($installed_edition) || !is_array($license_edition)) {
+  1344	      return false;
+  1345	    }
+  1346	
+  1347	    return array(
+  1348	      'installed' => $installed_edition,
+  1349	      'license' => $license_edition
+  1350	    );
+  1351	  }
+  1352	
+  1353	  /**
+  1354	   * Returns header data to be used with JWT and wp_remote_request.
+  1355	   *
+  1356	   * @access public
+  1357	   * @param string $jwt The JWT to use in the Authorization header.
+  1358	   * @param string $domain The domain to use in the Host header.
+  1359	   * @return array The processed header data.
+  1360	   */
+  1361	  public static function jwt_header($jwt, $domain) {
+  1362	    return array(
+  1363	      'Authorization' => 'Bearer ' . $jwt,
+  1364	      'Accept'        => 'application/json;ver=1.0',
+  1365	      'Content-Type'  => 'application/json; charset=UTF-8',
+
+turn interrupted
+tokens used
+54,942
+[TIMING] start=1775399005.037 provider=codex slug=pretty-link
+[TIMING] end=1775399142.726 elapsed=137.7s exit=normal rc=1

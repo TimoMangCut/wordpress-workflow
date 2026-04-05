@@ -1,11 +1,11 @@
 # Phase 3 Gate Report - `cartflows`
 
-_Generated: 2026-04-05T00:21:44.088165+00:00_
+_Generated: 2026-04-05T13:56:46.216943+00:00_
 
 ## Plugin Overview
 - Plugin slug: `cartflows`
 - Phase 1: EPs `119`, anomalies `41`, sources `844`, sinks `3397`
-- Phase 2: total `77`, TP `5`, FP `71`, REVIEW `1`
+- Phase 2: total `77`, TP `3`, FP `71`, REVIEW `3`
 - Phase 3: confirmed `0`, plausible `0`, uncertain `6`, likely_hallucination `0`
 
 ## Tool Signals
@@ -19,13 +19,13 @@ None.
 ### cartflows-a1-001
 - Type: `arbitrary_file_upload`
 - Minimum Role/Capability: `none`
-- Severity: `medium` | Confidence: `0.65`
+- Severity: `medium` | Confidence: `0.70`
 - Gate Verdict: `UNCERTAIN`
 - Entry point: claimed `ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file`, resolved `ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file`
 - Trace: source `modules/checkout/classes/class-cartflows-checkout-ajax.php:311` -> sink `modules/checkout/classes/class-cartflows-checkout-ajax.php:425`
-- Description (2 sentences): Finding `cartflows-a1-001` flags `arbitrary_file_upload` at `modules/checkout/classes/class-cartflows-checkout-ajax.php:425` via entry point `ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.65`), so dynamic verification is still required.
+- Description (2 sentences): Finding `cartflows-a1-001` flags `arbitrary_file_upload` at `modules/checkout/classes/class-cartflows-checkout-ajax.php:425` via entry point `ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.70`), so dynamic verification is still required.
 - Highest Impact: Potential unauthorized file/media creation or overwrite in WordPress uploads workflow. Minimum attacker context: `none`.
-- Validation issues: `guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak`
+- Validation issues: `guard_contradiction, insufficient_evidence_to_confirm`
 - PoC (Setup -> Activate -> Attack -> Verify):
   - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
   - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
@@ -35,13 +35,13 @@ None.
 ### cartflows-a1-002
 - Type: `user_enumeration`
 - Minimum Role/Capability: `none`
-- Severity: `low` | Confidence: `0.79`
+- Severity: `low` | Confidence: `0.84`
 - Gate Verdict: `UNCERTAIN`
 - Entry point: claimed `ep_ajax_nopriv_wp_ajax_nopriv_wcf_check_email_exists`, resolved `ep_ajax_nopriv_wp_ajax_nopriv_wcf_check_email_exists`
 - Trace: source `modules/checkout/classes/class-cartflows-checkout-ajax.php:209` -> sink `modules/checkout/classes/class-cartflows-checkout-ajax.php:219`
-- Description (2 sentences): Finding `cartflows-a1-002` flags `user_enumeration` at `modules/checkout/classes/class-cartflows-checkout-ajax.php:219` via entry point `ep_ajax_nopriv_wp_ajax_nopriv_wcf_check_email_exists`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.79`), so dynamic verification is still required.
+- Description (2 sentences): Finding `cartflows-a1-002` flags `user_enumeration` at `modules/checkout/classes/class-cartflows-checkout-ajax.php:219` via entry point `ep_ajax_nopriv_wp_ajax_nopriv_wcf_check_email_exists`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.84`), so dynamic verification is still required.
 - Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `none`.
-- Validation issues: `insufficient_evidence_to_confirm, path_reachability_weak`
+- Validation issues: `insufficient_evidence_to_confirm`
 - PoC (Setup -> Activate -> Attack -> Verify):
   - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
   - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
@@ -51,13 +51,13 @@ None.
 ### agent-a2-f22-upload-checkout-file
 - Type: `arbitrary_file_upload`
 - Minimum Role/Capability: `none`
-- Severity: `medium` | Confidence: `0.61`
+- Severity: `medium` | Confidence: `0.67`
 - Gate Verdict: `UNCERTAIN`
 - Entry point: claimed `ep_ajax_priv_wp_ajax_wcf_upload_checkout_file`, resolved `ep_ajax_priv_wp_ajax_wcf_upload_checkout_file`
 - Trace: source `modules/checkout/classes/class-cartflows-checkout-ajax.php:311` -> sink `modules/checkout/classes/class-cartflows-checkout-ajax.php:425`
-- Description (2 sentences): Finding `agent-a2-f22-upload-checkout-file` flags `arbitrary_file_upload` at `modules/checkout/classes/class-cartflows-checkout-ajax.php:425` via entry point `ep_ajax_priv_wp_ajax_wcf_upload_checkout_file`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.61`), so dynamic verification is still required.
+- Description (2 sentences): Finding `agent-a2-f22-upload-checkout-file` flags `arbitrary_file_upload` at `modules/checkout/classes/class-cartflows-checkout-ajax.php:425` via entry point `ep_ajax_priv_wp_ajax_wcf_upload_checkout_file`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.67`), so dynamic verification is still required.
 - Highest Impact: Potential unauthorized file/media creation or overwrite in WordPress uploads workflow. Minimum attacker context: `none`.
-- Validation issues: `guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak`
+- Validation issues: `guard_contradiction, insufficient_evidence_to_confirm`
 - PoC (Setup -> Activate -> Attack -> Verify):
   - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
   - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
@@ -67,49 +67,49 @@ None.
 ### agent-a4-review-checkout-block-layout-include
 - Type: `local_file_inclusion`
 - Minimum Role/Capability: `unknown`
-- Severity: `high` | Confidence: `0.60`
+- Severity: `high` | Confidence: `0.65`
 - Gate Verdict: `UNCERTAIN`
 - Entry point: claimed `ep_block_wcfb_checkout_form`, resolved `ep_block_wcfb_checkout_form`
 - Trace: source `modules/gutenberg/dist/blocks/checkout-form/class-wcfb-checkout-form.php:856` -> sink `modules/checkout/classes/class-cartflows-checkout-markup.php:533`
-- Description (2 sentences): Finding `agent-a4-review-checkout-block-layout-include` flags `local_file_inclusion` at `modules/checkout/classes/class-cartflows-checkout-markup.php:533` via entry point `ep_block_wcfb_checkout_form`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.60`), so dynamic verification is still required.
+- Description (2 sentences): Finding `agent-a4-review-checkout-block-layout-include` flags `local_file_inclusion` at `modules/checkout/classes/class-cartflows-checkout-markup.php:533` via entry point `ep_block_wcfb_checkout_form`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.65`), so dynamic verification is still required.
 - Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `unknown`.
-- Validation issues: `guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak`
+- Validation issues: `guard_contradiction, insufficient_evidence_to_confirm`
 - PoC (Setup -> Activate -> Attack -> Verify):
   - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
   - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `unknown` required by this path.
   - Step 3 (Attack): Create or preview a checkout step containing a `wcfb/checkout-form` block with `layout` set to a known readable local file path, then request the rendered block output and inspect whether the file contents are returned.
   - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
 
-### anom_5
-- Type: `missing_capability_check`
-- Minimum Role/Capability: `subscriber`
-- Severity: `high` | Confidence: `0.55`
+### cf-c-anom_5
+- Type: `missing_capability`
+- Minimum Role/Capability: `none`
+- Severity: `critical` | Confidence: `0.64`
 - Gate Verdict: `UNCERTAIN`
 - Entry point: claimed `ep_ajax_priv_wp_ajax_wcf_upload_checkout_file`, resolved `ep_ajax_priv_wp_ajax_wcf_upload_checkout_file`
-- Trace: source `modules/checkout/classes/class-cartflows-checkout-ajax.php:311` -> sink `modules/checkout/classes/class-cartflows-checkout-ajax.php:337`
-- Description (2 sentences): Finding `anom_5` flags `missing_capability_check` at `modules/checkout/classes/class-cartflows-checkout-ajax.php:337` via entry point `ep_ajax_priv_wp_ajax_wcf_upload_checkout_file`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.55`), so dynamic verification is still required.
-- Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `subscriber`.
-- Validation issues: `code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak`
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `subscriber` required by this path.
-  - Step 3 (Attack): POST wp-admin/admin-ajax.php action=wcf_upload_checkout_file&security=<nonce> with a multipart file — any subscriber-level account can trigger file write to upload directory.
-  - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
-
-### anom_35
-- Type: `unauthenticated_file_upload`
-- Minimum Role/Capability: `none`
-- Severity: `high` | Confidence: `0.55`
-- Gate Verdict: `UNCERTAIN`
-- Entry point: claimed `ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file`, resolved `ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file`
-- Trace: source `modules/checkout/classes/class-cartflows-checkout-ajax.php:311` -> sink `modules/checkout/classes/class-cartflows-checkout-ajax.php:337`
-- Description (2 sentences): Finding `anom_35` flags `unauthenticated_file_upload` at `modules/checkout/classes/class-cartflows-checkout-ajax.php:337` via entry point `ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.55`), so dynamic verification is still required.
-- Highest Impact: Potential unauthorized file/media creation or overwrite in WordPress uploads workflow. Minimum attacker context: `none`.
-- Validation issues: `code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak`
+- Trace: source `modules/checkout/classes/class-cartflows-checkout-ajax.php:57` -> sink `modules/checkout/classes/class-cartflows-checkout-ajax.php:308`
+- Description (2 sentences): Finding `cf-c-anom_5` flags `missing_capability` at `modules/checkout/classes/class-cartflows-checkout-ajax.php:308` via entry point `ep_ajax_priv_wp_ajax_wcf_upload_checkout_file`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.64`), so dynamic verification is still required.
+- Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `none`.
+- Validation issues: `guard_contradiction, insufficient_evidence_to_confirm`
 - PoC (Setup -> Activate -> Attack -> Verify):
   - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
   - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
-  - Step 3 (Attack): 1. Load any CartFlows checkout page as an unauthenticated visitor. 2. Extract wcf_file_upload_nonce from page source. 3. POST to wp-admin/admin-ajax.php: action=wcf_upload_checkout_file, security=<nonce>, wcf_checkout_file=<file>. Files within the allowed extension list are written to wp-content/uploads/.
+  - Step 3 (Attack): 1) Visit any CartFlows checkout page as an unauthenticated user. 2) Extract wcf_file_upload_nonce from the page JS. 3) POST to wp-admin/admin-ajax.php with action=wcf_upload_checkout_file, security={nonce}, wcf_checkout_file={file}. 4) File is processed by wp_handle_upload and saved to uploads directory.
+  - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
+
+### cf-c-anom_35
+- Type: `nopriv_sensitive_op_missing_capability`
+- Minimum Role/Capability: `none`
+- Severity: `critical` | Confidence: `0.61`
+- Gate Verdict: `UNCERTAIN`
+- Entry point: claimed `ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file`, resolved `ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file`
+- Trace: source `modules/checkout/classes/class-cartflows-checkout-ajax.php:293` -> sink `modules/checkout/classes/class-cartflows-checkout-ajax.php:325`
+- Description (2 sentences): Finding `cf-c-anom_35` flags `nopriv_sensitive_op_missing_capability` at `modules/checkout/classes/class-cartflows-checkout-ajax.php:325` via entry point `ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file`. Gate validation currently keeps it as `UNCERTAIN` (confidence `0.61`), so dynamic verification is still required.
+- Highest Impact: Potential unauthorized state change or data disclosure if runtime checks are bypassed. Minimum attacker context: `none`.
+- Validation issues: `code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm`
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
+  - Step 3 (Attack): 1. Visit any CartFlows checkout page as unauthenticated user. 2. Extract wcf_file_upload_nonce from wcfCheckoutFields JS object in page source. 3. POST to /wp-admin/admin-ajax.php: action=wcf_upload_checkout_file, security=<nonce>, wcf_upload_file=<file attachment>. 4. Response returns uploaded file URL.
   - Step 4 (Verify): Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change).
 
 ## Likely Hallucinations
@@ -657,14 +657,14 @@ None.
   - Step 3 (Attack): Use entry point `ep_init_init` and send crafted input from source `classes/class-cartflows-update.php:52` toward sink `classes/class-cartflows-update.php:61`.
   - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
 
-### anom_1
-- Type: `flawed_nonce_verification`
+### cf-c-anom_1
+- Type: `missing_nonce`
 - Minimum Role/Capability: `admin`
-- Severity: `medium` | Confidence: `1.00`
+- Severity: `high` | Confidence: `1.00`
 - Gate Verdict: `ACCEPTED_FP`
 - Entry point: claimed `ep_ajax_priv_wp_ajax_cartflows_dismiss_script_migration_complete_notice`, resolved `ep_ajax_priv_wp_ajax_cartflows_dismiss_script_migration_complete_notice`
 - Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_1` flags `flawed_nonce_verification` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_cartflows_dismiss_script_migration_complete_notice`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Description (2 sentences): Finding `cf-c-anom_1` flags `missing_nonce` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_cartflows_dismiss_script_migration_complete_notice`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
 - Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
 - PoC (Setup -> Activate -> Attack -> Verify):
   - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
@@ -672,74 +672,74 @@ None.
   - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_cartflows_dismiss_script_migration_complete_notice` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
   - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
 
-### anom_2
-- Type: `missing_capability_check`
-- Minimum Role/Capability: `unknown`
-- Severity: `medium` | Confidence: `1.00`
-- Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_ajax_priv_wp_ajax_cartflows_update_setting`, resolved `None`
-- Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_2` flags `missing_capability_check` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_cartflows_update_setting`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
-- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `unknown` required by this path.
-  - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_cartflows_update_setting` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
-  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
-
-### anom_3
-- Type: `missing_capability_check`
-- Minimum Role/Capability: `unknown`
-- Severity: `medium` | Confidence: `1.00`
-- Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_ajax_priv_wp_ajax_cartflows_import_flow`, resolved `None`
-- Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_3` flags `missing_capability_check` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_cartflows_import_flow`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
-- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `unknown` required by this path.
-  - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_cartflows_import_flow` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
-  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
-
-### anom_4
-- Type: `flawed_nonce_verification`
-- Minimum Role/Capability: `contributor`
-- Severity: `medium` | Confidence: `1.00`
-- Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_ajax_priv_wp_ajax_cartflows_save_course_template`, resolved `None`
-- Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_4` flags `flawed_nonce_verification` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_cartflows_save_course_template`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
-- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `contributor` required by this path.
-  - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_cartflows_save_course_template` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
-  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
-
-### anom_6
-- Type: `missing_nonce_verification`
+### cf-c-anom_2
+- Type: `missing_nonce`
 - Minimum Role/Capability: `admin`
-- Severity: `medium` | Confidence: `1.00`
+- Severity: `high` | Confidence: `1.00`
 - Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_ajax_priv_wp_ajax_cartflows_snooze_script_migration_notice`, resolved `None`
+- Entry point: claimed `ep_ajax_priv_wp_ajax_wcf_json_search_flows`, resolved `ep_ajax_priv_wp_ajax_wcf_json_search_flows`
 - Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_6` flags `missing_nonce_verification` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_cartflows_snooze_script_migration_notice`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Description (2 sentences): Finding `cf-c-anom_2` flags `missing_nonce` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_wcf_json_search_flows`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
 - Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
 - PoC (Setup -> Activate -> Attack -> Verify):
   - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
   - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `admin` required by this path.
-  - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_cartflows_snooze_script_migration_notice` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_wcf_json_search_flows` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
   - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
 
-### anom_7
-- Type: `missing_nonce_verification`
+### cf-c-anom_3
+- Type: `missing_nonce`
+- Minimum Role/Capability: `subscriber`
+- Severity: `high` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `ep_ajax_priv_wp_ajax_wcf_upload_checkout_file`, resolved `ep_ajax_priv_wp_ajax_wcf_upload_checkout_file`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `cf-c-anom_3` flags `missing_nonce` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_wcf_upload_checkout_file`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `subscriber` required by this path.
+  - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_wcf_upload_checkout_file` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### cf-c-anom_4
+- Type: `missing_capability`
+- Minimum Role/Capability: `subscriber`
+- Severity: `high` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `ep_ajax_priv_wp_ajax_cartflows_save_tutor_course_template`, resolved `ep_ajax_priv_wp_ajax_cartflows_save_tutor_course_template`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `cf-c-anom_4` flags `missing_capability` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_cartflows_save_tutor_course_template`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `subscriber` required by this path.
+  - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_cartflows_save_tutor_course_template` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### cf-c-anom_6
+- Type: `flawed_nonce_pattern`
+- Minimum Role/Capability: `admin`
+- Severity: `medium` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `ep_ajax_priv_wp_ajax_cartflows_snooze_script_migration`, resolved `ep_ajax_priv_wp_ajax_cartflows_snooze_script_migration`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `cf-c-anom_6` flags `flawed_nonce_pattern` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_cartflows_snooze_script_migration`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `admin` required by this path.
+  - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_cartflows_snooze_script_migration` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### cf-c-anom_7
+- Type: `flawed_nonce_pattern`
 - Minimum Role/Capability: `admin`
 - Severity: `medium` | Confidence: `1.00`
 - Gate Verdict: `ACCEPTED_FP`
 - Entry point: claimed `ep_ajax_priv_wp_ajax_cartflows_dismiss_script_migration_complete_notice`, resolved `ep_ajax_priv_wp_ajax_cartflows_dismiss_script_migration_complete_notice`
 - Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_7` flags `missing_nonce_verification` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_cartflows_dismiss_script_migration_complete_notice`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Description (2 sentences): Finding `cf-c-anom_7` flags `flawed_nonce_pattern` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_cartflows_dismiss_script_migration_complete_notice`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
 - Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
 - PoC (Setup -> Activate -> Attack -> Verify):
   - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
@@ -747,456 +747,448 @@ None.
   - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_cartflows_dismiss_script_migration_complete_notice` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
   - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
 
-### anom_8
-- Type: `flawed_nonce_verification`
+### cf-c-anom_8
+- Type: `flawed_nonce_pattern`
 - Minimum Role/Capability: `admin`
 - Severity: `medium` | Confidence: `1.00`
 - Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_ajax_priv_wp_ajax_cartflows_update_checkout_field_settings`, resolved `None`
+- Entry point: claimed `ep_ajax_priv_wp_ajax_cartflows_get_suretriggers_data`, resolved `ep_ajax_priv_wp_ajax_cartflows_get_suretriggers_data`
 - Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_8` flags `flawed_nonce_verification` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_cartflows_update_checkout_field_settings`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Description (2 sentences): Finding `cf-c-anom_8` flags `flawed_nonce_pattern` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_cartflows_get_suretriggers_data`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
 - Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
 - PoC (Setup -> Activate -> Attack -> Verify):
   - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
   - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `admin` required by this path.
-  - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_cartflows_update_checkout_field_settings` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_cartflows_get_suretriggers_data` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
   - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
 
-### anom_9
-- Type: `missing_capability_check`
-- Minimum Role/Capability: `admin`
-- Severity: `medium` | Confidence: `1.00`
-- Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_ajax_priv_wp_ajax_cartflows_update_checkout_field_settings`, resolved `None`
-- Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_9` flags `missing_capability_check` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_cartflows_update_checkout_field_settings`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
-- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `admin` required by this path.
-  - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_cartflows_update_checkout_field_settings` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
-  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
-
-### anom_10
-- Type: `missing_capability_check`
-- Minimum Role/Capability: `admin`
-- Severity: `medium` | Confidence: `1.00`
-- Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_ajax_priv_wp_ajax_cartflows_delete_flow`, resolved `None`
-- Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_10` flags `missing_capability_check` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_cartflows_delete_flow`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
-- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
-- Validation issues: `fp_evidence_file_not_found: admin-core/ajax/flows-steps.php`
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `admin` required by this path.
-  - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_cartflows_delete_flow` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
-  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
-
-### anom_11
-- Type: `missing_capability_check`
-- Minimum Role/Capability: `admin`
-- Severity: `medium` | Confidence: `1.00`
-- Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_ajax_priv_wp_ajax_cartflows_clone_flow`, resolved `None`
-- Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_11` flags `missing_capability_check` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_cartflows_clone_flow`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
-- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
-- Validation issues: `fp_evidence_file_not_found: admin-core/ajax/flows-steps.php`
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `admin` required by this path.
-  - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_cartflows_clone_flow` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
-  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
-
-### anom_12
-- Type: `flawed_nonce_verification`
-- Minimum Role/Capability: `admin`
-- Severity: `medium` | Confidence: `1.00`
-- Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_ajax_priv_wp_ajax_cartflows_clone_flow`, resolved `None`
-- Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_12` flags `flawed_nonce_verification` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_cartflows_clone_flow`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
-- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
-- Validation issues: `fp_evidence_file_not_found: admin-core/ajax/flows-steps.php`
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `admin` required by this path.
-  - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_cartflows_clone_flow` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
-  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
-
-### anom_13
-- Type: `missing_capability_check`
-- Minimum Role/Capability: `admin`
-- Severity: `medium` | Confidence: `1.00`
-- Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_ajax_priv_wp_ajax_cartflows_save_step_meta`, resolved `None`
-- Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_13` flags `missing_capability_check` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_cartflows_save_step_meta`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
-- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
-- Validation issues: `fp_evidence_file_not_found: admin-core/ajax/flows-steps.php`
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `admin` required by this path.
-  - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_cartflows_save_step_meta` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
-  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
-
-### anom_14
-- Type: `flawed_nonce_verification`
-- Minimum Role/Capability: `admin`
-- Severity: `medium` | Confidence: `1.00`
-- Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_ajax_priv_wp_ajax_cartflows_save_step_meta`, resolved `None`
-- Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_14` flags `flawed_nonce_verification` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_cartflows_save_step_meta`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
-- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
-- Validation issues: `fp_evidence_file_not_found: admin-core/ajax/flows-steps.php`
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `admin` required by this path.
-  - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_cartflows_save_step_meta` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
-  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
-
-### anom_15
-- Type: `flawed_nonce_verification`
-- Minimum Role/Capability: `admin`
-- Severity: `medium` | Confidence: `1.00`
-- Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_ajax_priv_wp_ajax_cartflows_export_all_flows`, resolved `None`
-- Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_15` flags `flawed_nonce_verification` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_cartflows_export_all_flows`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
-- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `admin` required by this path.
-  - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_cartflows_export_all_flows` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
-  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
-
-### anom_16
-- Type: `flawed_nonce_verification`
-- Minimum Role/Capability: `none`
-- Severity: `medium` | Confidence: `1.00`
-- Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_ajax_nopriv_wp_ajax_nopriv_wcf_apply_coupon`, resolved `None`
-- Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_16` flags `flawed_nonce_verification` at `N/A:N/A` via entry point `ep_ajax_nopriv_wp_ajax_nopriv_wcf_apply_coupon`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
-- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
-  - Step 3 (Attack): Use entry point `ep_ajax_nopriv_wp_ajax_nopriv_wcf_apply_coupon` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
-  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
-
-### anom_17
-- Type: `flawed_nonce_verification`
+### cf-c-anom_9
+- Type: `flawed_nonce_pattern`
 - Minimum Role/Capability: `subscriber`
 - Severity: `medium` | Confidence: `1.00`
 - Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_ajax_priv_wp_ajax_wcf_apply_coupon`, resolved `None`
+- Entry point: claimed `ep_ajax_priv_wp_ajax_cartflows_pointer_should_show`, resolved `ep_ajax_priv_wp_ajax_cartflows_pointer_should_show`
 - Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_17` flags `flawed_nonce_verification` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_wcf_apply_coupon`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Description (2 sentences): Finding `cf-c-anom_9` flags `flawed_nonce_pattern` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_cartflows_pointer_should_show`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
 - Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
 - PoC (Setup -> Activate -> Attack -> Verify):
   - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
   - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `subscriber` required by this path.
-  - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_wcf_apply_coupon` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_cartflows_pointer_should_show` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
   - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
 
-### anom_18
-- Type: `flawed_nonce_verification`
-- Minimum Role/Capability: `none`
-- Severity: `medium` | Confidence: `1.00`
-- Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_ajax_nopriv_wp_ajax_nopriv_wcf_remove_coupon`, resolved `None`
-- Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_18` flags `flawed_nonce_verification` at `N/A:N/A` via entry point `ep_ajax_nopriv_wp_ajax_nopriv_wcf_remove_coupon`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
-- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
-  - Step 3 (Attack): Use entry point `ep_ajax_nopriv_wp_ajax_nopriv_wcf_remove_coupon` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
-  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
-
-### anom_19
-- Type: `flawed_nonce_verification`
+### cf-c-anom_10
+- Type: `flawed_nonce_pattern`
 - Minimum Role/Capability: `subscriber`
 - Severity: `medium` | Confidence: `1.00`
 - Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_ajax_priv_wp_ajax_wcf_remove_coupon`, resolved `None`
+- Entry point: claimed `ep_ajax_priv_wp_ajax_cartflows_pointer_dismiss`, resolved `ep_ajax_priv_wp_ajax_cartflows_pointer_dismiss`
 - Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_19` flags `flawed_nonce_verification` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_wcf_remove_coupon`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Description (2 sentences): Finding `cf-c-anom_10` flags `flawed_nonce_pattern` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_cartflows_pointer_dismiss`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
 - Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
 - PoC (Setup -> Activate -> Attack -> Verify):
   - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
   - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `subscriber` required by this path.
-  - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_wcf_remove_coupon` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_cartflows_pointer_dismiss` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
   - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
 
-### anom_20
-- Type: `unvalidated_shortcode_attribute`
-- Minimum Role/Capability: `none`
-- Severity: `low` | Confidence: `1.00`
-- Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_shortcode_wcf-checkout`, resolved `None`
-- Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_20` flags `unvalidated_shortcode_attribute` at `N/A:N/A` via entry point `ep_shortcode_wcf-checkout`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
-- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
-  - Step 3 (Attack): Use entry point `ep_shortcode_wcf-checkout` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
-  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
-
-### anom_21
-- Type: `unvalidated_shortcode_attribute`
-- Minimum Role/Capability: `none`
-- Severity: `low` | Confidence: `1.00`
-- Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_shortcode_wcf-optin`, resolved `None`
-- Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_21` flags `unvalidated_shortcode_attribute` at `N/A:N/A` via entry point `ep_shortcode_wcf-optin`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
-- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
-  - Step 3 (Attack): Use entry point `ep_shortcode_wcf-optin` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
-  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
-
-### anom_22
-- Type: `unvalidated_block_attribute`
-- Minimum Role/Capability: `editor`
-- Severity: `low` | Confidence: `1.00`
-- Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_block_cartflows/checkout-form`, resolved `None`
-- Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_22` flags `unvalidated_block_attribute` at `N/A:N/A` via entry point `ep_block_cartflows/checkout-form`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
-- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `editor` required by this path.
-  - Step 3 (Attack): Use entry point `ep_block_cartflows/checkout-form` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
-  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
-
-### anom_23
-- Type: `unvalidated_block_attribute`
-- Minimum Role/Capability: `editor`
-- Severity: `low` | Confidence: `1.00`
-- Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_block_cartflows/landing-page`, resolved `None`
-- Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_23` flags `unvalidated_block_attribute` at `N/A:N/A` via entry point `ep_block_cartflows/landing-page`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
-- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
-- Validation issues: `fp_evidence_file_not_found: modules/flow/classes/class-cartflows-flow-markup.php`
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `editor` required by this path.
-  - Step 3 (Attack): Use entry point `ep_block_cartflows/landing-page` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
-  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
-
-### anom_24
-- Type: `unvalidated_block_attribute`
-- Minimum Role/Capability: `editor`
-- Severity: `low` | Confidence: `1.00`
-- Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_block_cartflows/optin-form`, resolved `None`
-- Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_24` flags `unvalidated_block_attribute` at `N/A:N/A` via entry point `ep_block_cartflows/optin-form`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
-- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `editor` required by this path.
-  - Step 3 (Attack): Use entry point `ep_block_cartflows/optin-form` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
-  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
-
-### anom_25
-- Type: `unvalidated_shortcode_attribute`
-- Minimum Role/Capability: `none`
-- Severity: `low` | Confidence: `1.00`
-- Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_shortcode_wcf-thankyou`, resolved `None`
-- Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_25` flags `unvalidated_shortcode_attribute` at `N/A:N/A` via entry point `ep_shortcode_wcf-thankyou`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
-- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
-  - Step 3 (Attack): Use entry point `ep_shortcode_wcf-thankyou` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
-  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
-
-### anom_26
-- Type: `unvalidated_shortcode_attribute`
-- Minimum Role/Capability: `none`
-- Severity: `low` | Confidence: `1.00`
-- Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_shortcode_wcf-upsell`, resolved `None`
-- Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_26` flags `unvalidated_shortcode_attribute` at `N/A:N/A` via entry point `ep_shortcode_wcf-upsell`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
-- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
-- Validation issues: `fp_evidence_file_not_found: modules/upsell/classes/class-cartflows-upsell-markup.php`
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
-  - Step 3 (Attack): Use entry point `ep_shortcode_wcf-upsell` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
-  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
-
-### anom_27
-- Type: `is_admin_auth_bypass`
-- Minimum Role/Capability: `none`
+### cf-c-anom_11
+- Type: `flawed_nonce_pattern`
+- Minimum Role/Capability: `subscriber`
 - Severity: `medium` | Confidence: `1.00`
 - Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_filter_template_include`, resolved `None`
+- Entry point: claimed `ep_ajax_priv_wp_ajax_cartflows_pointer_accept`, resolved `ep_ajax_priv_wp_ajax_cartflows_pointer_accept`
 - Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_27` flags `is_admin_auth_bypass` at `N/A:N/A` via entry point `ep_filter_template_include`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Description (2 sentences): Finding `cf-c-anom_11` flags `flawed_nonce_pattern` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_cartflows_pointer_accept`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
 - Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
 - PoC (Setup -> Activate -> Attack -> Verify):
   - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
-  - Step 3 (Attack): Use entry point `ep_filter_template_include` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `subscriber` required by this path.
+  - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_cartflows_pointer_accept` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
   - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
 
-### anom_28
-- Type: `is_admin_auth_bypass`
-- Minimum Role/Capability: `none`
-- Severity: `medium` | Confidence: `1.00`
-- Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_action_init`, resolved `None`
-- Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_28` flags `is_admin_auth_bypass` at `N/A:N/A` via entry point `ep_action_init`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
-- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
-  - Step 3 (Attack): Use entry point `ep_action_init` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
-  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
-
-### anom_30
-- Type: `is_admin_auth_bypass`
-- Minimum Role/Capability: `none`
-- Severity: `medium` | Confidence: `1.00`
-- Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_shortcode_wcf-checkout`, resolved `None`
-- Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_30` flags `is_admin_auth_bypass` at `N/A:N/A` via entry point `ep_shortcode_wcf-checkout`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
-- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
-  - Step 3 (Attack): Use entry point `ep_shortcode_wcf-checkout` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
-  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
-
-### anom_31
-- Type: `is_admin_auth_bypass`
-- Minimum Role/Capability: `none`
-- Severity: `medium` | Confidence: `1.00`
-- Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_filter_the_content`, resolved `None`
-- Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_31` flags `is_admin_auth_bypass` at `N/A:N/A` via entry point `ep_filter_the_content`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
-- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
-  - Step 3 (Attack): Use entry point `ep_filter_the_content` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
-  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
-
-### anom_32
-- Type: `is_admin_auth_bypass`
-- Minimum Role/Capability: `none`
-- Severity: `medium` | Confidence: `1.00`
-- Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_shortcode_wcf-optin`, resolved `None`
-- Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_32` flags `is_admin_auth_bypass` at `N/A:N/A` via entry point `ep_shortcode_wcf-optin`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
-- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
-  - Step 3 (Attack): Use entry point `ep_shortcode_wcf-optin` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
-  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
-
-### anom_33
-- Type: `is_admin_auth_bypass`
-- Minimum Role/Capability: `none`
-- Severity: `medium` | Confidence: `1.00`
-- Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_shortcode_wcf-thankyou`, resolved `None`
-- Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_33` flags `is_admin_auth_bypass` at `N/A:N/A` via entry point `ep_shortcode_wcf-thankyou`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
-- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
-  - Step 3 (Attack): Use entry point `ep_shortcode_wcf-thankyou` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
-  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
-
-### anom_34
-- Type: `is_admin_auth_bypass`
-- Minimum Role/Capability: `none`
-- Severity: `medium` | Confidence: `1.00`
-- Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_shortcode_wcf-upsell`, resolved `None`
-- Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_34` flags `is_admin_auth_bypass` at `N/A:N/A` via entry point `ep_shortcode_wcf-upsell`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
-- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
-- Validation issues: `fp_evidence_file_not_found: modules/upsell/classes/class-cartflows-upsell-markup.php`
-- PoC (Setup -> Activate -> Attack -> Verify):
-  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
-  - Step 3 (Attack): Use entry point `ep_shortcode_wcf-upsell` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
-  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
-
-### anom_37
-- Type: `missing_capability_check`
+### cf-c-anom_12
+- Type: `flawed_nonce_pattern`
 - Minimum Role/Capability: `admin`
+- Severity: `medium` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `ep_ajax_priv_wp_ajax_uds_plugin_deactivate_feedback`, resolved `ep_ajax_priv_wp_ajax_uds_plugin_deactivate_feedback`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `cf-c-anom_12` flags `flawed_nonce_pattern` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_uds_plugin_deactivate_feedback`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `admin` required by this path.
+  - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_uds_plugin_deactivate_feedback` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### cf-c-anom_13
+- Type: `flawed_nonce_pattern`
+- Minimum Role/Capability: `admin`
+- Severity: `medium` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `ep_ajax_priv_wp_ajax_wcf_json_search_flows`, resolved `ep_ajax_priv_wp_ajax_wcf_json_search_flows`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `cf-c-anom_13` flags `flawed_nonce_pattern` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_wcf_json_search_flows`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `admin` required by this path.
+  - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_wcf_json_search_flows` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### cf-c-anom_14
+- Type: `flawed_nonce_pattern`
+- Minimum Role/Capability: `subscriber`
+- Severity: `medium` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `ep_ajax_priv_wp_ajax_wpcf_order_detail_form_shortcode`, resolved `ep_ajax_priv_wp_ajax_wpcf_order_detail_form_shortcode`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `cf-c-anom_14` flags `flawed_nonce_pattern` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_wpcf_order_detail_form_shortcode`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `subscriber` required by this path.
+  - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_wpcf_order_detail_form_shortcode` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### cf-c-anom_16
+- Type: `flawed_nonce_pattern`
+- Minimum Role/Capability: `subscriber`
+- Severity: `medium` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `ep_ajax_priv_wp_ajax_wcf_woo_apply_coupon`, resolved `ep_ajax_priv_wp_ajax_wcf_woo_apply_coupon`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `cf-c-anom_16` flags `flawed_nonce_pattern` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_wcf_woo_apply_coupon`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `subscriber` required by this path.
+  - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_wcf_woo_apply_coupon` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### cf-c-anom_17
+- Type: `flawed_nonce_pattern`
+- Minimum Role/Capability: `none`
+- Severity: `medium` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `ep_ajax_nopriv_wp_ajax_nopriv_wcf_woo_apply_coupon`, resolved `ep_ajax_nopriv_wp_ajax_nopriv_wcf_woo_apply_coupon`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `cf-c-anom_17` flags `flawed_nonce_pattern` at `N/A:N/A` via entry point `ep_ajax_nopriv_wp_ajax_nopriv_wcf_woo_apply_coupon`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
+  - Step 3 (Attack): Use entry point `ep_ajax_nopriv_wp_ajax_nopriv_wcf_woo_apply_coupon` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### cf-c-anom_18
+- Type: `flawed_nonce_pattern`
+- Minimum Role/Capability: `subscriber`
+- Severity: `medium` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `ep_ajax_priv_wp_ajax_wcf_upload_checkout_file`, resolved `ep_ajax_priv_wp_ajax_wcf_upload_checkout_file`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `cf-c-anom_18` flags `flawed_nonce_pattern` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_wcf_upload_checkout_file`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `subscriber` required by this path.
+  - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_wcf_upload_checkout_file` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### cf-c-anom_19
+- Type: `flawed_nonce_pattern`
+- Minimum Role/Capability: `none`
+- Severity: `medium` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file`, resolved `ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `cf-c-anom_19` flags `flawed_nonce_pattern` at `N/A:N/A` via entry point `ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
+  - Step 3 (Attack): Use entry point `ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### cf-c-anom_20
+- Type: `potential_xss`
+- Minimum Role/Capability: `none`
+- Severity: `medium` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `ep_shortcode_cartflows_product_title`, resolved `ep_shortcode_cartflows_product_title`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `cf-c-anom_20` flags `potential_xss` at `N/A:N/A` via entry point `ep_shortcode_cartflows_product_title`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
+  - Step 3 (Attack): Use entry point `ep_shortcode_cartflows_product_title` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### cf-c-anom_21
+- Type: `potential_xss`
+- Minimum Role/Capability: `none`
+- Severity: `medium` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `ep_shortcode_cartflows_product_add_to_cart`, resolved `ep_shortcode_cartflows_product_add_to_cart`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `cf-c-anom_21` flags `potential_xss` at `N/A:N/A` via entry point `ep_shortcode_cartflows_product_add_to_cart`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
+  - Step 3 (Attack): Use entry point `ep_shortcode_cartflows_product_add_to_cart` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### cf-c-anom_22
+- Type: `potential_xss`
+- Minimum Role/Capability: `none`
+- Severity: `medium` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `ep_block_wcfb_optin_form`, resolved `ep_block_wcfb_optin_form`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `cf-c-anom_22` flags `potential_xss` at `N/A:N/A` via entry point `ep_block_wcfb_optin_form`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
+  - Step 3 (Attack): Use entry point `ep_block_wcfb_optin_form` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### cf-c-anom_23
+- Type: `potential_xss`
+- Minimum Role/Capability: `none`
+- Severity: `medium` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `ep_block_wcfb_order_detail_form`, resolved `ep_block_wcfb_order_detail_form`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `cf-c-anom_23` flags `potential_xss` at `N/A:N/A` via entry point `ep_block_wcfb_order_detail_form`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
+  - Step 3 (Attack): Use entry point `ep_block_wcfb_order_detail_form` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### cf-c-anom_24
+- Type: `potential_xss`
+- Minimum Role/Capability: `none`
+- Severity: `medium` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `ep_block_wcfb_checkout_form`, resolved `ep_block_wcfb_checkout_form`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `cf-c-anom_24` flags `potential_xss` at `N/A:N/A` via entry point `ep_block_wcfb_checkout_form`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
+  - Step 3 (Attack): Use entry point `ep_block_wcfb_checkout_form` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### cf-c-anom_25
+- Type: `potential_xss`
+- Minimum Role/Capability: `none`
+- Severity: `medium` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `ep_shortcode_cartflows_checkout`, resolved `ep_shortcode_cartflows_checkout`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `cf-c-anom_25` flags `potential_xss` at `N/A:N/A` via entry point `ep_shortcode_cartflows_checkout`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
+  - Step 3 (Attack): Use entry point `ep_shortcode_cartflows_checkout` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### cf-c-anom_26
+- Type: `potential_xss`
+- Minimum Role/Capability: `none`
+- Severity: `medium` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `ep_shortcode_cartflows_optin`, resolved `ep_shortcode_cartflows_optin`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `cf-c-anom_26` flags `potential_xss` at `N/A:N/A` via entry point `ep_shortcode_cartflows_optin`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
+  - Step 3 (Attack): Use entry point `ep_shortcode_cartflows_optin` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### cf-c-anom_27
+- Type: `is_admin_as_auth`
+- Minimum Role/Capability: `none`
+- Severity: `high` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `ep_template_redirect_template_redirect`, resolved `ep_template_redirect_template_redirect`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `cf-c-anom_27` flags `is_admin_as_auth` at `N/A:N/A` via entry point `ep_template_redirect_template_redirect`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
+  - Step 3 (Attack): Use entry point `ep_template_redirect_template_redirect` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### cf-c-anom_29
+- Type: `is_admin_as_auth`
+- Minimum Role/Capability: `subscriber`
+- Severity: `high` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `ep_admin_init_admin_init`, resolved `ep_admin_init_admin_init`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `cf-c-anom_29` flags `is_admin_as_auth` at `N/A:N/A` via entry point `ep_admin_init_admin_init`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `subscriber` required by this path.
+  - Step 3 (Attack): Use entry point `ep_admin_init_admin_init` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### cf-c-anom_30
+- Type: `is_admin_as_auth`
+- Minimum Role/Capability: `none`
+- Severity: `high` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `ep_shortcode_cartflows_checkout`, resolved `ep_shortcode_cartflows_checkout`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `cf-c-anom_30` flags `is_admin_as_auth` at `N/A:N/A` via entry point `ep_shortcode_cartflows_checkout`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
+  - Step 3 (Attack): Use entry point `ep_shortcode_cartflows_checkout` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### cf-c-anom_32
+- Type: `is_admin_as_auth`
+- Minimum Role/Capability: `none`
+- Severity: `high` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `ep_shortcode_cartflows_optin`, resolved `ep_shortcode_cartflows_optin`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `cf-c-anom_32` flags `is_admin_as_auth` at `N/A:N/A` via entry point `ep_shortcode_cartflows_optin`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
+  - Step 3 (Attack): Use entry point `ep_shortcode_cartflows_optin` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### cf-c-anom_34
+- Type: `is_admin_as_auth`
+- Minimum Role/Capability: `none`
+- Severity: `high` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `ep_init_init`, resolved `ep_init_init`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `cf-c-anom_34` flags `is_admin_as_auth` at `N/A:N/A` via entry point `ep_init_init`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
+  - Step 3 (Attack): Use entry point `ep_init_init` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### cf-c-anom_36
+- Type: `inconsistency_missing_nonce_and_capability`
+- Minimum Role/Capability: `subscriber`
+- Severity: `high` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `ep_ajax_priv_wp_ajax_cartflows_snooze_script_migration`, resolved `ep_ajax_priv_wp_ajax_cartflows_snooze_script_migration`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `cf-c-anom_36` flags `inconsistency_missing_nonce_and_capability` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_cartflows_snooze_script_migration`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `subscriber` required by this path.
+  - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_cartflows_snooze_script_migration` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### cf-c-anom_37
+- Type: `inconsistency_missing_nonce_and_capability`
+- Minimum Role/Capability: `subscriber`
 - Severity: `high` | Confidence: `1.00`
 - Gate Verdict: `ACCEPTED_FP`
 - Entry point: claimed `ep_ajax_priv_wp_ajax_cartflows_install_plugin`, resolved `ep_ajax_priv_wp_ajax_cartflows_install_plugin`
 - Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_37` flags `missing_capability_check` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_cartflows_install_plugin`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Description (2 sentences): Finding `cf-c-anom_37` flags `inconsistency_missing_nonce_and_capability` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_cartflows_install_plugin`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
 - Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
 - PoC (Setup -> Activate -> Attack -> Verify):
   - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `admin` required by this path.
+  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `subscriber` required by this path.
   - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_cartflows_install_plugin` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
   - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
 
-### anom_38
-- Type: `missing_nonce_verification`
-- Minimum Role/Capability: `none`
+### cf-c-anom_38
+- Type: `inconsistency_missing_capability`
+- Minimum Role/Capability: `subscriber`
 - Severity: `medium` | Confidence: `1.00`
 - Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_ajax_nopriv_wp_ajax_nopriv_wcf_apply_coupon`, resolved `None`
+- Entry point: claimed `ep_ajax_priv_wp_ajax_wcf_woo_apply_coupon`, resolved `ep_ajax_priv_wp_ajax_wcf_woo_apply_coupon`
 - Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_38` flags `missing_nonce_verification` at `N/A:N/A` via entry point `ep_ajax_nopriv_wp_ajax_nopriv_wcf_apply_coupon`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Description (2 sentences): Finding `cf-c-anom_38` flags `inconsistency_missing_capability` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_wcf_woo_apply_coupon`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
 - Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
 - PoC (Setup -> Activate -> Attack -> Verify):
   - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
-  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
-  - Step 3 (Attack): Use entry point `ep_ajax_nopriv_wp_ajax_nopriv_wcf_apply_coupon` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `subscriber` required by this path.
+  - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_wcf_woo_apply_coupon` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
   - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
 
-### anom_40
-- Type: `missing_nonce_verification`
+### cf-c-anom_39
+- Type: `inconsistency_missing_capability`
+- Minimum Role/Capability: `subscriber`
+- Severity: `high` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `ep_ajax_priv_wp_ajax_wcf_upload_checkout_file`, resolved `ep_ajax_priv_wp_ajax_wcf_upload_checkout_file`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `cf-c-anom_39` flags `inconsistency_missing_capability` at `N/A:N/A` via entry point `ep_ajax_priv_wp_ajax_wcf_upload_checkout_file`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `subscriber` required by this path.
+  - Step 3 (Attack): Use entry point `ep_ajax_priv_wp_ajax_wcf_upload_checkout_file` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### cf-c-anom_40
+- Type: `inconsistency_nopriv_missing_capability`
 - Minimum Role/Capability: `none`
 - Severity: `medium` | Confidence: `1.00`
 - Gate Verdict: `ACCEPTED_FP`
-- Entry point: claimed `ep_ajax_nopriv_wp_ajax_nopriv_wcf_remove_coupon`, resolved `None`
+- Entry point: claimed `ep_ajax_nopriv_wp_ajax_nopriv_wcf_woo_apply_coupon`, resolved `ep_ajax_nopriv_wp_ajax_nopriv_wcf_woo_apply_coupon`
 - Trace: source `N/A:N/A` -> sink `N/A:N/A`
-- Description (2 sentences): Finding `anom_40` flags `missing_nonce_verification` at `N/A:N/A` via entry point `ep_ajax_nopriv_wp_ajax_nopriv_wcf_remove_coupon`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Description (2 sentences): Finding `cf-c-anom_40` flags `inconsistency_nopriv_missing_capability` at `N/A:N/A` via entry point `ep_ajax_nopriv_wp_ajax_nopriv_wcf_woo_apply_coupon`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
 - Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
 - PoC (Setup -> Activate -> Attack -> Verify):
   - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
   - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
-  - Step 3 (Attack): Use entry point `ep_ajax_nopriv_wp_ajax_nopriv_wcf_remove_coupon` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 3 (Attack): Use entry point `ep_ajax_nopriv_wp_ajax_nopriv_wcf_woo_apply_coupon` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
+  - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
+
+### cf-c-anom_41
+- Type: `inconsistency_nopriv_missing_capability`
+- Minimum Role/Capability: `none`
+- Severity: `critical` | Confidence: `1.00`
+- Gate Verdict: `ACCEPTED_FP`
+- Entry point: claimed `ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file`, resolved `ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file`
+- Trace: source `N/A:N/A` -> sink `N/A:N/A`
+- Description (2 sentences): Finding `cf-c-anom_41` flags `inconsistency_nopriv_missing_capability` at `N/A:N/A` via entry point `ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file`. Gate validation currently treats it as non-actionable (`ACCEPTED_FP`) with no confirmed exploit path.
+- Highest Impact: No confirmed measurable security impact in current plugin-local evidence.
+- PoC (Setup -> Activate -> Attack -> Verify):
+  - Step 1 (Setup): Prepare a clean WordPress lab, enable debug logging, and snapshot database state.
+  - Step 2 (Activate): Install and activate plugin `cartflows`, then create/login with minimum role `none` required by this path.
+  - Step 3 (Attack): Use entry point `ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file` and send crafted input from source `N/A:N/A` toward sink `N/A:N/A`.
   - Step 4 (Verify): Confirm the action is rejected or results in no unauthorized read/write/privilege change.
 
 ## Why Not Confirmed
-- `cartflows-a1-001`: guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
-- `cartflows-a1-002`: insufficient_evidence_to_confirm, path_reachability_weak
-- `agent-a2-f22-upload-checkout-file`: guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
-- `agent-a4-review-checkout-block-layout-include`: guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
-- `anom_5`: code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
-- `anom_35`: code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm, path_reachability_weak
+- `cartflows-a1-001`: guard_contradiction, insufficient_evidence_to_confirm
+- `cartflows-a1-002`: insufficient_evidence_to_confirm
+- `agent-a2-f22-upload-checkout-file`: guard_contradiction, insufficient_evidence_to_confirm
+- `agent-a4-review-checkout-block-layout-include`: guard_contradiction, insufficient_evidence_to_confirm
+- `cf-c-anom_5`: guard_contradiction, insufficient_evidence_to_confirm
+- `cf-c-anom_35`: code_evidence_missing_or_mismatch, guard_contradiction, insufficient_evidence_to_confirm
 
 ## Stored/Second-order Notes
 No stored/second-order findings in this plugin.

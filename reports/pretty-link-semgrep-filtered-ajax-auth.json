@@ -14834,12 +14834,12 @@
   },
   "time": {
     "rules": [],
-    "rules_parse_time": 0.027529001235961914,
+    "rules_parse_time": 0.021738052368164062,
     "profiling_times": {
-      "config_time": 0.7643687725067139,
-      "core_time": 4.397310018539429,
-      "ignores_time": 0.00019288063049316406,
-      "total_time": 5.162210702896118
+      "config_time": 0.6955609321594238,
+      "core_time": 3.7041690349578857,
+      "ignores_time": 0.00019407272338867188,
+      "total_time": 4.400282144546509
     },
     "parsing_time": {
       "total_time": 0.0,
@@ -14854,10 +14854,10 @@
       "very_slow_files": []
     },
     "scanning_time": {
-      "total_time": 3.116156816482544,
+      "total_time": 2.537630796432495,
       "per_file_time": {
-        "mean": 0.01573816573981083,
-        "std_dev": 0.0030603936254284237
+        "mean": 0.012816317153699465,
+        "std_dev": 0.0019311282688550973
       },
       "very_slow_stats": {
         "time_ratio": 0.0,
@@ -14900,9 +14900,14 @@
     },
     "targets": [],
     "total_bytes": 0,
-    "max_memory_bytes": 199831616
+    "max_memory_bytes": 197747712
   },
   "engine_requested": "PRO",
   "interfile_languages_used": [],
-  "skipped_rules": []
+  "skipped_rules": [],
+  "_scan_meta": {
+    "ruleset_path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/tools/config/semgrep-wp-rules",
+    "rule_count": 15,
+    "semgrep_version": "1.136.0"
+  }
 }

@@ -2,9 +2,9 @@
   "plugin_slug": "pretty-link",
   "phase1_summary": {
     "entry_points": 69,
-    "anomalies": 43,
-    "sources": 689,
-    "sinks": 779
+    "anomalies": 55,
+    "sources": 702,
+    "sinks": 839
   },
   "phase2_summary": {
     "total": 64,
@@ -1312,59 +1312,66 @@
       "finding_id": "agent-d-unresolved-001",
       "verdict": "REVIEW",
       "validation_status": "UNCERTAIN",
-      "confidence_score": 0.6695,
+      "confidence_score": 0.4164,
       "resolved_entry_point_id": null,
       "entry_point_exact": false,
       "suggested_entry_point_id": null,
       "entry_point_resolution_notes": "no EP resolved",
       "checks": {
-        "file_exists": true,
+        "file_exists": false,
         "path_reachable": false,
         "auth_consistent": true,
         "guard_consistent": true,
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
-        "psalm_corroborates": false,
-        "code_evidence": true,
+        "psalm_corroborates": true,
+        "code_evidence": false,
         "reasoning_quality": false,
         "cvss_plausible": true,
         "patchstack_eligible": true,
         "no_hallucination": true
       },
       "check_scores": {
-        "file_exists": 1.0,
+        "file_exists": 0.0,
         "path_reachable": 0.45,
         "auth_consistent": 0.6,
         "guard_consistent": 0.6,
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 0.5,
-        "psalm_corroborates": null,
-        "code_evidence": 1.0,
+        "psalm_corroborates": 0.5,
+        "code_evidence": 0.0,
         "reasoning_quality": 0.0,
         "cvss_plausible": 0.8,
         "patchstack_eligible": 0.8,
-        "no_hallucination": 1.0
+        "no_hallucination": 0.75
       },
       "check_notes": {
-        "file_exists": "exists: app/lib/PrliAddonUpdates.php",
+        "file_exists": "missing file_path/sink_file_path/source_file_path",
         "path_reachable": "no entry point resolved (missing/invalid entry_point_id + fuzzy resolution failed)",
         "auth_consistent": "EP unresolved \u2192 cannot disprove auth claim",
         "guard_consistent": "EP unresolved \u2192 cannot validate guards precisely",
         "sanitizer_claim": "sanitizer claim not contradicted",
-        "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
-        "psalm_corroborates": "Psalm SARIF not available/valid (N/A)",
-        "code_evidence": "sink evidence validated (and source evidence checked when available)",
+        "semgrep_corroborates": "Semgrep available but finding missing file path",
+        "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
+        "code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number",
         "reasoning_quality": "evidence-binding + refute-first heuristics",
         "cvss_plausible": "cvss_vector omitted (allowed)",
         "patchstack_eligible": "patchstack_eligible not provided (allowed)",
-        "no_hallucination": "no hallucination signals",
-        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+        "no_hallucination": "1 hallucination signal: file_not_found",
+        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
       },
       "issues": [
-        "insufficient_evidence_to_confirm",
+        "code_evidence_missing_or_mismatch",
+        "file_not_found_or_unresolvable",
         "path_reachability_weak",
         "reasoning_quality_low"
-      ]
+      ],
+      "sink_file_path": null,
+      "sink_line_number": null,
+      "sink_function": null,
+      "source_file_path": null,
+      "source_line_number": null,
+      "vuln_type": "unresolved_dynamic_hook"
     },
     {
       "finding_id": "agent-d-fp-002",

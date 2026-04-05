@@ -1,6 +1,6 @@
 {
   "plugin_slug": "pretty-link",
-  "merge_timestamp": "2026-04-05T01:26:36.830039Z",
+  "merge_timestamp": "2026-04-05T14:23:24.692772Z",
   "findings": [
     {
       "finding_id": "agent-a2-f001",
@@ -1059,11 +1059,11 @@
       "store_entry_point_id": null,
       "load_entry_point_id": null,
       "source_function": null,
-      "source_file_path": "app/lib/PrliAddonUpdates.php",
-      "source_line_number": 17,
+      "source_file_path": null,
+      "source_line_number": null,
       "sink_function": null,
-      "sink_file_path": "app/lib/PrliAddonUpdates.php",
-      "sink_line_number": 214,
+      "sink_file_path": null,
+      "sink_line_number": null,
       "reasoning": null,
       "fp_reason": null,
       "fp_evidence": null,
@@ -1074,9 +1074,7 @@
       "remediation": null,
       "source_agents": [
         "agent-d"
-      ],
-      "file_path": "app/lib/PrliAddonUpdates.php",
-      "line_number": 214
+      ]
     },
     {
       "finding_id": "agent-d-fp-002",
@@ -1330,10 +1328,5 @@
     "duplicates_merged": 7,
     "conflicts_flagged": 0,
     "schema_errors": 0
-  },
-  "postprocess": {
-    "phase3_review_applied": {
-      "applied_edits": 4
-    }
   }
 }

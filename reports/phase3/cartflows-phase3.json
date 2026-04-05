@@ -24,14 +24,14 @@
       "finding_id": "cartflows-a1-001",
       "verdict": "TP",
       "validation_status": "UNCERTAIN",
-      "confidence_score": 0.6457,
+      "confidence_score": 0.7029,
       "resolved_entry_point_id": "ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
       "entry_point_resolution_notes": "entry_point_id exact",
       "checks": {
         "file_exists": true,
-        "path_reachable": false,
+        "path_reachable": true,
         "auth_consistent": true,
         "guard_consistent": false,
         "sanitizer_claim": true,
@@ -45,7 +45,7 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.25,
+        "path_reachable": 0.55,
         "auth_consistent": 1.0,
         "guard_consistent": 0.2,
         "sanitizer_claim": 0.8,
@@ -59,7 +59,7 @@
       },
       "check_notes": {
         "file_exists": "exists: modules/checkout/classes/class-cartflows-checkout-ajax.php",
-        "path_reachable": "neither source nor sink matched in EP ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file",
+        "path_reachable": "source matched in EP ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file, but sink evidence weak/missing",
         "auth_consistent": "auth matches ep (load-leg) type (ajax_nopriv \u2192 none)",
         "guard_consistent": "guard detected but confirmed ineffective",
         "sanitizer_claim": "sanitizer claim not contradicted",
@@ -74,22 +74,27 @@
       },
       "issues": [
         "guard_contradiction",
-        "insufficient_evidence_to_confirm",
-        "path_reachability_weak"
-      ]
+        "insufficient_evidence_to_confirm"
+      ],
+      "sink_file_path": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "sink_line_number": 425,
+      "sink_function": "wp_handle_upload",
+      "source_file_path": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "source_line_number": 311,
+      "vuln_type": "arbitrary_file_upload"
     },
     {
       "finding_id": "cartflows-a1-002",
       "verdict": "TP",
       "validation_status": "UNCERTAIN",
-      "confidence_score": 0.7867,
+      "confidence_score": 0.8438,
       "resolved_entry_point_id": "ep_ajax_nopriv_wp_ajax_nopriv_wcf_check_email_exists",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
       "entry_point_resolution_notes": "entry_point_id exact",
       "checks": {
         "file_exists": true,
-        "path_reachable": false,
+        "path_reachable": true,
         "auth_consistent": true,
         "guard_consistent": true,
         "sanitizer_claim": true,
@@ -103,7 +108,7 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.25,
+        "path_reachable": 0.55,
         "auth_consistent": 1.0,
         "guard_consistent": 0.9,
         "sanitizer_claim": 0.8,
@@ -117,7 +122,7 @@
       },
       "check_notes": {
         "file_exists": "exists: modules/checkout/classes/class-cartflows-checkout-ajax.php",
-        "path_reachable": "neither source nor sink matched in EP ep_ajax_nopriv_wp_ajax_nopriv_wcf_check_email_exists",
+        "path_reachable": "source matched in EP ep_ajax_nopriv_wp_ajax_nopriv_wcf_check_email_exists, but sink evidence weak/missing",
         "auth_consistent": "auth matches ep (load-leg) type (ajax_nopriv \u2192 none)",
         "guard_consistent": "IR indicates guards present; finding does not claim missing guards",
         "sanitizer_claim": "sanitizer claim not contradicted",
@@ -131,9 +136,14 @@
         "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
       },
       "issues": [
-        "insufficient_evidence_to_confirm",
-        "path_reachability_weak"
-      ]
+        "insufficient_evidence_to_confirm"
+      ],
+      "sink_file_path": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "sink_line_number": 219,
+      "sink_function": "wp_send_json_success",
+      "source_file_path": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "source_line_number": 209,
+      "vuln_type": "user_enumeration"
     },
     {
       "finding_id": "agent-a2-f01-rollback",
@@ -624,14 +634,14 @@
       "finding_id": "agent-a2-f22-upload-checkout-file",
       "verdict": "TP",
       "validation_status": "UNCERTAIN",
-      "confidence_score": 0.6133,
+      "confidence_score": 0.6705,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_wcf_upload_checkout_file",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
       "entry_point_resolution_notes": "entry_point_id exact",
       "checks": {
         "file_exists": true,
-        "path_reachable": false,
+        "path_reachable": true,
         "auth_consistent": false,
         "guard_consistent": false,
         "sanitizer_claim": true,
@@ -645,7 +655,7 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.25,
+        "path_reachable": 0.55,
         "auth_consistent": 0.25,
         "guard_consistent": 0.2,
         "sanitizer_claim": 0.8,
@@ -659,7 +669,7 @@
       },
       "check_notes": {
         "file_exists": "exists: modules/checkout/classes/class-cartflows-checkout-ajax.php",
-        "path_reachable": "neither source nor sink matched in EP ep_ajax_priv_wp_ajax_wcf_upload_checkout_file",
+        "path_reachable": "source matched in EP ep_ajax_priv_wp_ajax_wcf_upload_checkout_file, but sink evidence weak/missing",
         "auth_consistent": "auth mismatch [ep (load-leg)]: EP type=ajax_priv expects subscriber, finding claims none",
         "guard_consistent": "guard detected but confirmed ineffective",
         "sanitizer_claim": "sanitizer claim not contradicted",
@@ -674,9 +684,14 @@
       },
       "issues": [
         "guard_contradiction",
-        "insufficient_evidence_to_confirm",
-        "path_reachability_weak"
-      ]
+        "insufficient_evidence_to_confirm"
+      ],
+      "sink_file_path": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "sink_line_number": 425,
+      "sink_function": "wp_handle_upload",
+      "source_file_path": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "source_line_number": 311,
+      "vuln_type": "arbitrary_file_upload"
     },
     {
       "finding_id": "agent-a3-homepage-get-home-page-settings",
@@ -912,14 +927,14 @@
       "finding_id": "agent-a4-review-checkout-block-layout-include",
       "verdict": "REVIEW",
       "validation_status": "UNCERTAIN",
-      "confidence_score": 0.5962,
+      "confidence_score": 0.6533,
       "resolved_entry_point_id": "ep_block_wcfb_checkout_form",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
       "entry_point_resolution_notes": "entry_point_id exact",
       "checks": {
         "file_exists": true,
-        "path_reachable": false,
+        "path_reachable": true,
         "auth_consistent": false,
         "guard_consistent": false,
         "sanitizer_claim": true,
@@ -933,7 +948,7 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.25,
+        "path_reachable": 0.55,
         "auth_consistent": 0.25,
         "guard_consistent": 0.1,
         "sanitizer_claim": 0.8,
@@ -947,7 +962,7 @@
       },
       "check_notes": {
         "file_exists": "exists: modules/checkout/classes/class-cartflows-checkout-markup.php",
-        "path_reachable": "neither source nor sink matched in EP ep_block_wcfb_checkout_form",
+        "path_reachable": "source matched in EP ep_block_wcfb_checkout_form, but sink evidence weak/missing",
         "auth_consistent": "auth mismatch [ep (load-leg)]: EP type=block expects contributor, finding claims unknown",
         "guard_consistent": "no guard detected",
         "sanitizer_claim": "sanitizer claim not contradicted",
@@ -962,9 +977,14 @@
       },
       "issues": [
         "guard_contradiction",
-        "insufficient_evidence_to_confirm",
-        "path_reachability_weak"
-      ]
+        "insufficient_evidence_to_confirm"
+      ],
+      "sink_file_path": "modules/checkout/classes/class-cartflows-checkout-markup.php",
+      "sink_line_number": 533,
+      "sink_function": "include",
+      "source_file_path": "modules/gutenberg/dist/blocks/checkout-form/class-wcfb-checkout-form.php",
+      "source_line_number": 856,
+      "vuln_type": "local_file_inclusion"
     },
     {
       "finding_id": "agent-a5-fp-tutor-course-template-redirect",
@@ -1177,14 +1197,14 @@
       "finding_id": "cf-c-anom_5",
       "verdict": "REVIEW",
       "validation_status": "UNCERTAIN",
-      "confidence_score": 0.58,
+      "confidence_score": 0.6371,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_wcf_upload_checkout_file",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
       "entry_point_resolution_notes": "entry_point_id exact",
       "checks": {
         "file_exists": true,
-        "path_reachable": false,
+        "path_reachable": true,
         "auth_consistent": false,
         "guard_consistent": false,
         "sanitizer_claim": true,
@@ -1198,7 +1218,7 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.25,
+        "path_reachable": 0.55,
         "auth_consistent": 0.25,
         "guard_consistent": 0.2,
         "sanitizer_claim": 0.8,
@@ -1212,7 +1232,7 @@
       },
       "check_notes": {
         "file_exists": "exists: modules/checkout/classes/class-cartflows-checkout-ajax.php",
-        "path_reachable": "neither source nor sink matched in EP ep_ajax_priv_wp_ajax_wcf_upload_checkout_file",
+        "path_reachable": "source matched in EP ep_ajax_priv_wp_ajax_wcf_upload_checkout_file, but sink evidence weak/missing",
         "auth_consistent": "auth mismatch [ep (load-leg)]: EP type=ajax_priv expects subscriber, finding claims none",
         "guard_consistent": "guard detected but confirmed ineffective",
         "sanitizer_claim": "sanitizer claim not contradicted",
@@ -1227,9 +1247,14 @@
       },
       "issues": [
         "guard_contradiction",
-        "insufficient_evidence_to_confirm",
-        "path_reachability_weak"
-      ]
+        "insufficient_evidence_to_confirm"
+      ],
+      "sink_file_path": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "sink_line_number": 308,
+      "sink_function": "wp_handle_upload",
+      "source_file_path": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "source_line_number": 57,
+      "vuln_type": "missing_capability"
     },
     {
       "finding_id": "cf-c-anom_6",
@@ -1810,14 +1835,14 @@
       "finding_id": "cf-c-anom_35",
       "verdict": "REVIEW",
       "validation_status": "UNCERTAIN",
-      "confidence_score": 0.5505,
+      "confidence_score": 0.6076,
       "resolved_entry_point_id": "ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
       "entry_point_resolution_notes": "entry_point_id exact",
       "checks": {
         "file_exists": true,
-        "path_reachable": false,
+        "path_reachable": true,
         "auth_consistent": true,
         "guard_consistent": false,
         "sanitizer_claim": true,
@@ -1831,7 +1856,7 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.25,
+        "path_reachable": 0.55,
         "auth_consistent": 1.0,
         "guard_consistent": 0.2,
         "sanitizer_claim": 0.8,
@@ -1845,7 +1870,7 @@
       },
       "check_notes": {
         "file_exists": "exists: modules/checkout/classes/class-cartflows-checkout-ajax.php",
-        "path_reachable": "neither source nor sink matched in EP ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file",
+        "path_reachable": "source matched in EP ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file, but sink evidence weak/missing",
         "auth_consistent": "auth matches ep (load-leg) type (ajax_nopriv \u2192 none)",
         "guard_consistent": "guard detected but confirmed ineffective",
         "sanitizer_claim": "sanitizer claim not contradicted",
@@ -1861,9 +1886,14 @@
       "issues": [
         "code_evidence_missing_or_mismatch",
         "guard_contradiction",
-        "insufficient_evidence_to_confirm",
-        "path_reachability_weak"
-      ]
+        "insufficient_evidence_to_confirm"
+      ],
+      "sink_file_path": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "sink_line_number": 325,
+      "sink_function": "wp_handle_upload",
+      "source_file_path": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "source_line_number": 293,
+      "vuln_type": "nopriv_sensitive_op_missing_capability"
     },
     {
       "finding_id": "cf-c-anom_36",

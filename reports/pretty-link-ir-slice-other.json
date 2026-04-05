@@ -6,7 +6,7 @@
     "active_installs": null,
     "files_analyzed": 198,
     "total_loc": 26953,
-    "extraction_time_ms": 434,
+    "extraction_time_ms": 481,
     "extractor_version": "1.0.0"
   },
   "entry_points": [
@@ -626,6 +626,150 @@
     {
       "id": "src_1",
       "entry_point_id": "ep_init_init",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": "l",
+      "file": "app/controllers/PrliClicksController.php",
+      "line": 137
+    },
+    {
+      "id": "src_2",
+      "entry_point_id": "ep_init_init",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": null,
+      "file": "app/controllers/PrliClicksController.php",
+      "line": 137
+    },
+    {
+      "id": "src_3",
+      "entry_point_id": "ep_init_init",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": "l",
+      "file": "app/controllers/PrliClicksController.php",
+      "line": 138
+    },
+    {
+      "id": "src_4",
+      "entry_point_id": "ep_init_init",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": null,
+      "file": "app/controllers/PrliClicksController.php",
+      "line": 138
+    },
+    {
+      "id": "src_5",
+      "entry_point_id": "ep_init_init",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": "ip",
+      "file": "app/controllers/PrliClicksController.php",
+      "line": 143
+    },
+    {
+      "id": "src_6",
+      "entry_point_id": "ep_init_init",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": null,
+      "file": "app/controllers/PrliClicksController.php",
+      "line": 143
+    },
+    {
+      "id": "src_7",
+      "entry_point_id": "ep_init_init",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": "ip",
+      "file": "app/controllers/PrliClicksController.php",
+      "line": 144
+    },
+    {
+      "id": "src_8",
+      "entry_point_id": "ep_init_init",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": null,
+      "file": "app/controllers/PrliClicksController.php",
+      "line": 144
+    },
+    {
+      "id": "src_9",
+      "entry_point_id": "ep_init_init",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": "vuid",
+      "file": "app/controllers/PrliClicksController.php",
+      "line": 151
+    },
+    {
+      "id": "src_10",
+      "entry_point_id": "ep_init_init",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": null,
+      "file": "app/controllers/PrliClicksController.php",
+      "line": 151
+    },
+    {
+      "id": "src_11",
+      "entry_point_id": "ep_init_init",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": "vuid",
+      "file": "app/controllers/PrliClicksController.php",
+      "line": 152
+    },
+    {
+      "id": "src_12",
+      "entry_point_id": "ep_init_init",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": null,
+      "file": "app/controllers/PrliClicksController.php",
+      "line": 152
+    },
+    {
+      "id": "src_13",
+      "entry_point_id": "ep_init_init",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": "prli_page",
+      "file": "app/controllers/PrliClicksController.php",
+      "line": 166
+    },
+    {
+      "id": "src_14",
+      "entry_point_id": "ep_init_init",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": null,
+      "file": "app/controllers/PrliClicksController.php",
+      "line": 166
+    },
+    {
+      "id": "src_15",
+      "entry_point_id": "ep_init_init",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": "prli_page",
+      "file": "app/controllers/PrliClicksController.php",
+      "line": 166
+    },
+    {
+      "id": "src_16",
+      "entry_point_id": "ep_init_init",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": null,
+      "file": "app/controllers/PrliClicksController.php",
+      "line": 166
+    },
+    {
+      "id": "src_1",
+      "entry_point_id": "ep_init_init",
       "type": "superglobal_request",
       "variable": "$_REQUEST",
       "key": "plugin",
@@ -820,6 +964,15 @@
       "key": null,
       "file": "app/controllers/PrliAppController.php",
       "line": 726
+    },
+    {
+      "id": "src_1",
+      "entry_point_id": "ep_init_init",
+      "type": "superglobal_get",
+      "variable": "$_GET",
+      "key": null,
+      "file": "app/controllers/PrliAppController.php",
+      "line": 741
     }
   ],
   "sinks": [
@@ -912,6 +1065,36 @@
       "key": null,
       "file": "app/controllers/PrliAuthenticatorController.php",
       "line": 204
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_init_init",
+      "category": "sql",
+      "function_called": "get_var",
+      "uses_prepared_statement": true,
+      "key": null,
+      "file": "app/controllers/PrliClicksController.php",
+      "line": 140
+    },
+    {
+      "id": "sink_2",
+      "entry_point_id": "ep_init_init",
+      "category": "sql",
+      "function_called": "get_var",
+      "uses_prepared_statement": true,
+      "key": null,
+      "file": "app/controllers/PrliClicksController.php",
+      "line": 141
+    },
+    {
+      "id": "sink_3",
+      "entry_point_id": "ep_init_init",
+      "category": "include",
+      "function_called": "require_once",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "app/controllers/PrliClicksController.php",
+      "line": 183
     }
   ],
   "guards": [
@@ -926,12 +1109,39 @@
     },
     {
       "entry_point_id": "ep_init_init",
+      "type": "custom_guard",
+      "function_called": "PrliUtils::is_authorized()",
+      "file": "app/controllers/PrliAuthenticatorController.php",
+      "line": 88,
+      "is_effective": null,
+      "notes": "custom guard heuristic: method/static call in if-condition with wp_die/exit/return in body"
+    },
+    {
+      "entry_point_id": "ep_init_init",
       "type": "nonce_check",
       "function_called": "wp_verify_nonce",
       "file": "app/controllers/PrliAuthenticatorController.php",
       "line": 165,
       "is_effective": null,
       "notes": null
+    },
+    {
+      "entry_point_id": "ep_init_init",
+      "type": "custom_guard",
+      "function_called": "PrliUtils::is_authorized()",
+      "file": "app/controllers/PrliAuthenticatorController.php",
+      "line": 170,
+      "is_effective": null,
+      "notes": "custom guard heuristic: method/static call in if-condition with wp_die/exit/return in body"
+    },
+    {
+      "entry_point_id": "ep_init_init",
+      "type": "custom_guard",
+      "function_called": "PrliUtils::is_authorized()",
+      "file": "app/controllers/PrliPostsController.php",
+      "line": 32,
+      "is_effective": null,
+      "notes": "custom guard heuristic: method/static call in if-condition with wp_die/exit/return in body"
     },
     {
       "entry_point_id": "ep_init_init",
@@ -945,7 +1155,7 @@
   ],
   "anomalies": [
     {
-      "id": "anom_41",
+      "id": "anom_53",
       "rule_id": "rule_09",
       "type": "unsafe_redirect",
       "severity": "medium",
@@ -958,7 +1168,7 @@
       }
     },
     {
-      "id": "anom_42",
+      "id": "anom_54",
       "rule_id": "rule_09",
       "type": "unsafe_redirect",
       "severity": "medium",
@@ -971,7 +1181,7 @@
       }
     },
     {
-      "id": "anom_43",
+      "id": "anom_55",
       "rule_id": "rule_09",
       "type": "unsafe_redirect",
       "severity": "medium",

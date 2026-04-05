@@ -6,7 +6,7 @@
     "active_installs": null,
     "files_analyzed": 511,
     "total_loc": 70114,
-    "extraction_time_ms": 4301,
+    "extraction_time_ms": 4241,
     "extractor_version": "1.0.0"
   },
   "entry_points": [
@@ -26,7 +26,15 @@
       "rest_namespace": null,
       "rest_route": "/getblock",
       "rest_methods": "POST",
-      "permission_callback": "__array_callable__",
+      "permission_callback": "has_permission",
+      "permission_callback_ref": {
+        "type": "method",
+        "name": "has_permission",
+        "class": "WPMedia\\BackWPup\\Frontend\\API\\Rest",
+        "file": "src/Frontend/API/Rest.php",
+        "line_start": 66,
+        "line_end": 68
+      },
       "file": "src/Frontend/API/Rest.php",
       "line": 50
     },
@@ -46,7 +54,15 @@
       "rest_namespace": "backwpup/v1",
       "rest_route": "/storagelistcompact",
       "rest_methods": "GET",
-      "permission_callback": "__array_callable__",
+      "permission_callback": "has_permission",
+      "permission_callback_ref": {
+        "type": "method",
+        "name": "has_permission",
+        "class": "WPMedia\\BackWPup\\StorageProviders\\Frontend\\API\\Rest",
+        "file": "src/StorageProviders/Frontend/API/Rest.php",
+        "line_start": 66,
+        "line_end": 68
+      },
       "file": "src/StorageProviders/Frontend/API/Rest.php",
       "line": 50
     },
@@ -66,7 +82,15 @@
       "rest_namespace": null,
       "rest_route": "/cloud_is_authenticated",
       "rest_methods": "GET",
-      "permission_callback": "__array_callable__",
+      "permission_callback": "has_permission",
+      "permission_callback_ref": {
+        "type": "method",
+        "name": "has_permission",
+        "class": "WPMedia\\BackWPup\\StorageProviders\\API\\Rest",
+        "file": "src/StorageProviders/API/Rest.php",
+        "line_start": 138,
+        "line_end": 140
+      },
       "file": "src/StorageProviders/API/Rest.php",
       "line": 82
     },
@@ -86,7 +110,15 @@
       "rest_namespace": null,
       "rest_route": "/authenticate_cloud",
       "rest_methods": "POST",
-      "permission_callback": "__array_callable__",
+      "permission_callback": "has_permission",
+      "permission_callback_ref": {
+        "type": "method",
+        "name": "has_permission",
+        "class": "WPMedia\\BackWPup\\StorageProviders\\API\\Rest",
+        "file": "src/StorageProviders/API/Rest.php",
+        "line_start": 138,
+        "line_end": 140
+      },
       "file": "src/StorageProviders/API/Rest.php",
       "line": 92
     },
@@ -106,7 +138,15 @@
       "rest_namespace": null,
       "rest_route": "/delete_auth_cloud",
       "rest_methods": "POST",
-      "permission_callback": "__array_callable__",
+      "permission_callback": "has_permission",
+      "permission_callback_ref": {
+        "type": "method",
+        "name": "has_permission",
+        "class": "WPMedia\\BackWPup\\StorageProviders\\API\\Rest",
+        "file": "src/StorageProviders/API/Rest.php",
+        "line_start": 138,
+        "line_end": 140
+      },
       "file": "src/StorageProviders/API/Rest.php",
       "line": 102
     },
@@ -126,7 +166,15 @@
       "rest_namespace": null,
       "rest_route": "/cloudsaveandtest",
       "rest_methods": "POST",
-      "permission_callback": "__array_callable__",
+      "permission_callback": "has_permission",
+      "permission_callback_ref": {
+        "type": "method",
+        "name": "has_permission",
+        "class": "WPMedia\\BackWPup\\StorageProviders\\API\\Rest",
+        "file": "src/StorageProviders/API/Rest.php",
+        "line_start": 138,
+        "line_end": 140
+      },
       "file": "src/StorageProviders/API/Rest.php",
       "line": 112
     },
@@ -146,7 +194,15 @@
       "rest_namespace": null,
       "rest_route": "/storages",
       "rest_methods": "POST",
-      "permission_callback": "__array_callable__",
+      "permission_callback": "has_permission",
+      "permission_callback_ref": {
+        "type": "method",
+        "name": "has_permission",
+        "class": "WPMedia\\BackWPup\\StorageProviders\\API\\Rest",
+        "file": "src/StorageProviders/API/Rest.php",
+        "line_start": 138,
+        "line_end": 140
+      },
       "file": "src/StorageProviders/API/Rest.php",
       "line": 122
     },
@@ -166,7 +222,15 @@
       "rest_namespace": null,
       "rest_route": "/messages",
       "rest_methods": "GET",
-      "permission_callback": "__array_callable__",
+      "permission_callback": "has_permission",
+      "permission_callback_ref": {
+        "type": "method",
+        "name": "has_permission",
+        "class": "WPMedia\\BackWPup\\Admin\\Messages\\API\\Rest",
+        "file": "src/Admin/Messages/API/Rest.php",
+        "line_start": 17,
+        "line_end": 19
+      },
       "file": "src/Admin/Messages/API/Rest.php",
       "line": 30
     },
@@ -186,7 +250,15 @@
       "rest_namespace": null,
       "rest_route": null,
       "rest_methods": "POST",
-      "permission_callback": "__array_callable__",
+      "permission_callback": "has_permission",
+      "permission_callback_ref": {
+        "type": "method",
+        "name": "has_permission",
+        "class": "WPMedia\\BackWPup\\Admin\\Chatbot\\API\\ChatbotRest",
+        "file": "src/Admin/Chatbot/API/ChatbotRest.php",
+        "line_start": 40,
+        "line_end": 42
+      },
       "file": "src/Admin/Chatbot/API/ChatbotRest.php",
       "line": 50
     },
@@ -206,7 +278,15 @@
       "rest_namespace": null,
       "rest_route": null,
       "rest_methods": "GET",
-      "permission_callback": "__array_callable__",
+      "permission_callback": "has_context_token_permission",
+      "permission_callback_ref": {
+        "type": "method",
+        "name": "has_context_token_permission",
+        "class": "WPMedia\\BackWPup\\Admin\\Chatbot\\API\\ChatbotRest",
+        "file": "src/Admin/Chatbot/API/ChatbotRest.php",
+        "line_start": 122,
+        "line_end": 136
+      },
       "file": "src/Admin/Chatbot/API/ChatbotRest.php",
       "line": 50
     },
@@ -226,7 +306,15 @@
       "rest_namespace": "backwpup/v1",
       "rest_route": "/getjobslist",
       "rest_methods": "GET",
-      "permission_callback": "__array_callable__",
+      "permission_callback": "has_permission",
+      "permission_callback_ref": {
+        "type": "method",
+        "name": "has_permission",
+        "class": "WPMedia\\BackWPup\\Jobs\\Frontend\\API\\Rest",
+        "file": "src/Jobs/Frontend/API/Rest.php",
+        "line_start": 64,
+        "line_end": 66
+      },
       "file": "src/Jobs/Frontend/API/Rest.php",
       "line": 48
     },
@@ -246,7 +334,15 @@
       "rest_namespace": null,
       "rest_route": "/updatejob",
       "rest_methods": "POST",
-      "permission_callback": "__array_callable__",
+      "permission_callback": "has_permission",
+      "permission_callback_ref": {
+        "type": "method",
+        "name": "has_permission",
+        "class": "WPMedia\\BackWPup\\Jobs\\API\\Rest",
+        "file": "src/Jobs/API/Rest.php",
+        "line_start": 87,
+        "line_end": 89
+      },
       "file": "src/Jobs/API/Rest.php",
       "line": 97
     },
@@ -266,7 +362,15 @@
       "rest_namespace": null,
       "rest_route": "/update-job-title",
       "rest_methods": "POST",
-      "permission_callback": "__array_callable__",
+      "permission_callback": "has_permission",
+      "permission_callback_ref": {
+        "type": "method",
+        "name": "has_permission",
+        "class": "WPMedia\\BackWPup\\Jobs\\API\\Rest",
+        "file": "src/Jobs/API/Rest.php",
+        "line_start": 87,
+        "line_end": 89
+      },
       "file": "src/Jobs/API/Rest.php",
       "line": 132
     },
@@ -286,7 +390,15 @@
       "rest_namespace": null,
       "rest_route": "/addjob",
       "rest_methods": "POST",
-      "permission_callback": "__array_callable__",
+      "permission_callback": "has_permission",
+      "permission_callback_ref": {
+        "type": "method",
+        "name": "has_permission",
+        "class": "WPMedia\\BackWPup\\Jobs\\API\\Rest",
+        "file": "src/Jobs/API/Rest.php",
+        "line_start": 87,
+        "line_end": 89
+      },
       "file": "src/Jobs/API/Rest.php",
       "line": 158
     },
@@ -306,7 +418,15 @@
       "rest_namespace": null,
       "rest_route": "/delete_job",
       "rest_methods": "DELETE",
-      "permission_callback": "__array_callable__",
+      "permission_callback": "has_permission",
+      "permission_callback_ref": {
+        "type": "method",
+        "name": "has_permission",
+        "class": "WPMedia\\BackWPup\\Jobs\\API\\Rest",
+        "file": "src/Jobs/API/Rest.php",
+        "line_start": 87,
+        "line_end": 89
+      },
       "file": "src/Jobs/API/Rest.php",
       "line": 177
     },
@@ -326,7 +446,15 @@
       "rest_namespace": null,
       "rest_route": "/save_job_settings",
       "rest_methods": "POST",
-      "permission_callback": "__array_callable__",
+      "permission_callback": "has_permission",
+      "permission_callback_ref": {
+        "type": "method",
+        "name": "has_permission",
+        "class": "WPMedia\\BackWPup\\Jobs\\API\\Rest",
+        "file": "src/Jobs/API/Rest.php",
+        "line_start": 87,
+        "line_end": 89
+      },
       "file": "src/Jobs/API/Rest.php",
       "line": 196
     },
@@ -346,7 +474,15 @@
       "rest_namespace": null,
       "rest_route": "/save_job_format",
       "rest_methods": "POST",
-      "permission_callback": "__array_callable__",
+      "permission_callback": "has_permission",
+      "permission_callback_ref": {
+        "type": "method",
+        "name": "has_permission",
+        "class": "WPMedia\\BackWPup\\Jobs\\API\\Rest",
+        "file": "src/Jobs/API/Rest.php",
+        "line_start": 87,
+        "line_end": 89
+      },
       "file": "src/Jobs/API/Rest.php",
       "line": 206
     },
@@ -366,7 +502,15 @@
       "rest_namespace": null,
       "rest_route": "/save_files_exclusions",
       "rest_methods": "POST",
-      "permission_callback": "__array_callable__",
+      "permission_callback": "has_permission",
+      "permission_callback_ref": {
+        "type": "method",
+        "name": "has_permission",
+        "class": "WPMedia\\BackWPup\\Jobs\\API\\Rest",
+        "file": "src/Jobs/API/Rest.php",
+        "line_start": 87,
+        "line_end": 89
+      },
       "file": "src/Jobs/API/Rest.php",
       "line": 216
     },
@@ -386,7 +530,15 @@
       "rest_namespace": null,
       "rest_route": "/save_excluded_tables",
       "rest_methods": "POST",
-      "permission_callback": "__array_callable__",
+      "permission_callback": "has_permission",
+      "permission_callback_ref": {
+        "type": "method",
+        "name": "has_permission",
+        "class": "WPMedia\\BackWPup\\Jobs\\API\\Rest",
+        "file": "src/Jobs/API/Rest.php",
+        "line_start": 87,
+        "line_end": 89
+      },
       "file": "src/Jobs/API/Rest.php",
       "line": 289
     },
@@ -407,6 +559,7 @@
       "rest_route": "/save_site_option",
       "rest_methods": "POST",
       "permission_callback": "__closure__",
+      "permission_callback_ref": null,
       "file": "src/Jobs/API/Rest.php",
       "line": 331
     },
@@ -426,7 +579,15 @@
       "rest_namespace": null,
       "rest_route": "/backups/(?P<id>\\d+)/type",
       "rest_methods": "POST",
-      "permission_callback": "__array_callable__",
+      "permission_callback": "has_permission",
+      "permission_callback_ref": {
+        "type": "method",
+        "name": "has_permission",
+        "class": "WPMedia\\BackWPup\\Jobs\\API\\Rest",
+        "file": "src/Jobs/API/Rest.php",
+        "line_start": 87,
+        "line_end": 89
+      },
       "file": "src/Jobs/API/Rest.php",
       "line": 346
     },
@@ -446,7 +607,15 @@
       "rest_namespace": null,
       "rest_route": "/backups",
       "rest_methods": "POST",
-      "permission_callback": "__array_callable__",
+      "permission_callback": "has_permission",
+      "permission_callback_ref": {
+        "type": "method",
+        "name": "has_permission",
+        "class": "WPMedia\\BackWPup\\Backups\\History\\Frontend\\API\\Rest",
+        "file": "src/Backups/History/Frontend/API/Rest.php",
+        "line_start": 114,
+        "line_end": 116
+      },
       "file": "src/Backups/History/Frontend/API/Rest.php",
       "line": 57
     },
@@ -466,7 +635,15 @@
       "rest_namespace": null,
       "rest_route": "/pagination",
       "rest_methods": "POST",
-      "permission_callback": "__array_callable__",
+      "permission_callback": "has_permission",
+      "permission_callback_ref": {
+        "type": "method",
+        "name": "has_permission",
+        "class": "WPMedia\\BackWPup\\Backups\\History\\Frontend\\API\\Rest",
+        "file": "src/Backups/History/Frontend/API/Rest.php",
+        "line_start": 114,
+        "line_end": 116
+      },
       "file": "src/Backups/History/Frontend/API/Rest.php",
       "line": 83
     },
@@ -486,7 +663,15 @@
       "rest_namespace": "backwpup/v1",
       "rest_route": "/startbackup",
       "rest_methods": "POST",
-      "permission_callback": "__array_callable__",
+      "permission_callback": "has_permission",
+      "permission_callback_ref": {
+        "type": "method",
+        "name": "has_permission",
+        "class": "WPMedia\\BackWPup\\Backups\\API\\Rest",
+        "file": "src/Backups/API/Rest.php",
+        "line_start": 81,
+        "line_end": 83
+      },
       "file": "src/Backups/API/Rest.php",
       "line": 94
     },
@@ -506,7 +691,15 @@
       "rest_namespace": "backwpup/v1",
       "rest_route": "/process_bulk_actions",
       "rest_methods": "POST",
-      "permission_callback": "__array_callable__",
+      "permission_callback": "has_permission",
+      "permission_callback_ref": {
+        "type": "method",
+        "name": "has_permission",
+        "class": "WPMedia\\BackWPup\\Backups\\API\\Rest",
+        "file": "src/Backups/API/Rest.php",
+        "line_start": 81,
+        "line_end": 83
+      },
       "file": "src/Backups/API/Rest.php",
       "line": 122
     }
@@ -601,6 +794,15 @@
       "key": "backwpup_messages",
       "file": "src/Admin/Messages/API/Rest.php",
       "line": 54
+    },
+    {
+      "id": "src_1",
+      "entry_point_id": "ep_rest___0",
+      "type": "option_read",
+      "variable": "get_option()",
+      "key": "active_plugins",
+      "file": "src/Admin/Chatbot/ContextSnapshotBuilder.php",
+      "line": 58
     },
     {
       "id": "src_1",
@@ -822,6 +1024,26 @@
       "line": 112
     },
     {
+      "id": "sink_propdispatch_2",
+      "entry_point_id": "ep_rest___getblock",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\BackWPupHelpersAdapter::component",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Frontend/API/Rest.php",
+      "line": 102
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___getblock",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/BackWPupHelpersAdapter.php",
+      "line": 20
+    },
+    {
       "id": "sink_1",
       "entry_point_id": "ep_rest_backwpup_v1__storagelistcompact",
       "category": "output_return",
@@ -830,6 +1052,66 @@
       "key": null,
       "file": "src/StorageProviders/Frontend/API/Rest.php",
       "line": 98
+    },
+    {
+      "id": "sink_propdispatch_3",
+      "entry_point_id": "ep_rest_backwpup_v1__storagelistcompact",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\OptionAdapter::get",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/StorageProviders/Frontend/API/Rest.php",
+      "line": 83
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest_backwpup_v1__storagelistcompact",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/OptionAdapter.php",
+      "line": 35
+    },
+    {
+      "id": "sink_propdispatch_4",
+      "entry_point_id": "ep_rest_backwpup_v1__storagelistcompact",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\BackWPupHelpersAdapter::component",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/StorageProviders/Frontend/API/Rest.php",
+      "line": 84
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest_backwpup_v1__storagelistcompact",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/BackWPupHelpersAdapter.php",
+      "line": 20
+    },
+    {
+      "id": "sink_propdispatch_5",
+      "entry_point_id": "ep_rest_backwpup_v1__storagelistcompact",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\BackWPupHelpersAdapter::component",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/StorageProviders/Frontend/API/Rest.php",
+      "line": 88
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest_backwpup_v1__storagelistcompact",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/BackWPupHelpersAdapter.php",
+      "line": 20
     },
     {
       "id": "sink_1",
@@ -842,6 +1124,46 @@
       "line": 178
     },
     {
+      "id": "sink_propdispatch_6",
+      "entry_point_id": "ep_rest___cloud_is_authenticated",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\StorageProviders\\CloudProviderManager::get_provider",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/StorageProviders/API/Rest.php",
+      "line": 165
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___cloud_is_authenticated",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/StorageProviders/CloudProviderManager.php",
+      "line": 46
+    },
+    {
+      "id": "sink_propdispatch_7",
+      "entry_point_id": "ep_rest___cloud_is_authenticated",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\BackWPupHelpersAdapter::component",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/StorageProviders/API/Rest.php",
+      "line": 168
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___cloud_is_authenticated",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/BackWPupHelpersAdapter.php",
+      "line": 20
+    },
+    {
       "id": "sink_1",
       "entry_point_id": "ep_rest___authenticate_cloud",
       "category": "output_return",
@@ -850,6 +1172,46 @@
       "key": null,
       "file": "src/StorageProviders/API/Rest.php",
       "line": 215
+    },
+    {
+      "id": "sink_propdispatch_8",
+      "entry_point_id": "ep_rest___authenticate_cloud",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\StorageProviders\\CloudProviderManager::get_provider",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/StorageProviders/API/Rest.php",
+      "line": 202
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___authenticate_cloud",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/StorageProviders/CloudProviderManager.php",
+      "line": 46
+    },
+    {
+      "id": "sink_propdispatch_9",
+      "entry_point_id": "ep_rest___authenticate_cloud",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\BackWPupHelpersAdapter::component",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/StorageProviders/API/Rest.php",
+      "line": 205
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___authenticate_cloud",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/BackWPupHelpersAdapter.php",
+      "line": 20
     },
     {
       "id": "sink_1",
@@ -862,6 +1224,46 @@
       "line": 252
     },
     {
+      "id": "sink_propdispatch_10",
+      "entry_point_id": "ep_rest___delete_auth_cloud",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\StorageProviders\\CloudProviderManager::get_provider",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/StorageProviders/API/Rest.php",
+      "line": 239
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___delete_auth_cloud",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/StorageProviders/CloudProviderManager.php",
+      "line": 46
+    },
+    {
+      "id": "sink_propdispatch_11",
+      "entry_point_id": "ep_rest___delete_auth_cloud",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\BackWPupHelpersAdapter::component",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/StorageProviders/API/Rest.php",
+      "line": 242
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___delete_auth_cloud",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/BackWPupHelpersAdapter.php",
+      "line": 20
+    },
+    {
       "id": "sink_1",
       "entry_point_id": "ep_rest___cloudsaveandtest",
       "category": "output_return",
@@ -870,6 +1272,46 @@
       "key": null,
       "file": "src/StorageProviders/API/Rest.php",
       "line": 304
+    },
+    {
+      "id": "sink_propdispatch_12",
+      "entry_point_id": "ep_rest___cloudsaveandtest",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\BackWPupAdapter::get_destination",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/StorageProviders/API/Rest.php",
+      "line": 271
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___cloudsaveandtest",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/BackWPupAdapter.php",
+      "line": 36
+    },
+    {
+      "id": "sink_propdispatch_13",
+      "entry_point_id": "ep_rest___cloudsaveandtest",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\OptionAdapter::get_job",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/StorageProviders/API/Rest.php",
+      "line": 293
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___cloudsaveandtest",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/OptionAdapter.php",
+      "line": 79
     },
     {
       "id": "sink_1",
@@ -890,6 +1332,56 @@
       "key": null,
       "file": "src/StorageProviders/API/Rest.php",
       "line": 365
+    },
+    {
+      "id": "sink_propdispatch_14",
+      "entry_point_id": "ep_rest___storages",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\BackWPupAdapter::get_destination",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/StorageProviders/API/Rest.php",
+      "line": 323
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___storages",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/BackWPupAdapter.php",
+      "line": 36
+    },
+    {
+      "id": "sink_propdispatch_15",
+      "entry_point_id": "ep_rest___storages",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\OptionAdapter::get_job",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/StorageProviders/API/Rest.php",
+      "line": 334
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___storages",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/OptionAdapter.php",
+      "line": 79
+    },
+    {
+      "id": "sink_propdispatch_16",
+      "entry_point_id": "ep_rest___storages",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\OptionAdapter::update",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/StorageProviders/API/Rest.php",
+      "line": 354
     },
     {
       "id": "sink_1",
@@ -922,6 +1414,26 @@
       "line": 105
     },
     {
+      "id": "sink_propdispatch_17",
+      "entry_point_id": "ep_rest___0",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Admin\\Chatbot\\ContextSnapshotBuilder::build",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Admin/Chatbot/API/ChatbotRest.php",
+      "line": 89
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___0",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Admin/Chatbot/ContextSnapshotBuilder.php",
+      "line": 60
+    },
+    {
       "id": "sink_1",
       "entry_point_id": "ep_rest___1",
       "category": "output_return",
@@ -952,6 +1464,46 @@
       "line": 95
     },
     {
+      "id": "sink_propdispatch_18",
+      "entry_point_id": "ep_rest_backwpup_v1__getjobslist",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\JobAdapter::get_jobs",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/Frontend/API/Rest.php",
+      "line": 74
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest_backwpup_v1__getjobslist",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/JobAdapter.php",
+      "line": 88
+    },
+    {
+      "id": "sink_propdispatch_19",
+      "entry_point_id": "ep_rest_backwpup_v1__getjobslist",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\BackWPupHelpersAdapter::component",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/Frontend/API/Rest.php",
+      "line": 92
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest_backwpup_v1__getjobslist",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/BackWPupHelpersAdapter.php",
+      "line": 20
+    },
+    {
       "id": "sink_1",
       "entry_point_id": "ep_rest___updatejob",
       "category": "output_return",
@@ -960,6 +1512,86 @@
       "key": null,
       "file": "src/Jobs/API/Rest.php",
       "line": 426
+    },
+    {
+      "id": "sink_propdispatch_20",
+      "entry_point_id": "ep_rest___updatejob",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\JobAdapter::disable_job",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 392
+    },
+    {
+      "id": "sink_propdispatch_21",
+      "entry_point_id": "ep_rest___updatejob",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\JobAdapter::enable_job",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 395
+    },
+    {
+      "id": "sink_propdispatch_22",
+      "entry_point_id": "ep_rest___updatejob",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\JobAdapter::schedule_job",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 396
+    },
+    {
+      "id": "sink_propdispatch_23",
+      "entry_point_id": "ep_rest___updatejob",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\CronAdapter::cron_next",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 397
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___updatejob",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/CronAdapter.php",
+      "line": 21
+    },
+    {
+      "id": "sink_propdispatch_24",
+      "entry_point_id": "ep_rest___updatejob",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\OptionAdapter::get",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 397
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___updatejob",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/OptionAdapter.php",
+      "line": 35
+    },
+    {
+      "id": "sink_propdispatch_25",
+      "entry_point_id": "ep_rest___updatejob",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\OptionAdapter::update",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 417
     },
     {
       "id": "sink_1",
@@ -972,6 +1604,16 @@
       "line": 475
     },
     {
+      "id": "sink_propdispatch_26",
+      "entry_point_id": "ep_rest___update_job_title",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\JobAdapter::rename_job",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 473
+    },
+    {
       "id": "sink_1",
       "entry_point_id": "ep_rest___addjob",
       "category": "output_return",
@@ -980,6 +1622,196 @@
       "key": null,
       "file": "src/Jobs/API/Rest.php",
       "line": 538
+    },
+    {
+      "id": "sink_propdispatch_27",
+      "entry_point_id": "ep_rest___addjob",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\OptionAdapter::defaults_job",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 496
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___addjob",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/OptionAdapter.php",
+      "line": 46
+    },
+    {
+      "id": "sink_propdispatch_28",
+      "entry_point_id": "ep_rest___addjob",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\OptionAdapter::next_job_id",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 499
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___addjob",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/OptionAdapter.php",
+      "line": 55
+    },
+    {
+      "id": "sink_propdispatch_29",
+      "entry_point_id": "ep_rest___addjob",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\JobTypesAdapter::get_type_job_file",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 508
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___addjob",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/JobTypesAdapter.php",
+      "line": 36
+    },
+    {
+      "id": "sink_propdispatch_30",
+      "entry_point_id": "ep_rest___addjob",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\JobTypesAdapter::get_name_job_files",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 509
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___addjob",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/JobTypesAdapter.php",
+      "line": 63
+    },
+    {
+      "id": "sink_propdispatch_31",
+      "entry_point_id": "ep_rest___addjob",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\JobTypesAdapter::get_type_job_database",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 512
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___addjob",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/JobTypesAdapter.php",
+      "line": 45
+    },
+    {
+      "id": "sink_propdispatch_32",
+      "entry_point_id": "ep_rest___addjob",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\JobTypesAdapter::get_name_job_database",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 513
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___addjob",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/JobTypesAdapter.php",
+      "line": 72
+    },
+    {
+      "id": "sink_propdispatch_33",
+      "entry_point_id": "ep_rest___addjob",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\JobTypesAdapter::get_type_job_both",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 516
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___addjob",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/JobTypesAdapter.php",
+      "line": 54
+    },
+    {
+      "id": "sink_propdispatch_34",
+      "entry_point_id": "ep_rest___addjob",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\JobTypesAdapter::get_name_job_both",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 517
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___addjob",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/JobTypesAdapter.php",
+      "line": 81
+    },
+    {
+      "id": "sink_propdispatch_35",
+      "entry_point_id": "ep_rest___addjob",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\OptionAdapter::update",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 524
+    },
+    {
+      "id": "sink_propdispatch_36",
+      "entry_point_id": "ep_rest___addjob",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\CronAdapter::cron_next",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 527
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___addjob",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/CronAdapter.php",
+      "line": 21
     },
     {
       "id": "sink_1",
@@ -992,6 +1824,26 @@
       "line": 578
     },
     {
+      "id": "sink_propdispatch_37",
+      "entry_point_id": "ep_rest___delete_job",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\JobAdapter::delete_job",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 570
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___delete_job",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/JobAdapter.php",
+      "line": 79
+    },
+    {
       "id": "sink_1",
       "entry_point_id": "ep_rest___save_job_settings",
       "category": "output_return",
@@ -1000,6 +1852,96 @@
       "key": null,
       "file": "src/Jobs/API/Rest.php",
       "line": 664
+    },
+    {
+      "id": "sink_propdispatch_38",
+      "entry_point_id": "ep_rest___save_job_settings",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\OptionAdapter::update",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 615
+    },
+    {
+      "id": "sink_propdispatch_39",
+      "entry_point_id": "ep_rest___save_job_settings",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\OptionAdapter::update",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 620
+    },
+    {
+      "id": "sink_propdispatch_40",
+      "entry_point_id": "ep_rest___save_job_settings",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\CronAdapter::get_basic_cron_expression",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 624
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___save_job_settings",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/CronAdapter.php",
+      "line": 37
+    },
+    {
+      "id": "sink_propdispatch_41",
+      "entry_point_id": "ep_rest___save_job_settings",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\OptionAdapter::update",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 633
+    },
+    {
+      "id": "sink_propdispatch_42",
+      "entry_point_id": "ep_rest___save_job_settings",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\JobAdapter::schedule_job",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 636
+    },
+    {
+      "id": "sink_propdispatch_43",
+      "entry_point_id": "ep_rest___save_job_settings",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\CronAdapter::cron_next",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 639
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___save_job_settings",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/CronAdapter.php",
+      "line": 21
+    },
+    {
+      "id": "sink_propdispatch_44",
+      "entry_point_id": "ep_rest___save_job_settings",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\OptionAdapter::update",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 642
     },
     {
       "id": "sink_1",
@@ -1012,6 +1954,46 @@
       "line": 721
     },
     {
+      "id": "sink_propdispatch_45",
+      "entry_point_id": "ep_rest___save_job_format",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\OptionAdapter::defaults_job",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 685
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___save_job_format",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/OptionAdapter.php",
+      "line": 46
+    },
+    {
+      "id": "sink_propdispatch_46",
+      "entry_point_id": "ep_rest___save_job_format",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\OptionAdapter::update",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 708
+    },
+    {
+      "id": "sink_propdispatch_47",
+      "entry_point_id": "ep_rest___save_job_format",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\OptionAdapter::update",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 709
+    },
+    {
       "id": "sink_1",
       "entry_point_id": "ep_rest___save_files_exclusions",
       "category": "output_return",
@@ -1022,6 +2004,26 @@
       "line": 747
     },
     {
+      "id": "sink_propdispatch_48",
+      "entry_point_id": "ep_rest___save_files_exclusions",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\BackWPupAdapter::get_job_types",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 740
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___save_files_exclusions",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/BackWPupAdapter.php",
+      "line": 45
+    },
+    {
       "id": "sink_1",
       "entry_point_id": "ep_rest___save_excluded_tables",
       "category": "output_return",
@@ -1030,6 +2032,26 @@
       "key": null,
       "file": "src/Jobs/API/Rest.php",
       "line": 775
+    },
+    {
+      "id": "sink_propdispatch_49",
+      "entry_point_id": "ep_rest___save_excluded_tables",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\BackWPupAdapter::get_job_types",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 767
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___save_excluded_tables",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/BackWPupAdapter.php",
+      "line": 45
     },
     {
       "id": "sink_1",
@@ -1052,6 +2074,26 @@
       "line": 823
     },
     {
+      "id": "sink_propdispatch_50",
+      "entry_point_id": "ep_rest___save_site_option",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\EncryptionAdapter::encrypt",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 809
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___save_site_option",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/EncryptionAdapter.php",
+      "line": 25
+    },
+    {
       "id": "sink_1",
       "entry_point_id": "ep_rest___backups___P_id__d___type",
       "category": "output_return",
@@ -1060,6 +2102,56 @@
       "key": null,
       "file": "src/Jobs/API/Rest.php",
       "line": 458
+    },
+    {
+      "id": "sink_propdispatch_51",
+      "entry_point_id": "ep_rest___backups___P_id__d___type",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\JobTypesAdapter::job_type_map",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 446
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___backups___P_id__d___type",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/JobTypesAdapter.php",
+      "line": 98
+    },
+    {
+      "id": "sink_propdispatch_52",
+      "entry_point_id": "ep_rest___backups___P_id__d___type",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\JobTypesAdapter::job_name_map",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 447
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___backups___P_id__d___type",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/JobTypesAdapter.php",
+      "line": 115
+    },
+    {
+      "id": "sink_propdispatch_53",
+      "entry_point_id": "ep_rest___backups___P_id__d___type",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\OptionAdapter::update",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Jobs/API/Rest.php",
+      "line": 451
     },
     {
       "id": "sink_1",
@@ -1102,6 +2194,166 @@
       "line": 124
     },
     {
+      "id": "sink_propdispatch_54",
+      "entry_point_id": "ep_rest___backups",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\OptionAdapter::get_job_ids",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Backups/History/Frontend/API/Rest.php",
+      "line": 150
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___backups",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/OptionAdapter.php",
+      "line": 67
+    },
+    {
+      "id": "sink_propdispatch_55",
+      "entry_point_id": "ep_rest___backups",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\OptionAdapter::get_job",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Backups/History/Frontend/API/Rest.php",
+      "line": 155
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___backups",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/OptionAdapter.php",
+      "line": 79
+    },
+    {
+      "id": "sink_propdispatch_56",
+      "entry_point_id": "ep_rest___backups",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\BackWPupAdapter::get_destination",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Backups/History/Frontend/API/Rest.php",
+      "line": 172
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___backups",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/BackWPupAdapter.php",
+      "line": 36
+    },
+    {
+      "id": "sink_propdispatch_57",
+      "entry_point_id": "ep_rest___backups",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\BackWPupHelpersAdapter::process_backup_items",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Backups/History/Frontend/API/Rest.php",
+      "line": 177
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___backups",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/BackWPupHelpersAdapter.php",
+      "line": 47
+    },
+    {
+      "id": "sink_propdispatch_58",
+      "entry_point_id": "ep_rest___backups",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\BackWPupAdapter::get_destination",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Backups/History/Frontend/API/Rest.php",
+      "line": 182
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___backups",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/BackWPupAdapter.php",
+      "line": 36
+    },
+    {
+      "id": "sink_propdispatch_59",
+      "entry_point_id": "ep_rest___backups",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\BackWPupHelpersAdapter::process_backup_items",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Backups/History/Frontend/API/Rest.php",
+      "line": 185
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___backups",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/BackWPupHelpersAdapter.php",
+      "line": 47
+    },
+    {
+      "id": "sink_propdispatch_60",
+      "entry_point_id": "ep_rest___backups",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\BackWPupHelpersAdapter::component",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Backups/History/Frontend/API/Rest.php",
+      "line": 219
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___backups",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/BackWPupHelpersAdapter.php",
+      "line": 20
+    },
+    {
+      "id": "sink_propdispatch_61",
+      "entry_point_id": "ep_rest___backups",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\BackWPupHelpersAdapter::component",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Backups/History/Frontend/API/Rest.php",
+      "line": 221
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___backups",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/BackWPupHelpersAdapter.php",
+      "line": 20
+    },
+    {
       "id": "sink_1",
       "entry_point_id": "ep_rest___pagination",
       "category": "output_return",
@@ -1120,6 +2372,26 @@
       "key": null,
       "file": "src/Backups/History/Frontend/API/Rest.php",
       "line": 279
+    },
+    {
+      "id": "sink_propdispatch_62",
+      "entry_point_id": "ep_rest___pagination",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\BackWPupHelpersAdapter::component",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Backups/History/Frontend/API/Rest.php",
+      "line": 261
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest___pagination",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/BackWPupHelpersAdapter.php",
+      "line": 20
     },
     {
       "id": "sink_1",
@@ -1222,6 +2494,226 @@
       "line": 315
     },
     {
+      "id": "sink_propdispatch_63",
+      "entry_point_id": "ep_rest_backwpup_v1__startbackup",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\JobAdapter::get_jobs",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Backups/API/Rest.php",
+      "line": 176
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest_backwpup_v1__startbackup",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/JobAdapter.php",
+      "line": 88
+    },
+    {
+      "id": "sink_propdispatch_64",
+      "entry_point_id": "ep_rest_backwpup_v1__startbackup",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\FileAdapter::check_folder",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Backups/API/Rest.php",
+      "line": 192
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest_backwpup_v1__startbackup",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/FileAdapter.php",
+      "line": 17
+    },
+    {
+      "id": "sink_propdispatch_65",
+      "entry_point_id": "ep_rest_backwpup_v1__startbackup",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\BackWPupAdapter::get_plugin_data",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Backups/API/Rest.php",
+      "line": 192
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest_backwpup_v1__startbackup",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/BackWPupAdapter.php",
+      "line": 16
+    },
+    {
+      "id": "sink_propdispatch_66",
+      "entry_point_id": "ep_rest_backwpup_v1__startbackup",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\FileAdapter::get_absolute_path",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Backups/API/Rest.php",
+      "line": 206
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest_backwpup_v1__startbackup",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/FileAdapter.php",
+      "line": 28
+    },
+    {
+      "id": "sink_propdispatch_67",
+      "entry_point_id": "ep_rest_backwpup_v1__startbackup",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\FileAdapter::check_folder",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Backups/API/Rest.php",
+      "line": 207
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest_backwpup_v1__startbackup",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/FileAdapter.php",
+      "line": 17
+    },
+    {
+      "id": "sink_propdispatch_68",
+      "entry_point_id": "ep_rest_backwpup_v1__startbackup",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\BackWPupAdapter::get_job_types",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Backups/API/Rest.php",
+      "line": 220
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest_backwpup_v1__startbackup",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/BackWPupAdapter.php",
+      "line": 45
+    },
+    {
+      "id": "sink_propdispatch_69",
+      "entry_point_id": "ep_rest_backwpup_v1__startbackup",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\OptionAdapter::get_job",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Backups/API/Rest.php",
+      "line": 221
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest_backwpup_v1__startbackup",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/OptionAdapter.php",
+      "line": 79
+    },
+    {
+      "id": "sink_propdispatch_70",
+      "entry_point_id": "ep_rest_backwpup_v1__startbackup",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\BackWPupAdapter::get_destination",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Backups/API/Rest.php",
+      "line": 232
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest_backwpup_v1__startbackup",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/BackWPupAdapter.php",
+      "line": 36
+    },
+    {
+      "id": "sink_propdispatch_71",
+      "entry_point_id": "ep_rest_backwpup_v1__startbackup",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\JobAdapter::get_jobrun_url",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Backups/API/Rest.php",
+      "line": 260
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest_backwpup_v1__startbackup",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/JobAdapter.php",
+      "line": 101
+    },
+    {
+      "id": "sink_propdispatch_72",
+      "entry_point_id": "ep_rest_backwpup_v1__startbackup",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\BackWPupAdapter::get_plugin_data",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Backups/API/Rest.php",
+      "line": 263
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest_backwpup_v1__startbackup",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/BackWPupAdapter.php",
+      "line": 16
+    },
+    {
+      "id": "sink_propdispatch_73",
+      "entry_point_id": "ep_rest_backwpup_v1__startbackup",
+      "category": "property_dispatch",
+      "function_called": "WPMedia\\BackWPup\\Adapters\\BackWPupAdapter::get_plugin_data",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Backups/API/Rest.php",
+      "line": 277
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_rest_backwpup_v1__startbackup",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "key": null,
+      "file": "src/Adapters/BackWPupAdapter.php",
+      "line": 16
+    },
+    {
       "id": "sink_1",
       "entry_point_id": "ep_rest_backwpup_v1__process_bulk_actions",
       "category": "output_return",
@@ -1232,7 +2724,215 @@
       "line": 385
     }
   ],
-  "guards": [],
+  "guards": [
+    {
+      "entry_point_id": "ep_rest___getblock",
+      "type": "capability_check",
+      "function_called": "current_user_can('backwpup')",
+      "file": "src/Frontend/API/Rest.php",
+      "line": 67,
+      "is_effective": null,
+      "notes": "backwpup"
+    },
+    {
+      "entry_point_id": "ep_rest_backwpup_v1__storagelistcompact",
+      "type": "capability_check",
+      "function_called": "current_user_can('backwpup')",
+      "file": "src/StorageProviders/Frontend/API/Rest.php",
+      "line": 67,
+      "is_effective": null,
+      "notes": "backwpup"
+    },
+    {
+      "entry_point_id": "ep_rest___cloud_is_authenticated",
+      "type": "capability_check",
+      "function_called": "current_user_can('backwpup')",
+      "file": "src/StorageProviders/API/Rest.php",
+      "line": 139,
+      "is_effective": null,
+      "notes": "backwpup"
+    },
+    {
+      "entry_point_id": "ep_rest___authenticate_cloud",
+      "type": "capability_check",
+      "function_called": "current_user_can('backwpup')",
+      "file": "src/StorageProviders/API/Rest.php",
+      "line": 139,
+      "is_effective": null,
+      "notes": "backwpup"
+    },
+    {
+      "entry_point_id": "ep_rest___delete_auth_cloud",
+      "type": "capability_check",
+      "function_called": "current_user_can('backwpup')",
+      "file": "src/StorageProviders/API/Rest.php",
+      "line": 139,
+      "is_effective": null,
+      "notes": "backwpup"
+    },
+    {
+      "entry_point_id": "ep_rest___cloudsaveandtest",
+      "type": "capability_check",
+      "function_called": "current_user_can('backwpup')",
+      "file": "src/StorageProviders/API/Rest.php",
+      "line": 139,
+      "is_effective": null,
+      "notes": "backwpup"
+    },
+    {
+      "entry_point_id": "ep_rest___storages",
+      "type": "capability_check",
+      "function_called": "current_user_can('backwpup')",
+      "file": "src/StorageProviders/API/Rest.php",
+      "line": 139,
+      "is_effective": null,
+      "notes": "backwpup"
+    },
+    {
+      "entry_point_id": "ep_rest___messages",
+      "type": "capability_check",
+      "function_called": "current_user_can('backwpup')",
+      "file": "src/Admin/Messages/API/Rest.php",
+      "line": 18,
+      "is_effective": null,
+      "notes": "backwpup"
+    },
+    {
+      "entry_point_id": "ep_rest___0",
+      "type": "capability_check",
+      "function_called": "current_user_can('backwpup')",
+      "file": "src/Admin/Chatbot/API/ChatbotRest.php",
+      "line": 41,
+      "is_effective": null,
+      "notes": "backwpup"
+    },
+    {
+      "entry_point_id": "ep_rest_backwpup_v1__getjobslist",
+      "type": "capability_check",
+      "function_called": "current_user_can('backwpup')",
+      "file": "src/Jobs/Frontend/API/Rest.php",
+      "line": 65,
+      "is_effective": null,
+      "notes": "backwpup"
+    },
+    {
+      "entry_point_id": "ep_rest___updatejob",
+      "type": "capability_check",
+      "function_called": "current_user_can('backwpup')",
+      "file": "src/Jobs/API/Rest.php",
+      "line": 88,
+      "is_effective": null,
+      "notes": "backwpup"
+    },
+    {
+      "entry_point_id": "ep_rest___update_job_title",
+      "type": "capability_check",
+      "function_called": "current_user_can('backwpup')",
+      "file": "src/Jobs/API/Rest.php",
+      "line": 88,
+      "is_effective": null,
+      "notes": "backwpup"
+    },
+    {
+      "entry_point_id": "ep_rest___addjob",
+      "type": "capability_check",
+      "function_called": "current_user_can('backwpup')",
+      "file": "src/Jobs/API/Rest.php",
+      "line": 88,
+      "is_effective": null,
+      "notes": "backwpup"
+    },
+    {
+      "entry_point_id": "ep_rest___delete_job",
+      "type": "capability_check",
+      "function_called": "current_user_can('backwpup')",
+      "file": "src/Jobs/API/Rest.php",
+      "line": 88,
+      "is_effective": null,
+      "notes": "backwpup"
+    },
+    {
+      "entry_point_id": "ep_rest___save_job_settings",
+      "type": "capability_check",
+      "function_called": "current_user_can('backwpup')",
+      "file": "src/Jobs/API/Rest.php",
+      "line": 88,
+      "is_effective": null,
+      "notes": "backwpup"
+    },
+    {
+      "entry_point_id": "ep_rest___save_job_format",
+      "type": "capability_check",
+      "function_called": "current_user_can('backwpup')",
+      "file": "src/Jobs/API/Rest.php",
+      "line": 88,
+      "is_effective": null,
+      "notes": "backwpup"
+    },
+    {
+      "entry_point_id": "ep_rest___save_files_exclusions",
+      "type": "capability_check",
+      "function_called": "current_user_can('backwpup')",
+      "file": "src/Jobs/API/Rest.php",
+      "line": 88,
+      "is_effective": null,
+      "notes": "backwpup"
+    },
+    {
+      "entry_point_id": "ep_rest___save_excluded_tables",
+      "type": "capability_check",
+      "function_called": "current_user_can('backwpup')",
+      "file": "src/Jobs/API/Rest.php",
+      "line": 88,
+      "is_effective": null,
+      "notes": "backwpup"
+    },
+    {
+      "entry_point_id": "ep_rest___backups___P_id__d___type",
+      "type": "capability_check",
+      "function_called": "current_user_can('backwpup')",
+      "file": "src/Jobs/API/Rest.php",
+      "line": 88,
+      "is_effective": null,
+      "notes": "backwpup"
+    },
+    {
+      "entry_point_id": "ep_rest___backups",
+      "type": "capability_check",
+      "function_called": "current_user_can('backwpup')",
+      "file": "src/Backups/History/Frontend/API/Rest.php",
+      "line": 115,
+      "is_effective": null,
+      "notes": "backwpup"
+    },
+    {
+      "entry_point_id": "ep_rest___pagination",
+      "type": "capability_check",
+      "function_called": "current_user_can('backwpup')",
+      "file": "src/Backups/History/Frontend/API/Rest.php",
+      "line": 115,
+      "is_effective": null,
+      "notes": "backwpup"
+    },
+    {
+      "entry_point_id": "ep_rest_backwpup_v1__startbackup",
+      "type": "capability_check",
+      "function_called": "current_user_can('backwpup')",
+      "file": "src/Backups/API/Rest.php",
+      "line": 82,
+      "is_effective": null,
+      "notes": "backwpup"
+    },
+    {
+      "entry_point_id": "ep_rest_backwpup_v1__process_bulk_actions",
+      "type": "capability_check",
+      "function_called": "current_user_can('backwpup')",
+      "file": "src/Backups/API/Rest.php",
+      "line": 82,
+      "is_effective": null,
+      "notes": "backwpup"
+    }
+  ],
   "anomalies": [],
   "unresolved_hooks": [],
   "coverage_gaps": []
