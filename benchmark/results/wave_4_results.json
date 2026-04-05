@@ -11,7 +11,7 @@
     "S2_agent_b": {"file": "tools/config/skill-set-agent-b.md", "size_bytes": 6481, "status": "DEPLOYED — used in Wave 4 run for all 3 plugins"},
     "S3_agent_c": {"file": "tools/config/skill-set-agent-c.md", "size_bytes": 6929, "status": "DEPLOYED — used in Wave 4 run for all 3 plugins (Session 25)"},
     "S4_agent_d": {"file": "tools/config/skill-set-agent-d.md", "size_bytes": 8246, "status": "DEPLOYED — used in Wave 4 run for all 3 plugins (Session 25)"},
-    "S5_verify":  {"file": "tools/config/skill-set-verify.md",  "size_bytes": 10506, "status": "DEPLOYED — RUN for backwpup (Session 26). Output: reports/phase3/backwpup-s5-verify.json. No escalations. 6 spot-checks: 4 TP source-verified, 2 REVIEW findings flagged as plausible. Merge stats clean (conflict_rate=0.0, schema_errors=0)."}
+    "S5_verify":  {"file": "tools/config/skill-set-verify.md",  "size_bytes": 10506, "status": "DEPLOYED — RUN for backwpup (Session 26). Output: reports/phase3/backwpup-s5-verify.json. No escalations. 5 spot-checks (3 TP source-verified, 2 REVIEW findings flagged as plausible). Merge stats clean (conflict_rate=0.0, schema_errors=0)."}
   },
 
   "agents_run": {
@@ -94,7 +94,7 @@
         "agent-d":  {"findings": 8, "tp": 0, "fp": 7, "review": 1}
       },
       "phase3_gate": {"confirmed": 0, "plausible": 0, "uncertain": 1, "accepted_fp": 63, "likely_hallucination": 0},
-      "phase3_gate_note": "Gate re-run after DI-25-03 fix. phase3_summary.accepted_fp now correctly emitted (=63). 1 UNCERTAIN pending LLM review. No review JSON exists — pretty-link.final.json copied from fresh gate output."
+      "phase3_gate_note": "Gate re-run after DI-25-03 fix. phase3_summary.accepted_fp now correctly emitted (=63). 1 UNCERTAIN: agent-d-unresolved-001 (verdict=REVIEW in phase2 — not a TP candidate, gate classifies as UNCERTAIN rather than ACCEPTED_FP because it was marked for review). LLM review run (Session 26): 4 field corrections applied (source/sink paths and lines). No verdict change applied — apply_review guardrail only downgrades TP→REVIEW; agent-d-unresolved-001 is already REVIEW. The finding remains UNCERTAIN in gate output. LLM verdict: dead code (PrliAddonUpdates never instantiated in lite plugin)."
     }
   ],
 
@@ -154,10 +154,10 @@
       "orchestrate_agents_sh": "PASS — codex exec confirmed working for A1-A5,B; claude exec working for C+D",
       "merge_agent_outputs.py": "PASS — all 8 agent outputs merged for all 3 plugins",
       "phase3_gate.py": "PASS — DI-25-03 fixed: accepted_fp now emitted in phase3_summary. Gate running correctly for all 3 plugins.",
-      "phase3_llm_review.py": "COMPLETED — ran for backwpup (12/22 reviewed, partial timeout; 5 edits applied); cartflows (6/6 reviewed, 2 downgrades applied); pretty-link (1/1 reviewed, 4 field corrections, 1 downgrade). All 3 plugins have final.json.",
+      "phase3_llm_review.py": "COMPLETED — ran for backwpup (12/22 reviewed, partial timeout; 5 edits applied); cartflows (6/6 reviewed, 2 downgrades applied); pretty-link (1/1 reviewed, 4 field corrections applied, no verdict change — agent-d-unresolved-001 has verdict=REVIEW, apply_review only downgrades TP→REVIEW, not REVIEW→FP). All 3 plugins have final.json.",
       "phase3_apply_review.py": "PASS — 5 edits applied for backwpup (re-run after DI-25-03 gate fix); 2 edits for cartflows; 4 edits for pretty-link.",
       "benchmark_compare.py": "PASS — Option D implemented. Reads phase3.final.json. CONFIRMED/PLAUSIBLE only for TP/FP. UNCERTAIN in DR denominator. ACCEPTED_FP excluded from all denominators.",
-      "S5_verify": "PASS — run for backwpup (Session 26). Output: reports/phase3/backwpup-s5-verify.json. No escalations. Merge stats clean. 6 spot-checks: 4 TPs source-verified, 2 REVIEW findings plausible. Gate outcome unchanged (S5 cannot supply missing IR guard data for DI-25-02)."
+      "S5_verify": "PASS — run for backwpup (Session 26). Output: reports/phase3/backwpup-s5-verify.json. No escalations. Merge stats clean. 5 spot-checks: 3 TPs source-verified (agent-a3-getblock-secret-disclosure, agent-a3-cloudsaveandtest-bac, agent-a3-startbackup-bac), 2 REVIEW findings plausible (agent-d-cg-002, agent-c-anom_13). Gate outcome unchanged (S5 cannot supply missing IR guard data for DI-26-01)."
     },
     "open_issues": [
       "DI-25-02: Phase 1 extractor cannot resolve __array_callable__ permission_callbacks to guard entries for REST EPs. Root cause confirmed in Session 26: 16 REST EPs all have 0 guards in IR. Gate logic is correct. Fix requires Phase 1 extractor changes to resolve array callables (e.g., [$object, 'method'] → function name). Tracked as DI-26-01 for Session 27.",
@@ -192,8 +192,8 @@
       "merge_stats_clean": true,
       "conflict_rate": 0.0,
       "schema_errors": 0,
-      "spot_checks": 6,
-      "tp_confirmed": 4,
+      "spot_checks": 5,
+      "tp_confirmed": 3,
       "review_flagged": 2,
       "findings_confirmed_by_s5": ["agent-a3-getblock-secret-disclosure", "agent-a3-cloudsaveandtest-bac", "agent-a3-startbackup-bac"],
       "findings_flagged_as_review": ["agent-d-cg-002", "agent-c-anom_13"],

@@ -69,9 +69,9 @@
     {
       "file": "reports/phase3/pretty-link-phase3.final.json",
       "functions_changed": ["phase3_summary", "validated_findings"],
-      "lines_affected": "phase3_summary + 4 field corrections + 1 downgrade",
+      "lines_affected": "phase3_summary + 4 field corrections (no verdict change)",
       "behavior_before": "pretty-link final.json was stale (copied from old gate output, no review applied)",
-      "behavior_after": "4 field corrections + 1 downgrade applied from LLM review (agent-d-unresolved-001 downgraded to ACCEPTED_FP in phase2). Fresh gate + apply_review run."
+      "behavior_after": "4 field corrections applied from LLM review (source/sink paths and lines for agent-d-unresolved-001). No verdict change — apply_review only downgrades TP→REVIEW; agent-d-unresolved-001 has verdict=REVIEW so downgrade branch was not triggered. finding remains UNCERTAIN in gate. Fresh gate + apply_review run."
     },
     {
       "file": "reports/phase3/backwpup-s5-verify.json",
@@ -106,14 +106,14 @@
       "functions_changed": ["LLM review markdown"],
       "lines_affected": "full file",
       "behavior_before": "did not exist",
-      "behavior_after": "LLM review for 1 UNCERTAIN pretty-link finding. Markdown contract failed (rc=1 but review JSON populated). 1 downgrade: agent-d-unresolved-001 → dead code, no attack surface."
+      "behavior_after": "LLM review for 1 UNCERTAIN pretty-link finding. Markdown contract failed (rc=1 but review JSON populated). verdict_change=downgrade in review JSON was silently skipped by apply_review (agent-d-unresolved-001 has verdict=REVIEW, apply_review guard only downgrades TP→REVIEW). Only 4 field corrections applied — no verdict change."
     },
     {
       "file": "reports/phase3/pretty-link-phase3-review.json",
       "functions_changed": ["review JSON"],
       "lines_affected": "full file",
       "behavior_before": "did not exist",
-      "behavior_after": "1 finding review: verdict_change=downgrade, 4 field corrections applied"
+      "behavior_after": "1 finding review: verdict_change=downgrade requested by LLM but NOT applied (apply_review guard: only TP→REVIEW allowed, not REVIEW→FP). 4 field corrections applied (source_file_path, source_line_number, sink_file_path, sink_line_number)."
     },
     {
       "file": "reports/phase3/pretty-link-phase3-review-diff.json",
@@ -168,7 +168,7 @@
       "findings_reviewed": 1,
       "findings_unreviewed": 0,
       "edits_applied": 4,
-      "note": "1 downgrade: agent-d-unresolved-001 (PrliAddonUpdates dead code — class never instantiated in lite plugin, no new PrliAddonUpdates() calls in codebase). 4 field corrections applied (entry_point_id, source/sink paths and lines)."
+      "note": "4 field corrections applied only (source_file_path, source_line_number, sink_file_path, sink_line_number). No verdict change — agent-d-unresolved-001 has verdict=REVIEW; apply_review only downgrades TP→REVIEW, not REVIEW→FP. Finding correctly remains UNCERTAIN in gate output. LLM reasoning: PrliAddonUpdates dead code (class never instantiated in lite plugin), but apply_review guardrail prevents the downgrade."
     }
   },
   "s5_verify_summary": {
@@ -176,8 +176,8 @@
     "output_file": "reports/phase3/backwpup-s5-verify.json",
     "escalations": 0,
     "merge_stats_clean": true,
-    "spot_checks": 6,
-    "tp_confirmed": 4,
+    "spot_checks": 5,
+    "tp_confirmed": 3,
     "review_flagged": 2,
     "gate_outcome_changed": false,
     "gate_outcome_note": "S5 confirms TPs are source-grounded. Gate UNCERTAIN status is correct — gate requires guard_consistent pass; S5 cannot supply missing IR guard data. All 22 backwpup findings remain UNCERTAIN (DI-26-01)."

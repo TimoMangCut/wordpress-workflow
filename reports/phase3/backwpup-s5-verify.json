@@ -58,15 +58,6 @@
       "notes": "Two agents (agent-a2 via f008, agent-c via anom_13) independently flagged this same entry point. Both correctly identify that BackWPup_Pro_Page_Support::save_post_form() is not present in the audited source tree. agent-c's reasoning references inc/class-admin.php:1177 which exists and is a plausible WordPress plugin path. Both agents appropriately set verdict to REVIEW rather than REVIEW or TP, documenting the Pro-code gap as the reason for uncertainty. The review_reason is present and specific: 'obtain the BackWPup Pro plugin source and inspect BackWPup_Pro_Page_Support::save_post_form()'. Reasoning chain is coherent, references are plausible, refutation attempt is documented (searched for the class, not found). No source read needed beyond what is already confirmed by the merged output. Verdict REVIEW is well-supported."
     },
     {
-      "entry_point_id": "ep_rest___getblock",
-      "finding_id": "agent-a3-getblock-secret-disclosure",
-      "verdict": "TP",
-      "severity": "high",
-      "confidence": 0.97,
-      "check_result": "ok",
-      "notes": "Already evaluated above as source_verified. Listed here additionally as the single highest-confidence finding — no schema issues, no malformed fields, poc_description present, remediation present."
-    },
-    {
       "entry_point_id": "ep_rest_backwpup_v1__startbackup",
       "finding_id": "agent-a3-startbackup-bac",
       "verdict": "TP",
