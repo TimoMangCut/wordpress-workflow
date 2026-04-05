@@ -1,8 +1,9 @@
 {
   "plugin_slug": "backwpup",
   "plugin_version": "unknown",
-  "verified_by": "pipeline_session30",
+  "verified_by": "pipeline_derived",
   "verified_date": "2026-04-05",
+  "_benchmark_semantics": "PIPELINE-ALIGNED REFERENCE — NOT independent manual ground truth. This file was constructed from Session 30 gate CONFIRMED output (9 findings, confidence 0.83-0.89). It is used to verify that the pipeline produces the same CONFIRMED findings on re-run (regression detection) and to compute QS/DR against a known-good pipeline baseline. It is NOT independently verified by manual exploitation. Do not interpret QS=1.0 as 'pipeline found all real vulnerabilities' — it means the pipeline is self-consistent against its own confirmed output. Independent verification (manual exploit attempt, privilege escalation test, or code audit by a second reviewer) is required before treating these as confirmed vulnerabilities.",
   "findings": [
     {
       "vuln_type": "broken_access_control",
@@ -105,5 +106,5 @@
     }
   ],
   "confirmed_clean_areas": [],
-  "_notes": "Ground truth updated in Session 30 (2026-04-05). Previous GT (2 pipeline-seeded findings from Session 22) referenced old inc/ directory structure (pre-plugin-refactor). Current GT: 9 findings confirmed by Session 30 pipeline run (IR property-dispatch sink resolution in Phase 1 + gate code_evidence method-name fallback). All 9 are broken_access_control findings on REST EPs using DI/adapter pattern. Confidence is MEDIUM (pipeline-confirmed with full gate checks passing, not manually exploited). The 13 remaining UNCERTAIN findings involve deeper dispatch chains (>1-hop) not resolved by the 1-hop property dispatch extension added in Session 30."
+  "_notes": "Pipeline-derived reference data updated in Session 30 (2026-04-05). Previous GT (2 pipeline-seeded LOW-confidence findings from Session 22) referenced old inc/ directory structure (pre-plugin-refactor). This file is pipeline-derived, not independently verified. The 9 findings are the gate's CONFIRMED output — the benchmark uses them as a self-consistency reference (regression detection). Benchmark QS/DR should be interpreted as pipeline-alignment metrics, not independent evaluation. For independent evaluation: each finding requires manual privilege escalation testing (confirm that the REST endpoint is reachable without 'backwpup' capability, or that guard_consistent=1.0 with is_effective=true). The 13 remaining UNCERTAIN findings involve deeper dispatch chains (>1-hop) not resolved by the 1-hop property dispatch extension added in Session 30."
 }
