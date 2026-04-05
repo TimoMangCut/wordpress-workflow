@@ -126,6 +126,53 @@ class IRBuilder
             $gt->traverse($callbackBody);
             $allGuards = array_merge($allGuards, $guardVisitor->getGuards());
 
+            // DI-26-01: Also run GuardVisitor on the permission_callback method body.
+            // REST EPs with array callable permission_callbacks ([$this, 'method']) now store
+            // a resolved callback reference in 'permission_callback_ref'. Guards found in the
+            // permission_callback method body are authoritative access-control guards for the EP.
+            $pcRef = $ep['permission_callback_ref'] ?? null;
+            if ($pcRef !== null && is_array($pcRef)) {
+                $pcFile      = $pcRef['file'] ?? null;
+                $pcLineStart = $pcRef['line_start'] ?? null;
+                $pcLineEnd   = $pcRef['line_end'] ?? null;
+
+                if ($pcFile !== null && $pcLineStart !== null) {
+                    $pcAst = $astCache[$pcFile] ?? null;
+                    if ($pcAst === null) {
+                        $pcAbsPath = $this->pluginDir . '/' . $pcFile;
+                        if (file_exists($pcAbsPath)) {
+                            $pcCode = file_get_contents($pcAbsPath);
+                            if ($pcCode !== false) {
+                                try {
+                                    $pcAst = $parser->parse($pcCode);
+                                    if ($pcAst !== null) {
+                                        $pcNrt = new NodeTraverser();
+                                        $pcNrt->addVisitor(new NameResolver());
+                                        $pcAst = $pcNrt->traverse($pcAst);
+                                        $astCache[$pcFile] = $pcAst;
+                                    }
+                                } catch (\Throwable $e) {
+                                    // Parse failure — skip permission_callback guard scan
+                                }
+                            }
+                        }
+                    }
+
+                    if ($pcAst !== null) {
+                        $pcBody = $this->extractCallbackBody($pcAst, $pcRef, $pcLineStart, $pcLineEnd);
+                        if ($pcBody !== null && $pcBody !== []) {
+                            // Guards in permission_callback body are attributed to the same EP id.
+                            $pcGuardVisitor = new GuardVisitor($pcFile, $ep['id']);
+                            $pcGt = new NodeTraverser();
+                            $pcGt->addVisitor(new ParentConnectingVisitor());
+                            $pcGt->addVisitor($pcGuardVisitor);
+                            $pcGt->traverse($pcBody);
+                            $allGuards = array_merge($allGuards, $pcGuardVisitor->getGuards());
+                        }
+                    }
+                }
+            }
+
             // Run SourceSinkVisitor on callback body ONLY, with entry_point_id
             $ssVisitor = new SourceSinkVisitor($cbFile, $ep['id']);
             $st = new NodeTraverser();

@@ -6,7 +6,7 @@
         "active_installs": null,
         "files_analyzed": 511,
         "total_loc": 70114,
-        "extraction_time_ms": 4301,
+        "extraction_time_ms": 3211,
         "extractor_version": "1.0.0"
     },
     "entry_points": [
@@ -340,7 +340,15 @@
             "rest_namespace": null,
             "rest_route": "/getblock",
             "rest_methods": "POST",
-            "permission_callback": "__array_callable__",
+            "permission_callback": "has_permission",
+            "permission_callback_ref": {
+                "type": "method",
+                "name": "has_permission",
+                "class": "WPMedia\\BackWPup\\Frontend\\API\\Rest",
+                "file": "src/Frontend/API/Rest.php",
+                "line_start": 66,
+                "line_end": 68
+            },
             "file": "src/Frontend/API/Rest.php",
             "line": 50
         },
@@ -360,7 +368,15 @@
             "rest_namespace": "backwpup/v1",
             "rest_route": "/storagelistcompact",
             "rest_methods": "GET",
-            "permission_callback": "__array_callable__",
+            "permission_callback": "has_permission",
+            "permission_callback_ref": {
+                "type": "method",
+                "name": "has_permission",
+                "class": "WPMedia\\BackWPup\\StorageProviders\\Frontend\\API\\Rest",
+                "file": "src/StorageProviders/Frontend/API/Rest.php",
+                "line_start": 66,
+                "line_end": 68
+            },
             "file": "src/StorageProviders/Frontend/API/Rest.php",
             "line": 50
         },
@@ -391,7 +407,15 @@
             "rest_namespace": null,
             "rest_route": "/cloud_is_authenticated",
             "rest_methods": "GET",
-            "permission_callback": "__array_callable__",
+            "permission_callback": "has_permission",
+            "permission_callback_ref": {
+                "type": "method",
+                "name": "has_permission",
+                "class": "WPMedia\\BackWPup\\StorageProviders\\API\\Rest",
+                "file": "src/StorageProviders/API/Rest.php",
+                "line_start": 138,
+                "line_end": 140
+            },
             "file": "src/StorageProviders/API/Rest.php",
             "line": 82
         },
@@ -411,7 +435,15 @@
             "rest_namespace": null,
             "rest_route": "/authenticate_cloud",
             "rest_methods": "POST",
-            "permission_callback": "__array_callable__",
+            "permission_callback": "has_permission",
+            "permission_callback_ref": {
+                "type": "method",
+                "name": "has_permission",
+                "class": "WPMedia\\BackWPup\\StorageProviders\\API\\Rest",
+                "file": "src/StorageProviders/API/Rest.php",
+                "line_start": 138,
+                "line_end": 140
+            },
             "file": "src/StorageProviders/API/Rest.php",
             "line": 92
         },
@@ -431,7 +463,15 @@
             "rest_namespace": null,
             "rest_route": "/delete_auth_cloud",
             "rest_methods": "POST",
-            "permission_callback": "__array_callable__",
+            "permission_callback": "has_permission",
+            "permission_callback_ref": {
+                "type": "method",
+                "name": "has_permission",
+                "class": "WPMedia\\BackWPup\\StorageProviders\\API\\Rest",
+                "file": "src/StorageProviders/API/Rest.php",
+                "line_start": 138,
+                "line_end": 140
+            },
             "file": "src/StorageProviders/API/Rest.php",
             "line": 102
         },
@@ -451,7 +491,15 @@
             "rest_namespace": null,
             "rest_route": "/cloudsaveandtest",
             "rest_methods": "POST",
-            "permission_callback": "__array_callable__",
+            "permission_callback": "has_permission",
+            "permission_callback_ref": {
+                "type": "method",
+                "name": "has_permission",
+                "class": "WPMedia\\BackWPup\\StorageProviders\\API\\Rest",
+                "file": "src/StorageProviders/API/Rest.php",
+                "line_start": 138,
+                "line_end": 140
+            },
             "file": "src/StorageProviders/API/Rest.php",
             "line": 112
         },
@@ -471,7 +519,15 @@
             "rest_namespace": null,
             "rest_route": "/storages",
             "rest_methods": "POST",
-            "permission_callback": "__array_callable__",
+            "permission_callback": "has_permission",
+            "permission_callback_ref": {
+                "type": "method",
+                "name": "has_permission",
+                "class": "WPMedia\\BackWPup\\StorageProviders\\API\\Rest",
+                "file": "src/StorageProviders/API/Rest.php",
+                "line_start": 138,
+                "line_end": 140
+            },
             "file": "src/StorageProviders/API/Rest.php",
             "line": 122
         },
@@ -550,7 +606,15 @@
             "rest_namespace": null,
             "rest_route": "/messages",
             "rest_methods": "GET",
-            "permission_callback": "__array_callable__",
+            "permission_callback": "has_permission",
+            "permission_callback_ref": {
+                "type": "method",
+                "name": "has_permission",
+                "class": "WPMedia\\BackWPup\\Admin\\Messages\\API\\Rest",
+                "file": "src/Admin/Messages/API/Rest.php",
+                "line_start": 17,
+                "line_end": 19
+            },
             "file": "src/Admin/Messages/API/Rest.php",
             "line": 30
         },
@@ -570,7 +634,15 @@
             "rest_namespace": null,
             "rest_route": null,
             "rest_methods": "POST",
-            "permission_callback": "__array_callable__",
+            "permission_callback": "has_permission",
+            "permission_callback_ref": {
+                "type": "method",
+                "name": "has_permission",
+                "class": "WPMedia\\BackWPup\\Admin\\Chatbot\\API\\ChatbotRest",
+                "file": "src/Admin/Chatbot/API/ChatbotRest.php",
+                "line_start": 40,
+                "line_end": 42
+            },
             "file": "src/Admin/Chatbot/API/ChatbotRest.php",
             "line": 50
         },
@@ -590,7 +662,15 @@
             "rest_namespace": null,
             "rest_route": null,
             "rest_methods": "GET",
-            "permission_callback": "__array_callable__",
+            "permission_callback": "has_context_token_permission",
+            "permission_callback_ref": {
+                "type": "method",
+                "name": "has_context_token_permission",
+                "class": "WPMedia\\BackWPup\\Admin\\Chatbot\\API\\ChatbotRest",
+                "file": "src/Admin/Chatbot/API/ChatbotRest.php",
+                "line_start": 122,
+                "line_end": 136
+            },
             "file": "src/Admin/Chatbot/API/ChatbotRest.php",
             "line": 50
         },
@@ -685,7 +765,15 @@
             "rest_namespace": "backwpup/v1",
             "rest_route": "/getjobslist",
             "rest_methods": "GET",
-            "permission_callback": "__array_callable__",
+            "permission_callback": "has_permission",
+            "permission_callback_ref": {
+                "type": "method",
+                "name": "has_permission",
+                "class": "WPMedia\\BackWPup\\Jobs\\Frontend\\API\\Rest",
+                "file": "src/Jobs/Frontend/API/Rest.php",
+                "line_start": 64,
+                "line_end": 66
+            },
             "file": "src/Jobs/Frontend/API/Rest.php",
             "line": 48
         },
@@ -705,7 +793,15 @@
             "rest_namespace": null,
             "rest_route": "/updatejob",
             "rest_methods": "POST",
-            "permission_callback": "__array_callable__",
+            "permission_callback": "has_permission",
+            "permission_callback_ref": {
+                "type": "method",
+                "name": "has_permission",
+                "class": "WPMedia\\BackWPup\\Jobs\\API\\Rest",
+                "file": "src/Jobs/API/Rest.php",
+                "line_start": 87,
+                "line_end": 89
+            },
             "file": "src/Jobs/API/Rest.php",
             "line": 97
         },
@@ -725,7 +821,15 @@
             "rest_namespace": null,
             "rest_route": "/update-job-title",
             "rest_methods": "POST",
-            "permission_callback": "__array_callable__",
+            "permission_callback": "has_permission",
+            "permission_callback_ref": {
+                "type": "method",
+                "name": "has_permission",
+                "class": "WPMedia\\BackWPup\\Jobs\\API\\Rest",
+                "file": "src/Jobs/API/Rest.php",
+                "line_start": 87,
+                "line_end": 89
+            },
             "file": "src/Jobs/API/Rest.php",
             "line": 132
         },
@@ -745,7 +849,15 @@
             "rest_namespace": null,
             "rest_route": "/addjob",
             "rest_methods": "POST",
-            "permission_callback": "__array_callable__",
+            "permission_callback": "has_permission",
+            "permission_callback_ref": {
+                "type": "method",
+                "name": "has_permission",
+                "class": "WPMedia\\BackWPup\\Jobs\\API\\Rest",
+                "file": "src/Jobs/API/Rest.php",
+                "line_start": 87,
+                "line_end": 89
+            },
             "file": "src/Jobs/API/Rest.php",
             "line": 158
         },
@@ -765,7 +877,15 @@
             "rest_namespace": null,
             "rest_route": "/delete_job",
             "rest_methods": "DELETE",
-            "permission_callback": "__array_callable__",
+            "permission_callback": "has_permission",
+            "permission_callback_ref": {
+                "type": "method",
+                "name": "has_permission",
+                "class": "WPMedia\\BackWPup\\Jobs\\API\\Rest",
+                "file": "src/Jobs/API/Rest.php",
+                "line_start": 87,
+                "line_end": 89
+            },
             "file": "src/Jobs/API/Rest.php",
             "line": 177
         },
@@ -785,7 +905,15 @@
             "rest_namespace": null,
             "rest_route": "/save_job_settings",
             "rest_methods": "POST",
-            "permission_callback": "__array_callable__",
+            "permission_callback": "has_permission",
+            "permission_callback_ref": {
+                "type": "method",
+                "name": "has_permission",
+                "class": "WPMedia\\BackWPup\\Jobs\\API\\Rest",
+                "file": "src/Jobs/API/Rest.php",
+                "line_start": 87,
+                "line_end": 89
+            },
             "file": "src/Jobs/API/Rest.php",
             "line": 196
         },
@@ -805,7 +933,15 @@
             "rest_namespace": null,
             "rest_route": "/save_job_format",
             "rest_methods": "POST",
-            "permission_callback": "__array_callable__",
+            "permission_callback": "has_permission",
+            "permission_callback_ref": {
+                "type": "method",
+                "name": "has_permission",
+                "class": "WPMedia\\BackWPup\\Jobs\\API\\Rest",
+                "file": "src/Jobs/API/Rest.php",
+                "line_start": 87,
+                "line_end": 89
+            },
             "file": "src/Jobs/API/Rest.php",
             "line": 206
         },
@@ -825,7 +961,15 @@
             "rest_namespace": null,
             "rest_route": "/save_files_exclusions",
             "rest_methods": "POST",
-            "permission_callback": "__array_callable__",
+            "permission_callback": "has_permission",
+            "permission_callback_ref": {
+                "type": "method",
+                "name": "has_permission",
+                "class": "WPMedia\\BackWPup\\Jobs\\API\\Rest",
+                "file": "src/Jobs/API/Rest.php",
+                "line_start": 87,
+                "line_end": 89
+            },
             "file": "src/Jobs/API/Rest.php",
             "line": 216
         },
@@ -845,7 +989,15 @@
             "rest_namespace": null,
             "rest_route": "/save_excluded_tables",
             "rest_methods": "POST",
-            "permission_callback": "__array_callable__",
+            "permission_callback": "has_permission",
+            "permission_callback_ref": {
+                "type": "method",
+                "name": "has_permission",
+                "class": "WPMedia\\BackWPup\\Jobs\\API\\Rest",
+                "file": "src/Jobs/API/Rest.php",
+                "line_start": 87,
+                "line_end": 89
+            },
             "file": "src/Jobs/API/Rest.php",
             "line": 289
         },
@@ -866,6 +1018,7 @@
             "rest_route": "/save_site_option",
             "rest_methods": "POST",
             "permission_callback": "__closure__",
+            "permission_callback_ref": null,
             "file": "src/Jobs/API/Rest.php",
             "line": 331
         },
@@ -885,7 +1038,15 @@
             "rest_namespace": null,
             "rest_route": "/backups/(?P<id>\\d+)/type",
             "rest_methods": "POST",
-            "permission_callback": "__array_callable__",
+            "permission_callback": "has_permission",
+            "permission_callback_ref": {
+                "type": "method",
+                "name": "has_permission",
+                "class": "WPMedia\\BackWPup\\Jobs\\API\\Rest",
+                "file": "src/Jobs/API/Rest.php",
+                "line_start": 87,
+                "line_end": 89
+            },
             "file": "src/Jobs/API/Rest.php",
             "line": 346
         },
@@ -932,7 +1093,15 @@
             "rest_namespace": null,
             "rest_route": "/backups",
             "rest_methods": "POST",
-            "permission_callback": "__array_callable__",
+            "permission_callback": "has_permission",
+            "permission_callback_ref": {
+                "type": "method",
+                "name": "has_permission",
+                "class": "WPMedia\\BackWPup\\Backups\\History\\Frontend\\API\\Rest",
+                "file": "src/Backups/History/Frontend/API/Rest.php",
+                "line_start": 114,
+                "line_end": 116
+            },
             "file": "src/Backups/History/Frontend/API/Rest.php",
             "line": 57
         },
@@ -952,7 +1121,15 @@
             "rest_namespace": null,
             "rest_route": "/pagination",
             "rest_methods": "POST",
-            "permission_callback": "__array_callable__",
+            "permission_callback": "has_permission",
+            "permission_callback_ref": {
+                "type": "method",
+                "name": "has_permission",
+                "class": "WPMedia\\BackWPup\\Backups\\History\\Frontend\\API\\Rest",
+                "file": "src/Backups/History/Frontend/API/Rest.php",
+                "line_start": 114,
+                "line_end": 116
+            },
             "file": "src/Backups/History/Frontend/API/Rest.php",
             "line": 83
         },
@@ -972,7 +1149,15 @@
             "rest_namespace": "backwpup/v1",
             "rest_route": "/startbackup",
             "rest_methods": "POST",
-            "permission_callback": "__array_callable__",
+            "permission_callback": "has_permission",
+            "permission_callback_ref": {
+                "type": "method",
+                "name": "has_permission",
+                "class": "WPMedia\\BackWPup\\Backups\\API\\Rest",
+                "file": "src/Backups/API/Rest.php",
+                "line_start": 81,
+                "line_end": 83
+            },
             "file": "src/Backups/API/Rest.php",
             "line": 94
         },
@@ -992,7 +1177,15 @@
             "rest_namespace": "backwpup/v1",
             "rest_route": "/process_bulk_actions",
             "rest_methods": "POST",
-            "permission_callback": "__array_callable__",
+            "permission_callback": "has_permission",
+            "permission_callback_ref": {
+                "type": "method",
+                "name": "has_permission",
+                "class": "WPMedia\\BackWPup\\Backups\\API\\Rest",
+                "file": "src/Backups/API/Rest.php",
+                "line_start": 81,
+                "line_end": 83
+            },
             "file": "src/Backups/API/Rest.php",
             "line": 122
         }
@@ -1262,6 +1455,87 @@
             "notes": null
         },
         {
+            "entry_point_id": "ep_rest___getblock",
+            "type": "capability_check",
+            "function_called": "current_user_can('backwpup')",
+            "file": "src/Frontend/API/Rest.php",
+            "line": 67,
+            "is_effective": null,
+            "notes": "backwpup"
+        },
+        {
+            "entry_point_id": "ep_rest_backwpup_v1__storagelistcompact",
+            "type": "capability_check",
+            "function_called": "current_user_can('backwpup')",
+            "file": "src/StorageProviders/Frontend/API/Rest.php",
+            "line": 67,
+            "is_effective": null,
+            "notes": "backwpup"
+        },
+        {
+            "entry_point_id": "ep_rest___cloud_is_authenticated",
+            "type": "capability_check",
+            "function_called": "current_user_can('backwpup')",
+            "file": "src/StorageProviders/API/Rest.php",
+            "line": 139,
+            "is_effective": null,
+            "notes": "backwpup"
+        },
+        {
+            "entry_point_id": "ep_rest___authenticate_cloud",
+            "type": "capability_check",
+            "function_called": "current_user_can('backwpup')",
+            "file": "src/StorageProviders/API/Rest.php",
+            "line": 139,
+            "is_effective": null,
+            "notes": "backwpup"
+        },
+        {
+            "entry_point_id": "ep_rest___delete_auth_cloud",
+            "type": "capability_check",
+            "function_called": "current_user_can('backwpup')",
+            "file": "src/StorageProviders/API/Rest.php",
+            "line": 139,
+            "is_effective": null,
+            "notes": "backwpup"
+        },
+        {
+            "entry_point_id": "ep_rest___cloudsaveandtest",
+            "type": "capability_check",
+            "function_called": "current_user_can('backwpup')",
+            "file": "src/StorageProviders/API/Rest.php",
+            "line": 139,
+            "is_effective": null,
+            "notes": "backwpup"
+        },
+        {
+            "entry_point_id": "ep_rest___storages",
+            "type": "capability_check",
+            "function_called": "current_user_can('backwpup')",
+            "file": "src/StorageProviders/API/Rest.php",
+            "line": 139,
+            "is_effective": null,
+            "notes": "backwpup"
+        },
+        {
+            "entry_point_id": "ep_rest___messages",
+            "type": "capability_check",
+            "function_called": "current_user_can('backwpup')",
+            "file": "src/Admin/Messages/API/Rest.php",
+            "line": 18,
+            "is_effective": null,
+            "notes": "backwpup"
+        },
+        {
+            "entry_point_id": "ep_rest___0",
+            "type": "capability_check",
+            "function_called": "current_user_can('backwpup')",
+            "file": "src/Admin/Chatbot/API/ChatbotRest.php",
+            "line": 41,
+            "is_effective": null,
+            "notes": "backwpup"
+        },
+        {
             "entry_point_id": "ep_admin_init_admin_init",
             "type": "custom_guard",
             "function_called": "$this->is_upgradeable()",
@@ -1305,6 +1579,132 @@
             "line": 229,
             "is_effective": null,
             "notes": "custom guard heuristic: method/static call in if-condition with wp_die/exit/return in body"
+        },
+        {
+            "entry_point_id": "ep_rest_backwpup_v1__getjobslist",
+            "type": "capability_check",
+            "function_called": "current_user_can('backwpup')",
+            "file": "src/Jobs/Frontend/API/Rest.php",
+            "line": 65,
+            "is_effective": null,
+            "notes": "backwpup"
+        },
+        {
+            "entry_point_id": "ep_rest___updatejob",
+            "type": "capability_check",
+            "function_called": "current_user_can('backwpup')",
+            "file": "src/Jobs/API/Rest.php",
+            "line": 88,
+            "is_effective": null,
+            "notes": "backwpup"
+        },
+        {
+            "entry_point_id": "ep_rest___update_job_title",
+            "type": "capability_check",
+            "function_called": "current_user_can('backwpup')",
+            "file": "src/Jobs/API/Rest.php",
+            "line": 88,
+            "is_effective": null,
+            "notes": "backwpup"
+        },
+        {
+            "entry_point_id": "ep_rest___addjob",
+            "type": "capability_check",
+            "function_called": "current_user_can('backwpup')",
+            "file": "src/Jobs/API/Rest.php",
+            "line": 88,
+            "is_effective": null,
+            "notes": "backwpup"
+        },
+        {
+            "entry_point_id": "ep_rest___delete_job",
+            "type": "capability_check",
+            "function_called": "current_user_can('backwpup')",
+            "file": "src/Jobs/API/Rest.php",
+            "line": 88,
+            "is_effective": null,
+            "notes": "backwpup"
+        },
+        {
+            "entry_point_id": "ep_rest___save_job_settings",
+            "type": "capability_check",
+            "function_called": "current_user_can('backwpup')",
+            "file": "src/Jobs/API/Rest.php",
+            "line": 88,
+            "is_effective": null,
+            "notes": "backwpup"
+        },
+        {
+            "entry_point_id": "ep_rest___save_job_format",
+            "type": "capability_check",
+            "function_called": "current_user_can('backwpup')",
+            "file": "src/Jobs/API/Rest.php",
+            "line": 88,
+            "is_effective": null,
+            "notes": "backwpup"
+        },
+        {
+            "entry_point_id": "ep_rest___save_files_exclusions",
+            "type": "capability_check",
+            "function_called": "current_user_can('backwpup')",
+            "file": "src/Jobs/API/Rest.php",
+            "line": 88,
+            "is_effective": null,
+            "notes": "backwpup"
+        },
+        {
+            "entry_point_id": "ep_rest___save_excluded_tables",
+            "type": "capability_check",
+            "function_called": "current_user_can('backwpup')",
+            "file": "src/Jobs/API/Rest.php",
+            "line": 88,
+            "is_effective": null,
+            "notes": "backwpup"
+        },
+        {
+            "entry_point_id": "ep_rest___backups___P_id__d___type",
+            "type": "capability_check",
+            "function_called": "current_user_can('backwpup')",
+            "file": "src/Jobs/API/Rest.php",
+            "line": 88,
+            "is_effective": null,
+            "notes": "backwpup"
+        },
+        {
+            "entry_point_id": "ep_rest___backups",
+            "type": "capability_check",
+            "function_called": "current_user_can('backwpup')",
+            "file": "src/Backups/History/Frontend/API/Rest.php",
+            "line": 115,
+            "is_effective": null,
+            "notes": "backwpup"
+        },
+        {
+            "entry_point_id": "ep_rest___pagination",
+            "type": "capability_check",
+            "function_called": "current_user_can('backwpup')",
+            "file": "src/Backups/History/Frontend/API/Rest.php",
+            "line": 115,
+            "is_effective": null,
+            "notes": "backwpup"
+        },
+        {
+            "entry_point_id": "ep_rest_backwpup_v1__startbackup",
+            "type": "capability_check",
+            "function_called": "current_user_can('backwpup')",
+            "file": "src/Backups/API/Rest.php",
+            "line": 82,
+            "is_effective": null,
+            "notes": "backwpup"
+        },
+        {
+            "entry_point_id": "ep_rest_backwpup_v1__process_bulk_actions",
+            "type": "capability_check",
+            "function_called": "current_user_can('backwpup')",
+            "file": "src/Backups/API/Rest.php",
+            "line": 82,
+            "is_effective": null,
+            "notes": "backwpup"
         }
     ],
     "sources": [

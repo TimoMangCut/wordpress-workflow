@@ -1,9 +1,9 @@
 {
-  "run_timestamp": "2026-04-05T04:34:49Z",
+  "run_timestamp": "2026-04-05T06:32:17Z",
   "wave": "Wave 4",
-  "sessions_covered": [20, 21, 22, 23, 24, 25, 26],
-  "execution_status": "COMPLETE — all 8/8 agents run for all 3 plugins. Benchmark updated to Option D. S5 run for backwpup (Session 26). LLM reviews run for all 3 plugins (Session 26).",
-  "execution_note": "Session 26: (1) DI-25-03 fixed — phase3_gate.py now emits accepted_fp in phase3_summary; (2) gate artifacts regenerated for all 3 plugins; (3) DI-24-03 implemented — benchmark/compare.py updated to Option D (reads phase3.final.json, uses CONFIRMED/PLAUSIBLE for TP/FP, UNCERTAIN in DR denominator only); (4) DI-25-02 root cause confirmed — Phase 1 extractor cannot resolve __array_callable__ permission_callbacks to guard entries for REST EPs; gate logic is correct; no patch to guard_consistent; (5) LLM reviews run for cartflows (6 UNCERTAIN, 2 downgrades applied) and pretty-link (1 UNCERTAIN, 4 field corrections applied, no verdict change — apply_review guard blocked REVIEW→FP); (6) S5 verify run for backwpup — no escalations, 5 spot-checks, 3 source-verified TPs confirmed, 2 REVIEW findings well-supported. Output: reports/phase3/backwpup-s5-verify.json.",
+  "sessions_covered": [20, 21, 22, 23, 24, 25, 26, 27],
+  "execution_status": "COMPLETE — DI-26-01 fixed in Session 27. Phase 1 extractor now resolves array callable permission_callbacks to guard entries. Benchmark re-run post-fix.",
+  "execution_note": "Session 27: DI-26-01 FIXED — (1) EntryPointVisitor.php resolvePermissionCallback() now resolves [$this, 'method'] array callables to the method name string (e.g., 'has_permission') and stores permission_callback_ref with the resolved method's file+line_range; (2) IRBuilder.php Phase 3 now runs GuardVisitor on the permission_callback method body for REST EPs with permission_callback_ref, attributing guards to the same entry_point_id; (3) Phase 1 IR regenerated for backwpup — 23/25 REST EPs now have capability_check guards (is_effective=None, from 'return current_user_can(...)' pattern); (4) guard_consistent score improved from 0.1 to 0.6 for 17/22 UNCERTAIN findings; (5) findings remain UNCERTAIN because path_reachability_weak is a pre-existing separate issue (not DI-26-01); (6) benchmark re-run — metrics unchanged (UNCERTAIN findings do not clear PLAUSIBLE gate due to path_reachable=0.25). DI-26-01 success criteria MET: guard entries emitted, guard_consistent improved. Remaining regression root cause shifted from DI-26-01 to path_reachability_weak.",
   "archive": "benchmark/results/wave_4_results.session22_snapshot.json contains the pre-run Session 22 planning snapshot.",
 
   "skill_sets_deployed": {
@@ -32,7 +32,7 @@
       "decision_rate": 0.0,
       "gt_findings_count": 2,
       "pipeline_decided_count": 0,
-      "note": "Option D metrics. Gate outputs 22 UNCERTAIN (all TP claims) + 22 ACCEPTED_FP (FP verdict findings). No CONFIRMED/PLAUSIBLE findings → TP=0, FP=0. QS=0.0 (0/(0+0+2)), DR=0.0 ((0+0)/(0+0+2+22)). Root cause: DI-25-02 — Phase 1 extractor cannot resolve __array_callable__ permission_callbacks for REST EPs, leaving guard_consistent=0.1 (no guard detected) and depressing confidence below PLAUSIBLE threshold. DI-25-02 is a Phase 1 extractor gap, not a gate logic bug.",
+      "note": "Option D metrics. Gate outputs 22 UNCERTAIN (all TP claims) + 22 ACCEPTED_FP (FP verdict findings). No CONFIRMED/PLAUSIBLE findings → TP=0, FP=0. QS=0.0 (0/(0+0+2)), DR=0.0 ((0+0)/(0+0+2+22)). Session 27: DI-26-01 fixed — 23/25 REST EPs now have capability_check guards (is_effective=None). guard_consistent improved from 0.1 to 0.6 for 17 findings. Findings remain UNCERTAIN due to path_reachability_weak (pre-existing, separate issue). Benchmark metrics unchanged because gate PLAUSIBLE threshold requires path_reachable>=0.8 via can_confirm gate.",
       "per_agent_stats": {
         "agent-a1": {"findings": 0, "tp": 0, "fp": 0, "review": 0},
         "agent-a2": {"findings": 8, "tp": 2, "fp": 5, "review": 1},
@@ -44,7 +44,7 @@
         "agent-d":  {"findings": 6, "tp": 0, "fp": 4, "review": 2}
       },
       "phase3_gate": {"confirmed": 0, "plausible": 0, "uncertain": 22, "accepted_fp": 22, "likely_hallucination": 0},
-      "phase3_gate_note": "Gate re-run after DI-25-03 fix. phase3_summary.accepted_fp now correctly emitted from gate (=22). 22 UNCERTAIN = all TP-claimed phase2 findings; 22 ACCEPTED_FP = phase2 FP-verdict findings. Backwpup LLM review partial (12/22 reviewed, 3 downgrades applied). Remaining 10 findings unreviewed."
+      "phase3_gate_note": "Gate re-run post DI-26-01 fix (Session 27). 23/25 REST EPs now have guards. guard_consistent: 0.1→0.6 for 17 findings, 0.1 unchanged for 4 non-REST-array-callable findings, 0.0 for 1 contradiction. Findings remain UNCERTAIN: can_confirm gate requires path_reachable>=0.8; most findings have path_reachable=0.25 (path_reachability_weak pre-existing issue). Gate correctly classifies as UNCERTAIN."
     },
     {
       "slug": "cartflows",

@@ -179,6 +179,7 @@ class EntryPointVisitor extends NodeVisitorAbstract
                     'rest_route' => $route,
                     'rest_methods' => $ri['methods'] ?? [],
                     'permission_callback' => $ri['permission_callback'] ?? null,
+                    'permission_callback_ref' => $ri['permission_callback_ref'] ?? null,
                     'file' => $this->currentFile,
                     'line' => $node->getStartLine(),
                 ];
@@ -194,6 +195,7 @@ class EntryPointVisitor extends NodeVisitorAbstract
                 'rest_route' => $route,
                 'rest_methods' => $routeInfo['methods'] ?? [],
                 'permission_callback' => $routeInfo['permission_callback'] ?? null,
+                'permission_callback_ref' => $routeInfo['permission_callback_ref'] ?? null,
                 'file' => $this->currentFile,
                 'line' => $node->getStartLine(),
             ];
@@ -416,8 +418,14 @@ class EntryPointVisitor extends NodeVisitorAbstract
                 $config['callback'] = $this->resolveCallback(new Node\Arg($item->value));
             } elseif ($key === 'permission_callback') {
                 // IR-05: store both the string sentinel AND the AST node for closure analysis
+                // DI-26-01: also store resolved callback array for IRBuilder to run GuardVisitor on.
                 $config['permission_callback']     = $this->resolvePermissionCallback($item->value);
                 $config['permission_callback_ast'] = $this->resolvePermissionCallbackAst($item->value);
+                // For array callables: store the resolved callback (class+method) so IRBuilder
+                // can locate and scan the permission_callback method body for guards.
+                if ($item->value instanceof Node\Expr\Array_) {
+                    $config['permission_callback_ref'] = $this->resolveCallback(new Node\Arg($item->value));
+                }
             } elseif ($key === 'methods') {
                 $config['methods'] = $this->resolveStringValue($item->value);
             }
@@ -429,7 +437,18 @@ class EntryPointVisitor extends NodeVisitorAbstract
     {
         if ($value instanceof Node\Scalar\String_) return $value->value;
         if ($value instanceof Node\Expr\Closure || $value instanceof Node\Expr\ArrowFunction) return '__closure__';
-        if ($value instanceof Node\Expr\Array_) return '__array_callable__';
+        if ($value instanceof Node\Expr\Array_) {
+            // DI-26-01: resolve [$this, 'method'] or [$var, 'method'] to method name string
+            // so GuardVisitor can be run on the permission_callback body in IRBuilder.
+            if (count($value->items) === 2) {
+                $methodNode = $value->items[1]->value ?? null;
+                $method = $this->resolveStringValue($methodNode);
+                if ($method !== null) {
+                    return $method;
+                }
+            }
+            return '__array_callable__';
+        }
         return '__dynamic__';
     }
 
