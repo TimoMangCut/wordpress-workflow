@@ -1224,7 +1224,8 @@ Trong `phase3_gate.py`:
 [x] Session 26: Option D benchmark (compare.py) + DI-25-03 fix (accepted_fp in phase3_summary) + DI-25-02 root cause confirmed (Phase 1 extractor gap, DI-26-01) + LLM reviews (all 3 plugins) + S5 first run (backwpup)   ← 2026-04-05
 [x] Session 27: DI-26-01 fix (Phase 1 extractor: resolve array callable permission_callbacks for REST EPs — 23/25 REST EPs now have capability_check guards, guard_consistent 0.1→0.6 for 17 findings) + benchmark re-run post fix   ← 2026-04-05
 [x] Session 28: DI-27-01 root cause CONFIRMED (Phase 1 shallow sink extraction for REST EPs — deferred as DI-28-01) + S5 complete for cartflows/pretty-link   ← 2026-04-05
-Session 29: DI-28-01 Phase 1 call-chain extension for REST EP sink attribution (1-hop dispatch resolution)
+[x] Session 29: DI-28-01 gate source normalization (path_reachable 0.25→0.55 for 16 REST EP findings) — PARTIAL FIX. Remaining gap: sink match (property-dispatch pattern). DI-29-01 created.   ← 2026-04-05
+Session 30: DI-29-01 Wave 4 close-out decision (Option A: gate threshold / Option B: Phase 1 property-call resolution / Option C: accept UNCERTAIN as final)
 ```
 
 Details sẽ được spec-out khi đến thời điểm (sau Session 19).

@@ -1,0 +1,70 @@
+{
+  "session": 30,
+  "title": "DI-29-01: Wave 4 close-out decision — sink matching strategy for REST EPs",
+  "status": "PENDING",
+  "created_by_session": 29,
+  "wave": "Wave 4 (close-out)",
+  "dependencies": [
+    {
+      "session": 29,
+      "reason": "change_manifest_session_29.json status=COMPLETED required. DI-28-01 gate source fix applied. path_reachable=0.55 for all 16 REST EP findings. Success condition met."
+    }
+  ],
+  "gaps": ["DI-29-01"],
+  "critical_notes": [
+    "E1: source_ref wins over spec. E4: PHP null discipline. E5: no scope expansion.",
+    "HUMAN DECISION REQUIRED before coding: Session 30 must choose ONE approach from Option A, B, or C below.",
+    "Option A (Gate threshold): Lower can_confirm path threshold for REST EPs. If guard_consistent>=0.6 AND path_reachable>=0.55, allow PLAUSIBLE verdict. Risk: could produce PLAUSIBLE on findings where sink is unverified — FP risk is MODERATE (guard strong, source weak, sink unverified).",
+    "Option B (Phase 1 extractor — property call resolution): Extend resolveCallChain() to handle $this->property->method() calls. Requires property type inference from constructor injection. Estimated 100-150 lines PHP + full Phase 1 rerun. Risk: HIGH complexity, potential for new FP if type inference is wrong.",
+    "Option C (Accept current state): Accept UNCERTAIN as the correct outcome for REST EP findings in DI-pattern architectures. Document the limitation. Declare Wave 4 complete with known limitation. No code changes.",
+    "RECOMMENDATION: Option C is the safest. Option A is the fastest path to PLAUSIBLE with low-effort but introduces FP risk. Option B achieves the best long-term solution but is high-risk.",
+    "If human chooses Option A: modify gate _check_path_reachable scoring OR can_confirm logic in phase3_gate.py only. No PHP changes. Rerun Phase 3 + benchmark only.",
+    "If human chooses Option B: read resolveCallChain in IRBuilder.php and SymbolTable.php carefully. Prototype on single EP. Full Phase 1 rerun required after."
+  ],
+  "spec": {
+    "DI-29-01-option-a": {
+      "source_ref": "reports/logs/implementation/change_manifest_session_29.json:discovered_issues[0].fix_path",
+      "file": "tools/bin/phase3_gate.py",
+      "change": "In _check_path_reachable(): after computing sink_ok and source_ok, add REST EP-specific rule: if ep.get('type')=='rest_route' AND source_ok AND guard_consistent>=0.6 (check from finding's check_scores) AND not sink_ok, return 0.80 instead of 0.55. This would allow can_confirm to pass (path_score>=0.80) when source is confirmed and guard is strong.",
+      "note": "ONLY implement if human chooses Option A. Source_ref wins if conflict. Verify can_confirm logic at phase3_gate.py:515-519 before implementing."
+    },
+    "DI-29-01-option-b": {
+      "source_ref": "reports/logs/implementation/change_manifest_session_29.json:discovered_issues[0].root_cause_analysis",
+      "file": "tools/src/Extractor/IRBuilder.php",
+      "change": "Extend resolveCallChain() to detect PropertyFetch on $this: when a MethodCall's var is a PropertyFetch on $this (e.g., $this->option_adapter->update()), read the property name, resolve the property type from the class constructor (look for $this->property = new ClassName() assignment), look up the target method in SymbolTable, run SourceSinkVisitor on that method body, attribute sinks to entry_point_id.",
+      "note": "ONLY implement if human chooses Option B. Requires full Phase 1 rerun. PROTOTYPE on single EP first — verify result before full implementation."
+    },
+    "DI-29-01-option-c": {
+      "source_ref": "reports/logs/implementation/change_manifest_session_29.json:discovered_issues[0]",
+      "file": "benchmark/results/wave_4_results.json",
+      "change": "Update verdict to 'WAVE 4 COMPLETE WITH KNOWN LIMITATION'. Document DI-29-01 as WONT_FIX/DEFERRED with reopening condition. Update IMPLEMENTATION-PLAN.md to mark Wave 4 as closed. No code changes.",
+      "note": "ONLY implement if human chooses Option C."
+    }
+  },
+  "files_to_read": [
+    {
+      "file": "tools/bin/phase3_gate.py",
+      "line_range": "510-535",
+      "reason": "can_confirm logic — understand what changes if Option A is chosen"
+    },
+    {
+      "file": "tools/bin/phase3_gate.py",
+      "line_range": "688-750",
+      "reason": "_check_path_reachable full implementation for Option A modification"
+    },
+    {
+      "file": "tools/src/Extractor/IRBuilder.php",
+      "line_range": "303-384",
+      "reason": "resolveCallChain() — for Option B: understand current implementation before extending"
+    }
+  ],
+  "downstream_required": ["benchmark/results/wave_4_results.json", "7-workflow-wp/IMPLEMENTATION-PLAN.md"],
+  "test_command": "python3 benchmark/compare.py --all && python3 -c \"import json; d=json.load(open('benchmark/results/wave_4_results.json')); s=d['plugins'][0]; assert s['slug']=='backwpup'; print(f\\\"backwpup QS={s.get('quality_score')} DR={s.get('decision_rate')} TP={s['tp']} FP={s['fp']} FN={s['fn']} UNCERTAIN={s['uncertain']}\\\")\"",
+  "test_cases": [
+    "Option A: at least 1 backwpup REST EP finding reaches PLAUSIBLE status. FP=0 maintained.",
+    "Option B: at least 1 REST EP has non-return sinks in Phase 1 IR attributed via property call resolution. path_reachable>=0.80 for at least 1 finding. FP=0 maintained.",
+    "Option C: wave_4_results.json verdict updated. No gate regressions. IMPLEMENTATION-PLAN.md Wave 4 marked complete."
+  ],
+  "commit_message": "Session 30: DI-29-01 — Wave 4 close-out [Option A/B/C]",
+  "next_session_preview": "Session 31 (if needed): Wave 5 planning or post-Wave 4 retrospective."
+}
