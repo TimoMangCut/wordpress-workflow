@@ -312,16 +312,16 @@
       "finding_id": "agent-a3-getblock-secret-disclosure",
       "verdict": "TP",
       "validation_status": "UNCERTAIN",
-      "confidence_score": 0.6736,
+      "confidence_score": 0.7827,
       "resolved_entry_point_id": "ep_rest___getblock",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
       "entry_point_resolution_notes": "entry_point_id exact",
       "checks": {
         "file_exists": true,
-        "path_reachable": false,
+        "path_reachable": true,
         "auth_consistent": true,
-        "guard_consistent": false,
+        "guard_consistent": true,
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
         "psalm_corroborates": true,
@@ -333,9 +333,9 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.25,
+        "path_reachable": 0.55,
         "auth_consistent": 0.8,
-        "guard_consistent": 0.1,
+        "guard_consistent": 0.6,
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 0.5,
         "psalm_corroborates": 0.5,
@@ -347,9 +347,9 @@
       },
       "check_notes": {
         "file_exists": "exists: parts/sidebar/storage-FTP.php",
-        "path_reachable": "neither source nor sink matched in EP ep_rest___getblock",
+        "path_reachable": "source matched in EP ep_rest___getblock, but sink evidence weak/missing",
         "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
-        "guard_consistent": "no guard detected",
+        "guard_consistent": "potential custom guard detected (is_effective=null): [\"current_user_can('backwpup')\"]",
         "sanitizer_claim": "sanitizer claim not contradicted",
         "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
         "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
@@ -361,9 +361,7 @@
         "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
       },
       "issues": [
-        "guard_contradiction",
-        "insufficient_evidence_to_confirm",
-        "path_reachability_weak"
+        "insufficient_evidence_to_confirm"
       ]
     },
     {
@@ -416,16 +414,16 @@
       "finding_id": "agent-a3-authenticate-cloud-bac",
       "verdict": "TP",
       "validation_status": "UNCERTAIN",
-      "confidence_score": 0.5736,
+      "confidence_score": 0.6827,
       "resolved_entry_point_id": "ep_rest___authenticate_cloud",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
       "entry_point_resolution_notes": "entry_point_id exact",
       "checks": {
         "file_exists": true,
-        "path_reachable": false,
+        "path_reachable": true,
         "auth_consistent": true,
-        "guard_consistent": false,
+        "guard_consistent": true,
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
         "psalm_corroborates": true,
@@ -437,9 +435,9 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.25,
+        "path_reachable": 0.55,
         "auth_consistent": 0.8,
-        "guard_consistent": 0.1,
+        "guard_consistent": 0.6,
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 1.0,
         "psalm_corroborates": 0.5,
@@ -451,9 +449,9 @@
       },
       "check_notes": {
         "file_exists": "exists: src/StorageProviders/SugarSync/SugarSyncProvider.php",
-        "path_reachable": "neither source nor sink matched in EP ep_rest___authenticate_cloud",
+        "path_reachable": "source matched in EP ep_rest___authenticate_cloud, but sink evidence weak/missing",
         "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
-        "guard_consistent": "no guard detected",
+        "guard_consistent": "potential custom guard detected (is_effective=null): [\"current_user_can('backwpup')\"]",
         "sanitizer_claim": "sanitizer claim not contradicted",
         "semgrep_corroborates": "Semgrep corroborates (same file suffix, \u00b120 lines)",
         "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
@@ -466,25 +464,23 @@
       },
       "issues": [
         "code_evidence_missing_or_mismatch",
-        "guard_contradiction",
-        "insufficient_evidence_to_confirm",
-        "path_reachability_weak"
+        "insufficient_evidence_to_confirm"
       ]
     },
     {
       "finding_id": "agent-a3-delete-auth-cloud-bac",
       "verdict": "TP",
       "validation_status": "UNCERTAIN",
-      "confidence_score": 0.5736,
+      "confidence_score": 0.6827,
       "resolved_entry_point_id": "ep_rest___delete_auth_cloud",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
       "entry_point_resolution_notes": "entry_point_id exact",
       "checks": {
         "file_exists": true,
-        "path_reachable": false,
+        "path_reachable": true,
         "auth_consistent": true,
-        "guard_consistent": false,
+        "guard_consistent": true,
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
         "psalm_corroborates": true,
@@ -496,9 +492,9 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.25,
+        "path_reachable": 0.55,
         "auth_consistent": 0.8,
-        "guard_consistent": 0.1,
+        "guard_consistent": 0.6,
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 1.0,
         "psalm_corroborates": 0.5,
@@ -510,9 +506,9 @@
       },
       "check_notes": {
         "file_exists": "exists: src/StorageProviders/Dropbox/DropboxProvider.php",
-        "path_reachable": "neither source nor sink matched in EP ep_rest___delete_auth_cloud",
+        "path_reachable": "source matched in EP ep_rest___delete_auth_cloud, but sink evidence weak/missing",
         "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
-        "guard_consistent": "no guard detected",
+        "guard_consistent": "potential custom guard detected (is_effective=null): [\"current_user_can('backwpup')\"]",
         "sanitizer_claim": "sanitizer claim not contradicted",
         "semgrep_corroborates": "Semgrep corroborates (same file suffix, \u00b120 lines)",
         "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
@@ -525,25 +521,23 @@
       },
       "issues": [
         "code_evidence_missing_or_mismatch",
-        "guard_contradiction",
-        "insufficient_evidence_to_confirm",
-        "path_reachability_weak"
+        "insufficient_evidence_to_confirm"
       ]
     },
     {
       "finding_id": "agent-a3-cloudsaveandtest-bac",
       "verdict": "TP",
       "validation_status": "UNCERTAIN",
-      "confidence_score": 0.6736,
+      "confidence_score": 0.7827,
       "resolved_entry_point_id": "ep_rest___cloudsaveandtest",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
       "entry_point_resolution_notes": "entry_point_id exact",
       "checks": {
         "file_exists": true,
-        "path_reachable": false,
+        "path_reachable": true,
         "auth_consistent": true,
-        "guard_consistent": false,
+        "guard_consistent": true,
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
         "psalm_corroborates": true,
@@ -555,9 +549,9 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.25,
+        "path_reachable": 0.55,
         "auth_consistent": 0.8,
-        "guard_consistent": 0.1,
+        "guard_consistent": 0.6,
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 0.5,
         "psalm_corroborates": 0.5,
@@ -569,9 +563,9 @@
       },
       "check_notes": {
         "file_exists": "exists: inc/class-destination-ftp.php",
-        "path_reachable": "neither source nor sink matched in EP ep_rest___cloudsaveandtest",
+        "path_reachable": "source matched in EP ep_rest___cloudsaveandtest, but sink evidence weak/missing",
         "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
-        "guard_consistent": "no guard detected",
+        "guard_consistent": "potential custom guard detected (is_effective=null): [\"current_user_can('backwpup')\"]",
         "sanitizer_claim": "sanitizer claim not contradicted",
         "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
         "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
@@ -583,25 +577,23 @@
         "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
       },
       "issues": [
-        "guard_contradiction",
-        "insufficient_evidence_to_confirm",
-        "path_reachability_weak"
+        "insufficient_evidence_to_confirm"
       ]
     },
     {
       "finding_id": "agent-a3-storages-bac",
       "verdict": "TP",
       "validation_status": "UNCERTAIN",
-      "confidence_score": 0.5736,
+      "confidence_score": 0.6827,
       "resolved_entry_point_id": "ep_rest___storages",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
       "entry_point_resolution_notes": "entry_point_id exact",
       "checks": {
         "file_exists": true,
-        "path_reachable": false,
+        "path_reachable": true,
         "auth_consistent": true,
-        "guard_consistent": false,
+        "guard_consistent": true,
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
         "psalm_corroborates": true,
@@ -613,9 +605,9 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.25,
+        "path_reachable": 0.55,
         "auth_consistent": 0.8,
-        "guard_consistent": 0.1,
+        "guard_consistent": 0.6,
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 1.0,
         "psalm_corroborates": 0.5,
@@ -627,9 +619,9 @@
       },
       "check_notes": {
         "file_exists": "exists: src/StorageProviders/API/Rest.php",
-        "path_reachable": "neither source nor sink matched in EP ep_rest___storages",
+        "path_reachable": "source matched in EP ep_rest___storages, but sink evidence weak/missing",
         "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
-        "guard_consistent": "no guard detected",
+        "guard_consistent": "potential custom guard detected (is_effective=null): [\"current_user_can('backwpup')\"]",
         "sanitizer_claim": "sanitizer claim not contradicted",
         "semgrep_corroborates": "Semgrep corroborates (same file suffix, \u00b120 lines)",
         "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
@@ -642,9 +634,7 @@
       },
       "issues": [
         "code_evidence_missing_or_mismatch",
-        "guard_contradiction",
-        "insufficient_evidence_to_confirm",
-        "path_reachability_weak"
+        "insufficient_evidence_to_confirm"
       ]
     },
     {
@@ -743,16 +733,16 @@
       "finding_id": "agent-a3-updatejob-bac",
       "verdict": "TP",
       "validation_status": "UNCERTAIN",
-      "confidence_score": 0.5509,
+      "confidence_score": 0.66,
       "resolved_entry_point_id": "ep_rest___updatejob",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
       "entry_point_resolution_notes": "entry_point_id exact",
       "checks": {
         "file_exists": true,
-        "path_reachable": false,
+        "path_reachable": true,
         "auth_consistent": true,
-        "guard_consistent": false,
+        "guard_consistent": true,
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
         "psalm_corroborates": true,
@@ -764,9 +754,9 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.25,
+        "path_reachable": 0.55,
         "auth_consistent": 0.8,
-        "guard_consistent": 0.1,
+        "guard_consistent": 0.6,
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 0.5,
         "psalm_corroborates": 0.5,
@@ -778,9 +768,9 @@
       },
       "check_notes": {
         "file_exists": "exists: src/Jobs/API/Rest.php",
-        "path_reachable": "neither source nor sink matched in EP ep_rest___updatejob",
+        "path_reachable": "source matched in EP ep_rest___updatejob, but sink evidence weak/missing",
         "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
-        "guard_consistent": "no guard detected",
+        "guard_consistent": "potential custom guard detected (is_effective=null): [\"current_user_can('backwpup')\"]",
         "sanitizer_claim": "sanitizer claim not contradicted",
         "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
         "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
@@ -793,25 +783,23 @@
       },
       "issues": [
         "code_evidence_missing_or_mismatch",
-        "guard_contradiction",
-        "insufficient_evidence_to_confirm",
-        "path_reachability_weak"
+        "insufficient_evidence_to_confirm"
       ]
     },
     {
       "finding_id": "agent-a3-update-job-title-bac",
       "verdict": "TP",
       "validation_status": "UNCERTAIN",
-      "confidence_score": 0.5736,
+      "confidence_score": 0.6827,
       "resolved_entry_point_id": "ep_rest___update_job_title",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
       "entry_point_resolution_notes": "entry_point_id exact",
       "checks": {
         "file_exists": true,
-        "path_reachable": false,
+        "path_reachable": true,
         "auth_consistent": true,
-        "guard_consistent": false,
+        "guard_consistent": true,
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
         "psalm_corroborates": true,
@@ -823,9 +811,9 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.25,
+        "path_reachable": 0.55,
         "auth_consistent": 0.8,
-        "guard_consistent": 0.1,
+        "guard_consistent": 0.6,
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 1.0,
         "psalm_corroborates": 0.5,
@@ -837,9 +825,9 @@
       },
       "check_notes": {
         "file_exists": "exists: src/Jobs/API/Rest.php",
-        "path_reachable": "neither source nor sink matched in EP ep_rest___update_job_title",
+        "path_reachable": "source matched in EP ep_rest___update_job_title, but sink evidence weak/missing",
         "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
-        "guard_consistent": "no guard detected",
+        "guard_consistent": "potential custom guard detected (is_effective=null): [\"current_user_can('backwpup')\"]",
         "sanitizer_claim": "sanitizer claim not contradicted",
         "semgrep_corroborates": "Semgrep corroborates (same file suffix, \u00b120 lines)",
         "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
@@ -852,25 +840,23 @@
       },
       "issues": [
         "code_evidence_missing_or_mismatch",
-        "guard_contradiction",
-        "insufficient_evidence_to_confirm",
-        "path_reachability_weak"
+        "insufficient_evidence_to_confirm"
       ]
     },
     {
       "finding_id": "agent-a3-addjob-bac",
       "verdict": "TP",
       "validation_status": "UNCERTAIN",
-      "confidence_score": 0.5509,
+      "confidence_score": 0.66,
       "resolved_entry_point_id": "ep_rest___addjob",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
       "entry_point_resolution_notes": "entry_point_id exact",
       "checks": {
         "file_exists": true,
-        "path_reachable": false,
+        "path_reachable": true,
         "auth_consistent": true,
-        "guard_consistent": false,
+        "guard_consistent": true,
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
         "psalm_corroborates": true,
@@ -882,9 +868,9 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.25,
+        "path_reachable": 0.55,
         "auth_consistent": 0.8,
-        "guard_consistent": 0.1,
+        "guard_consistent": 0.6,
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 0.5,
         "psalm_corroborates": 0.5,
@@ -896,9 +882,9 @@
       },
       "check_notes": {
         "file_exists": "exists: src/Jobs/API/Rest.php",
-        "path_reachable": "neither source nor sink matched in EP ep_rest___addjob",
+        "path_reachable": "source matched in EP ep_rest___addjob, but sink evidence weak/missing",
         "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
-        "guard_consistent": "no guard detected",
+        "guard_consistent": "potential custom guard detected (is_effective=null): [\"current_user_can('backwpup')\"]",
         "sanitizer_claim": "sanitizer claim not contradicted",
         "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
         "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
@@ -911,25 +897,23 @@
       },
       "issues": [
         "code_evidence_missing_or_mismatch",
-        "guard_contradiction",
-        "insufficient_evidence_to_confirm",
-        "path_reachability_weak"
+        "insufficient_evidence_to_confirm"
       ]
     },
     {
       "finding_id": "agent-a3-delete-job-bac",
       "verdict": "TP",
       "validation_status": "UNCERTAIN",
-      "confidence_score": 0.5509,
+      "confidence_score": 0.66,
       "resolved_entry_point_id": "ep_rest___delete_job",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
       "entry_point_resolution_notes": "entry_point_id exact",
       "checks": {
         "file_exists": true,
-        "path_reachable": false,
+        "path_reachable": true,
         "auth_consistent": true,
-        "guard_consistent": false,
+        "guard_consistent": true,
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
         "psalm_corroborates": true,
@@ -941,9 +925,9 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.25,
+        "path_reachable": 0.55,
         "auth_consistent": 0.8,
-        "guard_consistent": 0.1,
+        "guard_consistent": 0.6,
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 0.5,
         "psalm_corroborates": 0.5,
@@ -955,9 +939,9 @@
       },
       "check_notes": {
         "file_exists": "exists: src/Jobs/API/Rest.php",
-        "path_reachable": "neither source nor sink matched in EP ep_rest___delete_job",
+        "path_reachable": "source matched in EP ep_rest___delete_job, but sink evidence weak/missing",
         "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
-        "guard_consistent": "no guard detected",
+        "guard_consistent": "potential custom guard detected (is_effective=null): [\"current_user_can('backwpup')\"]",
         "sanitizer_claim": "sanitizer claim not contradicted",
         "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
         "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
@@ -970,25 +954,23 @@
       },
       "issues": [
         "code_evidence_missing_or_mismatch",
-        "guard_contradiction",
-        "insufficient_evidence_to_confirm",
-        "path_reachability_weak"
+        "insufficient_evidence_to_confirm"
       ]
     },
     {
       "finding_id": "agent-a3-save-job-settings-bac",
       "verdict": "TP",
       "validation_status": "UNCERTAIN",
-      "confidence_score": 0.5191,
+      "confidence_score": 0.6282,
       "resolved_entry_point_id": "ep_rest___save_job_settings",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
       "entry_point_resolution_notes": "entry_point_id exact",
       "checks": {
         "file_exists": true,
-        "path_reachable": false,
+        "path_reachable": true,
         "auth_consistent": true,
-        "guard_consistent": false,
+        "guard_consistent": true,
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
         "psalm_corroborates": true,
@@ -1000,9 +982,9 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.25,
+        "path_reachable": 0.55,
         "auth_consistent": 0.8,
-        "guard_consistent": 0.1,
+        "guard_consistent": 0.6,
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 0.5,
         "psalm_corroborates": 0.5,
@@ -1014,9 +996,9 @@
       },
       "check_notes": {
         "file_exists": "exists: src/Jobs/API/Rest.php",
-        "path_reachable": "neither source nor sink matched in EP ep_rest___save_job_settings",
+        "path_reachable": "source matched in EP ep_rest___save_job_settings, but sink evidence weak/missing",
         "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
-        "guard_consistent": "no guard detected",
+        "guard_consistent": "potential custom guard detected (is_effective=null): [\"current_user_can('backwpup')\"]",
         "sanitizer_claim": "sanitizer claim not contradicted",
         "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
         "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
@@ -1029,25 +1011,23 @@
       },
       "issues": [
         "code_evidence_missing_or_mismatch",
-        "guard_contradiction",
-        "insufficient_evidence_to_confirm",
-        "path_reachability_weak"
+        "insufficient_evidence_to_confirm"
       ]
     },
     {
       "finding_id": "agent-a3-save-job-format-bac",
       "verdict": "TP",
       "validation_status": "UNCERTAIN",
-      "confidence_score": 0.5509,
+      "confidence_score": 0.66,
       "resolved_entry_point_id": "ep_rest___save_job_format",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
       "entry_point_resolution_notes": "entry_point_id exact",
       "checks": {
         "file_exists": true,
-        "path_reachable": false,
+        "path_reachable": true,
         "auth_consistent": true,
-        "guard_consistent": false,
+        "guard_consistent": true,
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
         "psalm_corroborates": true,
@@ -1059,9 +1039,9 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.25,
+        "path_reachable": 0.55,
         "auth_consistent": 0.8,
-        "guard_consistent": 0.1,
+        "guard_consistent": 0.6,
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 0.5,
         "psalm_corroborates": 0.5,
@@ -1073,9 +1053,9 @@
       },
       "check_notes": {
         "file_exists": "exists: src/Jobs/API/Rest.php",
-        "path_reachable": "neither source nor sink matched in EP ep_rest___save_job_format",
+        "path_reachable": "source matched in EP ep_rest___save_job_format, but sink evidence weak/missing",
         "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
-        "guard_consistent": "no guard detected",
+        "guard_consistent": "potential custom guard detected (is_effective=null): [\"current_user_can('backwpup')\"]",
         "sanitizer_claim": "sanitizer claim not contradicted",
         "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
         "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
@@ -1088,25 +1068,23 @@
       },
       "issues": [
         "code_evidence_missing_or_mismatch",
-        "guard_contradiction",
-        "insufficient_evidence_to_confirm",
-        "path_reachability_weak"
+        "insufficient_evidence_to_confirm"
       ]
     },
     {
       "finding_id": "agent-a3-save-files-exclusions-bac",
       "verdict": "TP",
       "validation_status": "UNCERTAIN",
-      "confidence_score": 0.5509,
+      "confidence_score": 0.66,
       "resolved_entry_point_id": "ep_rest___save_files_exclusions",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
       "entry_point_resolution_notes": "entry_point_id exact",
       "checks": {
         "file_exists": true,
-        "path_reachable": false,
+        "path_reachable": true,
         "auth_consistent": true,
-        "guard_consistent": false,
+        "guard_consistent": true,
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
         "psalm_corroborates": true,
@@ -1118,9 +1096,9 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.25,
+        "path_reachable": 0.55,
         "auth_consistent": 0.8,
-        "guard_consistent": 0.1,
+        "guard_consistent": 0.6,
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 0.5,
         "psalm_corroborates": 0.5,
@@ -1132,9 +1110,9 @@
       },
       "check_notes": {
         "file_exists": "exists: inc/class-jobtype-file.php",
-        "path_reachable": "neither source nor sink matched in EP ep_rest___save_files_exclusions",
+        "path_reachable": "source matched in EP ep_rest___save_files_exclusions, but sink evidence weak/missing",
         "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
-        "guard_consistent": "no guard detected",
+        "guard_consistent": "potential custom guard detected (is_effective=null): [\"current_user_can('backwpup')\"]",
         "sanitizer_claim": "sanitizer claim not contradicted",
         "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
         "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
@@ -1147,25 +1125,23 @@
       },
       "issues": [
         "code_evidence_missing_or_mismatch",
-        "guard_contradiction",
-        "insufficient_evidence_to_confirm",
-        "path_reachability_weak"
+        "insufficient_evidence_to_confirm"
       ]
     },
     {
       "finding_id": "agent-a3-save-excluded-tables-bac",
       "verdict": "TP",
       "validation_status": "UNCERTAIN",
-      "confidence_score": 0.6736,
+      "confidence_score": 0.7827,
       "resolved_entry_point_id": "ep_rest___save_excluded_tables",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
       "entry_point_resolution_notes": "entry_point_id exact",
       "checks": {
         "file_exists": true,
-        "path_reachable": false,
+        "path_reachable": true,
         "auth_consistent": true,
-        "guard_consistent": false,
+        "guard_consistent": true,
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
         "psalm_corroborates": true,
@@ -1177,9 +1153,9 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.25,
+        "path_reachable": 0.55,
         "auth_consistent": 0.8,
-        "guard_consistent": 0.1,
+        "guard_consistent": 0.6,
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 0.5,
         "psalm_corroborates": 0.5,
@@ -1191,9 +1167,9 @@
       },
       "check_notes": {
         "file_exists": "exists: inc/class-jobtype-dbdump.php",
-        "path_reachable": "neither source nor sink matched in EP ep_rest___save_excluded_tables",
+        "path_reachable": "source matched in EP ep_rest___save_excluded_tables, but sink evidence weak/missing",
         "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
-        "guard_consistent": "no guard detected",
+        "guard_consistent": "potential custom guard detected (is_effective=null): [\"current_user_can('backwpup')\"]",
         "sanitizer_claim": "sanitizer claim not contradicted",
         "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
         "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
@@ -1205,9 +1181,7 @@
         "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
       },
       "issues": [
-        "guard_contradiction",
-        "insufficient_evidence_to_confirm",
-        "path_reachability_weak"
+        "insufficient_evidence_to_confirm"
       ]
     },
     {
@@ -1237,16 +1211,16 @@
       "finding_id": "agent-a3-update-backup-type-bac",
       "verdict": "TP",
       "validation_status": "UNCERTAIN",
-      "confidence_score": 0.5509,
+      "confidence_score": 0.66,
       "resolved_entry_point_id": "ep_rest___backups___P_id__d___type",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
       "entry_point_resolution_notes": "entry_point_id exact",
       "checks": {
         "file_exists": true,
-        "path_reachable": false,
+        "path_reachable": true,
         "auth_consistent": true,
-        "guard_consistent": false,
+        "guard_consistent": true,
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
         "psalm_corroborates": true,
@@ -1258,9 +1232,9 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.25,
+        "path_reachable": 0.55,
         "auth_consistent": 0.8,
-        "guard_consistent": 0.1,
+        "guard_consistent": 0.6,
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 0.5,
         "psalm_corroborates": 0.5,
@@ -1272,9 +1246,9 @@
       },
       "check_notes": {
         "file_exists": "exists: src/Jobs/API/Rest.php",
-        "path_reachable": "neither source nor sink matched in EP ep_rest___backups___P_id__d___type",
+        "path_reachable": "source matched in EP ep_rest___backups___P_id__d___type, but sink evidence weak/missing",
         "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
-        "guard_consistent": "no guard detected",
+        "guard_consistent": "potential custom guard detected (is_effective=null): [\"current_user_can('backwpup')\"]",
         "sanitizer_claim": "sanitizer claim not contradicted",
         "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
         "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
@@ -1287,9 +1261,7 @@
       },
       "issues": [
         "code_evidence_missing_or_mismatch",
-        "guard_contradiction",
-        "insufficient_evidence_to_confirm",
-        "path_reachability_weak"
+        "insufficient_evidence_to_confirm"
       ]
     },
     {
@@ -1342,16 +1314,16 @@
       "finding_id": "agent-a3-startbackup-bac",
       "verdict": "TP",
       "validation_status": "UNCERTAIN",
-      "confidence_score": 0.5191,
+      "confidence_score": 0.6282,
       "resolved_entry_point_id": "ep_rest_backwpup_v1__startbackup",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
       "entry_point_resolution_notes": "entry_point_id exact",
       "checks": {
         "file_exists": true,
-        "path_reachable": false,
+        "path_reachable": true,
         "auth_consistent": true,
-        "guard_consistent": false,
+        "guard_consistent": true,
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
         "psalm_corroborates": true,
@@ -1363,9 +1335,9 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.25,
+        "path_reachable": 0.55,
         "auth_consistent": 0.8,
-        "guard_consistent": 0.1,
+        "guard_consistent": 0.6,
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 0.5,
         "psalm_corroborates": 0.5,
@@ -1377,9 +1349,9 @@
       },
       "check_notes": {
         "file_exists": "exists: src/Backups/API/Rest.php",
-        "path_reachable": "neither source nor sink matched in EP ep_rest_backwpup_v1__startbackup",
+        "path_reachable": "source matched in EP ep_rest_backwpup_v1__startbackup, but sink evidence weak/missing",
         "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
-        "guard_consistent": "no guard detected",
+        "guard_consistent": "potential custom guard detected (is_effective=null): [\"current_user_can('backwpup')\"]",
         "sanitizer_claim": "sanitizer claim not contradicted",
         "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
         "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
@@ -1392,25 +1364,23 @@
       },
       "issues": [
         "code_evidence_missing_or_mismatch",
-        "guard_contradiction",
-        "insufficient_evidence_to_confirm",
-        "path_reachability_weak"
+        "insufficient_evidence_to_confirm"
       ]
     },
     {
       "finding_id": "agent-a3-process-bulk-actions-needs-proof",
       "verdict": "REVIEW",
       "validation_status": "UNCERTAIN",
-      "confidence_score": 0.5455,
+      "confidence_score": 0.6545,
       "resolved_entry_point_id": "ep_rest_backwpup_v1__process_bulk_actions",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
       "entry_point_resolution_notes": "entry_point_id exact",
       "checks": {
         "file_exists": true,
-        "path_reachable": false,
+        "path_reachable": true,
         "auth_consistent": true,
-        "guard_consistent": false,
+        "guard_consistent": true,
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
         "psalm_corroborates": true,
@@ -1422,9 +1392,9 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.25,
+        "path_reachable": 0.55,
         "auth_consistent": 0.8,
-        "guard_consistent": 0.1,
+        "guard_consistent": 0.6,
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 0.5,
         "psalm_corroborates": 0.5,
@@ -1436,9 +1406,9 @@
       },
       "check_notes": {
         "file_exists": "exists: src/Backups/API/Rest.php",
-        "path_reachable": "neither source nor sink matched in EP ep_rest_backwpup_v1__process_bulk_actions",
+        "path_reachable": "source matched in EP ep_rest_backwpup_v1__process_bulk_actions, but sink evidence weak/missing",
         "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
-        "guard_consistent": "no guard detected",
+        "guard_consistent": "potential custom guard detected (is_effective=null): [\"current_user_can('backwpup')\"]",
         "sanitizer_claim": "sanitizer claim not contradicted",
         "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
         "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
@@ -1451,9 +1421,7 @@
       },
       "issues": [
         "code_evidence_missing_or_mismatch",
-        "guard_contradiction",
-        "insufficient_evidence_to_confirm",
-        "path_reachability_weak"
+        "insufficient_evidence_to_confirm"
       ]
     },
     {

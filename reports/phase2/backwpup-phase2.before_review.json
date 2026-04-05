@@ -15,7 +15,7 @@
       "load_entry_point_id": null,
       "source_function": "{closure}",
       "source_file_path": "inc/class-admin.php",
-      "source_line_number": 283,
+      "source_line_number": 281,
       "sink_function": "echo",
       "sink_file_path": "inc/class-admin.php",
       "sink_line_number": 287,
@@ -40,7 +40,7 @@
       "load_entry_point_id": null,
       "source_function": "BackWPup_Admin::save_post_form",
       "source_file_path": "inc/class-admin.php",
-      "source_line_number": 893,
+      "source_line_number": 838,
       "sink_function": "BackWPup_Option::update",
       "sink_file_path": "inc/class-page-onboarding.php",
       "sink_line_number": 127,
@@ -540,13 +540,14 @@
       "source_line_number": 736,
       "sink_function": "BackWPup_Option::update",
       "sink_file_path": "inc/class-jobtype-file.php",
-      "sink_line_number": 230,
+      "sink_line_number": 217,
       "reasoning": "Hypothesis: a low-privileged BackWPup role can change which files are included in backups. Trace: the REST route is protected only by current_user_can('backwpup') [src/Jobs/API/Rest.php:216-287,87-89]. The built-in 'backwpup_check' role has that capability but not 'backwpup_jobs_edit' [inc/class-install.php:142-157]. The callback forwards attacker-controlled request data into the FILE job type's edit_form_post_save() [src/Jobs/API/Rest.php:740-743]. That method persists 'fileexclude', 'dirinclude', and multiple boolean inclusion flags with BackWPup_Option::update() [inc/class-jobtype-file.php:217-260]. Defenses analyzed/refutation: the save helper sanitizes paths and booleans [inc/class-jobtype-file.php:225-249], but it does not enforce authorization. The old edit form still requires 'backwpup_jobs_edit' [inc/class-page-editjob.php:45-49]. Conclusion: CONFIRMED broken access control allowing low-privileged BackWPup roles to weaken or disable file backup coverage.",
       "patchstack_eligible": false,
       "remediation": "Require 'backwpup_jobs_edit' before persisting file exclusion and inclusion settings.",
       "source_agents": [
         "agent-a3"
-      ]
+      ],
+      "line_number": 217
     },
     {
       "finding_id": "agent-a3-save-excluded-tables-bac",
@@ -562,13 +563,14 @@
       "source_line_number": 762,
       "sink_function": "BackWPup_Option::update",
       "sink_file_path": "inc/class-jobtype-dbdump.php",
-      "sink_line_number": 172,
+      "sink_line_number": 149,
       "reasoning": "Hypothesis: a low-privileged BackWPup role can control which database tables are excluded from backups. Trace: the route again uses only current_user_can('backwpup') [src/Jobs/API/Rest.php:289-329,87-89], so the built-in 'backwpup_check' role reaches it despite lacking 'backwpup_jobs_edit' [inc/class-install.php:142-157]. The callback passes attacker-controlled 'tabledb' values into the DBDUMP job type save handler [src/Jobs/API/Rest.php:767-770]. That handler computes the exclusion list from SHOW TABLES and writes the resulting 'dbdumpexclude' array with BackWPup_Option::update() [inc/class-jobtype-dbdump.php:149-172]. Defenses analyzed/refutation: the helper sanitizes table names [inc/class-jobtype-dbdump.php:149-153], but an attacker can still submit an empty selection and cause all tables to be excluded. No authorization check beyond 'backwpup' exists in the REST path. Conclusion: CONFIRMED broken access control allowing low-privileged BackWPup roles to disable or narrow database backups.",
       "patchstack_eligible": false,
       "remediation": "Require 'backwpup_jobs_edit' before updating excluded-table settings.",
       "source_agents": [
         "agent-a3"
-      ]
+      ],
+      "line_number": 149
     },
     {
       "finding_id": "agent-a3-save-site-option-default-roles-safe",
@@ -930,7 +932,7 @@
       "severity": "high",
       "auth_required": "unknown",
       "confidence": 0.5,
-      "entry_point_id": null,
+      "entry_point_id": "ep_ajax_priv_wp_ajax_download_backup_file",
       "source_function": "download_by_ajax",
       "source_file_path": "inc/class-destination-downloader.php",
       "source_line_number": 58,
@@ -965,5 +967,10 @@
     "duplicates_merged": 11,
     "conflicts_flagged": 0,
     "schema_errors": 0
+  },
+  "postprocess": {
+    "phase3_review_applied": {
+      "applied_edits": 5
+    }
   }
 }

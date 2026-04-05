@@ -731,6 +731,15 @@ class SemanticValidator:
                 if source_claim in v or source_claim in t:
                     source_ok = True
                     break
+            # DI-28-01: source normalization for REST EP callbacks.
+            # Agents often name the callback method itself (e.g., "start_backup",
+            # "cloud_save_and_test") as source_function rather than a variable or
+            # type name.  The name-match above fails because these are not variable
+            # names in the IR.  If the claim looks like a bare method name (no "$"
+            # prefix, no "::" class separator) and the EP already has confirmed
+            # user-input sources (rest_params, superglobal_*, etc.), accept it.
+            if not source_ok and "$" not in source_claim and "::" not in source_claim:
+                source_ok = any(src.get("type") in self.USER_SOURCE_TYPES for src in sources)
         else:
             # If no explicit source claimed, but EP has user sources, give partial credit.
             source_ok = any(src.get("type") in self.USER_SOURCE_TYPES for src in sources)
