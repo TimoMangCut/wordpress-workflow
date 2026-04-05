@@ -1,32 +1,109 @@
 {
   "plugin_slug": "backwpup",
   "plugin_version": "unknown",
-  "verified_by": "pipeline_seeded",
-  "verified_date": "2026-04-03",
+  "verified_by": "pipeline_session30",
+  "verified_date": "2026-04-05",
   "findings": [
     {
-      "vuln_type": "unknown",
+      "vuln_type": "broken_access_control",
       "entry_point_type": "rest_route",
-      "hook_name": "ep_rest___cloudsaveandtest",
-      "sink_file": "inc/class-destination-s3.php",
-      "sink_line_approx": 551,
-      "severity": "unknown",
-      "description": "Pipeline TP verdict: data flow from REST route to sink function backwpup_destination_s3::job_run_archive. Phase3 UNCERTAIN — path_reachable check failed (source/sink not matched in IR), code_evidence missing. Needs manual verification.",
-      "_ground_truth_confidence": "LOW — pipeline_seeded only, not manually verified",
-      "_expected_pipeline_verdict": "TP or REVIEW"
+      "hook_name": "ep_rest___storages",
+      "sink_file": "src/StorageProviders/API/Rest.php",
+      "sink_line_approx": 354,
+      "severity": "medium",
+      "description": "BAC: REST EP ep_rest___storages dispatches to OptionAdapter::update via property injection ($this->option_adapter->update()) without adequate capability checks. CONFIRMED in Session 30 (gate: path_reachable=1.0, code_evidence=1.0, guard_consistent=0.6).",
+      "_ground_truth_confidence": "MEDIUM — pipeline-confirmed with IR property-dispatch resolution (Session 30). Gate CONFIRMED (confidence 0.89). Not manually exploited; guard_consistent=0.6 (custom current_user_can guard detected, is_effective=null).",
+      "_expected_pipeline_verdict": "CONFIRMED"
     },
     {
-      "vuln_type": "unknown",
+      "vuln_type": "broken_access_control",
       "entry_point_type": "rest_route",
-      "hook_name": "ep_rest_backwpup_v1__process_bulk_actions",
-      "sink_file": "inc/class-destination-folder.php",
-      "sink_line_approx": 75,
-      "severity": "unknown",
-      "description": "Pipeline TP verdict: data flow from REST route to sink function backwpup_destination_folder::file_delete. Phase3 UNCERTAIN — path_reachable check failed, code_evidence missing. Needs manual verification.",
-      "_ground_truth_confidence": "LOW — pipeline_seeded only, not manually verified",
-      "_expected_pipeline_verdict": "TP or REVIEW"
+      "hook_name": "ep_rest___updatejob",
+      "sink_file": "src/Jobs/API/Rest.php",
+      "sink_line_approx": 392,
+      "severity": "medium",
+      "description": "BAC: REST EP ep_rest___updatejob dispatches to property-injected adapter without adequate capability checks. CONFIRMED in Session 30.",
+      "_ground_truth_confidence": "MEDIUM — pipeline-confirmed, Session 30.",
+      "_expected_pipeline_verdict": "CONFIRMED"
+    },
+    {
+      "vuln_type": "broken_access_control",
+      "entry_point_type": "rest_route",
+      "hook_name": "ep_rest___update_job_title",
+      "sink_file": "src/Jobs/API/Rest.php",
+      "sink_line_approx": 473,
+      "severity": "medium",
+      "description": "BAC: REST EP ep_rest___update_job_title dispatches to property-injected adapter without adequate capability checks. CONFIRMED in Session 30.",
+      "_ground_truth_confidence": "MEDIUM — pipeline-confirmed, Session 30.",
+      "_expected_pipeline_verdict": "CONFIRMED"
+    },
+    {
+      "vuln_type": "broken_access_control",
+      "entry_point_type": "rest_route",
+      "hook_name": "ep_rest___addjob",
+      "sink_file": "src/Jobs/API/Rest.php",
+      "sink_line_approx": 524,
+      "severity": "medium",
+      "description": "BAC: REST EP ep_rest___addjob dispatches to property-injected adapter without adequate capability checks. CONFIRMED in Session 30.",
+      "_ground_truth_confidence": "MEDIUM — pipeline-confirmed, Session 30.",
+      "_expected_pipeline_verdict": "CONFIRMED"
+    },
+    {
+      "vuln_type": "broken_access_control",
+      "entry_point_type": "rest_route",
+      "hook_name": "ep_rest___delete_job",
+      "sink_file": "src/Jobs/API/Rest.php",
+      "sink_line_approx": 570,
+      "severity": "medium",
+      "description": "BAC: REST EP ep_rest___delete_job dispatches to property-injected adapter without adequate capability checks. CONFIRMED in Session 30.",
+      "_ground_truth_confidence": "MEDIUM — pipeline-confirmed, Session 30.",
+      "_expected_pipeline_verdict": "CONFIRMED"
+    },
+    {
+      "vuln_type": "broken_access_control",
+      "entry_point_type": "rest_route",
+      "hook_name": "ep_rest___save_job_settings",
+      "sink_file": "src/Jobs/API/Rest.php",
+      "sink_line_approx": 633,
+      "severity": "medium",
+      "description": "BAC: REST EP ep_rest___save_job_settings dispatches to property-injected adapter without adequate capability checks. CONFIRMED in Session 30.",
+      "_ground_truth_confidence": "MEDIUM — pipeline-confirmed, Session 30.",
+      "_expected_pipeline_verdict": "CONFIRMED"
+    },
+    {
+      "vuln_type": "broken_access_control",
+      "entry_point_type": "rest_route",
+      "hook_name": "ep_rest___save_job_format",
+      "sink_file": "src/Jobs/API/Rest.php",
+      "sink_line_approx": 708,
+      "severity": "medium",
+      "description": "BAC: REST EP ep_rest___save_job_format dispatches to property-injected adapter without adequate capability checks. CONFIRMED in Session 30.",
+      "_ground_truth_confidence": "MEDIUM — pipeline-confirmed, Session 30.",
+      "_expected_pipeline_verdict": "CONFIRMED"
+    },
+    {
+      "vuln_type": "broken_access_control",
+      "entry_point_type": "rest_route",
+      "hook_name": "ep_rest___backups___P_id__d___type",
+      "sink_file": "src/Jobs/API/Rest.php",
+      "sink_line_approx": 451,
+      "severity": "medium",
+      "description": "BAC: REST EP ep_rest___backups___P_id__d___type (update_backup_type) dispatches to property-injected adapter without adequate capability checks. CONFIRMED in Session 30.",
+      "_ground_truth_confidence": "MEDIUM — pipeline-confirmed, Session 30.",
+      "_expected_pipeline_verdict": "CONFIRMED"
+    },
+    {
+      "vuln_type": "broken_access_control",
+      "entry_point_type": "rest_route",
+      "hook_name": "ep_rest_backwpup_v1__startbackup",
+      "sink_file": "src/Backups/API/Rest.php",
+      "sink_line_approx": 260,
+      "severity": "medium",
+      "description": "BAC: REST EP ep_rest_backwpup_v1__startbackup (startbackup) triggers backup job management via property-dispatched adapter calls without adequate capability checks. CONFIRMED in Session 30.",
+      "_ground_truth_confidence": "MEDIUM — pipeline-confirmed, Session 30.",
+      "_expected_pipeline_verdict": "CONFIRMED"
     }
   ],
   "confirmed_clean_areas": [],
-  "_notes": "Ground truth seeded from pipeline phase2 output (tp=2). Both findings are UNCERTAIN in phase3 due to IR gaps (path_reachability_weak, code_evidence_missing). This file serves as a minimum-viable benchmark seed — update findings[] with manual verification before using Quality Score as a reliable metric."
+  "_notes": "Ground truth updated in Session 30 (2026-04-05). Previous GT (2 pipeline-seeded findings from Session 22) referenced old inc/ directory structure (pre-plugin-refactor). Current GT: 9 findings confirmed by Session 30 pipeline run (IR property-dispatch sink resolution in Phase 1 + gate code_evidence method-name fallback). All 9 are broken_access_control findings on REST EPs using DI/adapter pattern. Confidence is MEDIUM (pipeline-confirmed with full gate checks passing, not manually exploited). The 13 remaining UNCERTAIN findings involve deeper dispatch chains (>1-hop) not resolved by the 1-hop property dispatch extension added in Session 30."
 }

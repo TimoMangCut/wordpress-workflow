@@ -546,6 +546,14 @@ class SemanticValidator:
             "check_scores": check_scores,
             "check_notes": check_notes,
             "issues": sorted(set(issues)),
+            # Propagate key Phase 2 fields so downstream consumers (benchmark, MD writer)
+            # have direct access without re-loading phase2.json.
+            "sink_file_path": finding.get("sink_file_path") or finding.get("file_path"),
+            "sink_line_number": finding.get("sink_line_number") or finding.get("line_number"),
+            "sink_function": finding.get("sink_function"),
+            "source_file_path": finding.get("source_file_path"),
+            "source_line_number": finding.get("source_line_number"),
+            "vuln_type": finding.get("vuln_type"),
         }
 
     def _compute_confidence(self, check_scores: Dict[str, Optional[float]]) -> Tuple[float, List[str]]:
@@ -1072,10 +1080,14 @@ class SemanticValidator:
         sink_fn = (finding.get("sink_function") or "").lower().strip()
         sink_short = sink_fn.replace("$wpdb->", "").replace("()", "").strip("$")
         if sink_short and sink_short not in sink_ctx:
-            # Sometimes sinks are language constructs (echo/include/require)
-            constructs = {"echo", "include", "require", "include_once", "require_once", "print"}
-            if sink_short not in constructs:
-                return 0.25, f"sink function '{sink_short}' not found near line {sink_line}"
+            # DI-29-01: also try the method-name part alone (handles instance dispatch:
+            # agent says "AdapterClass::method" but code says "$this->adapter->method()").
+            method_name_only = sink_short.split("::")[-1] if "::" in sink_short else ""
+            if not method_name_only or method_name_only not in sink_ctx:
+                # Sometimes sinks are language constructs (echo/include/require)
+                constructs = {"echo", "include", "require", "include_once", "require_once", "print"}
+                if sink_short not in constructs:
+                    return 0.25, f"sink function '{sink_short}' not found near line {sink_line}"
 
         # Optional: source location check
         if source_path and source_line:

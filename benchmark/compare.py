@@ -171,35 +171,37 @@ def _finding_to_match_dict(validated_finding: dict) -> dict:
     Convert a phase3 validated_finding into a flat dict for matching against GT.
     Extracts the fields needed for sink file+line matching.
 
-    Phase3 validated_findings store evidence in check_notes.
-    We extract sink_file and sink_line_approx from those notes.
+    Phase3 validated_findings now carry sink_file_path and sink_line_number directly
+    (propagated from Phase 2 by the gate). Fall back to extracting from check_notes
+    for backwards compatibility with older gate runs.
     """
     d = {}
 
-    # vuln_type: phase3 validated_findings don't store this directly.
-    # Use "unknown" fallback — GT for current wave also uses "unknown" for most entries.
+    # vuln_type: now propagated from Phase 2 by the gate
     d["vuln_type"] = validated_finding.get("vuln_type", "unknown")
 
-    # sink_file: extracted from check_notes.file_exists note
+    # sink_file: prefer direct field, fall back to check_notes.file_exists note
     notes = validated_finding.get("check_notes", {})
-    file_exists_note = notes.get("file_exists", "")
-    # Pattern: "exists: path/to/file.php" or "basename resolved uniquely → path/to/file.php"
-    sink_file = ""
-    if "exists:" in file_exists_note:
-        sink_file = file_exists_note.split("exists:", 1)[1].strip()
-    elif "→" in file_exists_note:
-        sink_file = file_exists_note.split("→", 1)[1].strip()
+    sink_file = validated_finding.get("sink_file_path") or ""
+    if not sink_file:
+        file_exists_note = notes.get("file_exists", "")
+        # Pattern: "exists: path/to/file.php" or "basename resolved uniquely → path/to/file.php"
+        if "exists:" in file_exists_note:
+            sink_file = file_exists_note.split("exists:", 1)[1].strip()
+        elif "→" in file_exists_note:
+            sink_file = file_exists_note.split("→", 1)[1].strip()
     d["sink_file"] = sink_file
 
-    # sink_line_approx: extracted from code_evidence note
-    code_evidence_note = notes.get("code_evidence", "")
-    # Pattern: "sink function '...' not found near line N"
-    sink_line = -1
-    if "near line" in code_evidence_note:
-        try:
-            sink_line = int(code_evidence_note.split("near line")[1].strip().split()[0])
-        except (ValueError, IndexError):
-            pass
+    # sink_line_approx: prefer direct field, fall back to code_evidence note extraction
+    sink_line = validated_finding.get("sink_line_number") or -1
+    if sink_line == -1:
+        code_evidence_note = notes.get("code_evidence", "")
+        # Pattern: "sink function '...' not found near line N"
+        if "near line" in code_evidence_note:
+            try:
+                sink_line = int(code_evidence_note.split("near line")[1].strip().split()[0])
+            except (ValueError, IndexError):
+                pass
     d["sink_line_approx"] = sink_line
 
     # flow_type and storage_key: not in current phase3 output schema

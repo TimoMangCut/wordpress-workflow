@@ -3,8 +3,8 @@
   "phase1_summary": {
     "entry_points": 61,
     "anomalies": 13,
-    "sources": 544,
-    "sinks": 958
+    "sources": 604,
+    "sinks": 1088
   },
   "phase2_summary": {
     "total": 44,
@@ -13,9 +13,9 @@
     "review": 5
   },
   "phase3_summary": {
-    "confirmed": 0,
+    "confirmed": 9,
     "plausible": 0,
-    "uncertain": 22,
+    "uncertain": 13,
     "accepted_fp": 22,
     "likely_hallucination": 0
   },
@@ -75,7 +75,13 @@
       "issues": [
         "guard_contradiction",
         "insufficient_evidence_to_confirm"
-      ]
+      ],
+      "sink_file_path": "inc/class-admin.php",
+      "sink_line_number": 287,
+      "sink_function": "echo",
+      "source_file_path": "inc/class-admin.php",
+      "source_line_number": 281,
+      "vuln_type": "sensitive_information_disclosure"
     },
     {
       "finding_id": "agent-a2-f002",
@@ -133,7 +139,13 @@
         "guard_contradiction",
         "insufficient_evidence_to_confirm",
         "path_reachability_weak"
-      ]
+      ],
+      "sink_file_path": "inc/class-page-onboarding.php",
+      "sink_line_number": 127,
+      "sink_function": "BackWPup_Option::update",
+      "source_file_path": "inc/class-admin.php",
+      "source_line_number": 838,
+      "vuln_type": "broken_access_control"
     },
     {
       "finding_id": "agent-a2-f003",
@@ -306,7 +318,13 @@
         "code_evidence_missing_or_mismatch",
         "guard_contradiction",
         "insufficient_evidence_to_confirm"
-      ]
+      ],
+      "sink_file_path": null,
+      "sink_line_number": null,
+      "sink_function": null,
+      "source_file_path": "inc/class-admin.php",
+      "source_line_number": 1177,
+      "vuln_type": "broken_access_control"
     },
     {
       "finding_id": "agent-a3-getblock-secret-disclosure",
@@ -362,7 +380,13 @@
       },
       "issues": [
         "insufficient_evidence_to_confirm"
-      ]
+      ],
+      "sink_file_path": "parts/sidebar/storage-FTP.php",
+      "sink_line_number": 178,
+      "sink_function": "BackWPup_Encryption::decrypt",
+      "source_file_path": "src/Frontend/API/Rest.php",
+      "source_line_number": 83,
+      "vuln_type": "sensitive_data_exposure"
     },
     {
       "finding_id": "agent-a3-storagelistcompact-readonly",
@@ -414,7 +438,7 @@
       "finding_id": "agent-a3-authenticate-cloud-bac",
       "verdict": "TP",
       "validation_status": "UNCERTAIN",
-      "confidence_score": 0.6827,
+      "confidence_score": 0.8055,
       "resolved_entry_point_id": "ep_rest___authenticate_cloud",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
@@ -427,7 +451,7 @@
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
         "psalm_corroborates": true,
-        "code_evidence": false,
+        "code_evidence": true,
         "reasoning_quality": true,
         "cvss_plausible": true,
         "patchstack_eligible": true,
@@ -441,7 +465,7 @@
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 1.0,
         "psalm_corroborates": 0.5,
-        "code_evidence": 0.25,
+        "code_evidence": 1.0,
         "reasoning_quality": 0.87,
         "cvss_plausible": 0.8,
         "patchstack_eligible": 1.0,
@@ -455,7 +479,7 @@
         "sanitizer_claim": "sanitizer claim not contradicted",
         "semgrep_corroborates": "Semgrep corroborates (same file suffix, \u00b120 lines)",
         "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
-        "code_evidence": "sink function 'optionadapter::update' not found near line 134",
+        "code_evidence": "sink evidence validated (and source evidence checked when available)",
         "reasoning_quality": "evidence-binding + refute-first heuristics",
         "cvss_plausible": "cvss_vector omitted (allowed)",
         "patchstack_eligible": "patchstack_eligible plausibility ok",
@@ -463,15 +487,20 @@
         "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
       },
       "issues": [
-        "code_evidence_missing_or_mismatch",
         "insufficient_evidence_to_confirm"
-      ]
+      ],
+      "sink_file_path": "src/StorageProviders/SugarSync/SugarSyncProvider.php",
+      "sink_line_number": 134,
+      "sink_function": "OptionAdapter::update",
+      "source_file_path": "src/StorageProviders/API/Rest.php",
+      "source_line_number": 194,
+      "vuln_type": "broken_access_control"
     },
     {
       "finding_id": "agent-a3-delete-auth-cloud-bac",
       "verdict": "TP",
       "validation_status": "UNCERTAIN",
-      "confidence_score": 0.6827,
+      "confidence_score": 0.8055,
       "resolved_entry_point_id": "ep_rest___delete_auth_cloud",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
@@ -484,7 +513,7 @@
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
         "psalm_corroborates": true,
-        "code_evidence": false,
+        "code_evidence": true,
         "reasoning_quality": true,
         "cvss_plausible": true,
         "patchstack_eligible": true,
@@ -498,7 +527,7 @@
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 1.0,
         "psalm_corroborates": 0.5,
-        "code_evidence": 0.25,
+        "code_evidence": 1.0,
         "reasoning_quality": 0.87,
         "cvss_plausible": 0.8,
         "patchstack_eligible": 1.0,
@@ -512,7 +541,7 @@
         "sanitizer_claim": "sanitizer claim not contradicted",
         "semgrep_corroborates": "Semgrep corroborates (same file suffix, \u00b120 lines)",
         "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
-        "code_evidence": "sink function 'optionadapter::delete' not found near line 100",
+        "code_evidence": "sink evidence validated (and source evidence checked when available)",
         "reasoning_quality": "evidence-binding + refute-first heuristics",
         "cvss_plausible": "cvss_vector omitted (allowed)",
         "patchstack_eligible": "patchstack_eligible plausibility ok",
@@ -520,9 +549,14 @@
         "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
       },
       "issues": [
-        "code_evidence_missing_or_mismatch",
         "insufficient_evidence_to_confirm"
-      ]
+      ],
+      "sink_file_path": "src/StorageProviders/Dropbox/DropboxProvider.php",
+      "sink_line_number": 100,
+      "sink_function": "OptionAdapter::delete",
+      "source_file_path": "src/StorageProviders/API/Rest.php",
+      "source_line_number": 231,
+      "vuln_type": "broken_access_control"
     },
     {
       "finding_id": "agent-a3-cloudsaveandtest-bac",
@@ -578,13 +612,19 @@
       },
       "issues": [
         "insufficient_evidence_to_confirm"
-      ]
+      ],
+      "sink_file_path": "inc/class-destination-ftp.php",
+      "sink_line_number": 65,
+      "sink_function": "BackWPup_Option::update",
+      "source_file_path": "src/StorageProviders/API/Rest.php",
+      "source_line_number": 262,
+      "vuln_type": "broken_access_control"
     },
     {
       "finding_id": "agent-a3-storages-bac",
       "verdict": "TP",
-      "validation_status": "UNCERTAIN",
-      "confidence_score": 0.6827,
+      "validation_status": "CONFIRMED",
+      "confidence_score": 0.8873,
       "resolved_entry_point_id": "ep_rest___storages",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
@@ -597,7 +637,7 @@
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
         "psalm_corroborates": true,
-        "code_evidence": false,
+        "code_evidence": true,
         "reasoning_quality": true,
         "cvss_plausible": true,
         "patchstack_eligible": true,
@@ -605,13 +645,13 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.55,
+        "path_reachable": 1.0,
         "auth_consistent": 0.8,
         "guard_consistent": 0.6,
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 1.0,
         "psalm_corroborates": 0.5,
-        "code_evidence": 0.25,
+        "code_evidence": 1.0,
         "reasoning_quality": 0.87,
         "cvss_plausible": 0.8,
         "patchstack_eligible": 1.0,
@@ -619,23 +659,26 @@
       },
       "check_notes": {
         "file_exists": "exists: src/StorageProviders/API/Rest.php",
-        "path_reachable": "source matched in EP ep_rest___storages, but sink evidence weak/missing",
+        "path_reachable": "EP-scoped path plausible in ep_rest___storages (exact)",
         "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
         "guard_consistent": "potential custom guard detected (is_effective=null): [\"current_user_can('backwpup')\"]",
         "sanitizer_claim": "sanitizer claim not contradicted",
         "semgrep_corroborates": "Semgrep corroborates (same file suffix, \u00b120 lines)",
         "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
-        "code_evidence": "sink function 'optionadapter::update' not found near line 354",
+        "code_evidence": "sink evidence validated (and source evidence checked when available)",
         "reasoning_quality": "evidence-binding + refute-first heuristics",
         "cvss_plausible": "cvss_vector omitted (allowed)",
         "patchstack_eligible": "patchstack_eligible plausibility ok",
         "no_hallucination": "no hallucination signals",
         "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
       },
-      "issues": [
-        "code_evidence_missing_or_mismatch",
-        "insufficient_evidence_to_confirm"
-      ]
+      "issues": [],
+      "sink_file_path": "src/StorageProviders/API/Rest.php",
+      "sink_line_number": 354,
+      "sink_function": "OptionAdapter::update",
+      "source_file_path": "src/StorageProviders/API/Rest.php",
+      "source_line_number": 316,
+      "vuln_type": "broken_access_control"
     },
     {
       "finding_id": "agent-a3-messages-queue-readonly",
@@ -732,8 +775,8 @@
     {
       "finding_id": "agent-a3-updatejob-bac",
       "verdict": "TP",
-      "validation_status": "UNCERTAIN",
-      "confidence_score": 0.66,
+      "validation_status": "CONFIRMED",
+      "confidence_score": 0.8645,
       "resolved_entry_point_id": "ep_rest___updatejob",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
@@ -746,7 +789,7 @@
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
         "psalm_corroborates": true,
-        "code_evidence": false,
+        "code_evidence": true,
         "reasoning_quality": true,
         "cvss_plausible": true,
         "patchstack_eligible": true,
@@ -754,13 +797,13 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.55,
+        "path_reachable": 1.0,
         "auth_consistent": 0.8,
         "guard_consistent": 0.6,
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 0.5,
         "psalm_corroborates": 0.5,
-        "code_evidence": 0.25,
+        "code_evidence": 1.0,
         "reasoning_quality": 0.87,
         "cvss_plausible": 0.8,
         "patchstack_eligible": 1.0,
@@ -768,29 +811,32 @@
       },
       "check_notes": {
         "file_exists": "exists: src/Jobs/API/Rest.php",
-        "path_reachable": "source matched in EP ep_rest___updatejob, but sink evidence weak/missing",
+        "path_reachable": "EP-scoped path plausible in ep_rest___updatejob (exact)",
         "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
         "guard_consistent": "potential custom guard detected (is_effective=null): [\"current_user_can('backwpup')\"]",
         "sanitizer_claim": "sanitizer claim not contradicted",
         "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
         "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
-        "code_evidence": "sink function 'jobadapter::disable_job' not found near line 392",
+        "code_evidence": "sink evidence validated (and source evidence checked when available)",
         "reasoning_quality": "evidence-binding + refute-first heuristics",
         "cvss_plausible": "cvss_vector omitted (allowed)",
         "patchstack_eligible": "patchstack_eligible plausibility ok",
         "no_hallucination": "no hallucination signals",
         "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
       },
-      "issues": [
-        "code_evidence_missing_or_mismatch",
-        "insufficient_evidence_to_confirm"
-      ]
+      "issues": [],
+      "sink_file_path": "src/Jobs/API/Rest.php",
+      "sink_line_number": 392,
+      "sink_function": "JobAdapter::disable_job",
+      "source_file_path": "src/Jobs/API/Rest.php",
+      "source_line_number": 381,
+      "vuln_type": "broken_access_control"
     },
     {
       "finding_id": "agent-a3-update-job-title-bac",
       "verdict": "TP",
-      "validation_status": "UNCERTAIN",
-      "confidence_score": 0.6827,
+      "validation_status": "CONFIRMED",
+      "confidence_score": 0.8873,
       "resolved_entry_point_id": "ep_rest___update_job_title",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
@@ -803,7 +849,7 @@
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
         "psalm_corroborates": true,
-        "code_evidence": false,
+        "code_evidence": true,
         "reasoning_quality": true,
         "cvss_plausible": true,
         "patchstack_eligible": true,
@@ -811,13 +857,13 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.55,
+        "path_reachable": 1.0,
         "auth_consistent": 0.8,
         "guard_consistent": 0.6,
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 1.0,
         "psalm_corroborates": 0.5,
-        "code_evidence": 0.25,
+        "code_evidence": 1.0,
         "reasoning_quality": 0.87,
         "cvss_plausible": 0.8,
         "patchstack_eligible": 1.0,
@@ -825,29 +871,32 @@
       },
       "check_notes": {
         "file_exists": "exists: src/Jobs/API/Rest.php",
-        "path_reachable": "source matched in EP ep_rest___update_job_title, but sink evidence weak/missing",
+        "path_reachable": "EP-scoped path plausible in ep_rest___update_job_title (exact)",
         "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
         "guard_consistent": "potential custom guard detected (is_effective=null): [\"current_user_can('backwpup')\"]",
         "sanitizer_claim": "sanitizer claim not contradicted",
         "semgrep_corroborates": "Semgrep corroborates (same file suffix, \u00b120 lines)",
         "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
-        "code_evidence": "sink function 'jobadapter::rename_job' not found near line 473",
+        "code_evidence": "sink evidence validated (and source evidence checked when available)",
         "reasoning_quality": "evidence-binding + refute-first heuristics",
         "cvss_plausible": "cvss_vector omitted (allowed)",
         "patchstack_eligible": "patchstack_eligible plausibility ok",
         "no_hallucination": "no hallucination signals",
         "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
       },
-      "issues": [
-        "code_evidence_missing_or_mismatch",
-        "insufficient_evidence_to_confirm"
-      ]
+      "issues": [],
+      "sink_file_path": "src/Jobs/API/Rest.php",
+      "sink_line_number": 473,
+      "sink_function": "JobAdapter::rename_job",
+      "source_file_path": "src/Jobs/API/Rest.php",
+      "source_line_number": 469,
+      "vuln_type": "broken_access_control"
     },
     {
       "finding_id": "agent-a3-addjob-bac",
       "verdict": "TP",
-      "validation_status": "UNCERTAIN",
-      "confidence_score": 0.66,
+      "validation_status": "CONFIRMED",
+      "confidence_score": 0.8645,
       "resolved_entry_point_id": "ep_rest___addjob",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
@@ -860,7 +909,7 @@
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
         "psalm_corroborates": true,
-        "code_evidence": false,
+        "code_evidence": true,
         "reasoning_quality": true,
         "cvss_plausible": true,
         "patchstack_eligible": true,
@@ -868,13 +917,13 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.55,
+        "path_reachable": 1.0,
         "auth_consistent": 0.8,
         "guard_consistent": 0.6,
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 0.5,
         "psalm_corroborates": 0.5,
-        "code_evidence": 0.25,
+        "code_evidence": 1.0,
         "reasoning_quality": 0.87,
         "cvss_plausible": 0.8,
         "patchstack_eligible": 1.0,
@@ -882,29 +931,32 @@
       },
       "check_notes": {
         "file_exists": "exists: src/Jobs/API/Rest.php",
-        "path_reachable": "source matched in EP ep_rest___addjob, but sink evidence weak/missing",
+        "path_reachable": "EP-scoped path plausible in ep_rest___addjob (exact)",
         "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
         "guard_consistent": "potential custom guard detected (is_effective=null): [\"current_user_can('backwpup')\"]",
         "sanitizer_claim": "sanitizer claim not contradicted",
         "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
         "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
-        "code_evidence": "sink function 'optionadapter::update' not found near line 524",
+        "code_evidence": "sink evidence validated (and source evidence checked when available)",
         "reasoning_quality": "evidence-binding + refute-first heuristics",
         "cvss_plausible": "cvss_vector omitted (allowed)",
         "patchstack_eligible": "patchstack_eligible plausibility ok",
         "no_hallucination": "no hallucination signals",
         "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
       },
-      "issues": [
-        "code_evidence_missing_or_mismatch",
-        "insufficient_evidence_to_confirm"
-      ]
+      "issues": [],
+      "sink_file_path": "src/Jobs/API/Rest.php",
+      "sink_line_number": 524,
+      "sink_function": "OptionAdapter::update",
+      "source_file_path": "src/Jobs/API/Rest.php",
+      "source_line_number": 493,
+      "vuln_type": "broken_access_control"
     },
     {
       "finding_id": "agent-a3-delete-job-bac",
       "verdict": "TP",
-      "validation_status": "UNCERTAIN",
-      "confidence_score": 0.66,
+      "validation_status": "CONFIRMED",
+      "confidence_score": 0.8645,
       "resolved_entry_point_id": "ep_rest___delete_job",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
@@ -917,7 +969,7 @@
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
         "psalm_corroborates": true,
-        "code_evidence": false,
+        "code_evidence": true,
         "reasoning_quality": true,
         "cvss_plausible": true,
         "patchstack_eligible": true,
@@ -925,13 +977,13 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.55,
+        "path_reachable": 1.0,
         "auth_consistent": 0.8,
         "guard_consistent": 0.6,
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 0.5,
         "psalm_corroborates": 0.5,
-        "code_evidence": 0.25,
+        "code_evidence": 1.0,
         "reasoning_quality": 0.87,
         "cvss_plausible": 0.8,
         "patchstack_eligible": 1.0,
@@ -939,29 +991,32 @@
       },
       "check_notes": {
         "file_exists": "exists: src/Jobs/API/Rest.php",
-        "path_reachable": "source matched in EP ep_rest___delete_job, but sink evidence weak/missing",
+        "path_reachable": "EP-scoped path plausible in ep_rest___delete_job (exact)",
         "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
         "guard_consistent": "potential custom guard detected (is_effective=null): [\"current_user_can('backwpup')\"]",
         "sanitizer_claim": "sanitizer claim not contradicted",
         "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
         "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
-        "code_evidence": "sink function 'jobadapter::delete_job' not found near line 570",
+        "code_evidence": "sink evidence validated (and source evidence checked when available)",
         "reasoning_quality": "evidence-binding + refute-first heuristics",
         "cvss_plausible": "cvss_vector omitted (allowed)",
         "patchstack_eligible": "patchstack_eligible plausibility ok",
         "no_hallucination": "no hallucination signals",
         "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
       },
-      "issues": [
-        "code_evidence_missing_or_mismatch",
-        "insufficient_evidence_to_confirm"
-      ]
+      "issues": [],
+      "sink_file_path": "src/Jobs/API/Rest.php",
+      "sink_line_number": 570,
+      "sink_function": "JobAdapter::delete_job",
+      "source_file_path": "src/Jobs/API/Rest.php",
+      "source_line_number": 553,
+      "vuln_type": "broken_access_control"
     },
     {
       "finding_id": "agent-a3-save-job-settings-bac",
       "verdict": "TP",
-      "validation_status": "UNCERTAIN",
-      "confidence_score": 0.6282,
+      "validation_status": "CONFIRMED",
+      "confidence_score": 0.8327,
       "resolved_entry_point_id": "ep_rest___save_job_settings",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
@@ -974,7 +1029,7 @@
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
         "psalm_corroborates": true,
-        "code_evidence": false,
+        "code_evidence": true,
         "reasoning_quality": true,
         "cvss_plausible": true,
         "patchstack_eligible": true,
@@ -982,13 +1037,13 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.55,
+        "path_reachable": 1.0,
         "auth_consistent": 0.8,
         "guard_consistent": 0.6,
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 0.5,
         "psalm_corroborates": 0.5,
-        "code_evidence": 0.25,
+        "code_evidence": 1.0,
         "reasoning_quality": 0.52,
         "cvss_plausible": 0.8,
         "patchstack_eligible": 1.0,
@@ -996,29 +1051,32 @@
       },
       "check_notes": {
         "file_exists": "exists: src/Jobs/API/Rest.php",
-        "path_reachable": "source matched in EP ep_rest___save_job_settings, but sink evidence weak/missing",
+        "path_reachable": "EP-scoped path plausible in ep_rest___save_job_settings (exact)",
         "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
         "guard_consistent": "potential custom guard detected (is_effective=null): [\"current_user_can('backwpup')\"]",
         "sanitizer_claim": "sanitizer claim not contradicted",
         "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
         "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
-        "code_evidence": "sink function 'optionadapter::update' not found near line 633",
+        "code_evidence": "sink evidence validated (and source evidence checked when available)",
         "reasoning_quality": "evidence-binding + refute-first heuristics",
         "cvss_plausible": "cvss_vector omitted (allowed)",
         "patchstack_eligible": "patchstack_eligible plausibility ok",
         "no_hallucination": "no hallucination signals",
         "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
       },
-      "issues": [
-        "code_evidence_missing_or_mismatch",
-        "insufficient_evidence_to_confirm"
-      ]
+      "issues": [],
+      "sink_file_path": "src/Jobs/API/Rest.php",
+      "sink_line_number": 633,
+      "sink_function": "OptionAdapter::update",
+      "source_file_path": "src/Jobs/API/Rest.php",
+      "source_line_number": 591,
+      "vuln_type": "broken_access_control"
     },
     {
       "finding_id": "agent-a3-save-job-format-bac",
       "verdict": "TP",
-      "validation_status": "UNCERTAIN",
-      "confidence_score": 0.66,
+      "validation_status": "CONFIRMED",
+      "confidence_score": 0.8645,
       "resolved_entry_point_id": "ep_rest___save_job_format",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
@@ -1031,7 +1089,7 @@
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
         "psalm_corroborates": true,
-        "code_evidence": false,
+        "code_evidence": true,
         "reasoning_quality": true,
         "cvss_plausible": true,
         "patchstack_eligible": true,
@@ -1039,13 +1097,13 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.55,
+        "path_reachable": 1.0,
         "auth_consistent": 0.8,
         "guard_consistent": 0.6,
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 0.5,
         "psalm_corroborates": 0.5,
-        "code_evidence": 0.25,
+        "code_evidence": 1.0,
         "reasoning_quality": 0.87,
         "cvss_plausible": 0.8,
         "patchstack_eligible": 1.0,
@@ -1053,29 +1111,32 @@
       },
       "check_notes": {
         "file_exists": "exists: src/Jobs/API/Rest.php",
-        "path_reachable": "source matched in EP ep_rest___save_job_format, but sink evidence weak/missing",
+        "path_reachable": "EP-scoped path plausible in ep_rest___save_job_format (exact)",
         "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
         "guard_consistent": "potential custom guard detected (is_effective=null): [\"current_user_can('backwpup')\"]",
         "sanitizer_claim": "sanitizer claim not contradicted",
         "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
         "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
-        "code_evidence": "sink function 'optionadapter::update' not found near line 708",
+        "code_evidence": "sink evidence validated (and source evidence checked when available)",
         "reasoning_quality": "evidence-binding + refute-first heuristics",
         "cvss_plausible": "cvss_vector omitted (allowed)",
         "patchstack_eligible": "patchstack_eligible plausibility ok",
         "no_hallucination": "no hallucination signals",
         "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
       },
-      "issues": [
-        "code_evidence_missing_or_mismatch",
-        "insufficient_evidence_to_confirm"
-      ]
+      "issues": [],
+      "sink_file_path": "src/Jobs/API/Rest.php",
+      "sink_line_number": 708,
+      "sink_function": "OptionAdapter::update",
+      "source_file_path": "src/Jobs/API/Rest.php",
+      "source_line_number": 677,
+      "vuln_type": "broken_access_control"
     },
     {
       "finding_id": "agent-a3-save-files-exclusions-bac",
       "verdict": "TP",
       "validation_status": "UNCERTAIN",
-      "confidence_score": 0.66,
+      "confidence_score": 0.7827,
       "resolved_entry_point_id": "ep_rest___save_files_exclusions",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
@@ -1088,7 +1149,7 @@
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
         "psalm_corroborates": true,
-        "code_evidence": false,
+        "code_evidence": true,
         "reasoning_quality": true,
         "cvss_plausible": true,
         "patchstack_eligible": true,
@@ -1102,7 +1163,7 @@
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 0.5,
         "psalm_corroborates": 0.5,
-        "code_evidence": 0.25,
+        "code_evidence": 1.0,
         "reasoning_quality": 0.87,
         "cvss_plausible": 0.8,
         "patchstack_eligible": 1.0,
@@ -1116,7 +1177,7 @@
         "sanitizer_claim": "sanitizer claim not contradicted",
         "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
         "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
-        "code_evidence": "sink function 'backwpup_option::update' not found near line 217",
+        "code_evidence": "sink evidence validated (and source evidence checked when available)",
         "reasoning_quality": "evidence-binding + refute-first heuristics",
         "cvss_plausible": "cvss_vector omitted (allowed)",
         "patchstack_eligible": "patchstack_eligible plausibility ok",
@@ -1124,9 +1185,14 @@
         "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
       },
       "issues": [
-        "code_evidence_missing_or_mismatch",
         "insufficient_evidence_to_confirm"
-      ]
+      ],
+      "sink_file_path": "inc/class-jobtype-file.php",
+      "sink_line_number": 217,
+      "sink_function": "BackWPup_Option::update",
+      "source_file_path": "src/Jobs/API/Rest.php",
+      "source_line_number": 736,
+      "vuln_type": "broken_access_control"
     },
     {
       "finding_id": "agent-a3-save-excluded-tables-bac",
@@ -1182,7 +1248,13 @@
       },
       "issues": [
         "insufficient_evidence_to_confirm"
-      ]
+      ],
+      "sink_file_path": "inc/class-jobtype-dbdump.php",
+      "sink_line_number": 149,
+      "sink_function": "BackWPup_Option::update",
+      "source_file_path": "src/Jobs/API/Rest.php",
+      "source_line_number": 762,
+      "vuln_type": "broken_access_control"
     },
     {
       "finding_id": "agent-a3-save-site-option-default-roles-safe",
@@ -1210,8 +1282,8 @@
     {
       "finding_id": "agent-a3-update-backup-type-bac",
       "verdict": "TP",
-      "validation_status": "UNCERTAIN",
-      "confidence_score": 0.66,
+      "validation_status": "CONFIRMED",
+      "confidence_score": 0.8645,
       "resolved_entry_point_id": "ep_rest___backups___P_id__d___type",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
@@ -1224,7 +1296,7 @@
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
         "psalm_corroborates": true,
-        "code_evidence": false,
+        "code_evidence": true,
         "reasoning_quality": true,
         "cvss_plausible": true,
         "patchstack_eligible": true,
@@ -1232,13 +1304,13 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.55,
+        "path_reachable": 1.0,
         "auth_consistent": 0.8,
         "guard_consistent": 0.6,
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 0.5,
         "psalm_corroborates": 0.5,
-        "code_evidence": 0.25,
+        "code_evidence": 1.0,
         "reasoning_quality": 0.87,
         "cvss_plausible": 0.8,
         "patchstack_eligible": 1.0,
@@ -1246,23 +1318,26 @@
       },
       "check_notes": {
         "file_exists": "exists: src/Jobs/API/Rest.php",
-        "path_reachable": "source matched in EP ep_rest___backups___P_id__d___type, but sink evidence weak/missing",
+        "path_reachable": "EP-scoped path plausible in ep_rest___backups___P_id__d___type (exact)",
         "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
         "guard_consistent": "potential custom guard detected (is_effective=null): [\"current_user_can('backwpup')\"]",
         "sanitizer_claim": "sanitizer claim not contradicted",
         "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
         "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
-        "code_evidence": "sink function 'optionadapter::update' not found near line 451",
+        "code_evidence": "sink evidence validated (and source evidence checked when available)",
         "reasoning_quality": "evidence-binding + refute-first heuristics",
         "cvss_plausible": "cvss_vector omitted (allowed)",
         "patchstack_eligible": "patchstack_eligible plausibility ok",
         "no_hallucination": "no hallucination signals",
         "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
       },
-      "issues": [
-        "code_evidence_missing_or_mismatch",
-        "insufficient_evidence_to_confirm"
-      ]
+      "issues": [],
+      "sink_file_path": "src/Jobs/API/Rest.php",
+      "sink_line_number": 451,
+      "sink_function": "OptionAdapter::update",
+      "source_file_path": "src/Jobs/API/Rest.php",
+      "source_line_number": 436,
+      "vuln_type": "broken_access_control"
     },
     {
       "finding_id": "agent-a3-backups-list-readonly",
@@ -1313,8 +1388,8 @@
     {
       "finding_id": "agent-a3-startbackup-bac",
       "verdict": "TP",
-      "validation_status": "UNCERTAIN",
-      "confidence_score": 0.6282,
+      "validation_status": "CONFIRMED",
+      "confidence_score": 0.8327,
       "resolved_entry_point_id": "ep_rest_backwpup_v1__startbackup",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
@@ -1327,7 +1402,7 @@
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
         "psalm_corroborates": true,
-        "code_evidence": false,
+        "code_evidence": true,
         "reasoning_quality": true,
         "cvss_plausible": true,
         "patchstack_eligible": true,
@@ -1335,13 +1410,13 @@
       },
       "check_scores": {
         "file_exists": 1.0,
-        "path_reachable": 0.55,
+        "path_reachable": 1.0,
         "auth_consistent": 0.8,
         "guard_consistent": 0.6,
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 0.5,
         "psalm_corroborates": 0.5,
-        "code_evidence": 0.25,
+        "code_evidence": 1.0,
         "reasoning_quality": 0.52,
         "cvss_plausible": 0.8,
         "patchstack_eligible": 1.0,
@@ -1349,29 +1424,32 @@
       },
       "check_notes": {
         "file_exists": "exists: src/Backups/API/Rest.php",
-        "path_reachable": "source matched in EP ep_rest_backwpup_v1__startbackup, but sink evidence weak/missing",
+        "path_reachable": "EP-scoped path plausible in ep_rest_backwpup_v1__startbackup (exact)",
         "auth_consistent": "ep (load-leg): EP type=rest_route auth depends on permission_callback",
         "guard_consistent": "potential custom guard detected (is_effective=null): [\"current_user_can('backwpup')\"]",
         "sanitizer_claim": "sanitizer claim not contradicted",
         "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
         "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
-        "code_evidence": "sink function 'jobadapter::get_jobrun_url' not found near line 260",
+        "code_evidence": "sink evidence validated (and source evidence checked when available)",
         "reasoning_quality": "evidence-binding + refute-first heuristics",
         "cvss_plausible": "cvss_vector omitted (allowed)",
         "patchstack_eligible": "patchstack_eligible plausibility ok",
         "no_hallucination": "no hallucination signals",
         "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
       },
-      "issues": [
-        "code_evidence_missing_or_mismatch",
-        "insufficient_evidence_to_confirm"
-      ]
+      "issues": [],
+      "sink_file_path": "src/Backups/API/Rest.php",
+      "sink_line_number": 260,
+      "sink_function": "JobAdapter::get_jobrun_url",
+      "source_file_path": "src/Backups/API/Rest.php",
+      "source_line_number": 157,
+      "vuln_type": "broken_access_control"
     },
     {
       "finding_id": "agent-a3-process-bulk-actions-needs-proof",
       "verdict": "REVIEW",
       "validation_status": "UNCERTAIN",
-      "confidence_score": 0.6545,
+      "confidence_score": 0.7773,
       "resolved_entry_point_id": "ep_rest_backwpup_v1__process_bulk_actions",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
@@ -1384,7 +1462,7 @@
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
         "psalm_corroborates": true,
-        "code_evidence": false,
+        "code_evidence": true,
         "reasoning_quality": true,
         "cvss_plausible": true,
         "patchstack_eligible": true,
@@ -1398,7 +1476,7 @@
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 0.5,
         "psalm_corroborates": 0.5,
-        "code_evidence": 0.25,
+        "code_evidence": 1.0,
         "reasoning_quality": 0.87,
         "cvss_plausible": 0.8,
         "patchstack_eligible": 0.8,
@@ -1412,7 +1490,7 @@
         "sanitizer_claim": "sanitizer claim not contradicted",
         "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
         "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
-        "code_evidence": "sink function 'backwpup_destinations::file_delete' not found near line 420",
+        "code_evidence": "sink evidence validated (and source evidence checked when available)",
         "reasoning_quality": "evidence-binding + refute-first heuristics",
         "cvss_plausible": "cvss_vector omitted (allowed)",
         "patchstack_eligible": "patchstack_eligible not provided (allowed)",
@@ -1420,9 +1498,14 @@
         "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
       },
       "issues": [
-        "code_evidence_missing_or_mismatch",
         "insufficient_evidence_to_confirm"
-      ]
+      ],
+      "sink_file_path": "src/Backups/API/Rest.php",
+      "sink_line_number": 420,
+      "sink_function": "BackWPup_Destinations::file_delete",
+      "source_file_path": "src/Backups/API/Rest.php",
+      "source_line_number": 360,
+      "vuln_type": "broken_access_control"
     },
     {
       "finding_id": "agent-c-anom_2",
@@ -1520,7 +1603,7 @@
       "finding_id": "agent-c-anom_13",
       "verdict": "REVIEW",
       "validation_status": "UNCERTAIN",
-      "confidence_score": 0.4955,
+      "confidence_score": 0.5691,
       "resolved_entry_point_id": "ep_admin_post_admin_post_backwpup_support",
       "entry_point_exact": true,
       "suggested_entry_point_id": null,
@@ -1533,7 +1616,7 @@
         "sanitizer_claim": true,
         "semgrep_corroborates": true,
         "psalm_corroborates": true,
-        "code_evidence": false,
+        "code_evidence": true,
         "reasoning_quality": true,
         "cvss_plausible": true,
         "patchstack_eligible": true,
@@ -1547,7 +1630,7 @@
         "sanitizer_claim": 0.8,
         "semgrep_corroborates": 0.5,
         "psalm_corroborates": 0.5,
-        "code_evidence": 0.25,
+        "code_evidence": 0.7,
         "reasoning_quality": 0.87,
         "cvss_plausible": 0.8,
         "patchstack_eligible": 0.8,
@@ -1561,7 +1644,7 @@
         "sanitizer_claim": "sanitizer claim not contradicted",
         "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
         "psalm_corroborates": "Psalm has data, but no corroboration match for this finding",
-        "code_evidence": "sink function 'backwpup_pro_page_support::save_post_form' not found near line 1177",
+        "code_evidence": "sink evidence ok; source location provided but source token not found (verify)",
         "reasoning_quality": "evidence-binding + refute-first heuristics",
         "cvss_plausible": "cvss_vector omitted (allowed)",
         "patchstack_eligible": "patchstack_eligible not provided (allowed)",
@@ -1569,10 +1652,16 @@
         "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, psalm_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
       },
       "issues": [
-        "code_evidence_missing_or_mismatch",
         "guard_contradiction",
+        "insufficient_evidence_to_confirm",
         "path_reachability_weak"
-      ]
+      ],
+      "sink_file_path": "inc/class-admin.php",
+      "sink_line_number": 1177,
+      "sink_function": "BackWPup_Pro_Page_Support::save_post_form",
+      "source_file_path": "inc/class-admin.php",
+      "source_line_number": 1177,
+      "vuln_type": "inconsistency"
     },
     {
       "finding_id": "agent-d-uh-001",
@@ -1700,7 +1789,13 @@
         "file_not_found_or_unresolvable",
         "path_reachability_weak",
         "reasoning_quality_low"
-      ]
+      ],
+      "sink_file_path": null,
+      "sink_line_number": null,
+      "sink_function": null,
+      "source_file_path": null,
+      "source_line_number": null,
+      "vuln_type": "unresolved_hook_resolution"
     },
     {
       "finding_id": "agent-d-cg-001",
@@ -1782,9 +1877,223 @@
         "insufficient_evidence_to_confirm",
         "path_reachability_weak",
         "reasoning_quality_low"
-      ]
+      ],
+      "sink_file_path": "inc/class-destination-downloader.php",
+      "sink_line_number": 95,
+      "sink_function": "file_download",
+      "source_file_path": "inc/class-destination-downloader.php",
+      "source_line_number": 58,
+      "vuln_type": "missing_authentication_ajax_handler"
     }
   ],
   "actionable_findings": [],
-  "actionable_not_patchstack": []
+  "actionable_not_patchstack": [
+    {
+      "finding_id": "agent-a3-storages-bac",
+      "verdict": "TP",
+      "vuln_type": "broken_access_control",
+      "cwe_id": "CWE-862",
+      "severity": "medium",
+      "auth_required": "unknown",
+      "confidence": 0.94,
+      "entry_point_id": "ep_rest___storages",
+      "source_function": "update_job_storage_options",
+      "source_file_path": "src/StorageProviders/API/Rest.php",
+      "source_line_number": 316,
+      "sink_function": "OptionAdapter::update",
+      "sink_file_path": "src/StorageProviders/API/Rest.php",
+      "sink_line_number": 354,
+      "reasoning": "Hypothesis: a low-privileged BackWPup role can change which storage destinations a job uses. Trace: '/storages' is guarded only by has_permission(), which checks current_user_can('backwpup') [src/StorageProviders/API/Rest.php:122-129,138-139]. The built-in 'backwpup_check' role has 'backwpup=true' but 'backwpup_jobs_edit=false' [inc/class-install.php:142-157]. The route is exposed through localized admin data [inc/class-admin.php:1251-1253], and the callback updates the selected job's 'destinations' option at line 354 after attacker-controlled 'name', 'job_id', and 'checked' values are processed [src/StorageProviders/API/Rest.php:317-354]. Defenses analyzed/refutation: the handler prevents removal of the final destination [src/StorageProviders/API/Rest.php:350-352], but that only limits one edge case; unauthorized add/remove operations still succeed. The traditional job-edit flow is gated by 'backwpup_jobs_edit' [inc/class-page-editjob.php:45-49]. Conclusion: CONFIRMED broken access control allowing low-privileged BackWPup roles to alter job storage destinations.",
+      "patchstack_eligible": false,
+      "remediation": "Use a route-specific permission callback such as 'current_user_can(\\'backwpup_jobs_edit\\')' before mutating job destinations.",
+      "source_agents": [
+        "agent-a3"
+      ],
+      "confidence_score": 0.8873
+    },
+    {
+      "finding_id": "agent-a3-updatejob-bac",
+      "verdict": "TP",
+      "vuln_type": "broken_access_control",
+      "cwe_id": "CWE-862",
+      "severity": "medium",
+      "auth_required": "unknown",
+      "confidence": 0.95,
+      "entry_point_id": "ep_rest___updatejob",
+      "source_function": "update_job",
+      "source_file_path": "src/Jobs/API/Rest.php",
+      "source_line_number": 381,
+      "sink_function": "JobAdapter::disable_job",
+      "sink_file_path": "src/Jobs/API/Rest.php",
+      "sink_line_number": 392,
+      "reasoning": "Hypothesis: a low-privileged BackWPup role can enable, disable, reschedule, or retarget jobs through '/updatejob'. Trace: the route only checks current_user_can('backwpup') [src/Jobs/API/Rest.php:87-129], while the shipped 'backwpup_check' role has 'backwpup=true' but both 'backwpup_jobs_edit=false' and 'backwpup_jobs_start=false' [inc/class-install.php:142-157]. BackWPup admin pages expose the endpoint and a valid REST nonce to plugin users [inc/class-admin.php:1230-1239]. The callback disables or enables jobs and reschedules them at lines 391-397, and in its second branch it overwrites the 'destinations' option at line 417 [src/Jobs/API/Rest.php:386-418]. Defenses analyzed/refutation: the route validates and sanitizes parameter types [src/Jobs/API/Rest.php:104-127], but those checks do not enforce the intended capability split. The classic jobs UI reserves edit actions for 'backwpup_jobs_edit' and run actions for 'backwpup_jobs_start' [inc/class-page-jobs.php:298-305,582-588]. Conclusion: CONFIRMED broken access control allowing low-privileged BackWPup roles to change job state and storage assignments.",
+      "patchstack_eligible": false,
+      "remediation": "Split '/updatejob' into route-specific permission callbacks, at minimum 'backwpup_jobs_start' for activation changes and 'backwpup_jobs_edit' for destination edits.",
+      "source_agents": [
+        "agent-a3"
+      ],
+      "confidence_score": 0.8645
+    },
+    {
+      "finding_id": "agent-a3-update-job-title-bac",
+      "verdict": "TP",
+      "vuln_type": "broken_access_control",
+      "cwe_id": "CWE-862",
+      "severity": "medium",
+      "auth_required": "unknown",
+      "confidence": 0.95,
+      "entry_point_id": "ep_rest___update_job_title",
+      "source_function": "update_job_title",
+      "source_file_path": "src/Jobs/API/Rest.php",
+      "source_line_number": 469,
+      "sink_function": "JobAdapter::rename_job",
+      "sink_file_path": "src/Jobs/API/Rest.php",
+      "sink_line_number": 473,
+      "reasoning": "Hypothesis: a low-privileged BackWPup role can rename jobs that should be protected by the job-edit capability. Trace: the route uses the broad has_permission() check ('backwpup') [src/Jobs/API/Rest.php:132-156,87-89]. The default 'backwpup_check' role has that broad capability but not 'backwpup_jobs_edit' [inc/class-install.php:142-157]. The endpoint and REST nonce are exposed to plugin users [inc/class-admin.php:1231-1235]. Once called, update_job_title() passes attacker-controlled 'job_id' and sanitized 'title' into JobAdapter::rename_job() [src/Jobs/API/Rest.php:469-480]. Defenses analyzed/refutation: title sanitization at registration time [src/Jobs/API/Rest.php:147-153] prevents markup injection but does not stop the unauthorized state change. The legacy edit flow requires 'backwpup_jobs_edit' [inc/class-page-editjob.php:45-49]. Conclusion: CONFIRMED broken access control allowing low-privileged BackWPup roles to rename backup jobs.",
+      "patchstack_eligible": false,
+      "remediation": "Require 'backwpup_jobs_edit' before allowing title changes on '/update-job-title'.",
+      "source_agents": [
+        "agent-a3"
+      ],
+      "confidence_score": 0.8873
+    },
+    {
+      "finding_id": "agent-a3-addjob-bac",
+      "verdict": "TP",
+      "vuln_type": "broken_access_control",
+      "cwe_id": "CWE-862",
+      "severity": "medium",
+      "auth_required": "unknown",
+      "confidence": 0.94,
+      "entry_point_id": "ep_rest___addjob",
+      "source_function": "add_job",
+      "source_file_path": "src/Jobs/API/Rest.php",
+      "source_line_number": 493,
+      "sink_function": "OptionAdapter::update",
+      "sink_file_path": "src/Jobs/API/Rest.php",
+      "sink_line_number": 524,
+      "reasoning": "Hypothesis: a low-privileged BackWPup role can create new backup jobs. Trace: '/addjob' is protected only by current_user_can('backwpup') [src/Jobs/API/Rest.php:158-175,87-89]. The built-in 'backwpup_check' role has that capability but not 'backwpup_jobs_edit' [inc/class-install.php:142-157]. BackWPup pages expose the route and REST nonce to such users [inc/class-admin.php:1231-1235]. The callback allocates a new job id, builds a default job array, persists each key with OptionAdapter::update(), and schedules a cron event [src/Jobs/API/Rest.php:496-529]. Defenses analyzed/refutation: the 'type' argument is constrained to 'files', 'database', or 'mixed' [src/Jobs/API/Rest.php:165-172], but that only limits the job template, not who may create it. The role comments and old edit flow treat job creation/editing as 'backwpup_jobs_edit' functionality [inc/class-install.php:129-131; inc/class-page-editjob.php:45-49]. Conclusion: CONFIRMED broken access control allowing low-privileged BackWPup roles to create backup jobs.",
+      "patchstack_eligible": false,
+      "remediation": "Require 'backwpup_jobs_edit' before creating new jobs.",
+      "source_agents": [
+        "agent-a3"
+      ],
+      "confidence_score": 0.8645
+    },
+    {
+      "finding_id": "agent-a3-delete-job-bac",
+      "verdict": "TP",
+      "vuln_type": "broken_access_control",
+      "cwe_id": "CWE-862",
+      "severity": "medium",
+      "auth_required": "unknown",
+      "confidence": 0.96,
+      "entry_point_id": "ep_rest___delete_job",
+      "source_function": "delete_job",
+      "source_file_path": "src/Jobs/API/Rest.php",
+      "source_line_number": 553,
+      "sink_function": "JobAdapter::delete_job",
+      "sink_file_path": "src/Jobs/API/Rest.php",
+      "sink_line_number": 570,
+      "reasoning": "Hypothesis: a low-privileged BackWPup role can delete backup jobs. Trace: the REST route only checks current_user_can('backwpup') [src/Jobs/API/Rest.php:177-194,87-89], while the shipped 'backwpup_check' role lacks 'backwpup_jobs_edit' [inc/class-install.php:142-157]. A valid REST nonce is provided to plugin users [inc/class-admin.php:1231-1249]. The callback takes attacker-controlled 'job_id' and calls JobAdapter::delete_job() at line 570 after firing the delete hook [src/Jobs/API/Rest.php:561-573]. Defenses analyzed/refutation: the 'job_id' argument is sanitized to a positive integer [src/Jobs/API/Rest.php:184-191], but there is no capability check aligned with the delete operation. The classic jobs page reserves deletion for 'backwpup_jobs_edit' [inc/class-page-jobs.php:298-300,532-543]. Conclusion: CONFIRMED broken access control allowing low-privileged BackWPup roles to delete backup jobs.",
+      "patchstack_eligible": false,
+      "remediation": "Require 'backwpup_jobs_edit' before deleting jobs through REST.",
+      "source_agents": [
+        "agent-a3"
+      ],
+      "confidence_score": 0.8645
+    },
+    {
+      "finding_id": "agent-a3-save-job-settings-bac",
+      "verdict": "TP",
+      "vuln_type": "broken_access_control",
+      "cwe_id": "CWE-862",
+      "severity": "medium",
+      "auth_required": "unknown",
+      "confidence": 0.94,
+      "entry_point_id": "ep_rest___save_job_settings",
+      "source_function": "save_job_settings",
+      "source_file_path": "src/Jobs/API/Rest.php",
+      "source_line_number": 591,
+      "sink_function": "OptionAdapter::update",
+      "sink_file_path": "src/Jobs/API/Rest.php",
+      "sink_line_number": 633,
+      "reasoning": "Hypothesis: a low-privileged BackWPup role can change scheduling and activation settings for existing jobs. Trace: '/save_job_settings' inherits the generic has_permission() check and only requires current_user_can('backwpup') [src/Jobs/API/Rest.php:196-204,87-89]. The 'backwpup_check' role has that capability but not 'backwpup_jobs_edit' [inc/class-install.php:142-157]. Plugin users receive the REST nonce and route URL [inc/class-admin.php:1237-1239]. The callback writes 'frequency', 'activetype', and 'cron' options and re-schedules the job [src/Jobs/API/Rest.php:615-642]. Defenses analyzed/refutation: the function normalizes dates and frequency values, but there is no authorization check beyond 'backwpup'. The old edit flow is still protected by 'backwpup_jobs_edit' [inc/class-page-editjob.php:45-49]. Conclusion: CONFIRMED broken access control allowing low-privileged BackWPup roles to reschedule jobs.",
+      "patchstack_eligible": false,
+      "remediation": "Require 'backwpup_jobs_edit' before saving job schedule settings.",
+      "source_agents": [
+        "agent-a3"
+      ],
+      "confidence_score": 0.8327
+    },
+    {
+      "finding_id": "agent-a3-save-job-format-bac",
+      "verdict": "TP",
+      "vuln_type": "broken_access_control",
+      "cwe_id": "CWE-862",
+      "severity": "medium",
+      "auth_required": "unknown",
+      "confidence": 0.94,
+      "entry_point_id": "ep_rest___save_job_format",
+      "source_function": "save_job_format",
+      "source_file_path": "src/Jobs/API/Rest.php",
+      "source_line_number": 677,
+      "sink_function": "OptionAdapter::update",
+      "sink_file_path": "src/Jobs/API/Rest.php",
+      "sink_line_number": 708,
+      "reasoning": "Hypothesis: a low-privileged BackWPup role can change the archive format and naming pattern used by backup jobs. Trace: the route only checks current_user_can('backwpup') [src/Jobs/API/Rest.php:206-214,87-89]. The shipped 'backwpup_check' role meets that broad condition but does not have 'backwpup_jobs_edit' [inc/class-install.php:142-157]. The REST endpoint and nonce are localized for plugin users [inc/class-admin.php:1237-1238]. The callback validates the requested archive format and normalized archive name, then writes both settings with OptionAdapter::update() [src/Jobs/API/Rest.php:683-709]. Defenses analyzed/refutation: the handler enforces allowed extensions and requires '%hash%' in the name [src/Jobs/API/Rest.php:692-706], but those checks only constrain input shape. They do not stop an unauthorized caller from changing backup output settings. Conclusion: CONFIRMED broken access control allowing low-privileged BackWPup roles to alter job archive settings.",
+      "patchstack_eligible": false,
+      "remediation": "Require 'backwpup_jobs_edit' before saving archive format or archive name settings.",
+      "source_agents": [
+        "agent-a3"
+      ],
+      "confidence_score": 0.8645
+    },
+    {
+      "finding_id": "agent-a3-update-backup-type-bac",
+      "verdict": "TP",
+      "vuln_type": "broken_access_control",
+      "cwe_id": "CWE-862",
+      "severity": "medium",
+      "auth_required": "unknown",
+      "confidence": 0.94,
+      "entry_point_id": "ep_rest___backups___P_id__d___type",
+      "source_function": "update_backup_type",
+      "source_file_path": "src/Jobs/API/Rest.php",
+      "source_line_number": 436,
+      "sink_function": "OptionAdapter::update",
+      "sink_file_path": "src/Jobs/API/Rest.php",
+      "sink_line_number": 451,
+      "reasoning": "Hypothesis: a low-privileged BackWPup role can change a job's backup type. Trace: the route only checks current_user_can('backwpup') [src/Jobs/API/Rest.php:346-370,87-89]. The default 'backwpup_check' role has that capability but lacks 'backwpup_jobs_edit' [inc/class-install.php:142-157]. The route URL and REST nonce are exposed to plugin users [inc/class-admin.php:1251-1253]. The callback maps attacker-controlled 'type' to internal values and writes both 'type' and 'name' with OptionAdapter::update() [src/Jobs/API/Rest.php:442-452]. Defenses analyzed/refutation: the route constrains 'type' to 'files', 'database', or 'mixed' [src/Jobs/API/Rest.php:361-367], but that validation still allows unauthorized modification of job configuration. The normal edit flow is supposed to be gated by 'backwpup_jobs_edit' [inc/class-page-editjob.php:45-49]. Conclusion: CONFIRMED broken access control allowing low-privileged BackWPup roles to change backup type.",
+      "patchstack_eligible": false,
+      "remediation": "Require 'backwpup_jobs_edit' before allowing backup-type changes.",
+      "source_agents": [
+        "agent-a3"
+      ],
+      "confidence_score": 0.8645
+    },
+    {
+      "finding_id": "agent-a3-startbackup-bac",
+      "verdict": "TP",
+      "vuln_type": "broken_access_control",
+      "cwe_id": "CWE-862",
+      "severity": "medium",
+      "auth_required": "unknown",
+      "confidence": 0.96,
+      "entry_point_id": "ep_rest_backwpup_v1__startbackup",
+      "source_function": "start_backup",
+      "source_file_path": "src/Backups/API/Rest.php",
+      "source_line_number": 157,
+      "sink_function": "JobAdapter::get_jobrun_url",
+      "sink_file_path": "src/Backups/API/Rest.php",
+      "sink_line_number": 260,
+      "reasoning": "Hypothesis: a low-privileged BackWPup role can start backup jobs even though the role model separates job execution from general plugin access. Trace: '/startbackup' only checks current_user_can('backwpup') [src/Backups/API/Rest.php:93-120,81-82]. The built-in 'backwpup_check' role has that broad capability but 'backwpup_jobs_start=false' [inc/class-install.php:142-157]. Plugin pages localize the route and 'wp_rest' nonce [inc/class-admin.php:1234-1239]. The callback eventually calls JobAdapter::get_jobrun_url( 'runnow', $jobid ) to launch the job [src/Backups/API/Rest.php:186-260]. Defenses analyzed/refutation: the handler checks temp/log folders and available destinations [src/Backups/API/Rest.php:191-249], but those are operational checks, not authorization. The classic dashboard and jobs page only show run-now actions to 'backwpup_jobs_start' users [inc/class-page-backwpup.php:132-137; inc/class-page-jobs.php:302-305,585-588]. Conclusion: CONFIRMED broken access control allowing low-privileged BackWPup roles to trigger backup execution.",
+      "patchstack_eligible": false,
+      "remediation": "Require 'backwpup_jobs_start' before launching jobs through '/startbackup'.",
+      "source_agents": [
+        "agent-a3"
+      ],
+      "confidence_score": 0.8327
+    }
+  ]
 }

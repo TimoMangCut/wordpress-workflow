@@ -194,6 +194,16 @@ class IRBuilder
                 );
                 $allSources = array_merge($allSources, $chainSources);
                 $allSinks   = array_merge($allSinks, $chainSinks);
+
+                // DI-29-01: 1-hop property-dispatch sink resolution.
+                // Handles $this->property->method() calls where the property type
+                // is resolvable from a typed constructor parameter assignment.
+                [$propSources, $propSinks] = $this->resolvePropertyCallChain(
+                    $callNodes, $this->symbols, $cbClass, $ep['id'],
+                    $parser, $astCache
+                );
+                $allSources = array_merge($allSources, $propSources);
+                $allSinks   = array_merge($allSinks,   $propSinks);
             }
         }
 
@@ -381,6 +391,240 @@ class IRBuilder
         }
 
         return [$additionalSources, $additionalSinks];
+    }
+
+    /**
+     * DI-29-01: 1-hop property-dispatch sink resolution.
+     *
+     * Handles $this->property->method() calls where:
+     *   - the property type is resolvable from a typed constructor parameter
+     *   - the assignment pattern is: $this->propName = $paramName in __construct
+     *   - the constructor param has a named type hint (class name)
+     *
+     * Scope constraints (per Session 30 Option B spec):
+     *   - 1-hop only: run SourceSinkVisitor on the resolved method, do NOT recurse
+     *     into further property calls from within that method
+     *   - no broad recursion, no speculative type inference
+     *   - skip if property type cannot be resolved confidently
+     *
+     * @param \PhpParser\Node\Expr\MethodCall[] $callExprNodes  Calls from a callback body
+     * @param SymbolTable                        $symbols
+     * @param string                             $currentClass   Class context of the callback
+     * @param string                             $entryPointId   Inherited from parent callback
+     * @param \PhpParser\Parser                  $parser
+     * @param array                              $astCache       relPath → AST
+     * @return array{0: array, 1: array}                        [sources[], sinks[]]
+     */
+    private function resolvePropertyCallChain(
+        array $callExprNodes,
+        SymbolTable $symbols,
+        string $currentClass,
+        string $entryPointId,
+        \PhpParser\Parser $parser,
+        array &$astCache
+    ): array {
+        $additionalSources = [];
+        $additionalSinks   = [];
+
+        // Build property→class map from the current class constructor (once per class).
+        $propTypeMap = $this->buildPropertyTypeMap($currentClass, $symbols, $parser, $astCache);
+        if (empty($propTypeMap)) return [[], []]; // nothing to resolve
+
+        foreach ($callExprNodes as $callNode) {
+            if (!($callNode instanceof \PhpParser\Node\Expr\MethodCall)) continue;
+
+            // Only handle $this->property->method() — var must be a PropertyFetch on $this
+            if (!($callNode->var instanceof \PhpParser\Node\Expr\PropertyFetch)) continue;
+            $propFetch = $callNode->var;
+            if (!($propFetch->var instanceof \PhpParser\Node\Expr\Variable)) continue;
+            if ($propFetch->var->name !== 'this') continue;
+            if (!($propFetch->name instanceof \PhpParser\Node\Identifier)) continue;
+            if (!($callNode->name instanceof \PhpParser\Node\Identifier)) continue;
+
+            $propertyName  = $propFetch->name->toString();
+            $targetMethod  = $callNode->name->toString();
+            $propertyClass = $propTypeMap[$propertyName] ?? null;
+
+            if ($propertyClass === null) continue; // property type not resolvable — skip
+
+            $methodInfo = $symbols->findMethod($propertyClass, $targetMethod);
+            if ($methodInfo === null) continue; // method not in SymbolTable — skip
+
+            // DI-29-01: emit a sink record for the dispatch call site itself.
+            // function_called = "ClassName::methodName" so the gate's sink_short
+            // matching can find it (agents report e.g. "OptionAdapter::update").
+            // Call site file = the class that contains the callback (currentClass).
+            $currentClassInfo = $symbols->findClass($currentClass);
+            $callSiteFile     = $currentClassInfo['file'] ?? $methodInfo['file'];
+            static $propDispatchSinkCounter = 0;
+            $additionalSinks[] = [
+                'id'                      => 'sink_propdispatch_' . (++$propDispatchSinkCounter),
+                'entry_point_id'          => $entryPointId,
+                'category'                => 'property_dispatch',
+                'function_called'         => $propertyClass . '::' . $targetMethod,
+                'uses_prepared_statement' => null,
+                'key'                     => null,
+                'file'                    => $callSiteFile,
+                'line'                    => $callNode->getStartLine(),
+            ];
+
+            // Load the target class file's AST
+            $relPath = $methodInfo['file'];
+            $methodAst = $astCache[$relPath] ?? null;
+            if ($methodAst === null) {
+                $absPath = $this->pluginDir . '/' . $relPath;
+                if (!file_exists($absPath)) continue;
+                $code = file_get_contents($absPath);
+                if ($code === false) continue;
+                try {
+                    $methodAst = $parser->parse($code);
+                    if ($methodAst === null) continue;
+                    $nrt = new \PhpParser\NodeTraverser();
+                    $nrt->addVisitor(new \PhpParser\NodeVisitor\NameResolver());
+                    $methodAst = $nrt->traverse($methodAst);
+                    $astCache[$relPath] = $methodAst;
+                } catch (\Throwable $e) {
+                    continue;
+                }
+            }
+
+            // Extract method body
+            $methodBody = $this->extractCallbackBody(
+                $methodAst,
+                ['type' => 'method', 'name' => $targetMethod, 'class' => $propertyClass],
+                $methodInfo['line_start'],
+                $methodInfo['line_end']
+            );
+            if ($methodBody === null || $methodBody === []) continue;
+
+            // 1-hop only: run SourceSinkVisitor on resolved method, NO further recursion
+            $ssv = new SourceSinkVisitor($relPath, $entryPointId);
+            $ssvT = new \PhpParser\NodeTraverser();
+            $ssvT->addVisitor($ssv);
+            $ssvT->traverse($methodBody);
+            $additionalSources = array_merge($additionalSources, $ssv->getSources());
+            $additionalSinks   = array_merge($additionalSinks,   $ssv->getSinks());
+        }
+
+        return [$additionalSources, $additionalSinks];
+    }
+
+    /**
+     * DI-29-01: Build a map of property name → fully-qualified class name for a class,
+     * by inspecting its constructor: typed parameter assignments of the form
+     *   $this->propName = $paramName
+     * where $paramName has a named type in the constructor signature.
+     *
+     * Only handles simple assignment patterns (constructor injection).
+     * Returns empty array if __construct is not found or not parseable.
+     *
+     * @param string             $className
+     * @param SymbolTable        $symbols
+     * @param \PhpParser\Parser  $parser
+     * @param array              $astCache  relPath → AST (passed by reference for caching)
+     * @return array<string,string>  property name → class name
+     */
+    private function buildPropertyTypeMap(
+        string $className,
+        SymbolTable $symbols,
+        \PhpParser\Parser $parser,
+        array &$astCache
+    ): array {
+        $ctorInfo = $symbols->findMethod($className, '__construct');
+        if ($ctorInfo === null) return [];
+
+        $relPath = $ctorInfo['file'];
+        $ctorAst = $astCache[$relPath] ?? null;
+        if ($ctorAst === null) {
+            $absPath = $this->pluginDir . '/' . $relPath;
+            if (!file_exists($absPath)) return [];
+            $code = file_get_contents($absPath);
+            if ($code === false) return [];
+            try {
+                $ctorAst = $parser->parse($code);
+                if ($ctorAst === null) return [];
+                $nrt = new \PhpParser\NodeTraverser();
+                $nrt->addVisitor(new \PhpParser\NodeVisitor\NameResolver());
+                $ctorAst = $nrt->traverse($ctorAst);
+                $astCache[$relPath] = $ctorAst;
+            } catch (\Throwable $e) {
+                return [];
+            }
+        }
+
+        // Find __construct method node in the AST
+        $ctorNode = null;
+        $finder = new class extends \PhpParser\NodeVisitorAbstract {
+            public ?\PhpParser\Node\Stmt\ClassMethod $ctorNode = null;
+            public ?string $targetClass = null;
+            private ?string $currentClass = null;
+            public function enterNode(\PhpParser\Node $node) {
+                if ($node instanceof \PhpParser\Node\Stmt\Class_) {
+                    $name = isset($node->namespacedName)
+                        ? $node->namespacedName->toString()
+                        : ($node->name !== null ? $node->name->toString() : '');
+                    $this->currentClass = $name;
+                }
+                if ($node instanceof \PhpParser\Node\Stmt\ClassMethod
+                    && $node->name->toString() === '__construct'
+                    && $this->currentClass === $this->targetClass) {
+                    $this->ctorNode = $node;
+                }
+                return null;
+            }
+            public function leaveNode(\PhpParser\Node $node) {
+                if ($node instanceof \PhpParser\Node\Stmt\Class_) {
+                    $this->currentClass = null;
+                }
+                return null;
+            }
+        };
+        $finder->targetClass = $className;
+        $traverser = new \PhpParser\NodeTraverser();
+        $traverser->addVisitor($finder);
+        $traverser->traverse($ctorAst);
+        $ctorNode = $finder->ctorNode;
+
+        if ($ctorNode === null) return [];
+
+        // Build param name → class name map from typed constructor parameters
+        $paramClassMap = [];
+        foreach ($ctorNode->params as $param) {
+            if (!($param->var instanceof \PhpParser\Node\Expr\Variable)) continue;
+            $paramName = $param->var->name;
+            if ($param->type === null) continue;
+            // Named type only — no union/intersection types (too speculative)
+            if (!($param->type instanceof \PhpParser\Node\Name)) continue;
+            $typeName = $param->type->toString();
+            if ($typeName === '') continue;
+            $paramClassMap[$paramName] = $typeName;
+        }
+
+        if (empty($paramClassMap)) return [];
+
+        // Scan constructor body for $this->propName = $paramName assignments
+        $propTypeMap = [];
+        foreach ($ctorNode->stmts ?? [] as $stmt) {
+            if (!($stmt instanceof \PhpParser\Node\Stmt\Expression)) continue;
+            if (!($stmt->expr instanceof \PhpParser\Node\Expr\Assign)) continue;
+            $assign = $stmt->expr;
+            // Left side must be $this->propName
+            if (!($assign->var instanceof \PhpParser\Node\Expr\PropertyFetch)) continue;
+            if (!($assign->var->var instanceof \PhpParser\Node\Expr\Variable)) continue;
+            if ($assign->var->var->name !== 'this') continue;
+            if (!($assign->var->name instanceof \PhpParser\Node\Identifier)) continue;
+            $propName = $assign->var->name->toString();
+            // Right side must be a simple variable matching a typed param
+            if (!($assign->expr instanceof \PhpParser\Node\Expr\Variable)) continue;
+            $rhsName = $assign->expr->name;
+            if (!is_string($rhsName)) continue;
+            $classType = $paramClassMap[$rhsName] ?? null;
+            if ($classType !== null) {
+                $propTypeMap[$propName] = $classType;
+            }
+        }
+
+        return $propTypeMap;
     }
 
     /**

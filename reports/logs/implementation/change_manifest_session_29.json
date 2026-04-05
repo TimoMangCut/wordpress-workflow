@@ -8,8 +8,8 @@
       "file": "tools/bin/phase3_gate.py",
       "functions_changed": ["_check_path_reachable"],
       "lines_affected": "724-745 (source normalization block)",
-      "behavior_before": "When source_claim was non-empty (e.g., 'start_backup', 'cloud_save_and_test'), gate performed name-match only: source_claim in variable OR source_claim in type. For REST EP callbacks, agents name the callback method itself as source_function — this is not a variable name in the IR. The USER_SOURCE_TYPES fallback (rest_params, etc.) was only reached when source_claim was empty. Result: source_ok=False for all 16 REST EP TP findings. Combined with sink_ok=False (property-dispatched sinks not in IR), path_reachable=0.25 for all.",
-      "behavior_after": "Added DI-28-01 fallback: if source_claim is non-empty but does NOT look like a variable (no '$' prefix) or class method (no '::' separator), and the EP has confirmed user-input sources (rest_params etc. in USER_SOURCE_TYPES), set source_ok=True. Result: path_reachable=0.55 for all 16 REST EP TP findings (source matched, sink still weak/missing — score 0.55 per gate formula)."
+      "behavior_before": "When source_claim was non-empty (e.g., 'start_backup', 'cloud_save_and_test'), gate performed name-match only: source_claim in variable OR source_claim in type. For REST EP callbacks, agents name the callback method itself as source_function — this is not a variable name in the IR. The USER_SOURCE_TYPES fallback (rest_params, etc.) was only reached when source_claim was empty. Result: source_ok=False for all 16 agent-a3 REST EP findings (15 TP + 1 REVIEW). Combined with sink_ok=False (property-dispatched sinks not in IR), path_reachable=0.25 for all.",
+      "behavior_after": "Added DI-28-01 fallback: if source_claim is non-empty but does NOT look like a variable (no '$' prefix) or class method (no '::' separator), and the EP has confirmed user-input sources (rest_params etc. in USER_SOURCE_TYPES), set source_ok=True. Result: path_reachable=0.55 for all 16 agent-a3 REST EP findings (15 TP + 1 REVIEW) from agent-a3 (source matched, sink still weak/missing — score 0.55 per gate formula)."
     },
     {
       "file": "benchmark/results/wave_4_results.json",
@@ -42,14 +42,14 @@
     }
   ],
   "test_command": "python3 tools/bin/phase3_gate.py backwpup && python3 benchmark/compare.py --all && python3 -c \"import json; d=json.load(open('benchmark/results/wave_4_results.json')); s=d['plugins'][0]; assert s['slug']=='backwpup'; print(f\\\"backwpup QS={s.get('quality_score')} DR={s.get('decision_rate')} TP={s['tp']} FP={s['fp']} FN={s['fn']} UNCERTAIN={s['uncertain']}\\\")\"",
-  "test_result": "PASS — backwpup QS=0.0 DR=0.0 TP=0 FP=0 FN=2 UNCERTAIN=22. FP=0 maintained (no new ACCEPTED_FP findings from fix). path_reachable improved from 0.25→0.55 for all 16 REST EP TP findings. Cartflows and pretty-link gate artifacts unchanged (fix is in gate runtime only — no IR rerun for those plugins).",
+  "test_result": "PASS — backwpup QS=0.0 DR=0.0 TP=0 FP=0 FN=2 UNCERTAIN=22. FP=0 maintained (no new ACCEPTED_FP findings from fix). path_reachable improved from 0.25→0.55 for all 16 agent-a3 REST EP findings (15 TP + 1 REVIEW). Cartflows and pretty-link gate artifacts unchanged (fix is in gate runtime only — no IR rerun for those plugins).",
   "success_condition_check": {
     "condition": "at least 1 backwpup REST EP finding gets path_reachable >= 0.55",
-    "result": "MET — all 16 REST EP TP findings now have path_reachable=0.55 (up from 0.25)",
+    "result": "MET — all 16 agent-a3 REST EP findings (15 TP + 1 REVIEW) now have path_reachable=0.55 (up from 0.25)",
     "finding_sample": "agent-a3-getblock-secret-disclosure: path_reachable=0.55, note='source matched in EP ep_rest___getblock, but sink evidence weak/missing'",
     "fp_check": "FP=0 — no new ACCEPTED_FP findings emerged from the fix"
   },
-  "di_28_01_verdict": "PARTIALLY FIXED — gate source normalization applied. path_reachable 0.25→0.55 for 16 findings. Success condition MET. Findings remain UNCERTAIN because can_confirm requires path_reachable>=0.80 (sink match still fails — property-dispatched sinks like $this->option_adapter->update() not attributed to EP in Phase 1 IR). Residual gap tracked below.",
+  "di_28_01_verdict": "PARTIALLY FIXED — gate source normalization applied. path_reachable 0.25→0.55 for all 16 agent-a3 REST EP findings (15 TP + 1 REVIEW). Success condition MET. Findings remain UNCERTAIN because can_confirm requires path_reachable>=0.80 (sink match still fails — property-dispatched sinks like $this->option_adapter->update() not attributed to EP in Phase 1 IR). Residual gap tracked below.",
   "discovered_issues": [
     {
       "id": "DI-29-01",
@@ -58,7 +58,7 @@
       "fix_path": "Gate-side: lower can_confirm path threshold for REST EPs when guard evidence is strong (guard_consistent>=0.6 AND path_reachable>=0.55 → treat as near-PLAUSIBLE). OR: Phase 1 extractor: add property call resolution to resolveCallChain (detect $this->property->method(), look up property type from constructor, resolve callee). Estimated 100-150 lines PHP. OR: accept current state — REST EPs remain UNCERTAIN, document this as a known limitation of the static IR approach for DI-pattern architectures.",
       "fix_complexity": "HIGH (IR path) or MEDIUM (gate threshold adjustment — higher risk of FP)",
       "severity": "MEDIUM — blocks REST EP findings from reaching PLAUSIBLE but does not cause false positives",
-      "affects": ["backwpup REST EP findings (16 of 22 UNCERTAIN)", "cartflows UNCERTAIN findings (same DI pattern)"],
+      "affects": ["backwpup agent-a3 REST EP findings (15 TP + 1 REVIEW of 22 UNCERTAIN)", "cartflows UNCERTAIN findings (same DI pattern)"],
       "fix_session": "Session 30 — human decision required on approach"
     }
   ],
