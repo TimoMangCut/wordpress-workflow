@@ -224,7 +224,9 @@ Gate trước khi proceed: compare.py chạy được + ít nhất 3 ground trut
    - Output: `benchmark/results/run_<timestamp>.json`
 
 3. Populate 5+ ground truth files từ plugins đã manually verified.
-   **Schema canonical từ `skill-sets-framework.md:373-409`** — không dùng schema khác:
+   **Schema canonical từ `skill-sets-framework.md:373-409`** — không dùng schema khác.
+   `verified_by` controls benchmark semantics: `"manual_review"` = independent GT;
+   `"pipeline_derived"` = self-consistency reference only (not independent validation).
    ```json
    {
      "plugin_slug": "plugin-name",
@@ -727,6 +729,9 @@ python3 benchmark/compare.py --all > benchmark/results/wave1_results.json
 - Quality Score ≥ baseline cho TẤT CẢ benchmark plugins
 - Decision Rate không giảm > 10%
 - Không có regression trên bất kỳ plugin nào
+- Note: QS is only an independent accuracy metric for GT files with `verified_by: manual_review`.
+  GT files with `verified_by: pipeline_derived` produce self-consistency metrics (regression detection),
+  not independent evaluation. Currently: cartflows + pretty-link = manual_review; backwpup = pipeline_derived.
 
 **Output cho user review:**
 ```

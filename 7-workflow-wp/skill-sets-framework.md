@@ -371,6 +371,11 @@ benchmark/
 ```
 
 **Ground truth format:**
+
+`verified_by` controls benchmark semantics for the plugin:
+- `"manual_review"` — independent human code audit or exploit attempt. QS measures pipeline accuracy against real ground truth (canonical use).
+- `"pipeline_derived"` — findings are the pipeline's own CONFIRMED output, promoted to regression-reference data. QS measures pipeline self-consistency only; does **not** constitute independent security evaluation.
+
 ```json
 {
   "plugin_slug": "plugin-a",
