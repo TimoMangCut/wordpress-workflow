@@ -78,7 +78,7 @@
       "functions_changed": ["new file"],
       "lines_affected": "new file",
       "behavior_before": "file did not exist",
-      "behavior_after": "S5 verify output for backwpup. No escalations. 6 spot-checks: 4 TPs source-verified, 2 REVIEW findings plausible. Merge stats clean (conflict_rate=0.0). Gate outcome unchanged (S5 cannot supply missing IR guard data)."
+      "behavior_after": "S5 verify output for backwpup. No escalations. 5 spot-checks: 3 TPs source-verified (agent-a3-getblock-secret-disclosure, agent-a3-cloudsaveandtest-bac, agent-a3-startbackup-bac), 2 REVIEW findings plausible (agent-d-cg-002, agent-c-anom_13). Merge stats clean (conflict_rate=0.0). Gate outcome unchanged (S5 cannot supply missing IR guard data)."
     },
     {
       "file": "reports/phase3/3-cartflows.claude.llm.md",
