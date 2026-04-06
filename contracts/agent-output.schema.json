@@ -9,7 +9,7 @@
   "properties": {
     "agent_id": {
       "type": "string",
-      "description": "Agent identifier: agent-a1, agent-a2, agent-b, agent-c, agent-d"
+      "description": "Agent identifier (for example agent-w01, agent-a3, agent-b, agent-c, agent-d)"
     },
     "plugin_slug": { "type": "string" },
     "execution_time_ms": { "type": "integer" },

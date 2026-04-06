@@ -1,0 +1,351 @@
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "core",
+  "task": {
+    "role": "phase2_reviewer_core",
+    "goal": "Challenge the worker output packet-by-packet with concrete counter-evidence, field corrections, and explicit missing-evidence notes.",
+    "output_schema": "contracts/phase2-review-core-output.schema.json",
+    "output_path": "reports/phase2/hostinger-reach-phase2.review.r1.core.b03.json",
+    "packet_schema": "contracts/phase2-reviewer-packet.schema.json",
+    "allow_missed_findings": false,
+    "constraints": [
+      "Treat each finding packet as the unit of review; do not restart whole-plugin auditing.",
+      "Answer reachability, authorization, dataflow, impact, and missing-evidence questions for each packet before finalizing finding_reviews.",
+      "Start from finding_packets, worker_findings, and phase1_context before opening other artifacts.",
+      "Refute before confirm; keep objections evidence-bound with file:line anchors.",
+      "Do not rewrite the full findings set; produce critique JSON only.",
+      "Default to packet-local critique only. Focus on finding_reviews plus field corrections for the existing finding packets.",
+      "Treat finding_packets as the reviewer core evidence pack. If packet-local evidence is insufficient, prefer needs_more_evidence over broad exploration."
+    ],
+    "max_candidates": null
+  },
+  "artifacts": {
+    "worker_output_path": null,
+    "ir_path": null,
+    "semgrep_path": null,
+    "psalm_path": null,
+    "threat_context_path": null,
+    "source_root": "plugins/hostinger-reach"
+  },
+  "worker_summary": {
+    "total_findings": 1,
+    "true_positive_count": 0,
+    "false_positive_count": 1,
+    "needs_review_count": 0,
+    "negative_findings_count": 0,
+    "overall_risk": "low",
+    "analysis_summary": "Reviewer core batch scoped to 1 packet(s)."
+  },
+  "worker_findings": [
+    {
+      "finding_id": "HR-FP-001",
+      "verdict": "FP",
+      "vuln_type": "Broken Access Control \u2014 Public REST endpoint (GET /integrations)",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 1.0,
+      "entry_point_id": "ep_rest__integrations",
+      "source_anchor": "src/Api/Routes/IntegrationsRoutes.php:21",
+      "sink_anchor": "src/Api/Handlers/IntegrationsApiHandler.php:65",
+      "patchstack_eligible": false
+    }
+  ],
+  "finding_packets": [
+    {
+      "packet_id": "HR-FP-001",
+      "parent_finding_id": "HR-FP-001",
+      "packet_kind": "base",
+      "focus_anchor": "src/Api/Routes/IntegrationsRoutes.php:21",
+      "finding_id": "HR-FP-001",
+      "verdict": "FP",
+      "vuln_type": "Broken Access Control \u2014 Public REST endpoint (GET /integrations)",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 1.0,
+      "entry_point_id": "ep_rest__integrations",
+      "patchstack_eligible": false,
+      "claimed_impact": "Worker claims Broken Access Control \u2014 Public REST endpoint (GET /integrations) is materially exploitable with auth boundary `unknown` and impact reachable at src/Api/Handlers/IntegrationsApiHandler.php:65.",
+      "worker_context": {
+        "source_function": "IntegrationsApiHandler::get_integrations_handler",
+        "sink_function": "wp_json_encode",
+        "fp_reason": "Packet-local reviewer scope: IntegrationsRoutes at src/Api/Routes/IntegrationsRoutes.php:21. Primary files: src/Api/Handlers/IntegrationsApiHandler.php, src/Api/Routes/IntegrationsRoutes.php.",
+        "original_fp_reason": "The GET /integrations endpoint returns only non-sensitive plugin configuration metadata (plugin names, URLs, activation status, import status) hardcoded in IntegrationProvider::INTEGRATIONS \u2014 no credentials, tokens, or user PII are included in the response.",
+        "reasoning_excerpt": {
+          "hypothesis": "Validate only the packet-local claim for IntegrationsRoutes. Determine whether anchors src/Api/Routes/IntegrationsRoutes.php:31, src/Api/Routes/IntegrationsRoutes.php:21, src/Api/Handlers/IntegrationsApiHandler.php:65, src/Dto/PluginData.php:200 actually support the worker's claim without widening to other surfaces.",
+          "trace": "Packet-local review only. Focus file: src/Api/Routes/IntegrationsRoutes.php. Focus anchors: src/Api/Routes/IntegrationsRoutes.php:31, src/Api/Routes/IntegrationsRoutes.php:21, src/Api/Handlers/IntegrationsApiHandler.php:65, src/Dto/PluginData.php:200. Primary files: src/Api/Handlers/IntegrationsApiHandler.php, src/Api/Routes/IntegrationsRoutes.php. Entry point: src/Api/Routes/IntegrationsRoutes.php:31. Treat unrelated callers, consumers, and sibling surfaces as out of scope unless an explicit expansion attempt is justified.",
+          "defenses": [
+            "Data returned is all public plugin configuration: integration names, admin URLs, download URLs, icons, active/inactive state. No authentication tokens, API keys, or user data are included.",
+            "The PluginData DTO explicitly only stores non-sensitive configuration fields.",
+            "JSON/REST response handling is not a browser sink by itself; require packet-local output evidence before keeping an XSS-style claim."
+          ],
+          "refutation": [
+            "Refute or keep this packet on IntegrationsRoutes alone. Do not carry over conclusions from plugin-wide traces without packet-local code evidence."
+          ],
+          "conclusion": "Keep, downgrade, retract, or mark needs_more_evidence based only on packet-local evidence for IntegrationsRoutes."
+        },
+        "original_reasoning_excerpt": {
+          "hypothesis": "Unauthenticated access to GET /wp-json/hostinger-reach/v1/integrations leaks sensitive data.",
+          "trace": "GET /integrations \u2192 get_integrations_handler() (line 59 IntegrationsApiHandler.php) \u2192 get_integrations_data() (line 162) \u2192 returns PluginData::to_array() (line 200 PluginData.php) + active/import status derived from plugin state",
+          "defenses": [
+            "Data returned is all public plugin configuration: integration names, admin URLs, download URLs, icons, active/inactive state. No authentication tokens, API keys, or user data are included.",
+            "The PluginData DTO explicitly only stores non-sensitive configuration fields."
+          ],
+          "refutation": [
+            "REFUTATION ATTEMPT: Does the response include the API key or any stored credentials? RESULT: Refuted. ApiKeyManager::get_token() is never called in the get_integrations_data path. The response is built entirely from PluginData objects and activation state from the integrations option.",
+            "REFUTATION ATTEMPT: Does knowing which plugins are active create meaningful attack surface? RESULT: This is reconnaissance information only and does not in itself constitute exploitability."
+          ],
+          "conclusion": "FP. The public endpoint discloses only plugin configuration metadata that presents no meaningful security risk."
+        }
+      },
+      "review_focus": {
+        "scope_statement": "Review only the packet-local claim centered on src/Api/Routes/IntegrationsRoutes.php:21 in src/Api/Routes/IntegrationsRoutes.php. Start from the listed packet evidence, not from a plugin-wide hypothesis.",
+        "sink_semantics": "json_response",
+        "default_resolution_on_missing_terminal_evidence": "field_fix_or_retract",
+        "stop_conditions": [
+          "Once packet-local reachability, authorization, dataflow, impact, and missing evidence are answered with file:line support, stop and write critique JSON.",
+          "Do not reopen unrelated plugin surfaces just because the parent finding or worker narrative mentions them.",
+          "If packet-local evidence ends in JSON/REST response handling and no browser sink is shown, prefer field_fix, retract, or needs_more_evidence over plugin-wide rendering hunts."
+        ],
+        "disallowed_drift": [
+          "whole_plugin_reaudit",
+          "translation_or_asset_search",
+          "sibling_surface_expansion_without_evidence"
+        ],
+        "primary_scope_files": [
+          "src/Api/Handlers/IntegrationsApiHandler.php",
+          "src/Api/Routes/IntegrationsRoutes.php"
+        ],
+        "optional_scope_files": [
+          "src/Api/Handlers/IntegrationsApiHandler.php",
+          "src/Api/Routes/IntegrationsRoutes.php",
+          "src/Dto/PluginData.php"
+        ],
+        "entry_point_anchor": "src/Api/Routes/IntegrationsRoutes.php:31"
+      },
+      "scope_policy": {
+        "allowed_primary_files": [
+          "src/Api/Handlers/IntegrationsApiHandler.php",
+          "src/Api/Routes/IntegrationsRoutes.php"
+        ],
+        "allowed_optional_files": [
+          "src/Api/Handlers/IntegrationsApiHandler.php",
+          "src/Api/Routes/IntegrationsRoutes.php",
+          "src/Dto/PluginData.php"
+        ],
+        "max_out_of_band_files": 1
+      },
+      "anchors": {
+        "entry_point_anchor": "src/Api/Routes/IntegrationsRoutes.php:31",
+        "source_anchor": "src/Api/Routes/IntegrationsRoutes.php:21",
+        "sink_anchor": "src/Api/Handlers/IntegrationsApiHandler.php:65",
+        "review_anchor_candidates": [
+          {
+            "kind": "entry_point",
+            "anchor": "src/Api/Routes/IntegrationsRoutes.php:31",
+            "note": null
+          },
+          {
+            "kind": "finding_source",
+            "anchor": "src/Api/Routes/IntegrationsRoutes.php:21",
+            "note": "Broken Access Control \u2014 Public REST endpoint (GET /integrations)"
+          },
+          {
+            "kind": "finding_sink",
+            "anchor": "src/Api/Handlers/IntegrationsApiHandler.php:65",
+            "note": "Broken Access Control \u2014 Public REST endpoint (GET /integrations)"
+          },
+          {
+            "kind": "fp_evidence",
+            "anchor": "src/Dto/PluginData.php:200",
+            "note": "hardcoded_value"
+          },
+          {
+            "kind": "anomaly",
+            "anchor": "src/Api/Routes/IntegrationsRoutes.php:21",
+            "note": "rest_return_true"
+          }
+        ]
+      },
+      "primary_files": [
+        "src/Api/Handlers/IntegrationsApiHandler.php",
+        "src/Api/Routes/IntegrationsRoutes.php"
+      ],
+      "primary_snippets": [
+        {
+          "file": "src/Api/Routes/IntegrationsRoutes.php",
+          "anchor": "src/Api/Routes/IntegrationsRoutes.php:21",
+          "focus_line": 21,
+          "line_start": 15,
+          "line_end": 27,
+          "kind": "finding_source",
+          "code": "    15\t\n    16\t    public function __construct( IntegrationsApiHandler $handler ) {\n    17\t        $this->handler = $handler;\n    18\t    }\n    19\t\n    20\t    public function register_routes(): void {\n    21\t        register_rest_route(\n    22\t            HOSTINGER_REACH_PLUGIN_REST_API_BASE,\n    23\t            'integrations',\n    24\t            array(\n    25\t                'methods'             => 'GET',\n    26\t                'callback'            => array( $this->handler, 'get_integrations_handler' ),\n    27\t                'permission_callback' => '__return_true',"
+        },
+        {
+          "file": "src/Api/Handlers/IntegrationsApiHandler.php",
+          "anchor": "src/Api/Handlers/IntegrationsApiHandler.php:65",
+          "focus_line": 65,
+          "line_start": 59,
+          "line_end": 71,
+          "kind": "finding_sink",
+          "code": "    59\t    public function get_integrations_handler(): WP_REST_Response {\n    60\t        return $this->handle_response(\n    61\t            array(\n    62\t                'response' => array(\n    63\t                    'code' => 200,\n    64\t                ),\n    65\t                'body'     => wp_json_encode( $this->get_integrations_data() ),\n    66\t            )\n    67\t        );\n    68\t    }\n    69\t\n    70\t    public function post_integrations_handler( WP_REST_Request $request ): WP_REST_Response {\n    71\t        $is_active         = $request->get_param( Integration::INTEGRATION_IS_ACTIVE );"
+        },
+        {
+          "file": "src/Api/Routes/IntegrationsRoutes.php",
+          "anchor": "src/Api/Routes/IntegrationsRoutes.php:31",
+          "focus_line": 31,
+          "line_start": 25,
+          "line_end": 37,
+          "kind": "entry_point",
+          "code": "    25\t                'methods'             => 'GET',\n    26\t                'callback'            => array( $this->handler, 'get_integrations_handler' ),\n    27\t                'permission_callback' => '__return_true',\n    28\t            )\n    29\t        );\n    30\t\n    31\t        register_rest_route(\n    32\t            HOSTINGER_REACH_PLUGIN_REST_API_BASE,\n    33\t            'integrations',\n    34\t            array(\n    35\t                'methods'             => 'POST',\n    36\t                'callback'            => array( $this->handler, 'post_integrations_handler' ),\n    37\t                'permission_callback' => array( $this, 'permission_check' ),"
+        }
+      ],
+      "optional_files": [
+        "src/Api/Handlers/IntegrationsApiHandler.php",
+        "src/Api/Routes/IntegrationsRoutes.php",
+        "src/Dto/PluginData.php"
+      ],
+      "optional_snippets": [
+        {
+          "file": "src/Api/Routes/IntegrationsRoutes.php",
+          "anchor": "src/Api/Routes/IntegrationsRoutes.php:31",
+          "focus_line": 31,
+          "line_start": 25,
+          "line_end": 37,
+          "kind": "entry_point",
+          "code": "    25\t                'methods'             => 'GET',\n    26\t                'callback'            => array( $this->handler, 'get_integrations_handler' ),\n    27\t                'permission_callback' => '__return_true',\n    28\t            )\n    29\t        );\n    30\t\n    31\t        register_rest_route(\n    32\t            HOSTINGER_REACH_PLUGIN_REST_API_BASE,\n    33\t            'integrations',\n    34\t            array(\n    35\t                'methods'             => 'POST',\n    36\t                'callback'            => array( $this->handler, 'post_integrations_handler' ),\n    37\t                'permission_callback' => array( $this, 'permission_check' ),"
+        },
+        {
+          "file": "src/Api/Routes/IntegrationsRoutes.php",
+          "anchor": "src/Api/Routes/IntegrationsRoutes.php:21",
+          "focus_line": 21,
+          "line_start": 15,
+          "line_end": 27,
+          "kind": "finding_source",
+          "code": "    15\t\n    16\t    public function __construct( IntegrationsApiHandler $handler ) {\n    17\t        $this->handler = $handler;\n    18\t    }\n    19\t\n    20\t    public function register_routes(): void {\n    21\t        register_rest_route(\n    22\t            HOSTINGER_REACH_PLUGIN_REST_API_BASE,\n    23\t            'integrations',\n    24\t            array(\n    25\t                'methods'             => 'GET',\n    26\t                'callback'            => array( $this->handler, 'get_integrations_handler' ),\n    27\t                'permission_callback' => '__return_true',"
+        },
+        {
+          "file": "src/Api/Handlers/IntegrationsApiHandler.php",
+          "anchor": "src/Api/Handlers/IntegrationsApiHandler.php:65",
+          "focus_line": 65,
+          "line_start": 59,
+          "line_end": 71,
+          "kind": "finding_sink",
+          "code": "    59\t    public function get_integrations_handler(): WP_REST_Response {\n    60\t        return $this->handle_response(\n    61\t            array(\n    62\t                'response' => array(\n    63\t                    'code' => 200,\n    64\t                ),\n    65\t                'body'     => wp_json_encode( $this->get_integrations_data() ),\n    66\t            )\n    67\t        );\n    68\t    }\n    69\t\n    70\t    public function post_integrations_handler( WP_REST_Request $request ): WP_REST_Response {\n    71\t        $is_active         = $request->get_param( Integration::INTEGRATION_IS_ACTIVE );"
+        },
+        {
+          "file": "src/Dto/PluginData.php",
+          "anchor": "src/Dto/PluginData.php:200",
+          "focus_line": 200,
+          "line_start": 194,
+          "line_end": 206,
+          "kind": "fp_evidence",
+          "code": "   194\t            $is_active,\n   195\t            $import_enabled\n   196\t        );\n   197\t    }\n   198\t\n   199\t\n   200\t    public function to_array(): array {\n   201\t        return array(\n   202\t            'id'                  => $this->id,\n   203\t            'type'                => $this->type,\n   204\t            'folder'              => $this->folder,\n   205\t            'file'                => $this->file,\n   206\t            'admin_url'           => $this->admin_url,"
+        }
+      ],
+      "review_questions": {
+        "reachability": "Can an attacker really reach the claimed path from src/Api/Routes/IntegrationsRoutes.php:31 without hidden preconditions or workflow assumptions?",
+        "authorization": "Does the path have a stronger guard than the worker claims, including capability, permission_callback, nonce semantics, or trust-boundary limits for auth `unknown`?",
+        "dataflow": "Does attacker-controlled data actually flow from src/Api/Routes/IntegrationsRoutes.php:21 to src/Api/Handlers/IntegrationsApiHandler.php:65 for the claimed Broken Access Control \u2014 Public REST endpoint (GET /integrations), without a refuting guard, sanitizer, or broken hop?",
+        "impact": "Assuming the path reaches src/Api/Handlers/IntegrationsApiHandler.php:65, is the worker's claimed impact concrete and not overstated for this plugin context?",
+        "missing_evidence": "What exact file:line evidence is still missing before this finding can be kept, downgraded, or retracted with confidence?"
+      }
+    }
+  ],
+  "phase1_context": {
+    "entry_point_count": 25,
+    "anomaly_count": 3,
+    "unresolved_hook_count": 8,
+    "related_entry_points": [
+      {
+        "id": "ep_rest__integrations",
+        "type": "rest_route",
+        "hook_name": "?integrations",
+        "auth_level": "none",
+        "file": "src/Api/Routes/IntegrationsRoutes.php",
+        "line": 21,
+        "callback_name": null,
+        "callback_class": null
+      },
+      {
+        "id": "ep_rest__integrations",
+        "type": "rest_route",
+        "hook_name": "?integrations",
+        "auth_level": "unknown",
+        "file": "src/Api/Routes/IntegrationsRoutes.php",
+        "line": 31,
+        "callback_name": null,
+        "callback_class": null
+      }
+    ],
+    "top_anomalies": [],
+    "unresolved_hooks": []
+  },
+  "evidence": {
+    "primary_anchors": [
+      {
+        "kind": "entry_point",
+        "anchor": "src/Api/Routes/IntegrationsRoutes.php:31",
+        "packet_id": "HR-FP-001",
+        "finding_id": "HR-FP-001",
+        "entry_point_id": "ep_rest__integrations",
+        "note": "Broken Access Control \u2014 Public REST endpoint (GET /integrations)"
+      },
+      {
+        "kind": "finding_source",
+        "anchor": "src/Api/Routes/IntegrationsRoutes.php:21",
+        "packet_id": "HR-FP-001",
+        "finding_id": "HR-FP-001",
+        "entry_point_id": "ep_rest__integrations",
+        "note": "Broken Access Control \u2014 Public REST endpoint (GET /integrations)"
+      },
+      {
+        "kind": "finding_sink",
+        "anchor": "src/Api/Handlers/IntegrationsApiHandler.php:65",
+        "packet_id": "HR-FP-001",
+        "finding_id": "HR-FP-001",
+        "entry_point_id": "ep_rest__integrations",
+        "note": "Broken Access Control \u2014 Public REST endpoint (GET /integrations)"
+      }
+    ],
+    "primary_files": [
+      "src/Api/Handlers/IntegrationsApiHandler.php",
+      "src/Api/Routes/IntegrationsRoutes.php"
+    ],
+    "primary_snippets": [
+      {
+        "file": "src/Api/Routes/IntegrationsRoutes.php",
+        "anchor": "src/Api/Routes/IntegrationsRoutes.php:21",
+        "focus_line": 21,
+        "line_start": 15,
+        "line_end": 27,
+        "kind": "finding_source",
+        "code": "    15\t\n    16\t    public function __construct( IntegrationsApiHandler $handler ) {\n    17\t        $this->handler = $handler;\n    18\t    }\n    19\t\n    20\t    public function register_routes(): void {\n    21\t        register_rest_route(\n    22\t            HOSTINGER_REACH_PLUGIN_REST_API_BASE,\n    23\t            'integrations',\n    24\t            array(\n    25\t                'methods'             => 'GET',\n    26\t                'callback'            => array( $this->handler, 'get_integrations_handler' ),\n    27\t                'permission_callback' => '__return_true',"
+      },
+      {
+        "file": "src/Api/Handlers/IntegrationsApiHandler.php",
+        "anchor": "src/Api/Handlers/IntegrationsApiHandler.php:65",
+        "focus_line": 65,
+        "line_start": 59,
+        "line_end": 71,
+        "kind": "finding_sink",
+        "code": "    59\t    public function get_integrations_handler(): WP_REST_Response {\n    60\t        return $this->handle_response(\n    61\t            array(\n    62\t                'response' => array(\n    63\t                    'code' => 200,\n    64\t                ),\n    65\t                'body'     => wp_json_encode( $this->get_integrations_data() ),\n    66\t            )\n    67\t        );\n    68\t    }\n    69\t\n    70\t    public function post_integrations_handler( WP_REST_Request $request ): WP_REST_Response {\n    71\t        $is_active         = $request->get_param( Integration::INTEGRATION_IS_ACTIVE );"
+      },
+      {
+        "file": "src/Api/Routes/IntegrationsRoutes.php",
+        "anchor": "src/Api/Routes/IntegrationsRoutes.php:31",
+        "focus_line": 31,
+        "line_start": 25,
+        "line_end": 37,
+        "kind": "entry_point",
+        "code": "    25\t                'methods'             => 'GET',\n    26\t                'callback'            => array( $this->handler, 'get_integrations_handler' ),\n    27\t                'permission_callback' => '__return_true',\n    28\t            )\n    29\t        );\n    30\t\n    31\t        register_rest_route(\n    32\t            HOSTINGER_REACH_PLUGIN_REST_API_BASE,\n    33\t            'integrations',\n    34\t            array(\n    35\t                'methods'             => 'POST',\n    36\t                'callback'            => array( $this->handler, 'post_integrations_handler' ),\n    37\t                'permission_callback' => array( $this, 'permission_check' ),"
+      }
+    ],
+    "optional_evidence": {
+      "anchors": [],
+      "files": [],
+      "snippets": []
+    }
+  },
+  "threat_context_summary": null
+}

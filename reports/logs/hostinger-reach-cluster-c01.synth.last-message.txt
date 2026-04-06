@@ -1,0 +1,3 @@
+Wrote the synthesis JSON to [reports/phase2/hostinger-reach-cluster-c01.synth.json](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase2/hostinger-reach-cluster-c01.synth.json).
+
+Conclusion: `cluster-c01` stays `split`. I kept one justified link, `shared_guard_model`, because both paths use nonce-only authorization, but I rejected a stronger joined claim: `HR-001` still needs proof that the localized `wp_rest` nonce is exposed to guests, and `HR-002` downgrades toward a `RISK_NOTE` because its shown sink is only a site-wide notice-dismiss transient. I validated the saved JSON with `jq`; `node` was not available in this environment.

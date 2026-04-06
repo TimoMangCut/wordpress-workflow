@@ -1,0 +1,72 @@
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "results": [
+    {
+      "batch_id": "b02",
+      "packet_ids": [
+        "HR-001"
+      ],
+      "rc": 0,
+      "duration_sec": 236.9,
+      "output_exists": true,
+      "valid_output": true,
+      "unique_php_files": 9,
+      "files": [
+        "src/Admin/Notices/AddFormNotice.php",
+        "src/Api/Handlers/IntegrationsApiHandler.php",
+        "src/Api/Routes/IntegrationsRoutes.php",
+        "src/Api/Webhooks/Handlers/WebhookHandler.php",
+        "src/Dto/PluginData.php",
+        "src/Functions.php",
+        "src/Integrations/ImportManager.php",
+        "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+        "src/Setup/Assets.php"
+      ],
+      "errlog_path": "reports/logs/hostinger-reach-phase2-reviewer.r1.codex.core.b02.enhanced.err",
+      "output_path": "reports/phase2/hostinger-reach-phase2.review.r1.core.b02.json",
+      "review_status": "needs_revision",
+      "assessment": "needs_more_evidence",
+      "packet_id": "HR-001",
+      "counter_evidence_count": 5,
+      "missing_evidence_count": 3,
+      "expansion_attempts_count": 0,
+      "summary_notes": "HR-001 overstates both the auth boundary and the terminal impact. The packet proves a public REST route plus nonce-gated hook dispatch, but not guest nonce delivery or a downstream subscriber-creation consumer."
+    },
+    {
+      "batch_id": "b05",
+      "packet_ids": [
+        "HR-FP-002"
+      ],
+      "rc": 0,
+      "duration_sec": 230.1,
+      "output_exists": true,
+      "valid_output": true,
+      "unique_php_files": 13,
+      "files": [
+        "src/Admin/Notices/AddFormNotice.php",
+        "src/Api/Handlers/IntegrationsApiHandler.php",
+        "src/Api/Handlers/ReachApiHandler.php",
+        "src/Api/Routes/IntegrationsRoutes.php",
+        "src/Api/Routes/ReachRoutes.php",
+        "src/Api/Routes/Routes.php",
+        "src/Api/Webhooks/Handlers/WebhookHandler.php",
+        "src/Blocks/SubscriptionFormBlock.php",
+        "src/Dto/PluginData.php",
+        "src/Functions.php",
+        "src/Integrations/ImportManager.php",
+        "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+        "src/Setup/Assets.php"
+      ],
+      "errlog_path": "reports/logs/hostinger-reach-phase2-reviewer.r1.codex.core.b05.enhanced.err",
+      "output_path": "reports/phase2/hostinger-reach-phase2.review.r1.core.b05.json",
+      "review_status": "needs_revision",
+      "assessment": "field_fix",
+      "packet_id": "HR-FP-002",
+      "counter_evidence_count": 6,
+      "missing_evidence_count": 3,
+      "expansion_attempts_count": 1,
+      "summary_notes": "The FP direction for HR-FP-002 is supportable, but the packet should anchor the public-by-design rationale to the subscription block and stop treating the `wp_rest` nonce as a capability-style authorization boundary."
+    }
+  ]
+}

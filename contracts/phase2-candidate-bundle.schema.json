@@ -1,0 +1,120 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "phase2-candidate-bundle.schema.json",
+  "version": "1.0.0",
+  "title": "Phase 2 Candidate Bundle Schema",
+  "description": "Chunked worker bundle for candidate-driven multi-agent Phase 2.",
+  "type": "object",
+  "required": [
+    "metadata",
+    "bundle",
+    "candidate_hypotheses",
+    "entry_points",
+    "sources",
+    "sinks",
+    "guards",
+    "anomalies",
+    "unresolved_hooks",
+    "coverage_gaps",
+    "semgrep_results",
+    "psalm_results",
+    "source_focus_files"
+  ],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["plugin_slug"]
+    },
+    "bundle": {
+      "type": "object",
+      "required": [
+        "bundle_id",
+        "agent_id",
+        "worker_strategy",
+        "bug_family",
+        "primary_surface",
+        "auth_boundary",
+        "candidate_count",
+        "complexity_budget",
+        "max_candidate_complexity"
+      ],
+      "properties": {
+        "bundle_id": { "type": "string" },
+        "agent_id": { "type": "string" },
+        "worker_strategy": { "type": "string" },
+        "bug_family": { "type": "string" },
+        "primary_surface": { "type": "string" },
+        "auth_boundary": { "type": "string" },
+        "candidate_count": { "type": "integer", "minimum": 0 },
+        "complexity_budget": { "type": "integer", "minimum": 0 },
+        "max_candidate_complexity": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "candidate_hypotheses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "candidate_id",
+          "kind",
+          "bug_family",
+          "sink_family",
+          "surface",
+          "auth_boundary",
+          "complexity_score",
+          "priority_score",
+          "source_focus_files",
+          "rationale"
+        ],
+        "properties": {
+          "candidate_id": { "type": "string" },
+          "kind": { "type": "string" },
+          "bug_family": { "type": "string" },
+          "sink_family": { "type": "string" },
+          "surface": { "type": "string" },
+          "auth_boundary": { "type": "string" },
+          "complexity_score": { "type": "integer", "minimum": 0 },
+          "priority_score": { "type": "integer", "minimum": 0 },
+          "entry_point_ids": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "sink_ids": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "anomaly_ids": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "semgrep_keys": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "psalm_keys": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "source_focus_files": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "rationale": { "type": "string" }
+        }
+      }
+    },
+    "entry_points": { "type": "array" },
+    "sources": { "type": "array" },
+    "sinks": { "type": "array" },
+    "guards": { "type": "array" },
+    "anomalies": { "type": "array" },
+    "unresolved_hooks": { "type": "array" },
+    "coverage_gaps": { "type": "array" },
+    "semgrep_results": { "type": "array" },
+    "psalm_results": { "type": "array" },
+    "source_focus_files": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

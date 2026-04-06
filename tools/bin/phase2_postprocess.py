@@ -234,6 +234,32 @@ def normalize_auth(value: Any) -> str:
     return _AUTH_NORMALIZE.get(v, "unknown")
 
 
+def normalize_confidence(value: Any) -> Optional[float]:
+    """Normalize confidence to a numeric 0..1 score for downstream stability."""
+    if value is None:
+        return None
+    if isinstance(value, (int, float)):
+        numeric = float(value)
+        return max(0.0, min(1.0, numeric))
+    if isinstance(value, str):
+        raw = value.strip().lower()
+        label_map = {
+            "very low": 0.1,
+            "low": 0.3,
+            "medium": 0.6,
+            "high": 0.85,
+            "very high": 0.95,
+        }
+        if raw in label_map:
+            return label_map[raw]
+        try:
+            numeric = float(raw)
+        except ValueError:
+            return None
+        return max(0.0, min(1.0, numeric))
+    return None
+
+
 # P2-02: dismissed_signals — semgrep hits not surfaced in any finding
 def find_dismissed_signals(phase2_data: dict, semgrep_data: dict) -> List[dict]:
     """Return semgrep results that do not appear in any Phase 2 finding (including FPs)."""
@@ -291,15 +317,19 @@ def main() -> int:
     findings = data.get("findings", []) or []
     downgraded = 0
 
-    # P2-05: Soft schema validation — warn on stderr, never block pipeline
-    validate_findings_schema(findings)
-
     for f in findings:
         issues: List[str] = []
 
         # P2-03: normalize auth_required to canonical gate-comparable value
         if "auth_required" in f:
             f["auth_required"] = normalize_auth(f["auth_required"])
+
+        if "confidence" in f:
+            normalized_confidence = normalize_confidence(f.get("confidence"))
+            if normalized_confidence is not None:
+                f["confidence"] = normalized_confidence
+            else:
+                issues.append("confidence_not_numeric")
 
         # Normalize sink/source location fields.
         if not f.get("sink_file_path") and f.get("file_path"):
@@ -393,6 +423,11 @@ def main() -> int:
 
         if issues:
             f["postprocess_issues"] = sorted(set(issues))
+
+    # P2-05: Soft schema validation — warn on stderr, never block pipeline.
+    # Run after normalization so compatibility shims (for example confidence labels)
+    # do not produce misleading warnings.
+    validate_findings_schema(findings)
 
     data["postprocess"] = {
         "version": "v2-evidence-bind",

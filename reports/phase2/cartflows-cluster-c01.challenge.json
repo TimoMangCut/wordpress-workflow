@@ -1,0 +1,136 @@
+{
+  "plugin_slug": "cartflows",
+  "cluster_id": "cluster-c01",
+  "stage": "challenge",
+  "status": "mixed",
+  "summary": {
+    "member_findings_reviewed": 6,
+    "material_links_found": 1,
+    "objections_count": 5,
+    "open_questions_count": 2,
+    "expansion_attempts_count": 1,
+    "notes": "UPHELD: The synthesizer's core upload bundle (cartflows-a1-001, agent-a2-f22-upload-checkout-file, cf-c-anom_35, cf-c-anom_5) is a valid shared_guard_model join \u2014 all four reach upload_checkout_file() at :293 with the same nonce gate, allowlist, MIME check, and wp_handle_upload() sink. CHALLENGED: cf-c-anom_5's sink_anchor at :308 (require_once file.php) misidentifies the true sink; the real sink is wp_handle_upload() at :425 \u2014 this is an agent-c anchor error, not a distinct finding. UPHELD: severity:critical on cf-c-anom_35 and cf-c-anom_5 is unjustified; the absent current_user_can() is intentional on a public checkout endpoint. CHALLENGED: The synthesizer did not flag that wp_handle_upload() at :425 passes wp_get_mime_types() (full list) while the allowlist at :319-325 restricts to 13 extensions \u2014 however the wp_check_filetype_and_ext() at :331 with the same wp_get_mime_types() argument creates a real content-type verification, so the net defense is sound. UPHELD: agent-a4-review-checkout-block-layout-include needs_more_evidence; no low-privileged write path into wcf-checkout-layout has been traced. UPHELD: cartflows-a1-002 keep_separate."
+  },
+  "suggested_actions": [
+    {
+      "finding_id": "cartflows-a1-001",
+      "action": "join_with_cluster",
+      "reason": "Same upload_checkout_file() handler, nonce gate at :295, allowlist at :319-325, MIME check at :331, and wp_handle_upload() sink at :425 as agent-a2-f22-upload-checkout-file. The nopriv entry point (:58) reaching the same method as the priv entry point (:57) is the only difference \u2014 both collapse to one upload surface."
+    },
+    {
+      "finding_id": "agent-a2-f22-upload-checkout-file",
+      "action": "join_with_cluster",
+      "reason": "Identical handler, guards, and sink as cartflows-a1-001; priv vs nopriv entry point distinction is structurally irrelevant because the same upload_checkout_file() method is registered at both hooks and applies the same guard chain."
+    },
+    {
+      "finding_id": "cf-c-anom_35",
+      "action": "downgrade",
+      "reason": "severity:critical is unjustified. The absent current_user_can() does not create a bypass because the endpoint is intentionally unauthenticated \u2014 it serves checkout customers who have no WordPress account. The nonce issued at :1776 in checkout markup is the intended trust signal. Downgrade to same severity as cartflows-a1-001 (medium) and join the upload bundle."
+    },
+    {
+      "finding_id": "cf-c-anom_5",
+      "action": "downgrade",
+      "reason": "severity:critical is unjustified for the same reason as cf-c-anom_35. Additionally, the source_anchor at :57 is the hook registration line and the sink_anchor at :308 is a require_once for file.php \u2014 neither is the true source or sink. The actual sink is wp_handle_upload() at :425. This anchor misidentification inflates the apparent finding. Downgrade and join the upload bundle."
+    },
+    {
+      "finding_id": "agent-a4-review-checkout-block-layout-include",
+      "action": "needs_more_evidence",
+      "reason": "The include at :533 requires attacker control of wcf-checkout-layout meta or the cartflows_checkout_layout_template filter. The Gutenberg preview path at :232 applies sanitize_title() which strips path traversal syntax. No low-privileged write primitive into wcf-checkout-layout has been traced in the bounded evidence. Cannot confirm or reject without a traced source-to-sink path."
+    },
+    {
+      "finding_id": "cartflows-a1-002",
+      "action": "keep_separate",
+      "reason": "check_email_exists() at :205 uses a separate AJAX hook, a separate nonce (check-email-exist), and a different sink (email_exists()). It does not compose with the upload bundle into any stronger chain."
+    }
+  ],
+  "proposed_links": [
+    {
+      "finding_ids": [
+        "cartflows-a1-001",
+        "agent-a2-f22-upload-checkout-file",
+        "cf-c-anom_35",
+        "cf-c-anom_5"
+      ],
+      "relation": "shared_guard_model",
+      "reason": "All four findings trace to upload_checkout_file() at :293. The guard chain is identical: check_ajax_referer('wcf-file-upload') at :295, extension allowlist at :319-325 via get_allowed_file_extensions(), file size check at :327-329, wp_check_filetype_and_ext() at :331-334, then wp_handle_upload() at :425. The priv/nopriv registration at :57/:58 and the absent current_user_can() are structural properties of the same handler, not distinct bypass layers. These four collapse to one upload surface."
+    }
+  ],
+  "objections": [
+    {
+      "target_finding_ids": [
+        "cf-c-anom_35",
+        "cf-c-anom_5"
+      ],
+      "reason": "The synthesizer's downgrade reasoning is correct and upheld: absence of current_user_can() on an intentionally public checkout upload endpoint is not a privilege-bypass finding. The nonce issued by the checkout markup at :1776 is the intended trust gate. The critical severity assigned by agent-c is inflation."
+    },
+    {
+      "target_finding_ids": [
+        "cf-c-anom_5"
+      ],
+      "reason": "The sink_anchor (:308, require_once ABSPATH . 'wp-admin/includes/file.php') is not a security sink \u2014 it is a defensive include that loads the wp_handle_upload() function. The true sink is :425. This misidentification means the finding's source-to-sink trace is malformed. The finding should be corrected before being joined to the bundle, not joined as-is."
+    },
+    {
+      "target_finding_ids": [
+        "cartflows-a1-001",
+        "agent-a2-f22-upload-checkout-file",
+        "cf-c-anom_35",
+        "cf-c-anom_5"
+      ],
+      "reason": "The synthesizer did not evaluate the MIME-allowlist mismatch: the allowlist at :319-325 is restricted to 13 extensions from get_allowed_file_extensions(), but wp_handle_upload() at :425 passes 'mimes' => wp_get_mime_types() (the full WordPress MIME list). This asymmetry is worth noting. However, the wp_check_filetype_and_ext() call at :331 uses the same wp_get_mime_types() and verifies that file content type matches the claimed extension \u2014 so an attacker cannot pass a PHP file with a .jpg extension past :333. The defense is sound; the asymmetry does not open a bypass. This objection is self-resolving from the evidence pack."
+    },
+    {
+      "target_finding_ids": [
+        "agent-a4-review-checkout-block-layout-include"
+      ],
+      "reason": "The synthesizer's needs_more_evidence is correct and upheld. The include at :533 uses apply_filters('cartflows_checkout_layout_template', $checkout_layout) with $checkout_layout coming from get_checkout_meta_value($checkout_id, 'wcf-checkout-layout') at :526. The Gutenberg block path at :232 applies sanitize_title() which would convert any path-like string (e.g. '../wp-config') to a URL-safe slug ('..wp-config') before it could be stored. No evidence in the pack shows a path that bypasses sanitize_title() and reaches a writable meta with a path-valued result."
+    },
+    {
+      "target_finding_ids": [
+        "cartflows-a1-002"
+      ],
+      "reason": "Upheld as keep_separate. email_exists() at :211 confirms whether an email address is registered as a WordPress user. The nonce check at :207 uses check_ajax_referer (dies on failure, unlike the upload handler which uses the soft-fail false variant). The only concern is whether the nonce for 'check-email-exist' is emitted to unauthenticated users \u2014 if so, user enumeration is unrestricted. This is a gap in the evidence pack but does not connect this finding to the upload bundle."
+    }
+  ],
+  "open_questions": [
+    {
+      "target_finding_ids": [
+        "cartflows-a1-002"
+      ],
+      "question": "Is the 'check-email-exist' nonce emitted to unauthenticated visitors on the checkout page? If so, cartflows-a1-002 is an unrestricted user enumeration endpoint without any meaningful gate.",
+      "why_it_matters": "The nonce check at :207 uses the hard-fail form of check_ajax_referer (no false third arg), so a valid nonce is required. If the nonce is publicly emitted at checkout, any unauthenticated actor can enumerate registered WordPress users. This does not compose with the upload bundle but may affect severity of cartflows-a1-002 independently."
+    },
+    {
+      "target_finding_ids": [
+        "agent-a4-review-checkout-block-layout-include"
+      ],
+      "question": "Is there any admin-level or author-level write path to wcf-checkout-layout post meta that does not pass through sanitize_title(), such as a direct REST API endpoint, a bulk-action handler, or a WooCommerce order meta write?",
+      "why_it_matters": "If an admin can set wcf-checkout-layout to an absolute path (e.g. via a meta update REST call), the include at :533 becomes a privileged LFI. This does not change the trust boundary for unauthenticated actors but could matter for privilege escalation chains (contributor -> code execution) in multisite or role-separated environments."
+    }
+  ],
+  "missing_evidence": [
+    {
+      "target_finding_ids": [
+        "cartflows-a1-001",
+        "agent-a2-f22-upload-checkout-file",
+        "cf-c-anom_35",
+        "cf-c-anom_5"
+      ],
+      "evidence_needed": "The code path for get_field_restrictions() called at :317 \u2014 specifically what values it returns for 'extensions' and 'max_size' under default configuration and when no admin has configured the checkout file field. If the default returns an empty restrictions array, $allowed_extensions falls back to the full master allowlist at :319-321, which is the expected safe behavior. If the default is misconfigured, the extension gate could be weaker than assumed.",
+      "reason": "The evidence pack includes the extension allowlist at :1934 and the restriction logic at :319-325 but does not show get_field_restrictions() implementation. The upload bundle's severity assessment depends on whether the allowlist is enforced by default or requires explicit admin configuration."
+    },
+    {
+      "target_finding_ids": [
+        "agent-a4-review-checkout-block-layout-include"
+      ],
+      "evidence_needed": "A traced write path from any privilege level (unauthenticated, subscriber, admin) into the 'wcf-checkout-layout' post meta that bypasses or precedes sanitize_title() processing, reaching the include at :533 with an attacker-chosen filesystem path.",
+      "reason": "The include behavior is confirmed at :532-533, but attacker control of the included path has not been demonstrated. Without this trace, the finding remains UNCERTAIN."
+    }
+  ],
+  "expansion_attempts": [
+    {
+      "opened_files": [],
+      "reason": "Primary snippets and optional snippets from the evidence pack were sufficient to evaluate all synthesis claims. The synthesizer already expanded into optional_files (Gutenberg classes) and one out-of-band file (class-cartflows-default-meta.php). No additional file reads were required to form challenge objections \u2014 all objections are grounded in code already present in the evidence pack.",
+      "result": "No expansion performed. All challenge points derived from primary_snippets and optional_snippets in the pack."
+    }
+  ]
+}

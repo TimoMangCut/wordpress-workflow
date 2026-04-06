@@ -1,0 +1,101 @@
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "core",
+  "review_status": "needs_revision",
+  "summary": {
+    "worker_findings_reviewed": 1,
+    "material_issues_found": true,
+    "new_candidate_count": 0,
+    "notes": "The FP direction for HR-FP-005 is supported, but the packet should correct the auth boundary and the dataflow/impact framing. POST `/integrations` is admin-only, and the sink writes only whitelisted integration state into a fixed option name."
+  },
+  "finding_reviews": [
+    {
+      "finding_id": "HR-FP-005",
+      "packet_id": "HR-FP-005",
+      "parent_finding_id": "HR-FP-005",
+      "assessment": "field_fix",
+      "reason": "Reachability: the packet-local path from the POST `/integrations` route at `src/Api/Routes/IntegrationsRoutes.php:31-50` into `post_integrations_handler()` at `src/Api/Handlers/IntegrationsApiHandler.php:70-95` and the `update_option()` sink at line 210 is real, but only after the route's `permission_callback` at line 37 passes. Authorization: the worker packet understates the guard; that callback resolves to `Routes::permission_check()`, which returns `current_user_can( 'manage_options' )` at `src/Api/Routes/Routes.php:25-33`, so this is admin-only rather than `auth_required: null` / `unknown`. Dataflow: request input is constrained to a validated integration key at `src/Api/Routes/IntegrationsRoutes.php:39-44` and a boolean `is_active` flag at `src/Api/Routes/IntegrationsRoutes.php:46-49`; `post_integrations_handler()` only saves `array( Integration::INTEGRATION_IS_ACTIVE => $is_active )` for the selected integration at `src/Api/Handlers/IntegrationsApiHandler.php:84-85`, and the sink always updates the fixed option name `self::INTEGRATIONS_OPTION_NAME` at line 210. `get_integrations_data()` also filters persisted state down to known integration keys with `array_intersect_key()` at `src/Api/Handlers/IntegrationsApiHandler.php:165` before `save_integration()` writes back at lines 201-205, which undercuts arbitrary key/value injection. Impact: packet-local code shows an intended admin-only integration toggle / activation flow, not privilege escalation via arbitrary option update; even the visible side effects at `src/Api/Handlers/IntegrationsApiHandler.php:147-150` stay within activating the chosen integration and setting a fixed boolean option. Missing evidence: to keep a privilege-escalation theory, the packet would need file:line proof of a lower-privileged or public path into POST `/integrations`, control over the option name or additional stored fields, or a downstream privileged sink that turns `hostinger_reach_integrations` into escalation.",
+      "required_changes": [
+        "Correct the auth boundary from `null` / `unknown` to an admin-only REST path gated by `current_user_can( 'manage_options' )`.",
+        "Recast the packet as a false positive for arbitrary option-update privilege escalation: the reviewed sink writes only whitelisted integration state to the fixed `hostinger_reach_integrations` option.",
+        "Add the request-shape constraints at `src/Api/Routes/IntegrationsRoutes.php:39-49` and the filtered-write path at `src/Api/Handlers/IntegrationsApiHandler.php:84-85`, `src/Api/Handlers/IntegrationsApiHandler.php:165`, and `src/Api/Handlers/IntegrationsApiHandler.php:210` as explicit refuting evidence.",
+        "Narrow the claimed impact to admin-only integration state changes and remove any implication that lower-privileged users can update arbitrary WordPress options through this packet."
+      ],
+      "counter_evidence": [
+        {
+          "type": "scope",
+          "file": "src/Api/Routes/IntegrationsRoutes.php",
+          "line": 37,
+          "detail": "The POST `/integrations` route uses `permission_callback => array( $this, 'permission_check' )`, so the reviewed entry point is not public."
+        },
+        {
+          "type": "guard",
+          "file": "src/Api/Routes/Routes.php",
+          "line": 33,
+          "detail": "`permission_check()` returns `current_user_can( 'manage_options' )`, which is a stronger authorization boundary than the packet's `auth_required: null` / `unknown` framing."
+        },
+        {
+          "type": "guard",
+          "file": "src/Api/Routes/IntegrationsRoutes.php",
+          "line": 42,
+          "detail": "The `integration` request parameter is accepted only when the validation callback confirms it exists in `IntegrationsApiHandler::get_integrations()`."
+        },
+        {
+          "type": "sanitizer",
+          "file": "src/Api/Routes/IntegrationsRoutes.php",
+          "line": 48,
+          "detail": "The REST arg schema constrains `Integration::INTEGRATION_IS_ACTIVE` to a boolean, narrowing the packet-local input shape before it reaches the handler."
+        },
+        {
+          "type": "other",
+          "file": "src/Api/Handlers/IntegrationsApiHandler.php",
+          "line": 85,
+          "detail": "`post_integrations_handler()` writes only `array( Integration::INTEGRATION_IS_ACTIVE => $is_active )` for the selected integration; it does not forward arbitrary nested fields from the request."
+        },
+        {
+          "type": "other",
+          "file": "src/Api/Handlers/IntegrationsApiHandler.php",
+          "line": 165,
+          "detail": "`get_integrations_data()` intersects saved state with the currently available integrations via `array_intersect_key( $integrations_state, $available_integrations )`, which refutes persistence of arbitrary integration keys in this write path."
+        },
+        {
+          "type": "impact",
+          "file": "src/Api/Handlers/IntegrationsApiHandler.php",
+          "line": 210,
+          "detail": "The sink always updates `self::INTEGRATIONS_OPTION_NAME`; packet-local code does not show attacker control over the option name, so classic arbitrary-option-update privilege escalation does not fit this path."
+        },
+        {
+          "type": "impact",
+          "file": "src/Api/Handlers/IntegrationsApiHandler.php",
+          "line": 147,
+          "detail": "The only visible side effect beyond saving integration state is `plugin_manager->activate( $integration_name )`, followed by setting a fixed `HOSTINGER_REACH_HAS_USER_ACTION` option at line 150; packet-local code does not show a lower-privilege caller gaining new capabilities."
+        }
+      ],
+      "missing_evidence": [
+        "File:line proof of a packet-local bypass or alternate caller that reaches `src/Api/Routes/IntegrationsRoutes.php:31-37` without satisfying `Routes::permission_check()` is missing.",
+        "File:line evidence that attacker input can control the option name at `src/Api/Handlers/IntegrationsApiHandler.php:210` or inject additional persisted fields beyond the validated integration key and boolean `is_active` is missing.",
+        "File:line evidence that the fixed `hostinger_reach_integrations` option is later consumed by a privileged sink that produces concrete escalation for a lower-privileged actor is missing."
+      ],
+      "expansion_attempts": [
+        {
+          "type": "out_of_band_file",
+          "target": "src/Api/Routes/Routes.php",
+          "reason": "Needed one minimal out-of-band check because the packet-local files referenced `permission_check()` by array callable but did not define the method.",
+          "outcome": "Opened within the single out-of-band allowance. `Routes::permission_check()` returns `current_user_can( 'manage_options' )` at `src/Api/Routes/Routes.php:33`, confirming the POST route is admin-only."
+        }
+      ],
+      "suggested_field_corrections": {
+        "verdict": "FP",
+        "vuln_type": "False positive: admin-only POST `/integrations` writes only whitelisted integration state to the fixed `hostinger_reach_integrations` option",
+        "severity": "info",
+        "confidence": 0.99,
+        "auth_required": "admin-only via `current_user_can( 'manage_options' )`",
+        "source_anchor": "src/Api/Routes/IntegrationsRoutes.php:31",
+        "sink_anchor": "src/Api/Handlers/IntegrationsApiHandler.php:210",
+        "fp_reason": "The POST `/integrations` route is gated by `permission_check()` at `src/Api/Routes/IntegrationsRoutes.php:37`, and `Routes::permission_check()` requires `current_user_can( 'manage_options' )` at `src/Api/Routes/Routes.php:33`. Request data is limited to a validated integration key and a boolean `is_active` at `src/Api/Routes/IntegrationsRoutes.php:39-49`; `post_integrations_handler()` writes only `array( Integration::INTEGRATION_IS_ACTIVE => $is_active )` for that integration at `src/Api/Handlers/IntegrationsApiHandler.php:84-85`, and the sink updates the fixed option name `self::INTEGRATIONS_OPTION_NAME` at line 210.",
+        "claimed_impact": "Admin-only integration-state change within the fixed `hostinger_reach_integrations` option; no packet-local arbitrary option update or privilege escalation is shown."
+      }
+    }
+  ]
+}

@@ -45,6 +45,20 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from report_paths import build_report_layout
 
+FINAL_STATES = {"CONFIRMED", "UNCERTAIN", "RISK_NOTE", "REJECTED"}
+PUBLIC_ENTRY_POINT_TYPES = {"ajax_nopriv", "admin_post_nopriv"}
+STRONG_CAPABILITY_HINTS = {
+    "manage_options",
+    "activate_plugins",
+    "install_plugins",
+    "update_plugins",
+    "delete_plugins",
+    "edit_users",
+    "list_users",
+    "manage_woocommerce",
+    "manage_network",
+}
+
 
 # -----------------------------
 # Utilities
@@ -137,6 +151,13 @@ def clamp01(x: float) -> float:
 
 def normalize_vuln_type(v: str) -> str:
     return (v or "").strip().lower()
+
+
+def normalize_final_state(value: Any) -> Optional[str]:
+    if value is None:
+        return None
+    state = str(value).strip().upper()
+    return state if state in FINAL_STATES else None
 
 
 # -----------------------------
@@ -298,6 +319,96 @@ class SemanticValidator:
                     if isinstance(key, str) and key:
                         self.storage_reads_by_key.setdefault(key, []).append(src)
 
+    def _read_callback_snippet(self, callback_ref: dict) -> str:
+        if not callback_ref or not self.plugin_dir:
+            return ""
+        file_path = normalize_plugin_rel_path(callback_ref.get("file") or "", self.plugin_dir)
+        if not file_path:
+            return ""
+        abs_path = os.path.join(self.plugin_dir, file_path)
+        if not os.path.exists(abs_path):
+            return ""
+
+        start_line = safe_int(callback_ref.get("line_start") or callback_ref.get("line") or 0)
+        end_line = safe_int(callback_ref.get("line_end") or start_line or 0)
+        if start_line <= 0:
+            return ""
+        if end_line < start_line:
+            end_line = start_line
+
+        try:
+            with open(abs_path, "r", encoding="utf-8", errors="replace") as handle:
+                lines = handle.readlines()
+        except Exception:
+            return ""
+
+        start_idx = max(0, start_line - 1)
+        end_idx = min(len(lines), end_line + 3)
+        return "".join(lines[start_idx:end_idx])
+
+    def _inspect_rest_permission_callback(self, ep: dict) -> Tuple[str, str]:
+        permission_callback = str(ep.get("permission_callback") or "").strip()
+        callback_ref = ep.get("permission_callback_ref") or {}
+
+        if permission_callback == "__return_true":
+            return "public", "__return_true permission callback"
+
+        snippet = self._read_callback_snippet(callback_ref)
+        lowered = snippet.lower()
+        if "__return_true" in lowered:
+            return "public", "permission callback body returns true"
+
+        current_user_caps = re.findall(r"current_user_can\(\s*['\"]([^'\"]+)['\"]", snippet)
+        if current_user_caps:
+            caps = sorted(set(current_user_caps))
+            if any(cap in STRONG_CAPABILITY_HINTS for cap in caps):
+                return "builtin_cap", f"permission callback gates on strong capability(s): {caps}"
+            return "custom_cap", f"permission callback gates on custom capability(s): {caps}"
+
+        if permission_callback:
+            return "callable_present", f"permission callback `{permission_callback}` present but strength unresolved"
+        if callback_ref:
+            callback_name = callback_ref.get("name") or callback_ref.get("file") or "unknown"
+            return "callable_present", f"permission callback `{callback_name}` present but strength unresolved"
+        return "missing", "rest route permission_callback missing or unresolved"
+
+    def _normalize_patchstack_eligibility(self, finding: dict) -> Tuple[Optional[bool], str]:
+        eligible = finding.get("patchstack_eligible")
+        if eligible is None:
+            return None, "patchstack eligibility not determined"
+        if isinstance(eligible, bool):
+            if eligible:
+                return True, "patchstack eligible"
+            return False, "patchstack ineligible or intentionally withheld"
+        return None, "patchstack_eligible invalid; coerced to unknown"
+
+    def _check_artifact_completeness(self, finding: dict) -> Tuple[float, List[str], str]:
+        missing: List[str] = []
+        if not str(finding.get("vuln_type") or "").strip():
+            missing.append("missing_vuln_type")
+        if not str(finding.get("sink_file_path") or finding.get("file_path") or "").strip():
+            missing.append("missing_sink_file_path")
+        sink_line = safe_int(finding.get("sink_line_number") or finding.get("line_number") or 0)
+        if sink_line <= 0:
+            missing.append("missing_sink_line_number")
+
+        if not missing:
+            return 1.0, [], "required mature fields present"
+        if len(missing) == 1:
+            return 0.5, missing, f"incomplete mature fields: {missing[0]}"
+        return 0.0, missing, "incomplete mature fields: " + ", ".join(missing)
+
+    def _legacy_validation_status(self, status: str, verdict: str, confidence: float) -> str:
+        if status == "CONFIRMED":
+            return "CONFIRMED"
+        if status == "RISK_NOTE":
+            return "PLAUSIBLE" if confidence >= 0.5 else "UNCERTAIN"
+        if status == "UNCERTAIN":
+            return "UNCERTAIN"
+        if verdict == "FP":
+            return "ACCEPTED_FP"
+        return "LIKELY_HALLUCINATION"
+
     # -----------------------------
     # EP resolution
     # -----------------------------
@@ -396,6 +507,9 @@ class SemanticValidator:
         resolution = self._resolve_entry_point(finding)
         ep = resolution.ep
         ep_id = ep.get("id") if ep else None
+        review_meta = finding.get("phase3_review") if isinstance(finding.get("phase3_review"), dict) else {}
+        review_final_state = normalize_final_state(review_meta.get("final_state") or review_meta.get("proposed_final_state"))
+        patchstack_eligible, patchstack_notes = self._normalize_patchstack_eligibility(finding)
 
         check_scores: Dict[str, Optional[float]] = {}
         check_notes: Dict[str, str] = {}
@@ -433,7 +547,8 @@ class SemanticValidator:
             return {
                 "finding_id": finding.get("finding_id"),
                 "verdict": verdict,
-                "validation_status": "ACCEPTED_FP",
+                "validation_status": "REJECTED",
+                "legacy_validation_status": "ACCEPTED_FP",
                 "confidence_score": 1.0,
                 "resolved_entry_point_id": ep_id,
                 "entry_point_exact": resolution.exact,
@@ -443,6 +558,10 @@ class SemanticValidator:
                 "check_scores": fp_checks,
                 "check_notes": fp_check_notes,
                 "issues": fp_issues,
+                "patchstack_eligible": patchstack_eligible,
+                "reportability_notes": {"patchstack_eligible": patchstack_notes},
+                "review_final_state": review_final_state,
+                "reopening_condition": review_meta.get("reopening_condition"),
             }
 
         # --- compute checks ---
@@ -496,47 +615,88 @@ class SemanticValidator:
         check_scores["cvss_plausible"] = cvss_score
         check_notes["cvss_plausible"] = cvss_notes
 
-        patchstack_score, patchstack_notes = self._check_patchstack_eligibility(finding)
-        check_scores["patchstack_eligible"] = patchstack_score
-        check_notes["patchstack_eligible"] = patchstack_notes
-
         halluc_score, halluc_notes = self._detect_hallucination(finding, file_exists_score)
         check_scores["no_hallucination"] = halluc_score
         check_notes["no_hallucination"] = halluc_notes
         if halluc_score < 0.5:
             issues.append("hallucination_signals")
 
+        completeness_score, completeness_issues, completeness_notes = self._check_artifact_completeness(finding)
+        check_scores["artifact_completeness"] = completeness_score
+        check_notes["artifact_completeness"] = completeness_notes
+        issues.extend(completeness_issues)
+
         # --- confidence scoring (dynamic weights; N/A checks excluded) ---
         confidence, used = self._compute_confidence(check_scores)
         check_notes["_confidence"] = f"weighted checks used: {', '.join(used)}"
 
         # --- status classification ---
+        strong_path = (
+            path_score is None
+            or path_score >= 0.8
+            or (
+                resolution.exact
+                and path_score >= 0.55
+                and (evidence_score is None or evidence_score >= 0.9)
+                and (auth_score is None or auth_score >= 0.9)
+            )
+        )
         # Hard constraint: cannot be CONFIRMED without strong evidence binding.
         can_confirm = (
             (file_exists_score is None or file_exists_score >= 0.9)
             and (evidence_score is None or evidence_score >= 0.9)
-            and (path_score is None or path_score >= 0.8)
+            and strong_path
+            and (auth_score is None or auth_score >= 0.85)
+            and completeness_score >= 1.0
             and halluc_score >= 0.8
+        )
+
+        deterministic_refutation = (
+            (file_exists_score is not None and file_exists_score < 0.5)
+            or (evidence_score is not None and evidence_score < 0.5)
+            or halluc_score < 0.35
         )
 
         if confidence >= 0.75 and can_confirm:
             status = "CONFIRMED"
-        elif confidence >= 0.50:
-            status = "PLAUSIBLE"
         elif confidence >= 0.30:
             status = "UNCERTAIN"
         else:
-            status = "LIKELY_HALLUCINATION"
+            status = "REJECTED" if deterministic_refutation else "UNCERTAIN"
 
-        # If evidence binding is weak, cap at UNCERTAIN (avoid false CONFIRMED/PLAUSIBLE).
-        if status in ("CONFIRMED", "PLAUSIBLE") and not can_confirm:
+        # If evidence binding is weak, cap at UNCERTAIN (avoid false CONFIRMED).
+        if status == "CONFIRMED" and not can_confirm:
             status = "UNCERTAIN"
             issues.append("insufficient_evidence_to_confirm")
+
+        if verdict == "REVIEW" and status == "CONFIRMED":
+            status = "UNCERTAIN"
+            issues.append("phase2_review_not_resolved")
+
+        if (
+            status == "UNCERTAIN"
+            and deterministic_refutation
+            and completeness_score < 1.0
+            and path_score is not None
+            and path_score < 0.5
+        ):
+            status = "REJECTED"
+            issues.append("deterministic_refutation")
+
+        if review_final_state == "REJECTED":
+            status = "REJECTED"
+        elif review_final_state == "RISK_NOTE":
+            status = "RISK_NOTE"
+        elif review_final_state == "UNCERTAIN" and status == "CONFIRMED":
+            status = "UNCERTAIN"
+
+        legacy_status = self._legacy_validation_status(status, str(verdict or ""), confidence)
 
         return {
             "finding_id": finding.get("finding_id"),
             "verdict": verdict,
             "validation_status": status,
+            "legacy_validation_status": legacy_status,
             "confidence_score": round(confidence, 4),
             "resolved_entry_point_id": ep_id,
             "entry_point_exact": resolution.exact,
@@ -546,6 +706,10 @@ class SemanticValidator:
             "check_scores": check_scores,
             "check_notes": check_notes,
             "issues": sorted(set(issues)),
+            "patchstack_eligible": patchstack_eligible,
+            "reportability_notes": {"patchstack_eligible": patchstack_notes},
+            "review_final_state": review_final_state,
+            "reopening_condition": review_meta.get("reopening_condition"),
             # Propagate key Phase 2 fields so downstream consumers (benchmark, MD writer)
             # have direct access without re-loading phase2.json.
             "sink_file_path": finding.get("sink_file_path") or finding.get("file_path"),
@@ -574,8 +738,8 @@ class SemanticValidator:
             "code_evidence": 0.18,
             "reasoning_quality": 0.10,
             "cvss_plausible": 0.04,
-            "patchstack_eligible": 0.03,
             "no_hallucination": 0.12,
+            "artifact_completeness": 0.07,
         }
 
         num = 0.0
@@ -791,7 +955,22 @@ class SemanticValidator:
 
         expected = auth_map.get(ep_type)
         if expected is None:
-            return 0.8, f"{ep_source}: EP type={ep_type} auth depends on permission_callback"
+            callback_kind, callback_note = self._inspect_rest_permission_callback(ep)
+            if callback_kind == "public":
+                if claimed in ("none", ""):
+                    return 1.0, f"{ep_source}: public REST route ({callback_note})"
+                return 0.25, f"{ep_source}: REST route is public but finding claims auth `{claimed}`"
+            if callback_kind == "builtin_cap":
+                if claimed == "none":
+                    return 0.25, f"{ep_source}: REST route is guarded by capability, not public ({callback_note})"
+                return 0.9, f"{ep_source}: {callback_note}"
+            if callback_kind == "custom_cap":
+                if claimed == "none":
+                    return 0.25, f"{ep_source}: custom capability guard contradicts unauth claim ({callback_note})"
+                return 0.45, f"{ep_source}: {callback_note}; trust boundary unresolved"
+            if callback_kind == "callable_present":
+                return 0.55, f"{ep_source}: {callback_note}"
+            return 0.35, f"{ep_source}: {callback_note}"
 
         if claimed == expected:
             return 1.0, f"auth matches {ep_source} type ({ep_type} → {expected})"
@@ -844,6 +1023,8 @@ class SemanticValidator:
         def _score_guard_leg(leg_ep_id: str, leg_label: str) -> Tuple[float, str]:
             """Score guard coverage for one EP leg."""
             guards = self.guards_by_ep.get(leg_ep_id, [])
+            leg_ep = self.ep_by_id.get(leg_ep_id) or {}
+            leg_type = str(leg_ep.get("type") or "").strip()
             nonce_guards = [g for g in guards if g.get("type") == "nonce_check"]
             cap_guards   = [g for g in guards if g.get("type") == "capability_check"]
 
@@ -859,6 +1040,8 @@ class SemanticValidator:
                 return 0.0, f"contradiction [{leg_label}]: finding claims no capability, IR has effective cap guard"
 
             if (not claims_no_nonce and not claims_no_cap) and (has_effective_nonce or has_effective_cap):
+                if leg_type in PUBLIC_ENTRY_POINT_TYPES and has_effective_nonce and not has_effective_cap:
+                    return 0.75, f"[{leg_label}] public endpoint has nonce-only guard; treat as CSRF signal, not authz barrier"
                 return 0.9, f"[{leg_label}] IR indicates guards present; finding does not claim missing guards"
 
             all_effective = nonce_eff + cap_eff
@@ -908,6 +1091,9 @@ class SemanticValidator:
             return 0.0, "contradiction: finding claims no capability, IR has effective capability guard"
 
         if (not claims_no_nonce and not claims_no_cap) and (has_effective_nonce or has_effective_cap):
+            ep_type = str(ep.get("type") or "").strip()
+            if ep_type in PUBLIC_ENTRY_POINT_TYPES and has_effective_nonce and not has_effective_cap:
+                return 0.75, "public endpoint has nonce-only guard; treat as CSRF signal, not authz barrier"
             return 0.9, "IR indicates guards present; finding does not claim missing guards"
 
         all_effective = nonce_eff + cap_eff
@@ -1331,21 +1517,31 @@ def main() -> int:
 
     tp_findings = [f for f in findings if f.get("verdict") == "TP"]
     confirmed = [v for v in validated if v["validation_status"] == "CONFIRMED"]
-    plausible = [v for v in validated if v["validation_status"] == "PLAUSIBLE"]
     uncertain = [v for v in validated if v["validation_status"] == "UNCERTAIN"]
-    hallucinated = [v for v in validated if v["validation_status"] == "LIKELY_HALLUCINATION"]
-    accepted_fp = [v for v in validated if v["validation_status"] == "ACCEPTED_FP"]
+    risk_notes = [v for v in validated if v["validation_status"] == "RISK_NOTE"]
+    rejected = [v for v in validated if v["validation_status"] == "REJECTED"]
 
     actionable = []
     actionable_not_patchstack = []
+    actionable_reportability_unknown = []
     for i, v in enumerate(validated):
-        if findings[i].get("verdict") == "TP" and v["validation_status"] in ("CONFIRMED", "PLAUSIBLE"):
+        if findings[i].get("verdict") == "TP" and v["validation_status"] == "CONFIRMED":
             merged = {**findings[i], "confidence_score": v["confidence_score"]}
-            # O-01: separate patchstack-ineligible findings from actionable list
-            if findings[i].get("patchstack_eligible") is False:
+            patchstack_eligible = v.get("patchstack_eligible")
+            if patchstack_eligible is False:
                 actionable_not_patchstack.append(merged)
+            elif patchstack_eligible is None:
+                actionable_reportability_unknown.append(merged)
             else:
                 actionable.append(merged)
+
+    legacy_summary = {
+        "confirmed": sum(1 for v in validated if v.get("legacy_validation_status") == "CONFIRMED"),
+        "plausible": sum(1 for v in validated if v.get("legacy_validation_status") == "PLAUSIBLE"),
+        "uncertain": sum(1 for v in validated if v.get("legacy_validation_status") == "UNCERTAIN"),
+        "accepted_fp": sum(1 for v in validated if v.get("legacy_validation_status") == "ACCEPTED_FP"),
+        "likely_hallucination": sum(1 for v in validated if v.get("legacy_validation_status") == "LIKELY_HALLUCINATION"),
+    }
 
     output = {
         "plugin_slug": slug,
@@ -1363,14 +1559,20 @@ def main() -> int:
         },
         "phase3_summary": {
             "confirmed": len(confirmed),
-            "plausible": len(plausible),
             "uncertain": len(uncertain),
-            "accepted_fp": len(accepted_fp),
-            "likely_hallucination": len(hallucinated),
+            "risk_note": len(risk_notes),
+            "rejected": len(rejected),
         },
+        "phase3_summary_legacy": legacy_summary,
         "validated_findings": validated,
         "actionable_findings": actionable,
         "actionable_not_patchstack": actionable_not_patchstack,
+        "actionable_reportability_unknown": actionable_reportability_unknown,
+        "reportability_summary": {
+            "confirmed_patchstack_eligible": len(actionable),
+            "confirmed_patchstack_ineligible": len(actionable_not_patchstack),
+            "confirmed_patchstack_unknown": len(actionable_reportability_unknown),
+        },
     }
 
     output_path = layout.phase3 / f"{slug}-phase3.json"
@@ -1382,7 +1584,10 @@ def main() -> int:
     print(f"=== Phase 3 Validation (Gate): {slug} ===")
     print(f"[INFO] Phase 1: {output['phase1_summary']['entry_points']} EPs, {output['phase1_summary']['anomalies']} anomalies")
     print(f"[INFO] Phase 2: {output['phase2_summary']['total']} findings ({output['phase2_summary']['tp']} TP)")
-    print(f"[INFO] Phase 3: {len(confirmed)} confirmed, {len(plausible)} plausible, {len(uncertain)} uncertain, {len(hallucinated)} hallucinated")
+    print(
+        f"[INFO] Phase 3: {len(confirmed)} confirmed, {len(uncertain)} uncertain, "
+        f"{len(risk_notes)} risk_note, {len(rejected)} rejected"
+    )
     print(f"[INFO] Actionable: {len(actionable)} (patchstack-eligible) + {len(actionable_not_patchstack)} (not patchstack-eligible)")
     print(f"[OK] Output: {output_path}")
 

@@ -1,0 +1,82 @@
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "skeptical",
+  "review_status": "needs_revision",
+  "summary": {
+    "worker_findings_reviewed": 1,
+    "material_issues_found": true,
+    "new_candidate_count": 1,
+    "notes": "The FP disposition is not fully refuted. The worker treats a guest-facing nonce as a strong guard and does not address the downstream webhook path that reuses stored cart email and metadata."
+  },
+  "finding_reviews": [
+    {
+      "finding_id": "w10-cand-ep-ajax-nopriv-abandoned-carts-fp",
+      "assessment": "needs_more_evidence",
+      "reason": "The worker did not refute the concrete downstream path from the public AJAX write to the abandoned-cart webhook. `handle_ajax_action()` accepts attacker-controlled `email`, stores it in the cart record for the current WooCommerce session, and later `CartAbandoned::send()` retrieves `customer_email` and passes it with cart metadata to `WebhookHandler::handle()`. The current FP rationale over-relies on `check_ajax_referer()` even though the same action nonce is intentionally exposed to frontend visitors. Before closing this as FP, the review needs evidence that a cross-site or replayed request cannot poison another shopper's session-bound cart record and drive disclosure through the webhook automation flow.",
+      "required_changes": [
+        "Do not treat the guest-facing `abandoned-carts` nonce as a meaningful authorization boundary without showing why it cannot be reused by unauthenticated visitors.",
+        "Verify whether an attacker can update a victim's session-bound cart record through a cross-site or replayed request that carries the WooCommerce session cookie, or explain why the cart hash remains isolated per user in practice.",
+        "Address the downstream webhook sink explicitly: `customer_email` and cart metadata are later submitted by the abandoned-cart automation path, so the FP rationale must refute data-poisoning and disclosure impact instead of stopping at SQL/output checks."
+      ],
+      "counter_evidence": [
+        {
+          "type": "guard",
+          "file": "src/Tracking/AbandonedCarts.php",
+          "line": 41,
+          "detail": "`check_ajax_referer('abandoned-carts', 'nonce')` is present, but this endpoint is intentionally public and the same action nonce is emitted to frontend visitors."
+        },
+        {
+          "type": "other",
+          "file": "src/Tracking/AbandonedCarts.php",
+          "line": 64,
+          "detail": "`wp_localize_script()` publishes the AJAX action, nonce, and endpoint URL to frontend JavaScript."
+        },
+        {
+          "type": "other",
+          "file": "frontend/tracking/abandoned-carts.js",
+          "line": 25,
+          "detail": "Frontend code appends the public nonce and a user-controlled `email` value, then POSTs the request to `admin-ajax.php`."
+        },
+        {
+          "type": "impact",
+          "file": "src/Tracking/AbandonedCarts.php",
+          "line": 162,
+          "detail": "Tracked carts persist `customer_email`, `items`, and `totals`, so the AJAX input affects stored state beyond the immediate request."
+        },
+        {
+          "type": "scope",
+          "file": "src/Jobs/AbandonedCartsJob.php",
+          "line": 35,
+          "detail": "The downstream sink is conditional on abandoned-cart automation being enabled and active carts existing, which is a feature-state condition the worker did not address."
+        },
+        {
+          "type": "impact",
+          "file": "src/Api/Webhooks/Handlers/CartAbandoned.php",
+          "line": 41,
+          "detail": "The scheduled abandoned-cart flow retrieves `customer_email` from the stored cart and uses it when sending the webhook event."
+        },
+        {
+          "type": "impact",
+          "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
+          "line": 34,
+          "detail": "Webhook payloads include `contact.email` and `metadata`, so a poisoned cart record has a downstream disclosure path if cross-session writes are possible."
+        }
+      ],
+      "suggested_field_corrections": null
+    }
+  ],
+  "missed_findings": [
+    {
+      "candidate_id": "cand-ep-ajax-nopriv-wp-ajax-nopriv-abandoned-carts-src-tracking-abandonedcarts-php-recon",
+      "vuln_type": "guest_cart_email_poisoning_to_webhook_disclosure",
+      "auth_required": "none",
+      "source_file_path": "src/Tracking/AbandonedCarts.php",
+      "source_line_number": 42,
+      "sink_file_path": "src/Api/Webhooks/Handlers/WebhookHandler.php",
+      "sink_line_number": 34,
+      "reason": "One-hop adjacent code creates an omitted impact path: the public `abandoned-carts` AJAX request stores attacker-controlled `customer_email` into the cart record, and the abandoned-cart automation later submits that email together with cart metadata in an outbound webhook. The remaining verification gap is whether a public or replayed guest nonce plus browser cookie behavior lets an attacker poison another shopper's session-bound cart record.",
+      "confidence": 0.58
+    }
+  ]
+}

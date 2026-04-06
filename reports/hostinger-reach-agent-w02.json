@@ -1,0 +1,153 @@
+{
+  "agent_id": "agent-w02",
+  "plugin_slug": "hostinger-reach",
+  "findings": [
+    {
+      "finding_id": "w02-F01",
+      "verdict": "TP",
+      "vuln_type": "Broken Access Control — Unauthenticated REST Endpoint Exposes Plugin Integration State",
+      "cwe_id": "CWE-862",
+      "severity": "medium",
+      "auth_required": "none",
+      "confidence": 0.92,
+      "entry_point_id": "ep_rest__integrations",
+      "store_entry_point_id": null,
+      "load_entry_point_id": null,
+      "source_function": "register_routes",
+      "source_file_path": "src/Api/Routes/IntegrationsRoutes.php",
+      "source_line_number": 21,
+      "sink_function": "get_integrations_handler",
+      "sink_file_path": "src/Api/Handlers/IntegrationsApiHandler.php",
+      "sink_line_number": 59,
+      "reasoning": "The GET /integrations REST endpoint is registered at IntegrationsRoutes.php:21-29 with permission_callback = '__return_true', making it publicly accessible without any authentication.\n\nEntry point: GET <namespace>/integrations — IntegrationsRoutes.php:21\nPermission gate: '__return_true' — IntegrationsRoutes.php:27 — no auth check whatsoever\nCallback: IntegrationsApiHandler::get_integrations_handler() — IntegrationsApiHandler.php:59\nData flow: get_integrations_handler() calls get_integrations_data() at line 65\nget_integrations_data() (IntegrationsApiHandler.php:162) reads get_option(INTEGRATIONS_OPTION_NAME) (line 164), then calls plugin_manager->get_plugin() (line 169), is_active() (line 178), and import_manager->get_status() (line 191) for each integration.\nResponse (line 65): wp_json_encode($this->get_integrations_data()) — full integration state returned to caller.\n\nThe response discloses: which third-party plugins are installed and active, import-enabled status, download_url values, import status (import_manager->get_status()), and internal plugin activation state. This is admin configuration data.\n\nREFUTATION ATTEMPT 1: Is there a secondary auth check inside get_integrations_handler()?\nRESULT: Not refuted. get_integrations_handler() (IntegrationsApiHandler.php:59-68) directly calls handle_response() with get_integrations_data() — no user capability check, no nonce check, no API key validation.\n\nREFUTATION ATTEMPT 2: Does wp_json_encode strip sensitive fields before output?\nRESULT: Not refuted. The entire $integrations array is serialised, including 'download_url', 'import_status', 'is_installable', 'is_plugin_active', 'is_integration_active' fields.\n\nREFUTATION ATTEMPT 3: Is the endpoint only reachable from authenticated origins (e.g., CORS restriction)?\nRESULT: Not refuted. WordPress REST API CORS does not enforce authentication; same-origin and cross-origin unauthenticated requests both reach the endpoint. The CORS filter in ReachApiHandler::init_hooks() adds HOSTINGER_REACH_REST_URI to allowed origins but does not gate the integrations endpoint.\n\nSEVERITY JUSTIFICATION: Medium and not High because the data exposed is read-only plugin configuration metadata, not user PII, credentials, or site secrets. However, the 'download_url' field (IntegrationsApiHandler.php:75, get_integrations_data line 192) and import status could assist targeted reconnaissance against a site. The POST /integrations (toggle activation) is correctly gated with permission_check (manage_options), so no write operation is unauthenticated. Severity is one level below High because impact is information disclosure of admin configuration, not direct privilege escalation or data exfiltration.",
+      "fp_reason": null,
+      "fp_evidence": null,
+      "review_reason": null,
+      "poc_description": "curl -s -X GET 'https://<target>/wp-json/<namespace>/integrations' | python3 -m json.tool  — returns full integrations state without any credentials. No nonce or authentication header required.",
+      "patchstack_eligible": true,
+      "remediation": "Replace '__return_true' with array($this, 'permission_check') on the GET /integrations route (IntegrationsRoutes.php:27), consistent with how POST /integrations is already gated at line 37."
+    },
+    {
+      "finding_id": "w02-F02",
+      "verdict": "FP",
+      "vuln_type": "Broken Access Control — REST route with __return_true",
+      "cwe_id": "CWE-862",
+      "severity": "informational",
+      "auth_required": "unknown",
+      "confidence": 0.95,
+      "entry_point_id": "ep_rest__generate_auth_url",
+      "source_function": null,
+      "source_file_path": null,
+      "source_line_number": null,
+      "sink_function": null,
+      "sink_file_path": null,
+      "sink_line_number": null,
+      "fp_reason": "The IR marked this entry point as 'unknown' auth_level because the permission_callback was __array_callable__ (unresolved by the extractor). Source inspection confirms the callback resolves to Routes::permission_check() (Routes.php:25), which calls current_user_can('manage_options') at line 33. Only administrators can access this endpoint. The semgrep key bf041d... fires on a different route ('contact' at ReachRoutes.php:33 which uses __return_true) and was incorrectly associated with this candidate.",
+      "fp_evidence": {
+        "defense": "Routes::permission_check() → current_user_can('manage_options') — requires administrator capability",
+        "file": "src/Api/Routes/Routes.php",
+        "line": 33
+      },
+      "review_reason": null,
+      "patchstack_eligible": false,
+      "remediation": null
+    },
+    {
+      "finding_id": "w02-F03",
+      "verdict": "FP",
+      "vuln_type": "Broken Access Control — REST route with __return_true",
+      "cwe_id": "CWE-862",
+      "severity": "informational",
+      "auth_required": "unknown",
+      "confidence": 0.95,
+      "entry_point_id": "ep_rest__overview",
+      "source_function": null,
+      "source_file_path": null,
+      "source_line_number": null,
+      "sink_function": null,
+      "sink_file_path": null,
+      "sink_line_number": null,
+      "fp_reason": "IR marked auth_level unknown due to unresolved __array_callable__. Source inspection: GET /overview is registered at ReachRoutes.php:114-122 with permission_callback = array($this, 'permission_check'). Routes::permission_check() at Routes.php:33 requires current_user_can('manage_options'). Handler get_overview_handler() (ReachApiHandler.php:225) additionally gates on get_connection_status_handler() before proxying to external Reach API. Doubly protected.",
+      "fp_evidence": {
+        "defense": "Routes::permission_check() → current_user_can('manage_options')",
+        "file": "src/Api/Routes/Routes.php",
+        "line": 33
+      },
+      "review_reason": null,
+      "patchstack_eligible": false,
+      "remediation": null
+    },
+    {
+      "finding_id": "w02-F04",
+      "verdict": "FP",
+      "vuln_type": "Broken Access Control — REST route with __return_true / missing permission_callback",
+      "cwe_id": "CWE-862",
+      "severity": "informational",
+      "auth_required": "unknown",
+      "confidence": 0.93,
+      "entry_point_id": "ep_rest__tags_0",
+      "source_function": null,
+      "source_file_path": null,
+      "source_line_number": null,
+      "sink_function": null,
+      "sink_file_path": null,
+      "sink_line_number": null,
+      "fp_reason": "IR marked auth_level unknown. The /tags route is registered at ReachRoutes.php:124 using a multi-method array format. Both GET (line 129-132) and POST (line 133-147) specify permission_callback = array($this, 'permission_check'), which resolves to Routes::permission_check() → current_user_can('manage_options'). The semgrep rule wp-rest-missing-permission-callback (key b796...) flagged line 124, likely because the outer register_rest_route() call uses an array-of-arrays format instead of a single method spec — the rule did not detect inner per-method permission_callbacks. Both methods are correctly gated.",
+      "fp_evidence": {
+        "defense": "Both GET and POST /tags methods specify permission_callback = array($this, 'permission_check') → current_user_can('manage_options')",
+        "file": "src/Api/Routes/ReachRoutes.php",
+        "line": 131
+      },
+      "review_reason": null,
+      "patchstack_eligible": false,
+      "remediation": null
+    },
+    {
+      "finding_id": "w02-F05",
+      "verdict": "FP",
+      "vuln_type": "Broken Access Control — REST route with __return_true / missing permission_callback",
+      "cwe_id": "CWE-862",
+      "severity": "informational",
+      "auth_required": "unknown",
+      "confidence": 0.93,
+      "entry_point_id": "ep_rest__tags_1",
+      "source_function": null,
+      "source_file_path": null,
+      "source_line_number": null,
+      "sink_function": null,
+      "sink_file_path": null,
+      "sink_line_number": null,
+      "fp_reason": "Same route registration as ep_rest__tags_0 — ReachRoutes.php:124. POST /tags (line 133-147) has permission_callback = array($this, 'permission_check') at line 136 → current_user_can('manage_options'). Additionally, the POST handler post_tags_handler() (ReachApiHandler.php:362) adds a redundant nonce check: wp_verify_nonce($nonce, 'wp_rest') at line 364. This is defense-in-depth. No access control bypass exists.",
+      "fp_evidence": {
+        "defense": "POST /tags has permission_callback → current_user_can('manage_options') AND handler-level nonce check via wp_verify_nonce",
+        "file": "src/Api/Routes/ReachRoutes.php",
+        "line": 136
+      },
+      "review_reason": null,
+      "patchstack_eligible": false,
+      "remediation": null
+    }
+  ],
+  "negative_findings": [
+    {
+      "area": "POST /integrations (toggle integration activation)",
+      "reason": "Gated by Routes::permission_check() → current_user_can('manage_options') at IntegrationsRoutes.php:37. Administrator-only."
+    },
+    {
+      "area": "GET /import/{integration} and POST /import",
+      "reason": "Both registered with permission_callback = array($this, 'permission_check') at IntegrationsRoutes.php:60 and 79 respectively. Administrator-only."
+    },
+    {
+      "area": "POST /generate-auth-url",
+      "reason": "Gated by permission_check (manage_options) at ReachRoutes.php:110. Correctly protected."
+    },
+    {
+      "area": "GET /overview",
+      "reason": "Gated by permission_check (manage_options) at ReachRoutes.php:120, and handler adds connection status check. Correctly protected."
+    },
+    {
+      "area": "GET /tags and POST /tags",
+      "reason": "Both gated by permission_check (manage_options) per-method callbacks at ReachRoutes.php:131 and 136. POST handler adds redundant nonce verification. Correctly protected."
+    }
+  ]
+}

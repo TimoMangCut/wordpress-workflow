@@ -1,0 +1,91 @@
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "core",
+  "review_status": "needs_revision",
+  "summary": {
+    "worker_findings_reviewed": 1,
+    "material_issues_found": true,
+    "new_candidate_count": 0,
+    "notes": "HR-FP-007__p04 does not support a stable JSON-response-based FP. The flagged line is only a return of the original value, and the packet does not pin a single caller, auth boundary, or terminal non-HTML sink."
+  },
+  "finding_reviews": [
+    {
+      "finding_id": "HR-FP-007",
+      "packet_id": "HR-FP-007__p04",
+      "parent_finding_id": "HR-FP-007",
+      "assessment": "needs_more_evidence",
+      "reason": "Reachability: `src/Api/Routes/Routes.php:22` is only the generic `rest_api_init` bootstrap and does not packet-locally connect to `ForminatorIntegration::find_email()`. In-scope code shows one non-REST caller via `forminator_form_after_save_entry` at `src/Integrations/Forminator/ForminatorIntegration.php:42`, with `handle_submission()` passing `$_POST` into `find_email()` at line 51, and the single justified expansion file shows separate admin-only import routes at `src/Api/Routes/IntegrationsRoutes.php:54-60` and `73-79`, but the packet does not trace either route callback to line 173. Authorization: the packet therefore has no single established auth boundary; the generic `manage_options` guard in `src/Api/Routes/Routes.php:33` is not a packet-local defense for the submission-hook path, while the import routes are admin-only only if they are the relevant caller. Dataflow: attacker-controlled input can reach line 173 because `handle_submission()` calls `find_email( $_POST )` at `src/Integrations/Forminator/ForminatorIntegration.php:51`, but `sanitize_email( $value )` at line 171 only validates a derived copy and the function returns the original `$value` at line 173. Impact: line 173 is not an output sink; packet-local uses are hook dispatch at `src/Integrations/Forminator/ForminatorIntegration.php:56-66` and `ReachContact` array construction at `src/Integrations/Forminator/ForminatorIntegration.php:118-129`, neither of which demonstrates browser execution. Missing evidence: the worker has not shown which caller is in scope, what the real entry point/auth model is for this packet, or a downstream consumer proving the returned value terminates in non-HTML output.",
+      "required_changes": [
+        "Replace the mismapped entry-point anchor `src/Api/Routes/Routes.php:22`. Either trace the Forminator submission path at `src/Integrations/Forminator/ForminatorIntegration.php:42-51` or the import REST path beginning at `src/Api/Routes/IntegrationsRoutes.php:54-60` or `73-79` with a packet-local callback chain to line 173.",
+        "Do not rely on a generic 'REST responses are JSON-encoded' rationale for this packet. `find_email()` is also used by the Forminator submission hook path at `src/Integrations/Forminator/ForminatorIntegration.php:42-66`, where the returned value is forwarded to `do_action( 'hostinger_reach_submit', ... )` rather than directly placed in a REST body.",
+        "Correct the dataflow language around sanitization: `sanitize_email()` at `src/Integrations/Forminator/ForminatorIntegration.php:171` validates a derived copy, but line 173 returns the original `$value`. Unless downstream normalization is shown, describe the result as a validated email-like candidate, not sanitized output.",
+        "If the worker keeps the false-positive direction, narrow the packet-local conclusion to 'no packet-local HTML sink shown' and add file:line evidence for the chosen caller's actual terminal sink."
+      ],
+      "counter_evidence": [
+        {
+          "type": "scope",
+          "file": "src/Api/Routes/Routes.php",
+          "line": 22,
+          "detail": "This file only attaches `register_routes` to `rest_api_init`; it is not, by itself, the packet-local registration or caller for `ForminatorIntegration::find_email()`."
+        },
+        {
+          "type": "scope",
+          "file": "src/Integrations/Forminator/ForminatorIntegration.php",
+          "line": 42,
+          "detail": "The same class exposes a separate non-REST reachable surface by registering `handle_submission()` on `forminator_form_after_save_entry`."
+        },
+        {
+          "type": "other",
+          "file": "src/Integrations/Forminator/ForminatorIntegration.php",
+          "line": 171,
+          "detail": "`sanitize_email( $value )` is used only for validation of a temporary copy; the function does not return `$sanitized_value`."
+        },
+        {
+          "type": "scope",
+          "file": "src/Integrations/Forminator/ForminatorIntegration.php",
+          "line": 173,
+          "detail": "The flagged line is a bare `return $value;` and does not echo, print, or render HTML at this location."
+        },
+        {
+          "type": "scope",
+          "file": "src/Integrations/Forminator/ForminatorIntegration.php",
+          "line": 56,
+          "detail": "On the submission path, the returned value is forwarded into the `hostinger_reach_submit` hook payload, so the next packet-local hop is hook dispatch rather than browser output."
+        },
+        {
+          "type": "impact",
+          "file": "src/Integrations/Forminator/ForminatorIntegration.php",
+          "line": 118,
+          "detail": "On the import path, the returned value is placed into a `ReachContact` object and then converted to an array; this still does not show HTML or script execution in the reviewed packet."
+        },
+        {
+          "type": "guard",
+          "file": "src/Api/Routes/IntegrationsRoutes.php",
+          "line": 60,
+          "detail": "If the relevant caller is the integration import REST surface, that route uses `permission_check()`, so the packet cannot simultaneously rely on a generic public `rest_api_init` entry boundary without a callback trace."
+        }
+      ],
+      "missing_evidence": [
+        "A file:line callback chain from the chosen entry point to `src/Integrations/Forminator/ForminatorIntegration.php:173`; the current packet does not connect either `src/Integrations/Forminator/ForminatorIntegration.php:42` or `src/Api/Routes/IntegrationsRoutes.php:54-60` / `73-79` to the reviewed line with a concrete caller trace.",
+        "File:line evidence fixing which caller is actually in scope for this packet: the submission path at `src/Integrations/Forminator/ForminatorIntegration.php:45-66` or the import path at `src/Integrations/Forminator/ForminatorIntegration.php:96-134`.",
+        "File:line downstream-consumer evidence showing that the original value returned at `src/Integrations/Forminator/ForminatorIntegration.php:173` terminates in a non-HTML sink; the current packet stops at hook dispatch or array construction.",
+        "If the worker wants to rely on sanitization as a refutation, file:line evidence that the value returned at `src/Integrations/Forminator/ForminatorIntegration.php:173` is normalized or escaped before any output context, because line 171 does not sanitize the returned string."
+      ],
+      "expansion_attempts": [
+        {
+          "type": "out_of_band_file",
+          "target": "src/Api/Routes/IntegrationsRoutes.php",
+          "reason": "The packet tied line 173 to `rest_api_init` but only provided the generic bootstrap file, so one route-registration file was needed to test whether a concrete REST caller existed in scope.",
+          "outcome": "Opened the file and confirmed that integration import routes are registered here and guarded by `permission_check()` at lines 60 and 79, but the packet still lacks a callback trace from those routes to `ForminatorIntegration::find_email()`."
+        }
+      ],
+      "suggested_field_corrections": {
+        "recommended_assessment": "needs_more_evidence",
+        "confidence": 0.69,
+        "auth_required": "unknown until the packet chooses and traces either the Forminator submission hook path or the admin-only import route path",
+        "fp_reason": "Packet-local evidence shows no HTML sink at or after `src/Integrations/Forminator/ForminatorIntegration.php:173`, but the current FP rationale is overstated because the function has multiple callers and returns the original value rather than the sanitized copy."
+      }
+    }
+  ]
+}

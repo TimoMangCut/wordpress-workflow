@@ -1,0 +1,262 @@
+{
+  "metadata": {
+    "plugin_slug": "hostinger-reach",
+    "plugin_name": "Hostinger Reach",
+    "version": "1.4.4",
+    "active_installs": null,
+    "files_analyzed": 123,
+    "total_loc": 9691,
+    "extraction_time_ms": 307,
+    "extractor_version": "1.0.0"
+  },
+  "bundle": {
+    "bundle_id": "bundle-w09",
+    "agent_id": "agent-w09",
+    "worker_strategy": "candidate_chunk_v2",
+    "bug_family": "xss",
+    "primary_surface": "unknown",
+    "auth_boundary": "unknown",
+    "candidate_count": 5,
+    "complexity_budget": 16,
+    "max_candidate_complexity": 4
+  },
+  "candidate_hypotheses": [
+    {
+      "candidate_id": "cand-sg-src-api-handlers-reachapihandler-php-xss",
+      "kind": "semgrep_orphan",
+      "bug_family": "xss",
+      "sink_family": "tools-config-semgrep-wp-rules-wp-xss-echo-no-escape",
+      "surface": "unknown",
+      "auth_boundary": "unknown",
+      "complexity_score": 4,
+      "priority_score": 7,
+      "entry_point_ids": [],
+      "sink_ids": [],
+      "anomaly_ids": [],
+      "semgrep_keys": [
+        "e1063160040dcdf821df1437b091a837eb715f2eda90c4ebd1662027c51bb63747a04a88dc5031c2b3956b94096d7acb2752c2be32898eb3ef9f2cba61974719_0",
+        "f0beb6ef3a682f717d5ea7140ed091f46b831e9008893b8eb08554ebdd5fb7574116eed514c2393e493cbb79a97cc726c887b31b8daa5aad2751ef4c5612797a_0",
+        "b391c87f335c5e3c7361c623ed312cc89c9e0ef384a3b87dbe2cc8349278b5dc2628a3d53ee1ca53e19d263e96a02084f2398467920bd422016608e714480f48_0",
+        "1209608ec19b2d61790c6a7c905232894406de7ba9ce84d020954dae32113cd8cf111d454a1cf2128132bdf76b6cfba73929467e5460179fd2e72395563cc8af_0"
+      ],
+      "psalm_keys": [],
+      "source_focus_files": [
+        "src/Api/Handlers/ReachApiHandler.php"
+      ],
+      "rationale": "Semgrep-only security signal not yet covered by IR-linked candidates."
+    },
+    {
+      "candidate_id": "cand-sg-src-integrations-elementor-elementorintegration-php-xss",
+      "kind": "semgrep_orphan",
+      "bug_family": "xss",
+      "sink_family": "tools-config-semgrep-wp-rules-wp-xss-echo-no-escape",
+      "surface": "unknown",
+      "auth_boundary": "unknown",
+      "complexity_score": 4,
+      "priority_score": 7,
+      "entry_point_ids": [],
+      "sink_ids": [],
+      "anomaly_ids": [],
+      "semgrep_keys": [
+        "f6cb8f54c146b6ad5e029147af2448e5c3e31ba003821fd2ae43c7adad9fa08584d6acf1c839f9b48344d889c03b146f7096707bb8f93b54a9eebd978cce15c9_0",
+        "7162ccfb82e07a92d46282a476646c218817540378d5dab995100413bb88cd7c48e9282153c609bdeff88e61d6fecd2834152d2542b1c4774250b6034a361304_0",
+        "7162ccfb82e07a92d46282a476646c218817540378d5dab995100413bb88cd7c48e9282153c609bdeff88e61d6fecd2834152d2542b1c4774250b6034a361304_1"
+      ],
+      "psalm_keys": [],
+      "source_focus_files": [
+        "src/Integrations/Elementor/ElementorIntegration.php"
+      ],
+      "rationale": "Semgrep-only security signal not yet covered by IR-linked candidates."
+    },
+    {
+      "candidate_id": "cand-sg-src-admin-surveys-satisfactionsurvey-php-xss",
+      "kind": "semgrep_orphan",
+      "bug_family": "xss",
+      "sink_family": "tools-config-semgrep-wp-rules-wp-xss-echo-no-escape",
+      "surface": "unknown",
+      "auth_boundary": "unknown",
+      "complexity_score": 3,
+      "priority_score": 7,
+      "entry_point_ids": [],
+      "sink_ids": [],
+      "anomaly_ids": [],
+      "semgrep_keys": [
+        "f162f1942a8b7ad59af1de945d2873a546ec896d3350a321186b337fe0a2524d30b6939ad5565e5ba3ae4824911f9d90fdd2e33e15d391bc4b61bdd2e7645a6b_0",
+        "cba21e0eaa4822610321ed03b74abf698c88643b3b101a46d8d763af91cf0ec34e84c9932730ebf792e60dada4a0b6db71344274b383720ea0e5fee9487d1c7a_0"
+      ],
+      "psalm_keys": [],
+      "source_focus_files": [
+        "src/Admin/Surveys/SatisfactionSurvey.php"
+      ],
+      "rationale": "Semgrep-only security signal not yet covered by IR-linked candidates."
+    },
+    {
+      "candidate_id": "cand-sg-src-functions-php-xss",
+      "kind": "semgrep_orphan",
+      "bug_family": "xss",
+      "sink_family": "tools-config-semgrep-wp-rules-wp-xss-echo-no-escape",
+      "surface": "unknown",
+      "auth_boundary": "unknown",
+      "complexity_score": 3,
+      "priority_score": 7,
+      "entry_point_ids": [],
+      "sink_ids": [],
+      "anomaly_ids": [],
+      "semgrep_keys": [
+        "0cdc5a71c951253839cc4649961c9144e971a211a5ed90124c6cf555e66c3a0b27ba866e594b6ffce6024dac5a7c1d2aeb0429f7fddbb424e5c2c69ad4c4d0f9_0",
+        "2d3dc860805093c261b6866fb3ccaee44bbdbd962025a9c737f54517596868d9243e96a1f99921e39939c050204ae4b07be2b26e341ccb40f31d43f4e40e2944_0"
+      ],
+      "psalm_keys": [],
+      "source_focus_files": [
+        "src/Functions.php"
+      ],
+      "rationale": "Semgrep-only security signal not yet covered by IR-linked candidates."
+    },
+    {
+      "candidate_id": "cand-sg-src-integrations-forminator-forminatorintegration-php-xss",
+      "kind": "semgrep_orphan",
+      "bug_family": "xss",
+      "sink_family": "tools-config-semgrep-wp-rules-wp-xss-echo-no-escape",
+      "surface": "unknown",
+      "auth_boundary": "unknown",
+      "complexity_score": 2,
+      "priority_score": 6,
+      "entry_point_ids": [],
+      "sink_ids": [],
+      "anomaly_ids": [],
+      "semgrep_keys": [
+        "d302925638afc650427ec9559d76248150ad6d2de27bf97dd32e8939b67581cf7e72dc624b058896fcdd64d59f49397672c380271e7c35f12ad1d3ce539cc5a3_0"
+      ],
+      "psalm_keys": [],
+      "source_focus_files": [
+        "src/Integrations/Forminator/ForminatorIntegration.php"
+      ],
+      "rationale": "Semgrep-only security signal not yet covered by IR-linked candidates."
+    }
+  ],
+  "entry_points": [],
+  "sources": [],
+  "sinks": [],
+  "guards": [],
+  "anomalies": [],
+  "unresolved_hooks": [],
+  "coverage_gaps": [],
+  "semgrep_results": [
+    {
+      "key": "0cdc5a71c951253839cc4649961c9144e971a211a5ed90124c6cf555e66c3a0b27ba866e594b6ffce6024dac5a7c1d2aeb0429f7fddbb424e5c2c69ad4c4d0f9_0",
+      "path": "src/Functions.php",
+      "line": 119,
+      "check_id": "tools.config.semgrep-wp-rules.wp-xss-echo-no-escape",
+      "message": "Cross-Site Scripting: User input flows into HTML output without context-appropriate escaping. Use esc_html() for HTML body, esc_attr() for attributes, esc_url() for URLs.",
+      "severity": "WARNING",
+      "bug_family": "xss"
+    },
+    {
+      "key": "1209608ec19b2d61790c6a7c905232894406de7ba9ce84d020954dae32113cd8cf111d454a1cf2128132bdf76b6cfba73929467e5460179fd2e72395563cc8af_0",
+      "path": "src/Api/Handlers/ReachApiHandler.php",
+      "line": 386,
+      "check_id": "tools.config.semgrep-wp-rules.wp-xss-echo-no-escape",
+      "message": "Cross-Site Scripting: User input flows into HTML output without context-appropriate escaping. Use esc_html() for HTML body, esc_attr() for attributes, esc_url() for URLs.",
+      "severity": "WARNING",
+      "bug_family": "xss"
+    },
+    {
+      "key": "2d3dc860805093c261b6866fb3ccaee44bbdbd962025a9c737f54517596868d9243e96a1f99921e39939c050204ae4b07be2b26e341ccb40f31d43f4e40e2944_0",
+      "path": "src/Functions.php",
+      "line": 123,
+      "check_id": "tools.config.semgrep-wp-rules.wp-xss-echo-no-escape",
+      "message": "Cross-Site Scripting: User input flows into HTML output without context-appropriate escaping. Use esc_html() for HTML body, esc_attr() for attributes, esc_url() for URLs.",
+      "severity": "WARNING",
+      "bug_family": "xss"
+    },
+    {
+      "key": "7162ccfb82e07a92d46282a476646c218817540378d5dab995100413bb88cd7c48e9282153c609bdeff88e61d6fecd2834152d2542b1c4774250b6034a361304_0",
+      "path": "src/Integrations/Elementor/ElementorIntegration.php",
+      "line": 390,
+      "check_id": "tools.config.semgrep-wp-rules.wp-xss-echo-no-escape",
+      "message": "Cross-Site Scripting: User input flows into HTML output without context-appropriate escaping. Use esc_html() for HTML body, esc_attr() for attributes, esc_url() for URLs.",
+      "severity": "WARNING",
+      "bug_family": "xss"
+    },
+    {
+      "key": "7162ccfb82e07a92d46282a476646c218817540378d5dab995100413bb88cd7c48e9282153c609bdeff88e61d6fecd2834152d2542b1c4774250b6034a361304_1",
+      "path": "src/Integrations/Elementor/ElementorIntegration.php",
+      "line": 406,
+      "check_id": "tools.config.semgrep-wp-rules.wp-xss-echo-no-escape",
+      "message": "Cross-Site Scripting: User input flows into HTML output without context-appropriate escaping. Use esc_html() for HTML body, esc_attr() for attributes, esc_url() for URLs.",
+      "severity": "WARNING",
+      "bug_family": "xss"
+    },
+    {
+      "key": "b391c87f335c5e3c7361c623ed312cc89c9e0ef384a3b87dbe2cc8349278b5dc2628a3d53ee1ca53e19d263e96a02084f2398467920bd422016608e714480f48_0",
+      "path": "src/Api/Handlers/ReachApiHandler.php",
+      "line": 383,
+      "check_id": "tools.config.semgrep-wp-rules.wp-xss-echo-no-escape",
+      "message": "Cross-Site Scripting: User input flows into HTML output without context-appropriate escaping. Use esc_html() for HTML body, esc_attr() for attributes, esc_url() for URLs.",
+      "severity": "WARNING",
+      "bug_family": "xss"
+    },
+    {
+      "key": "cba21e0eaa4822610321ed03b74abf698c88643b3b101a46d8d763af91cf0ec34e84c9932730ebf792e60dada4a0b6db71344274b383720ea0e5fee9487d1c7a_0",
+      "path": "src/Admin/Surveys/SatisfactionSurvey.php",
+      "line": 51,
+      "check_id": "tools.config.semgrep-wp-rules.wp-xss-echo-no-escape",
+      "message": "Cross-Site Scripting: User input flows into HTML output without context-appropriate escaping. Use esc_html() for HTML body, esc_attr() for attributes, esc_url() for URLs.",
+      "severity": "WARNING",
+      "bug_family": "xss"
+    },
+    {
+      "key": "d302925638afc650427ec9559d76248150ad6d2de27bf97dd32e8939b67581cf7e72dc624b058896fcdd64d59f49397672c380271e7c35f12ad1d3ce539cc5a3_0",
+      "path": "src/Integrations/Forminator/ForminatorIntegration.php",
+      "line": 173,
+      "check_id": "tools.config.semgrep-wp-rules.wp-xss-echo-no-escape",
+      "message": "Cross-Site Scripting: User input flows into HTML output without context-appropriate escaping. Use esc_html() for HTML body, esc_attr() for attributes, esc_url() for URLs.",
+      "severity": "WARNING",
+      "bug_family": "xss"
+    },
+    {
+      "key": "e1063160040dcdf821df1437b091a837eb715f2eda90c4ebd1662027c51bb63747a04a88dc5031c2b3956b94096d7acb2752c2be32898eb3ef9f2cba61974719_0",
+      "path": "src/Api/Handlers/ReachApiHandler.php",
+      "line": 152,
+      "check_id": "tools.config.semgrep-wp-rules.wp-xss-echo-no-escape",
+      "message": "Cross-Site Scripting: User input flows into HTML output without context-appropriate escaping. Use esc_html() for HTML body, esc_attr() for attributes, esc_url() for URLs.",
+      "severity": "WARNING",
+      "bug_family": "xss"
+    },
+    {
+      "key": "f0beb6ef3a682f717d5ea7140ed091f46b831e9008893b8eb08554ebdd5fb7574116eed514c2393e493cbb79a97cc726c887b31b8daa5aad2751ef4c5612797a_0",
+      "path": "src/Api/Handlers/ReachApiHandler.php",
+      "line": 168,
+      "check_id": "tools.config.semgrep-wp-rules.wp-xss-echo-no-escape",
+      "message": "Cross-Site Scripting: User input flows into HTML output without context-appropriate escaping. Use esc_html() for HTML body, esc_attr() for attributes, esc_url() for URLs.",
+      "severity": "WARNING",
+      "bug_family": "xss"
+    },
+    {
+      "key": "f162f1942a8b7ad59af1de945d2873a546ec896d3350a321186b337fe0a2524d30b6939ad5565e5ba3ae4824911f9d90fdd2e33e15d391bc4b61bdd2e7645a6b_0",
+      "path": "src/Admin/Surveys/SatisfactionSurvey.php",
+      "line": 18,
+      "check_id": "tools.config.semgrep-wp-rules.wp-xss-echo-no-escape",
+      "message": "Cross-Site Scripting: User input flows into HTML output without context-appropriate escaping. Use esc_html() for HTML body, esc_attr() for attributes, esc_url() for URLs.",
+      "severity": "WARNING",
+      "bug_family": "xss"
+    },
+    {
+      "key": "f6cb8f54c146b6ad5e029147af2448e5c3e31ba003821fd2ae43c7adad9fa08584d6acf1c839f9b48344d889c03b146f7096707bb8f93b54a9eebd978cce15c9_0",
+      "path": "src/Integrations/Elementor/ElementorIntegration.php",
+      "line": 88,
+      "check_id": "tools.config.semgrep-wp-rules.wp-xss-echo-no-escape",
+      "message": "Cross-Site Scripting: User input flows into HTML output without context-appropriate escaping. Use esc_html() for HTML body, esc_attr() for attributes, esc_url() for URLs.",
+      "severity": "WARNING",
+      "bug_family": "xss"
+    }
+  ],
+  "psalm_results": [],
+  "source_focus_files": [
+    "src/Admin/Surveys/SatisfactionSurvey.php",
+    "src/Api/Handlers/ReachApiHandler.php",
+    "src/Functions.php",
+    "src/Integrations/Elementor/ElementorIntegration.php",
+    "src/Integrations/Forminator/ForminatorIntegration.php"
+  ]
+}

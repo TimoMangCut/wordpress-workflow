@@ -1,0 +1,325 @@
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "core",
+  "task": {
+    "role": "phase2_reviewer_core",
+    "goal": "Challenge the worker output packet-by-packet with concrete counter-evidence, field corrections, and explicit missing-evidence notes.",
+    "output_schema": "contracts/phase2-review-core-output.schema.json",
+    "output_path": "reports/phase2/hostinger-reach-phase2.review.r1.core.b01.json",
+    "packet_schema": "contracts/phase2-reviewer-packet.schema.json",
+    "allow_missed_findings": false,
+    "constraints": [
+      "Treat each finding packet as the unit of review; do not restart whole-plugin auditing.",
+      "Answer reachability, authorization, dataflow, impact, and missing-evidence questions for each packet before finalizing finding_reviews.",
+      "Start from finding_packets, worker_findings, and phase1_context before opening other artifacts.",
+      "Refute before confirm; keep objections evidence-bound with file:line anchors.",
+      "Do not rewrite the full findings set; produce critique JSON only.",
+      "Default to packet-local critique only. Focus on finding_reviews plus field corrections for the existing finding packets.",
+      "Treat finding_packets as the reviewer core evidence pack. If packet-local evidence is insufficient, prefer needs_more_evidence over broad exploration."
+    ],
+    "max_candidates": null
+  },
+  "artifacts": {
+    "worker_output_path": null,
+    "ir_path": null,
+    "semgrep_path": null,
+    "psalm_path": null,
+    "threat_context_path": null,
+    "source_root": "plugins/hostinger-reach"
+  },
+  "worker_summary": {
+    "total_findings": 1,
+    "true_positive_count": 0,
+    "false_positive_count": 0,
+    "needs_review_count": 1,
+    "negative_findings_count": 0,
+    "overall_risk": "low",
+    "analysis_summary": "Reviewer core batch scoped to 1 packet(s)."
+  },
+  "worker_findings": [
+    {
+      "finding_id": "HR-002",
+      "verdict": "REVIEW",
+      "vuln_type": "Broken Access Control \u2014 AJAX handler missing capability check (subscriber privilege escalation via dismiss action)",
+      "severity": "low",
+      "auth_required": null,
+      "confidence": 0.55,
+      "entry_point_id": "ep_init_init",
+      "source_anchor": "src/Admin/Notices/AddFormNotice.php:43",
+      "sink_anchor": "src/Admin/Notices/AddFormNotice.php:59",
+      "patchstack_eligible": false
+    }
+  ],
+  "finding_packets": [
+    {
+      "packet_id": "HR-002",
+      "parent_finding_id": "HR-002",
+      "packet_kind": "base",
+      "focus_anchor": "src/Admin/Notices/AddFormNotice.php:43",
+      "finding_id": "HR-002",
+      "verdict": "REVIEW",
+      "vuln_type": "Broken Access Control \u2014 AJAX handler missing capability check (subscriber privilege escalation via dismiss action)",
+      "severity": "low",
+      "auth_required": null,
+      "confidence": 0.55,
+      "entry_point_id": "ep_init_init",
+      "patchstack_eligible": false,
+      "claimed_impact": "Worker claims Broken Access Control \u2014 AJAX handler missing capability check (subscriber privilege escalation via dismiss action) is materially exploitable with auth boundary `unknown` and impact reachable at src/Admin/Notices/AddFormNotice.php:59.",
+      "worker_context": {
+        "source_function": "AddFormNotice::handle_ajax_action",
+        "sink_function": "set_transient / wp_send_json_success",
+        "fp_reason": "Packet-local reviewer scope: AddFormNotice at src/Admin/Notices/AddFormNotice.php:43. Primary files: src/Admin/Notices/AddFormNotice.php, src/Api/Webhooks/Handlers/WebhookHandler.php.",
+        "original_fp_reason": null,
+        "reasoning_excerpt": {
+          "hypothesis": "Validate only the packet-local claim for AddFormNotice. Determine whether anchors src/Api/Webhooks/Handlers/WebhookHandler.php:19, src/Admin/Notices/AddFormNotice.php:43, src/Admin/Notices/AddFormNotice.php:59, <unknown> actually support the worker's claim without widening to other surfaces.",
+          "trace": "Packet-local review only. Focus file: src/Admin/Notices/AddFormNotice.php. Focus anchors: src/Api/Webhooks/Handlers/WebhookHandler.php:19, src/Admin/Notices/AddFormNotice.php:43, src/Admin/Notices/AddFormNotice.php:59, <unknown>. Primary files: src/Admin/Notices/AddFormNotice.php, src/Api/Webhooks/Handlers/WebhookHandler.php. Entry point: src/Api/Webhooks/Handlers/WebhookHandler.php:19. Treat unrelated callers, consumers, and sibling surfaces as out of scope unless an explicit expansion attempt is justified.",
+          "defenses": [
+            "check_ajax_referer() at line 44: requires a valid nonce for the specific action \u2014 limits exposure to users who have a valid nonce",
+            "The nonce is only generated and localised in enqueue_notice_assets() which fires inside should_render() \u2192 but should_render() does not check current_user_can() \u2014 it only checks screen->id (dashboard, pages, posts, edit-page, edit-post) and connection status",
+            "JSON/REST response handling is not a browser sink by itself; require packet-local output evidence before keeping an XSS-style claim."
+          ],
+          "refutation": [
+            "Refute or keep this packet on AddFormNotice alone. Do not carry over conclusions from plugin-wide traces without packet-local code evidence."
+          ],
+          "conclusion": "Keep, downgrade, retract, or mark needs_more_evidence based only on packet-local evidence for AddFormNotice."
+        },
+        "original_reasoning_excerpt": {
+          "hypothesis": "An authenticated subscriber-level user can dismiss the 'Add Form' admin notice or trigger the 'success' action by sending a valid nonce-protected AJAX request to wp_ajax_hostinger_reach_add_form_notice_action. Unlike ConnectionNotice (which checks current_user_can('manage_options')), AddFormNotice does not perform a capability check.",
+          "trace": "AddFormNotice::init() registers wp_ajax_hostinger_reach_add_form_notice_action (line 28) \u2192 handle_ajax_action() is called (line 43) \u2192 check_ajax_referer(self::NOTICE_ACTION, 'nonce') validates nonce (line 44) \u2192 no capability check follows \u2192 $choice from $_POST['choice'] is processed \u2192 'dismiss' case sets transient at NOTICE_DISMISS_TRANSIENT, 'success' case returns a redirect URL",
+          "defenses": [
+            "check_ajax_referer() at line 44: requires a valid nonce for the specific action \u2014 limits exposure to users who have a valid nonce",
+            "The nonce is only generated and localised in enqueue_notice_assets() which fires inside should_render() \u2192 but should_render() does not check current_user_can() \u2014 it only checks screen->id (dashboard, pages, posts, edit-page, edit-post) and connection status"
+          ],
+          "refutation": [
+            "REFUTATION ATTEMPT: Is the nonce only delivered to admin users? RESULT: Partially refuted. The nonce is enqueued via admin_enqueue_scripts, which only fires in the admin area. WordPress admin area normally requires at least author-level access, not subscriber. Subscriber-level users cannot access admin screens that match the screen ID whitelist (dashboard requires capability 'read', but admin pages like pages/posts/edit-page/edit-post require higher capabilities). Therefore, a subscriber typically cannot obtain the nonce.",
+            "REFUTATION ATTEMPT: Can a subscriber reach an admin screen to obtain the nonce? RESULT: Depends on site configuration. In default WordPress, subscribers cannot access the admin dashboard beyond their profile page. The admin_notices hook only runs on admin pages that the subscriber can access \u2014 which by default is only their profile page (not in the whitelist). Therefore exploitation requires non-default configuration or another vulnerability to access the nonce.",
+            "REFUTATION ATTEMPT: What is the actual impact if exploited? RESULT: The impact is limited \u2014 'dismiss' sets a transient that hides the notice for one week; 'success' returns a hardcoded redirect URL string. Neither action affects data integrity, credentials, or security settings. This is a design inconsistency (ConnectionNotice has the capability check, AddFormNotice does not) but exploitation in a default WordPress configuration is not straightforward."
+          ],
+          "conclusion": "REVIEW. There is a missing capability check compared to the sibling ConnectionNotice handler. In default WordPress configurations, a subscriber cannot obtain the nonce, limiting practical exploitability. However, in sites with custom roles or other misconfigurations, a lower-privileged user could trigger the dismiss/success actions. The impact is low (notice management only). Marking as REVIEW rather than TP because the exploitation path requires non-default conditions."
+        }
+      },
+      "review_focus": {
+        "scope_statement": "Review only the packet-local claim centered on src/Admin/Notices/AddFormNotice.php:43 in src/Admin/Notices/AddFormNotice.php. Start from the listed packet evidence, not from a plugin-wide hypothesis.",
+        "sink_semantics": "json_response",
+        "default_resolution_on_missing_terminal_evidence": "field_fix_or_retract",
+        "stop_conditions": [
+          "Once packet-local reachability, authorization, dataflow, impact, and missing evidence are answered with file:line support, stop and write critique JSON.",
+          "Do not reopen unrelated plugin surfaces just because the parent finding or worker narrative mentions them.",
+          "If packet-local evidence ends in JSON/REST response handling and no browser sink is shown, prefer field_fix, retract, or needs_more_evidence over plugin-wide rendering hunts."
+        ],
+        "disallowed_drift": [
+          "whole_plugin_reaudit",
+          "translation_or_asset_search",
+          "sibling_surface_expansion_without_evidence"
+        ],
+        "primary_scope_files": [
+          "src/Admin/Notices/AddFormNotice.php",
+          "src/Api/Webhooks/Handlers/WebhookHandler.php"
+        ],
+        "optional_scope_files": [
+          "src/Admin/Notices/AddFormNotice.php",
+          "src/Api/Webhooks/Handlers/WebhookHandler.php"
+        ],
+        "entry_point_anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19"
+      },
+      "scope_policy": {
+        "allowed_primary_files": [
+          "src/Admin/Notices/AddFormNotice.php",
+          "src/Api/Webhooks/Handlers/WebhookHandler.php"
+        ],
+        "allowed_optional_files": [
+          "src/Admin/Notices/AddFormNotice.php",
+          "src/Api/Webhooks/Handlers/WebhookHandler.php"
+        ],
+        "max_out_of_band_files": 1
+      },
+      "anchors": {
+        "entry_point_anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+        "source_anchor": "src/Admin/Notices/AddFormNotice.php:43",
+        "sink_anchor": "src/Admin/Notices/AddFormNotice.php:59",
+        "review_anchor_candidates": [
+          {
+            "kind": "entry_point",
+            "anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+            "note": null
+          },
+          {
+            "kind": "finding_source",
+            "anchor": "src/Admin/Notices/AddFormNotice.php:43",
+            "note": "Broken Access Control \u2014 AJAX handler missing capability check (subscriber privilege escalation via dismiss action)"
+          },
+          {
+            "kind": "finding_sink",
+            "anchor": "src/Admin/Notices/AddFormNotice.php:59",
+            "note": "Broken Access Control \u2014 AJAX handler missing capability check (subscriber privilege escalation via dismiss action)"
+          },
+          {
+            "kind": "fp_evidence",
+            "anchor": "<unknown>",
+            "note": null
+          }
+        ]
+      },
+      "primary_files": [
+        "src/Admin/Notices/AddFormNotice.php",
+        "src/Api/Webhooks/Handlers/WebhookHandler.php"
+      ],
+      "primary_snippets": [
+        {
+          "file": "src/Admin/Notices/AddFormNotice.php",
+          "anchor": "src/Admin/Notices/AddFormNotice.php:43",
+          "focus_line": 43,
+          "line_start": 37,
+          "line_end": 49,
+          "kind": "finding_source",
+          "code": "    37\t    public function enqueue_admin_assets(): void {\n    38\t        if ( $this->should_render() ) {\n    39\t            $this->enqueue_notice_assets();\n    40\t        }\n    41\t    }\n    42\t\n    43\t    public function handle_ajax_action(): void {\n    44\t        check_ajax_referer( self::NOTICE_ACTION, 'nonce' );\n    45\t        $choice = sanitize_text_field( $_POST['choice'] );\n    46\t\n    47\t        switch ( $choice ) {\n    48\t            case 'success':\n    49\t                $this->handle_success();"
+        },
+        {
+          "file": "src/Admin/Notices/AddFormNotice.php",
+          "anchor": "src/Admin/Notices/AddFormNotice.php:59",
+          "focus_line": 59,
+          "line_start": 53,
+          "line_end": 65,
+          "kind": "finding_sink",
+          "code": "    53\t                $this->handle_dismiss();\n    54\t                break;\n    55\t        }\n    56\t    }\n    57\t\n    58\t    private function handle_dismiss(): void {\n    59\t        set_transient( self::NOTICE_DISMISS_TRANSIENT, true, WEEK_IN_SECONDS );\n    60\t        wp_send_json_success();\n    61\t    }\n    62\t\n    63\t    private function handle_success(): void {\n    64\t        wp_send_json_success(\n    65\t            array("
+        },
+        {
+          "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
+          "anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+          "focus_line": 19,
+          "line_start": 13,
+          "line_end": 25,
+          "kind": "entry_point",
+          "code": "    13\t    public function __construct( ReachApiHandler $reach_api_handler, FormRepository $form_repository ) {\n    14\t        $this->reach_api_handler = $reach_api_handler;\n    15\t        $this->form_repository   = $form_repository;\n    16\t    }\n    17\t\n    18\t    public function init(): void {\n    19\t        add_action( 'init', array( $this, 'init_hooks' ) );\n    20\t    }\n    21\t\n    22\t    public function is_enabled(): bool {\n    23\t        return $this->reach_api_handler->is_connected() && $this->is_automation_active();\n    24\t    }\n    25\t"
+        }
+      ],
+      "optional_files": [
+        "src/Admin/Notices/AddFormNotice.php",
+        "src/Api/Webhooks/Handlers/WebhookHandler.php"
+      ],
+      "optional_snippets": [
+        {
+          "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
+          "anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+          "focus_line": 19,
+          "line_start": 13,
+          "line_end": 25,
+          "kind": "entry_point",
+          "code": "    13\t    public function __construct( ReachApiHandler $reach_api_handler, FormRepository $form_repository ) {\n    14\t        $this->reach_api_handler = $reach_api_handler;\n    15\t        $this->form_repository   = $form_repository;\n    16\t    }\n    17\t\n    18\t    public function init(): void {\n    19\t        add_action( 'init', array( $this, 'init_hooks' ) );\n    20\t    }\n    21\t\n    22\t    public function is_enabled(): bool {\n    23\t        return $this->reach_api_handler->is_connected() && $this->is_automation_active();\n    24\t    }\n    25\t"
+        },
+        {
+          "file": "src/Admin/Notices/AddFormNotice.php",
+          "anchor": "src/Admin/Notices/AddFormNotice.php:43",
+          "focus_line": 43,
+          "line_start": 37,
+          "line_end": 49,
+          "kind": "finding_source",
+          "code": "    37\t    public function enqueue_admin_assets(): void {\n    38\t        if ( $this->should_render() ) {\n    39\t            $this->enqueue_notice_assets();\n    40\t        }\n    41\t    }\n    42\t\n    43\t    public function handle_ajax_action(): void {\n    44\t        check_ajax_referer( self::NOTICE_ACTION, 'nonce' );\n    45\t        $choice = sanitize_text_field( $_POST['choice'] );\n    46\t\n    47\t        switch ( $choice ) {\n    48\t            case 'success':\n    49\t                $this->handle_success();"
+        },
+        {
+          "file": "src/Admin/Notices/AddFormNotice.php",
+          "anchor": "src/Admin/Notices/AddFormNotice.php:59",
+          "focus_line": 59,
+          "line_start": 53,
+          "line_end": 65,
+          "kind": "finding_sink",
+          "code": "    53\t                $this->handle_dismiss();\n    54\t                break;\n    55\t        }\n    56\t    }\n    57\t\n    58\t    private function handle_dismiss(): void {\n    59\t        set_transient( self::NOTICE_DISMISS_TRANSIENT, true, WEEK_IN_SECONDS );\n    60\t        wp_send_json_success();\n    61\t    }\n    62\t\n    63\t    private function handle_success(): void {\n    64\t        wp_send_json_success(\n    65\t            array("
+        }
+      ],
+      "review_questions": {
+        "reachability": "Can an attacker really reach the claimed path from src/Api/Webhooks/Handlers/WebhookHandler.php:19 without hidden preconditions or workflow assumptions?",
+        "authorization": "Does the path have a stronger guard than the worker claims, including capability, permission_callback, nonce semantics, or trust-boundary limits for auth `unknown`?",
+        "dataflow": "Does attacker-controlled data actually flow from src/Admin/Notices/AddFormNotice.php:43 to src/Admin/Notices/AddFormNotice.php:59 for the claimed Broken Access Control \u2014 AJAX handler missing capability check (subscriber privilege escalation via dismiss action), without a refuting guard, sanitizer, or broken hop?",
+        "impact": "Assuming the path reaches src/Admin/Notices/AddFormNotice.php:59, is the worker's claimed impact concrete and not overstated for this plugin context?",
+        "missing_evidence": "What exact file:line evidence is still missing before this finding can be kept, downgraded, or retracted with confidence?"
+      }
+    }
+  ],
+  "phase1_context": {
+    "entry_point_count": 25,
+    "anomaly_count": 3,
+    "unresolved_hook_count": 8,
+    "related_entry_points": [
+      {
+        "id": "ep_init_init",
+        "type": "init",
+        "hook_name": "init",
+        "auth_level": "none",
+        "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
+        "line": 19,
+        "callback_name": "init_hooks",
+        "callback_class": "Hostinger\\Reach\\Api\\Webhooks\\Handlers\\WebhookHandler"
+      }
+    ],
+    "top_anomalies": [],
+    "unresolved_hooks": []
+  },
+  "evidence": {
+    "primary_anchors": [
+      {
+        "kind": "entry_point",
+        "anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+        "packet_id": "HR-002",
+        "finding_id": "HR-002",
+        "entry_point_id": "ep_init_init",
+        "note": "Broken Access Control \u2014 AJAX handler missing capability check (subscriber privilege escalation via dismiss action)"
+      },
+      {
+        "kind": "finding_source",
+        "anchor": "src/Admin/Notices/AddFormNotice.php:43",
+        "packet_id": "HR-002",
+        "finding_id": "HR-002",
+        "entry_point_id": "ep_init_init",
+        "note": "Broken Access Control \u2014 AJAX handler missing capability check (subscriber privilege escalation via dismiss action)"
+      },
+      {
+        "kind": "finding_sink",
+        "anchor": "src/Admin/Notices/AddFormNotice.php:59",
+        "packet_id": "HR-002",
+        "finding_id": "HR-002",
+        "entry_point_id": "ep_init_init",
+        "note": "Broken Access Control \u2014 AJAX handler missing capability check (subscriber privilege escalation via dismiss action)"
+      }
+    ],
+    "primary_files": [
+      "src/Admin/Notices/AddFormNotice.php",
+      "src/Api/Webhooks/Handlers/WebhookHandler.php"
+    ],
+    "primary_snippets": [
+      {
+        "file": "src/Admin/Notices/AddFormNotice.php",
+        "anchor": "src/Admin/Notices/AddFormNotice.php:43",
+        "focus_line": 43,
+        "line_start": 37,
+        "line_end": 49,
+        "kind": "finding_source",
+        "code": "    37\t    public function enqueue_admin_assets(): void {\n    38\t        if ( $this->should_render() ) {\n    39\t            $this->enqueue_notice_assets();\n    40\t        }\n    41\t    }\n    42\t\n    43\t    public function handle_ajax_action(): void {\n    44\t        check_ajax_referer( self::NOTICE_ACTION, 'nonce' );\n    45\t        $choice = sanitize_text_field( $_POST['choice'] );\n    46\t\n    47\t        switch ( $choice ) {\n    48\t            case 'success':\n    49\t                $this->handle_success();"
+      },
+      {
+        "file": "src/Admin/Notices/AddFormNotice.php",
+        "anchor": "src/Admin/Notices/AddFormNotice.php:59",
+        "focus_line": 59,
+        "line_start": 53,
+        "line_end": 65,
+        "kind": "finding_sink",
+        "code": "    53\t                $this->handle_dismiss();\n    54\t                break;\n    55\t        }\n    56\t    }\n    57\t\n    58\t    private function handle_dismiss(): void {\n    59\t        set_transient( self::NOTICE_DISMISS_TRANSIENT, true, WEEK_IN_SECONDS );\n    60\t        wp_send_json_success();\n    61\t    }\n    62\t\n    63\t    private function handle_success(): void {\n    64\t        wp_send_json_success(\n    65\t            array("
+      },
+      {
+        "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
+        "anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+        "focus_line": 19,
+        "line_start": 13,
+        "line_end": 25,
+        "kind": "entry_point",
+        "code": "    13\t    public function __construct( ReachApiHandler $reach_api_handler, FormRepository $form_repository ) {\n    14\t        $this->reach_api_handler = $reach_api_handler;\n    15\t        $this->form_repository   = $form_repository;\n    16\t    }\n    17\t\n    18\t    public function init(): void {\n    19\t        add_action( 'init', array( $this, 'init_hooks' ) );\n    20\t    }\n    21\t\n    22\t    public function is_enabled(): bool {\n    23\t        return $this->reach_api_handler->is_connected() && $this->is_automation_active();\n    24\t    }\n    25\t"
+      }
+    ],
+    "optional_evidence": {
+      "anchors": [],
+      "files": [],
+      "snippets": []
+    }
+  },
+  "threat_context_summary": null
+}

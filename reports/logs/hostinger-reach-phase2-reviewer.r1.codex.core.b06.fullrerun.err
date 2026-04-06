@@ -1,0 +1,2178 @@
+
+=== attempt 1 ===
+Reading additional input from stdin...
+OpenAI Codex v0.118.0 (research preview)
+--------
+workdir: /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+model: gpt-5.4
+provider: codex-lb
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR, /Users/timomangcut/.codex/memories]
+reasoning effort: xhigh
+reasoning summaries: none
+session id: 019d6340-d67d-7d23-83cb-4411e0e3f907
+--------
+user
+# System Prompt - Phase 2 Reviewer Core (Project Local)
+
+Ban la reviewer core cho Phase 2 WordPress plugin audit.
+Hay ap dung truc tiep quy tac AppSec duoc neu trong prompt va project docs.
+Khong duoc phu thuoc vao skill auto-load hay provider-specific helpers.
+
+Vai tro cua ban:
+- KHONG duoc lam lai worker output tu dau.
+- Nhiem vu chinh: phan bien tung finding packet worker da dua ra bang counter-evidence, field corrections, va missing-evidence notes.
+- Round nay CHI duoc lam packet-local critique. Khong duoc bien thanh explorer hay broad re-audit ca plugin.
+- Uu tien refute-first. Neu worker khang dinh qua muc, ban phai ha muc do tin cay.
+
+Quy tac bat buoc:
+- Khong invent nonce/capability/route/option key.
+- Moi counter-evidence phai co file:line cu the.
+- Khong xoa finding mot cach cam tinh. Neu muon retract/downgrade, phai neu ly do testable.
+- `missed_findings[]` phai de trong, tru khi input round nay noi ro rang la duoc phep de xuat finding bi bo sot.
+- Neu input packet da duoc atomize, moi critique phai giu `packet_id` rieng va `finding_id` cua finding goc.
+- Neu `packet_kind = atomic_surface`, hay coi `worker_context` da duoc localized cho surface do; khong duoc mo lai sibling surfaces chi vi parent finding ban dau la aggregate.
+- Hay uu tien `review_focus.scope_statement`, `review_focus.stop_conditions`, va `review_focus.disallowed_drift` de giu reviewer dung vai packet-local critic.
+- `worker_context.reasoning_excerpt` la packet-local brief da duoc normalize; `worker_context.original_*` chi dung de tham chieu y worker ban dau, khong phai de mo rong audit.
+- Dung `worker_context`, `primary_snippets`, va `optional_snippets` lam ho so phan bien chinh; khong duoc mo rong workspace mot cach mac dinh.
+- Neu can mo them file, uu tien file trong `scope_policy.allowed_optional_files`; file ngoai scope chi duoc phep o muc rat it va phai ghi vao `expansion_attempts`.
+- Neu `review_focus.sink_semantics` la `hook_dispatch`, `json_response`, hoac `boolean_guard`, hay phan bien theo stop conditions cua packet thay vi trace lai ca plugin de tim terminal sink moi.
+- Neu evidence chua du, uu tien `needs_more_evidence` thay vi khang dinh sai/chac chan.
+- Khong grep rong ca plugin, khong audit lai translation/assets/vendor, va khong doi packet critique thanh omitted-path hunting.
+
+Yeu cau output:
+- Ghi JSON critique vao `reports/phase2/<slug>-phase2.review.rN.json`
+- Output cua ban la critique co cau truc, KHONG phai final Phase 2 findings
+- Muc tieu: dua worker ve mot artifact evidence-bound hon cho round tiep theo
+
+
+# Phase 2 Reviewer Core Loop - `hostinger-reach` - Round `1`
+
+Read reviewer input JSON first:
+- Reviewer input: `reports/phase2/hostinger-reach-phase2.review.r1.core.b06.input.json`
+
+Execution rules:
+1. Follow `task.role`, `task.goal`, and `task.constraints` from the input JSON.
+2. Treat each item in `finding_packets` as one claim packet. Review packet-by-packet, not plugin-wide.
+3. For each packet, explicitly answer its `review_questions.reachability`, `authorization`, `dataflow`, `impact`, and `missing_evidence` before writing the corresponding `finding_reviews[]` item.
+4. Start from the packet's `review_focus`, `worker_context`, `anchors`, `primary_snippets`, and `optional_snippets` before opening any file. Treat `worker_context.reasoning_excerpt` as the packet-local reviewer brief; only consult `worker_context.original_*` if you need to understand the worker's original claim wording.
+5. Treat `scope_policy.allowed_primary_files` as the default scope, `scope_policy.allowed_optional_files` as the only preferred expansion scope, and `scope_policy.max_out_of_band_files` as a hard cap for any out-of-band file opens.
+6. If packet-local evidence is still insufficient, return `needs_more_evidence` instead of exploring for new findings.
+7. Do not reopen `artifacts.worker_output_path` during core review unless the packet data is internally inconsistent and the path is present.
+8. Do not use `artifacts.ir_path`, `artifacts.semgrep_path`, `artifacts.psalm_path`, or `artifacts.threat_context_path` to restart whole-plugin hunting.
+9. Do not inspect translation files, asset bundles, vendor-style dependency trees, or unrelated plugin surfaces during core review.
+10. Keep review bounded and evidence-first. Prefer refutation, field fixes, precise counter-evidence, and explicit missing-evidence notes over rewriting the findings set.
+11. Obey `review_focus.stop_conditions` and `review_focus.disallowed_drift`. If `review_focus.sink_semantics` says the packet ends at hook dispatch, JSON response handling, or guard logic, do not compensate by expanding into whole-plugin tracing.
+12. `missed_findings[]` is not part of the core output contract. Do not invent or emit it in this round.
+13. Emit exactly one `finding_reviews[]` item per packet. Copy the packet's `packet_id`, keep `finding_id` aligned to the packet's `parent_finding_id`, and populate both `missing_evidence[]` and `expansion_attempts[]` even when they are empty.
+
+Output rules:
+- Write raw JSON only.
+- Output path: `reports/phase2/hostinger-reach-phase2.review.r1.core.b06.json`
+- Match the schema referenced by `task.output_schema`.
+- `summary` must be an object, never a string.
+- Keep all plugin file paths relative to the plugin root.
+
+2026-04-06T14:44:46.980040Z  WARN codex_core::shell_snapshot: Failed to delete shell snapshot at "/Users/timomangcut/.codex/shell_snapshots/019d6340-d67d-7d23-83cb-4411e0e3f907.tmp-1775486686849987000": Os { code: 2, kind: NotFound, message: "No such file or directory" }
+codex
+Toan bo round nay la packet-local critique cho `hostinger-reach` round 1. Toi se doc project docs va reviewer input JSON truoc, sau do chi mo them cac file nam trong scope ma packet cho phep de refute/tighten tung finding.
+exec
+/bin/zsh -lc "sed -n '1,240p' docs/bug-bounty-rules-summary.md" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "sed -n '1,220p' /Users/timomangcut/.codex/skills/application-security/SKILL.md" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "sed -n '1,260p' reports/phase2/hostinger-reach-phase2.review.r1.core.b06.input.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "pwd && printf '\\n---\\n' && sed -n '1,220p' docs/wp-context.md" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+---
+name: application-security
+description: Reusable application security skill for code review, audit, exploitability analysis, authorization review, trust-boundary tracing, and evidence-based security reporting.
+---
+
+# Application Security
+
+Use this skill when the request involves:
+- security review
+- audit
+- vulnerability analysis
+- exploitability analysis
+- authorization or access control review
+- source-to-sink tracing
+- code-level AppSec triage
+
+## Read Order
+
+1. Read `<project>/AGENTS.md` if present.
+2. Read the relevant project docs in `docs/` or `references/`.
+3. Load `references/review-workflow.md` for the reusable workflow.
+4. Only then start tracing data flow and evaluating defenses.
+
+## Skill Responsibilities
+
+- Provide a reusable AppSec workflow across projects
+- Prioritize context over pattern matching
+- Enforce evidence-based reporting and refutation
+- Keep project-specific facts out of the skill itself
+
+## Output Contract
+
+- Every conclusion needs code references
+- Every mature finding needs at least one refutation attempt
+- Every severity needs a concrete "why not one level lower?"
+- If proof is incomplete, use `UNCERTAIN` instead of overstating confidence
+
+## Load On Demand
+
+- Reusable workflow: `references/review-workflow.md`
+- Project facts: `<project>/docs/*`
+
+ succeeded in 0ms:
+# Tóm tắt Bug Bounty Rules - Patchstack & Wordfence
+
+> Tài liệu này được viết lại theo bố cục gần giống file mẫu đính kèm, nhưng đã rút gọn để tập trung vào **quy tắc cốt lõi**, đặc biệt là **in-scope / out-of-scope**, điều kiện hợp lệ của report, tính duy nhất, và các lý do thường bị từ chối.
+>
+> Nguồn tham chiếu:
+> - Patchstack: https://patchstack.com/articles/bug-bounty-guidelines-rules/
+> - Wordfence: https://www.wordfence.com/threat-intel/bug-bounty-program/#scope
+
+---
+
+## Table of Contents
+- Introduction
+- Patchstack
+  - Reporting Protocol
+  - Scope
+  - Uniqueness Requirement
+  - Quality Assurance
+  - Rejection Criteria
+  - Disclosure / CVE
+- Wordfence
+  - Program Overview
+  - In-Scope Assets
+  - Out-of-Scope Assets
+  - Explicitly In-Scope Vulnerabilities
+  - Explicitly Out-of-Scope Vulnerabilities
+  - Submission Rules & Key Notes
+- Quick Comparison
+
+---
+
+# Introduction
+
+Tài liệu này tổng hợp hai chương trình bug bounty trong hệ sinh thái WordPress:
+
+1. **Patchstack Bug Bounty Program**
+2. **Wordfence Intelligence Bug Bounty Program**
+
+Mục tiêu của bản tóm tắt là giúp nhanh chóng xác định:
+- Report nào có khả năng **được chấp nhận**
+- Thành phần nào **in scope / out of scope**
+- Điều kiện nào khiến report **không đủ bounty** hoặc chỉ được **CVE / disclosure**
+- Những yêu cầu tối thiểu để report được xem là **valid**
+
+---
+
+# Patchstack
+
+## Reporting Protocol
+
+### Kênh gửi report
+- Chỉ chấp nhận report qua form chính thức: `https://patchstack.com/database/report`
+- Không chấp nhận qua email hoặc kênh khác.
+
+### Tài khoản & tư cách tham gia
+- Tài khoản researcher được tạo sau khi có ít nhất một report hợp lệ và in-scope.
+- Mỗi researcher chỉ được dùng **một account**.
+- Cá nhân và công ty đều có thể tham gia, nhưng **không hỗ trợ team submissions**.
+
+---
+
+## Scope
+
+### In scope
+Patchstack chấp nhận các thành phần trong hệ sinh thái WordPress, bao gồm:
+- **WordPress core**
+- **WordPress plugins**
+- **WordPress themes**
+
+Cả **free** và **premium** đều có thể được chấp nhận.
+- Với sản phẩm premium, cần cung cấp **bản archive gốc, không chỉnh sửa** để xác minh.
+- Nếu theme phụ thuộc plugin cụ thể, cần cung cấp cả plugin phụ thuộc đó.
+
+Một report chỉ được coi là hợp lệ nếu có **security impact rõ ràng và đo lường được**.
+
+### Out of scope / không được chấp nhận
+Các trường hợp sau thường bị loại:
+
+#### 1) Severity / CVSS quá thấp
+- Vulnerability có **CVSS v3.1 < 6.5** không được chấp nhận trực tiếp theo rules hiện tại.
+
+#### 2) Active installs quá thấp
+- Component có **< 1,000 active installs** nhìn chung là out of scope.
+- Ngoại lệ: có thể được xem xét nếu:
+  - có **CVSS >= 8.5**,
+  - yêu cầu quyền không vượt quá **Unauthenticated / Subscriber / Customer**,
+  - và component có **ít nhất 100 active installs**.
+
+#### 3) Quyền khai thác quá cao
+- Chỉ ưu tiên lỗ hổng khai thác được bởi:
+  - **Unauthenticated**
+  - **Subscriber / Customer**
+- **Contributor** chỉ được chấp nhận nếu severity đủ cao.
+- Các lỗ hổng yêu cầu **Admin / quyền cao hơn** là out of scope.
+- Với **custom roles**, chỉ chấp nhận nếu capability tương đương gần với Subscriber/Customer; nếu mạnh hơn thì không chấp nhận.
+
+#### 4) Các loại issue thường không được chấp nhận
+- **CSV Injection**
+- **IP spoofing** (trừ khi trực tiếp phá vỡ một cơ chế bảo vệ phụ thuộc vào IP)
+- **Race condition** có tác động không rõ ràng hoặc severity thấp
+- **CAPTCHA / Turing test bypass**
+- **Arbitrary user registration** nếu không dẫn đến tạo được **admin account**
+- **Authenticated shortcode preview issues** ở mức Contributor trở lên, trừ khi lộ dữ liệu nhạy cảm có tác động rõ ràng
+- **CSRF / Broken Access Control** chỉ dùng để dismiss notice mà không có security impact thực tế
+- **IP bypass** cho các thao tác không quan trọng như likes/views/counters
+
+#### 5) Thành phần không đủ điều kiện
+- Phiên bản cuối cùng phát hành đã quá **3 năm**
+- Lỗ hổng **không còn tồn tại ở phiên bản mới nhất**
+- Component **không public**
+- Component là hàng **custom / modified / private**, không được phân phối công khai qua:
+  - WordPress.org
+  - website chính thức của vendor
+  - GitHub
+  - CodeCanyon / ThemeForest
+  - hoặc nguồn public tương đương
+
+---
+
+## Uniqueness Requirement
+
+- Report phải là **mới**, **unique**, chưa từng được public hoặc báo trước đó.
+- Nếu nhiều người báo cùng một issue, **người gửi valid report đầu tiên** sẽ được tính.
+- Nếu issue đã được báo trực tiếp cho vendor trước đó, Patchstack chỉ chấp nhận nếu:
+  - vendor xác nhận issue,
+  - và vendor có ý định vá.
+- Với sản phẩm của **Automattic**, phải report qua **HackerOne của Automattic** trước.
+- Incomplete patch đã public thường **không được xem là issue mới**, trừ khi tạo ra attack vector mới.
+
+---
+
+## Quality Assurance
+
+Một report Patchstack cần có tối thiểu:
+- PoC dạng text, từng bước rõ ràng
+- Các bước từ lúc cài plugin/theme cho đến khi exploit thành công
+- Raw HTTP request cần thiết
+- Payload chính xác đã dùng
+- Video screenshot là điểm cộng
+
+### Rủi ro khi gửi report kém chất lượng
+- Report không đầy đủ, không tái hiện được, hoặc sai sẽ bị reject.
+- Gửi lặp lại false positive / AI-generated false positive có thể dẫn tới:
+  - cooldown,
+  - bị khóa dashboard tạm thời,
+  - hoặc khóa vĩnh viễn.
+
+---
+
+## Rejection Criteria
+
+Các lý do reject phổ biến:
+- Thông tin không đầy đủ hoặc không chính xác
+- Claim không phải vulnerability hợp lệ
+- Dùng role không chuẩn / role đã chỉnh sửa
+- Plugin/theme đã đóng hoặc không truy cập được
+- Component không được phân phối công khai qua nguồn đáng tin cậy
+- Developer/vendor gửi issue cho chính sản phẩm của họ: có thể dùng cho disclosure nhưng **không đủ điều kiện bounty**
+
+---
+
+## Disclosure / CVE
+
+- Patchstack là **CNA**, nên issue hợp lệ có thể được cấp **CVE**.
+- Việc cấp CVE có thể bị trì hoãn để tránh trùng với CNA khác.
+- Tất cả valid in-scope reports sẽ được đưa vào **Patchstack Vulnerability Database**.
+- Researcher không được public vulnerability cho bên thứ ba trước khi Patchstack công bố chính thức.
+
+---
+
+# Wordfence
+
+## Program Overview
+
+Wordfence tập trung vào bug bounty cho **WordPress plugins và themes**. Chương trình phân scope khá mạnh dựa trên:
+- loại vulnerability,
+- mức quyền yêu cầu,
+- active installs,
+- và **researcher tier**.
+
+Wordfence cũng có thể cấp **CVE** cho cả một số report out of scope, nhưng **không phải report nào cũng đủ điều kiện nhận bounty**.
+
+---
+
+## In-Scope Assets
+
+### Nhóm 1: High Threat Vulnerabilities
+Tất cả plugin/theme WordPress (free và premium), trừ các asset bị liệt kê out of scope, sẽ in scope nếu có:
+- **>= 25 active installs**
+- khai thác được bởi **unauthenticated** hoặc **low-level authenticated** (Subscriber/Customer)
+- thuộc một trong các loại sau:
+  - Arbitrary PHP File Upload or Read
+  - Arbitrary PHP File Deletion
+  - Arbitrary Options Update
+  - Remote Code Execution
+  - Authentication Bypass to Admin
+  - Privilege Escalation to Admin
+
+Ghi chú:
+- Nếu plugin/theme có từ **25 đến 999 installs**, nó phải có trên **WordPress.org Plugin Repository** mới được tính in scope.
+
+### Nhóm 2: Common and Dangerous Vulnerabilities
+Tất cả plugin/theme WordPress (free và premium), trừ asset out of scope, sẽ in scope nếu có:
+- **>= 500 active installs**
+- khai thác được bởi **unauthenticated** hoặc **Subscriber/Customer**
+- thuộc một trong các loại:
+  - **Stored XSS**
+  - **SQL Injection**
+
+Ghi chú:
+- Với mốc **500 đến 999 installs**, component phải có trên **WordPress.org Plugin Repository**.
+- **Premium plugin/theme** bị loại khỏi nhóm này nếu **< 1,000 installs**.
+
+### Nhóm 3: All Other Vulnerabilities
+Các vulnerability khác có thể in scope, nhưng phụ thuộc vào **researcher tier**:
+- **Standard Researchers**: component cần **>= 50,000 installs**
+- **Resourceful Researchers**: component cần **>= 10,000 installs**
+- **1337 Researchers**: component cần **>= 500 installs**
+
+---
+
+## Out-of-Scope Assets
+
+Các asset sau bị loại khỏi bounty scope của Wordfence:
+- **WordPress Core**
+- **Tất cả sản phẩm của Automattic**
+- **Tất cả sản phẩm của Facebook**
+- **Tất cả sản phẩm của Google**
+- **Tất cả sản phẩm của SiteGround**
+- **Tất cả sản phẩm của Yoast**
+
+Ngoài ra cũng out of scope:
+- Plugin hoặc theme đã **closed to downloads / sales** tại thời điểm gửi report
+- Bất kỳ **web service bên ngoài** nào đi kèm plugin/theme nhưng **không chạy local** trên site WordPress (ví dụ API trên server của vendor)
+
+Lưu ý:
+- Một số issue ở các asset trên vẫn có thể được **gán CVE**, nhưng **không nhận bounty**.
+
+---
+
+## Explicitly In-Scope Vulnerabilities
+
+ succeeded in 0ms:
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "core",
+  "task": {
+    "role": "phase2_reviewer_core",
+    "goal": "Challenge the worker output packet-by-packet with concrete counter-evidence, field corrections, and explicit missing-evidence notes.",
+    "output_schema": "contracts/phase2-review-core-output.schema.json",
+    "output_path": "reports/phase2/hostinger-reach-phase2.review.r1.core.b06.json",
+    "packet_schema": "contracts/phase2-reviewer-packet.schema.json",
+    "allow_missed_findings": false,
+    "constraints": [
+      "Treat each finding packet as the unit of review; do not restart whole-plugin auditing.",
+      "Answer reachability, authorization, dataflow, impact, and missing-evidence questions for each packet before finalizing finding_reviews.",
+      "Start from finding_packets, worker_findings, and phase1_context before opening other artifacts.",
+      "Refute before confirm; keep objections evidence-bound with file:line anchors.",
+      "Do not rewrite the full findings set; produce critique JSON only.",
+      "Default to packet-local critique only. Focus on finding_reviews plus field corrections for the existing finding packets.",
+      "Treat finding_packets as the reviewer core evidence pack. If packet-local evidence is insufficient, prefer needs_more_evidence over broad exploration."
+    ],
+    "max_candidates": null
+  },
+  "artifacts": {
+    "worker_output_path": null,
+    "ir_path": null,
+    "semgrep_path": null,
+    "psalm_path": null,
+    "threat_context_path": null,
+    "source_root": "plugins/hostinger-reach"
+  },
+  "worker_summary": {
+    "total_findings": 1,
+    "true_positive_count": 0,
+    "false_positive_count": 1,
+    "needs_review_count": 0,
+    "negative_findings_count": 0,
+    "overall_risk": "low",
+    "analysis_summary": "Reviewer core batch scoped to 1 packet(s)."
+  },
+  "worker_findings": [
+    {
+      "finding_id": "HR-FP-003",
+      "verdict": "FP",
+      "vuln_type": "XSS \u2014 SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI']",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 1.0,
+      "entry_point_id": "ep_init_init",
+      "source_anchor": "src/Admin/Surveys/SatisfactionSurvey.php:51",
+      "sink_anchor": "src/Admin/Surveys/SatisfactionSurvey.php:51",
+      "patchstack_eligible": false
+    }
+  ],
+  "finding_packets": [
+    {
+      "packet_id": "HR-FP-003",
+      "parent_finding_id": "HR-FP-003",
+      "packet_kind": "base",
+      "focus_anchor": "src/Admin/Surveys/SatisfactionSurvey.php:51",
+      "finding_id": "HR-FP-003",
+      "verdict": "FP",
+      "vuln_type": "XSS \u2014 SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI']",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 1.0,
+      "entry_point_id": "ep_init_init",
+      "patchstack_eligible": false,
+      "claimed_impact": "Worker claims XSS \u2014 SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI'] is materially exploitable with auth boundary `unknown` and impact reachable at src/Admin/Surveys/SatisfactionSurvey.php:51.",
+      "worker_context": {
+        "source_function": "SatisfactionSurvey::is_hostinger_page",
+        "sink_function": "str_contains",
+        "fp_reason": "Packet-local reviewer scope: SatisfactionSurvey at src/Admin/Surveys/SatisfactionSurvey.php:51. Primary files: src/Admin/Surveys/SatisfactionSurvey.php, src/Api/Webhooks/Handlers/WebhookHandler.php.",
+        "original_fp_reason": "is_hostinger_page() only returns a boolean from str_contains() \u2014 the REQUEST_URI value is never reflected into HTML output; only the boolean result is used in a conditional.",
+        "reasoning_excerpt": {
+          "hypothesis": "Validate only the packet-local claim for SatisfactionSurvey. Determine whether anchors src/Api/Webhooks/Handlers/WebhookHandler.php:19, src/Admin/Surveys/SatisfactionSurvey.php:51 actually support the worker's claim without widening to other surfaces.",
+          "trace": "Packet-local review only. Focus file: src/Admin/Surveys/SatisfactionSurvey.php. Focus anchors: src/Api/Webhooks/Handlers/WebhookHandler.php:19, src/Admin/Surveys/SatisfactionSurvey.php:51. Primary files: src/Admin/Surveys/SatisfactionSurvey.php, src/Api/Webhooks/Handlers/WebhookHandler.php. Entry point: src/Api/Webhooks/Handlers/WebhookHandler.php:19. Treat unrelated callers, consumers, and sibling surfaces as out of scope unless an explicit expansion attempt is justified.",
+          "defenses": [
+            "The REQUEST_URI is only used as input to str_contains which returns a boolean \u2014 the string itself is never echoed or passed to any HTML context",
+            "Boolean/guard logic is not a terminal impact sink by itself; prefer field fixes or missing-evidence notes over caller hunts."
+          ],
+          "refutation": [
+            "Refute or keep this packet on SatisfactionSurvey alone. Do not carry over conclusions from plugin-wide traces without packet-local code evidence."
+          ],
+          "conclusion": "Keep, downgrade, retract, or mark needs_more_evidence based only on packet-local evidence for SatisfactionSurvey."
+        },
+        "original_reasoning_excerpt": {
+          "hypothesis": "Semgrep flagged $_SERVER['REQUEST_URI'] at line 51 as flowing to HTML output.",
+          "trace": "is_hostinger_page() returns str_contains($_SERVER['REQUEST_URI'], 'hostinger') \u2192 returns bool \u2192 used in should_load_survey() conditional \u2192 no HTML output of the REQUEST_URI value occurs",
+          "defenses": [
+            "The REQUEST_URI is only used as input to str_contains which returns a boolean \u2014 the string itself is never echoed or passed to any HTML context"
+          ],
+          "refutation": [
+            "REFUTATION ATTEMPT: Does REQUEST_URI flow into HTML anywhere in the call chain? RESULT: Refuted. The return value of is_hostinger_page() is a boolean that controls whether a survey is added to an array. No HTML output of REQUEST_URI occurs."
+          ],
+          "conclusion": "FP \u2014 semgrep false positive on data flow; the string is consumed by str_contains and only the boolean propagates."
+        }
+      },
+      "review_focus": {
+        "scope_statement": "Review only the packet-local claim centered on src/Admin/Surveys/SatisfactionSurvey.php:51 in src/Admin/Surveys/SatisfactionSurvey.php. Start from the listed packet evidence, not from a plugin-wide hypothesis.",
+        "sink_semantics": "boolean_guard",
+        "default_resolution_on_missing_terminal_evidence": "field_fix_or_retract",
+        "stop_conditions": [
+          "Once packet-local reachability, authorization, dataflow, impact, and missing evidence are answered with file:line support, stop and write critique JSON.",
+          "Do not reopen unrelated plugin surfaces just because the parent finding or worker narrative mentions them.",
+          "If the packet-local code resolves to boolean/guard logic rather than a concrete impact sink, keep the critique local and do not expand into unrelated callers unless required by one explicit expansion attempt."
+        ],
+        "disallowed_drift": [
+          "whole_plugin_reaudit",
+          "translation_or_asset_search",
+          "sibling_surface_expansion_without_evidence"
+        ],
+        "primary_scope_files": [
+          "src/Admin/Surveys/SatisfactionSurvey.php",
+          "src/Api/Webhooks/Handlers/WebhookHandler.php"
+        ],
+        "optional_scope_files": [
+          "src/Admin/Surveys/SatisfactionSurvey.php",
+          "src/Api/Webhooks/Handlers/WebhookHandler.php"
+        ],
+        "entry_point_anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19"
+      },
+      "scope_policy": {
+        "allowed_primary_files": [
+          "src/Admin/Surveys/SatisfactionSurvey.php",
+          "src/Api/Webhooks/Handlers/WebhookHandler.php"
+        ],
+        "allowed_optional_files": [
+          "src/Admin/Surveys/SatisfactionSurvey.php",
+          "src/Api/Webhooks/Handlers/WebhookHandler.php"
+        ],
+        "max_out_of_band_files": 1
+      },
+      "anchors": {
+        "entry_point_anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+        "source_anchor": "src/Admin/Surveys/SatisfactionSurvey.php:51",
+        "sink_anchor": "src/Admin/Surveys/SatisfactionSurvey.php:51",
+        "review_anchor_candidates": [
+          {
+            "kind": "entry_point",
+            "anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+            "note": null
+          },
+          {
+            "kind": "finding_source",
+            "anchor": "src/Admin/Surveys/SatisfactionSurvey.php:51",
+            "note": "XSS \u2014 SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI']"
+          },
+          {
+            "kind": "finding_sink",
+            "anchor": "src/Admin/Surveys/SatisfactionSurvey.php:51",
+            "note": "XSS \u2014 SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI']"
+          },
+          {
+            "kind": "fp_evidence",
+            "anchor": "src/Admin/Surveys/SatisfactionSurvey.php:51",
+            "note": "no_user_input_reachable"
+          }
+        ]
+      },
+      "primary_files": [
+        "src/Admin/Surveys/SatisfactionSurvey.php",
+        "src/Api/Webhooks/Handlers/WebhookHandler.php"
+      ],
+      "primary_snippets": [
+        {
+          "file": "src/Admin/Surveys/SatisfactionSurvey.php",
+          "anchor": "src/Admin/Surveys/SatisfactionSurvey.php:51",
+          "focus_line": 51,
+          "line_start": 45,
+          "line_end": 57,
+          "kind": "finding_source",
+          "code": "    45\t        }\n    46\t\n    47\t        return ( time() - $connection_time ) >= ( 5 * self::DAY_IN_SECONDS );\n    48\t    }\n    49\t\n    50\t    protected function is_hostinger_page(): bool {\n    51\t        return str_contains( $_SERVER['REQUEST_URI'], 'hostinger' );\n    52\t    }\n    53\t\n    54\t    protected function get_review_url(): string {\n    55\t        return 'https://wordpress.org/support/plugin/hostinger-reach/reviews/#new-post';\n    56\t    }\n    57\t"
+        },
+        {
+          "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
+          "anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+          "focus_line": 19,
+          "line_start": 13,
+          "line_end": 25,
+          "kind": "entry_point",
+          "code": "    13\t    public function __construct( ReachApiHandler $reach_api_handler, FormRepository $form_repository ) {\n    14\t        $this->reach_api_handler = $reach_api_handler;\n    15\t        $this->form_repository   = $form_repository;\n    16\t    }\n    17\t\n    18\t    public function init(): void {\n    19\t        add_action( 'init', array( $this, 'init_hooks' ) );\n    20\t    }\n    21\t\n    22\t    public function is_enabled(): bool {\n    23\t        return $this->reach_api_handler->is_connected() && $this->is_automation_active();\n    24\t    }\n    25\t"
+        }
+      ],
+      "optional_files": [
+        "src/Admin/Surveys/SatisfactionSurvey.php",
+        "src/Api/Webhooks/Handlers/WebhookHandler.php"
+      ],
+      "optional_snippets": [
+        {
+          "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
+          "anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+          "focus_line": 19,
+          "line_start": 13,
+          "line_end": 25,
+          "kind": "entry_point",
+          "code": "    13\t    public function __construct( ReachApiHandler $reach_api_handler, FormRepository $form_repository ) {\n    14\t        $this->reach_api_handler = $reach_api_handler;\n    15\t        $this->form_repository   = $form_repository;\n    16\t    }\n    17\t\n    18\t    public function init(): void {\n    19\t        add_action( 'init', array( $this, 'init_hooks' ) );\n    20\t    }\n    21\t\n    22\t    public function is_enabled(): bool {\n    23\t        return $this->reach_api_handler->is_connected() && $this->is_automation_active();\n    24\t    }\n    25\t"
+        },
+        {
+          "file": "src/Admin/Surveys/SatisfactionSurvey.php",
+          "anchor": "src/Admin/Surveys/SatisfactionSurvey.php:51",
+          "focus_line": 51,
+          "line_start": 45,
+          "line_end": 57,
+          "kind": "finding_source",
+          "code": "    45\t        }\n    46\t\n    47\t        return ( time() - $connection_time ) >= ( 5 * self::DAY_IN_SECONDS );\n    48\t    }\n    49\t\n    50\t    protected function is_hostinger_page(): bool {\n    51\t        return str_contains( $_SERVER['REQUEST_URI'], 'hostinger' );\n    52\t    }\n    53\t\n    54\t    protected function get_review_url(): string {\n    55\t        return 'https://wordpress.org/support/plugin/hostinger-reach/reviews/#new-post';\n    56\t    }\n    57\t"
+        }
+      ],
+      "review_questions": {
+        "reachability": "Can an attacker really reach the claimed path from src/Api/Webhooks/Handlers/WebhookHandler.php:19 without hidden preconditions or workflow assumptions?",
+        "authorization": "Does the path have a stronger guard than the worker claims, including capability, permission_callback, nonce semantics, or trust-boundary limits for auth `unknown`?",
+        "dataflow": "Does attacker-controlled data actually flow from src/Admin/Surveys/SatisfactionSurvey.php:51 to src/Admin/Surveys/SatisfactionSurvey.php:51 for the claimed XSS \u2014 SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI'], without a refuting guard, sanitizer, or broken hop?",
+        "impact": "Assuming the path reaches src/Admin/Surveys/SatisfactionSurvey.php:51, is the worker's claimed impact concrete and not overstated for this plugin context?",
+        "missing_evidence": "What exact file:line evidence is still missing before this finding can be kept, downgraded, or retracted with confidence?"
+      }
+    }
+  ],
+  "phase1_context": {
+    "entry_point_count": 25,
+    "anomaly_count": 3,
+    "unresolved_hook_count": 8,
+    "related_entry_points": [
+      {
+        "id": "ep_init_init",
+        "type": "init",
+        "hook_name": "init",
+        "auth_level": "none",
+        "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
+        "line": 19,
+        "callback_name": "init_hooks",
+        "callback_class": "Hostinger\\Reach\\Api\\Webhooks\\Handlers\\WebhookHandler"
+      }
+    ],
+    "top_anomalies": [],
+    "unresolved_hooks": []
+  },
+  "evidence": {
+    "primary_anchors": [
+      {
+        "kind": "entry_point",
+        "anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+        "packet_id": "HR-FP-003",
+        "finding_id": "HR-FP-003",
+        "entry_point_id": "ep_init_init",
+        "note": "XSS \u2014 SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI']"
+      },
+      {
+        "kind": "finding_source",
+        "anchor": "src/Admin/Surveys/SatisfactionSurvey.php:51",
+        "packet_id": "HR-FP-003",
+        "finding_id": "HR-FP-003",
+        "entry_point_id": "ep_init_init",
+        "note": "XSS \u2014 SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI']"
+      },
+      {
+        "kind": "finding_sink",
+        "anchor": "src/Admin/Surveys/SatisfactionSurvey.php:51",
+        "packet_id": "HR-FP-003",
+        "finding_id": "HR-FP-003",
+        "entry_point_id": "ep_init_init",
+        "note": "XSS \u2014 SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI']"
+
+ succeeded in 0ms:
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+
+---
+# WordPress plugin security audit knowledge base
+
+**This is a comprehensive, technically precise reference for auditing WordPress 6.x plugins**, synthesizing real CVE data from 2023–2025, official WordPress developer documentation, and research from Wordfence, Patchstack, and WPScan. The WordPress plugin ecosystem saw **7,966 new vulnerabilities in 2024 alone** (a 34% increase over 2023), with XSS accounting for 47.7% of all findings, broken access control at 14.2%, and CSRF at 11.4%. REST API and AJAX endpoints are the most critically exploited attack surfaces. What follows is every detail a professional security auditor needs.
+
+---
+
+## 1. Exhaustive plugin attack surface catalog
+
+### AJAX handlers (wp_ajax_*, wp_ajax_nopriv_*)
+
+WordPress routes all AJAX through `wp-admin/admin-ajax.php`. Plugins register handlers via `add_action('wp_ajax_{action}', 'callback')` for authenticated users, and `add_action('wp_ajax_nopriv_{action}', 'callback')` for unauthenticated users. **WordPress provides zero built-in authorization for AJAX handlers** — no automatic nonce check, no capability check. The plugin developer must implement both `wp_verify_nonce()` and `current_user_can()`.
+
+The `nopriv` variant is especially dangerous: it makes the endpoint accessible to anyone on the internet without authentication. Many plugins register `nopriv` variants unnecessarily, exposing admin-level functionality. The WPForms vulnerability CVE-2024-11205 (CVSS 8.5) exemplifies this: the `wpforms_is_admin_ajax()` function verified the nonce but never checked user capabilities, allowing **subscriber-level users to issue Stripe refunds and cancel subscriptions**. Similarly, Essential Addons for Elementor (CVE-2023-32243, CVSS 9.8) exposed password reset functionality via an AJAX handler that never validated the reset key.
+
+**Required security controls for every AJAX handler:**
+- `check_ajax_referer('action_name', 'security')` or `wp_verify_nonce()` for CSRF protection
+- `current_user_can('required_capability')` for authorization
+- Sanitization of all `$_POST`/`$_GET` parameters
+- `wp_send_json_success()`/`wp_send_json_error()` for safe responses
+
+### REST API routes (register_rest_route)
+
+The REST API is the **single most critically exploited attack surface** in WordPress plugins during 2023–2025. The most impactful CVEs of this period — Really Simple Security (CVE-2024-10924, CVSS 9.8), WooCommerce Payments (CVE-2023-28121, CVSS 9.8), LiteSpeed Cache (CVE-2024-28000, CVSS 9.8), and AIOSEO (CVE-2021-25036, CVSS 9.9) — all exploited REST API endpoints with broken permission callbacks.
+
+Routes are registered via `register_rest_route('namespace/v1', '/path', $args)`. Since **WordPress 5.5**, omitting `permission_callback` triggers a `_doing_it_wrong` notice, but the endpoint still functions as public. The notice is informational only. Using `'permission_callback' => '__return_true'` explicitly makes endpoints public — this was found in production plugins like Download Monitor.
+
+Permission callbacks execute after authentication is resolved. For cookie-based auth, the `wp_rest` nonce must be passed via `X-WP-Nonce` header or `_wpnonce` parameter — without it, the current user is set to ID 0 (unauthenticated), even if the user has valid cookies. Application Passwords authenticate via HTTP Basic Auth before permission callbacks run.
+
+**REST API namespace discovery** at `/wp-json/` exposes all registered namespaces, and `/wp-json/namespace/v1` lists all routes with their methods and argument schemas. This provides attackers a complete map of available endpoints.
+
+### Shortcodes
+
+Shortcodes (`add_shortcode('name', 'callback')`) are parsed from post content and executed server-side. Their primary attack surface is **attribute injection**: shortcode attributes are passed as an array to the callback without any automatic sanitization. The `shortcode_atts()` function provides default merging but no security filtering. Contributors can embed shortcodes in post content, making contributor-level Stored XSS the dominant vulnerability pattern.
+
+Common vulnerability: `extract(shortcode_atts(['style' => ''], $atts))` followed by `echo '<div style="' . $style . '">'` — the `$style` attribute reaches HTML output unescaped. Every shortcode attribute must be escaped with the context-appropriate function (`esc_attr()`, `esc_html()`, `esc_url()`).
+
+### Gutenberg blocks (detailed in Section 7)
+
+The block editor introduces multiple attack surfaces: `render_callback` functions that output unescaped attributes, **block comment delimiter JSON** that bypasses wp_kses filtering, the `/wp/v2/block-renderer/` REST endpoint accessible to contributors, and `ServerSideRender` which can trigger server-side execution of block rendering with attacker-controlled attributes.
+
+### Admin pages and menus
+
+`admin_menu`, `admin_init`, `admin_post_*`, and `admin_post_nopriv_*` hooks create admin-side attack surfaces. **Critical misconception**: `is_admin()` checks whether the request targets wp-admin, not whether the user is an administrator. All authenticated AJAX requests go through `admin-ajax.php` in wp-admin, so `is_admin()` returns `true` for any logged-in user making AJAX calls. Always use `current_user_can()` instead.
+
+`admin_init` fires on every admin page load — including `admin-ajax.php` and `admin-post.php` — making it a particularly broad attack surface if permission checks are absent. `admin_post_nopriv_*` actions are accessible to unauthenticated users, identical in risk to `wp_ajax_nopriv_*`.
+
+### XML-RPC, WP-CLI, and Cron
+
+**XML-RPC** (`xmlrpc.php`) exposes methods for remote content management and pingbacks. Plugins extend it via `xmlrpc_methods` filter. The pingback feature was exploited for **blind SSRF via DNS rebinding** (CVE-2022-3590). XML-RPC authentication uses username/password per request (no session), enabling brute-force attacks. Best practice is to disable it entirely unless required.
+
+**WP-CLI commands** registered by plugins execute with the filesystem permissions of the CLI user (typically root or www-data), which may exceed WordPress capabilities. Commands should still validate input and use WordPress API functions rather than direct database/file operations.
+
+**Cron jobs** (`wp_schedule_event`) execute via `wp-cron.php`, triggered by site visits. WP-Cron requests are internal HTTP requests that may bypass authentication. If a cron callback performs privileged operations without validation, it could be exploited. LiteSpeed Cache's crawler simulation feature (CVE-2024-28000) demonstrates how cron/crawler functions can create critical attack surfaces.
+
+### Elementor and WooCommerce attack surfaces
+
+**Elementor** adds an extensive secondary attack surface: widget controls, template import/export, AJAX handlers for the editor, and custom CSS/JS fields. CVE-2023-48777 (CVSS 8.8) exploited the template import AJAX handler for arbitrary file upload → RCE, and CVE-2023-3124 (CVSS 8.8) exploited `update_page_option` AJAX handler for subscriber-level arbitrary options update.
+
+**WooCommerce** payment gateway integrations create critical surfaces: order status manipulation, price/quantity modification via checkout hooks, and payment callback endpoints. CVE-2023-28121 (CVSS 9.8) demonstrated that trusting a custom HTTP header (`X-WCPAY-PLATFORM-CHECKOUT-USER`) for authentication enabled unauthenticated admin access.
+
+### Multisite-specific attack surfaces
+
+In multisite, Site Admins have a restricted capability set compared to Super Admins. They lack `install_plugins`, `edit_plugins`, `edit_themes`, `unfiltered_html`, and all `manage_network_*` capabilities. Vulnerabilities that are "by design" for single-site admins become legitimate security issues in multisite because Site Admins should not be able to affect other sites or escalate to Super Admin. Cross-site data access and network-wide option modification are key multisite attack vectors.
+
+### Additional entry points
+
+- **Webhook/callback endpoints**: Payment gateways (Stripe, PayPal) require publicly accessible callback URLs. These must validate signatures/tokens from the payment provider, not just check for expected parameters.
+- **oEmbed providers**: Custom oEmbed endpoints registered via `wp_oembed_add_provider()` can introduce SSRF if they fetch user-controlled URLs server-side.
+- **Custom rewrite rules**: `add_rewrite_rule()` and `template_redirect` hook can create custom URL endpoints. Missing auth checks make these exploitable.
+- **wp_mail**: Email header injection via unsanitized `To`, `From`, `CC`, `BCC` headers. Carriage returns (`\r\n`) in header values inject additional headers.
+- **Filesystem API**: `WP_Filesystem` and direct PHP file functions. Path traversal via `../` sequences targets `wp-config.php`, `.htaccess`, and `wp-content/debug.log`.
+- **Transient API**: `set_transient()`/`get_transient()` stores data in `wp_options` (or object cache). Transients with user-controlled keys can be overwritten. If transient data is used unsanitized in output or queries, it becomes a stored attack vector.
+- **Object cache**: `wp_cache_set()`/`wp_cache_get()` data can be poisoned if cache keys are predictable and the caching backend (Redis, Memcached) is accessible.
+- **wp_options autoload**: Options with `autoload=yes` load on every page request. Plugins storing large serialized data with autoload enabled create performance issues; storing user-controlled serialized data creates object injection risks.
+- **Custom database tables**: Direct `$wpdb->query()` calls on custom tables bypass WordPress's built-in sanitization. Every variable in SQL must use `$wpdb->prepare()`.
+- **Import/Export**: File upload (ZIP, XML, CSV) combined with parsing creates surfaces for XXE, Zip Slip, CSV injection, and path traversal.
+- **Bulk action handlers**: `admin_action_*` hooks for bulk operations often lack per-item capability checks, enabling mass manipulation.
+
+---
+
+## 2. WordPress 6.x security mechanisms reference
+
+### Nonce system behavior and edge cases
+
+WordPress nonces are **HMAC hashes, not true one-time tokens**. They are generated from `$tick | $action | $user_id | $session_token` using `wp_hash()`. The default lifetime is **24 hours** (configurable via `nonce_life` filter), split into two 12-hour ticks. `wp_verify_nonce()` returns **1** for current tick (0–12h old), **2** for previous tick (12–24h old), or **false** for expired/invalid.
+
+**Critical limitations:**
+- **Not one-time-use**: The same nonce is generated for the same user+action during an entire tick period. This means nonces do not prevent replay attacks.
+- **Guest users (ID 0) all receive identical nonces** — providing zero CSRF protection for unauthenticated forms. The `nonce_user_logged_out` filter can mitigate this.
+- **Nonces verify intent, not authorization**. A valid nonce only proves the request originated from a page WordPress generated for that user. Any logged-in user can obtain valid nonces for any action. **Always pair `wp_verify_nonce()` with `current_user_can()`**.
+
+**Core nonce functions:**
+- `wp_create_nonce($action)` — Returns ~10-char alphanumeric hash
+- `wp_verify_nonce($nonce, $action)` — Returns 1, 2, or false; does NOT terminate execution
+- `check_admin_referer($action, $query_arg)` — Verifies nonce AND HTTP referer; calls `wp_die()` on failure
+- `check_ajax_referer($action, $query_arg, $stop)` — Checks nonce only (not referer); inspects `_wpnonce`, `_ajax_nonce` params and `X-WP-Nonce` header
+
+### REST API permission_callback enforcement (WP 5.5+)
+
+Since WordPress 5.5, `register_rest_route()` issues a `_doing_it_wrong` notice when `permission_callback` is omitted. **The endpoint still functions as public** — the notice is informational only. WordPress cannot distinguish intentional public endpoints from accidental omissions. Using `'permission_callback' => '__return_true'` explicitly documents public intent.
+
+Permission callbacks run **after** authentication is resolved. For cookie-based auth, the `wp_rest` nonce must be present, or the user is treated as unauthenticated (ID 0). Permission callbacks should use `current_user_can()`, not manual nonce verification — the REST API handles the `wp_rest` nonce automatically via `rest_cookie_check_errors()`.
+
+### $wpdb->prepare() in WordPress 6.x
+
+**Placeholders**: `%s` (string, auto-quoted), `%d` (integer), `%f` (float), **`%i` (identifier, backtick-quoted — added in WP 6.2)**. The `%i` placeholder allows safe table/column name parameterization: `$wpdb->prepare('SELECT * FROM %i WHERE %i = %s', $table, $column, $value)` produces `` SELECT * FROM `table` WHERE `column` = 'value' ``.
+
+**Validation rules**: placeholder count must match argument count; positional placeholders (`%1$s`) are supported but do not auto-quote; `%%` produces literal `%`; for LIKE: `'%' . $wpdb->esc_like($search) . '%'` inside `prepare()`; IN clauses require dynamic placeholder construction; **named placeholders are NOT supported**.
+
+### WordPress 6.x security changes
+
+- **WP 6.2** (March 2023): `%i` identifier placeholder in `$wpdb->prepare()`
+- **WP 6.4.3** (January 2024): POP chain vulnerability fix (potential RCE via WP_HTML_TOKEN deserialization)
+- **WP 6.5** (March 2024): Block Bindings API with `edit_block_binding` capability; Interactivity API
+- **WP 6.8** (April 2025): **Major password hashing overhaul** — phpass replaced by **bcrypt with SHA-384 pre-hashing** (prefix `$wp$2y$`). Application passwords and security keys use **BLAKE2b via Sodium**. Old `$P$` hashes remain valid and auto-rehash on login. Optional Argon2 support via `wp_hash_password_algorithm` filter.
+
+### wp_safe_redirect vs wp_redirect
+
+`wp_redirect($location)` sets the Location header with **no host validation** — vulnerable to open redirect with user-supplied URLs. `wp_safe_redirect($location)` validates the target host against an allowlist via `wp_validate_redirect()` (default: current site host only; extensible via `allowed_redirect_hosts` filter). If the host is not allowed, it falls back to `admin_url()`. **Neither function calls `exit`** — the developer must follow with `exit;` or `die;`.
+
+### REST API authentication methods
+
+- **Cookie + Nonce (built-in)**: Default for same-origin requests. Nonce action: `wp_rest`. Pass via `X-WP-Nonce` header or `_wpnonce` parameter. No valid nonce = user set to 0.
+- **Application Passwords (WP 5.6+, built-in)**: HTTP Basic Auth (`Authorization: Basic base64(username:app_password)`). HTTPS required by default. 24-character passwords (~142 bits entropy), stored hashed (BLAKE2b in WP 6.8). Cannot be used for wp-login.php. Individually revocable.
+- **OAuth (plugin-required)**: OAuth 1.0a or 2.0. Best for third-party integrations.
+- **JWT (plugin-required)**: Stateless token-based. Not native to WordPress.
+
+---
+
+## 3. Complete WordPress security functions reference
+
+### Sanitization functions
+
+| Function | Behavior | Use case | Does NOT protect against |
+|----------|----------|----------|-------------------------|
+| `sanitize_text_field($str)` | Strips tags, removes line breaks/tabs/extra whitespace, strips octets | Single-line text input | SQL injection |
+| `sanitize_textarea_field($str)` | Same as above but preserves line breaks | Multi-line text | SQL injection |
+| `sanitize_email($email)` | Strips disallowed chars; does NOT validate format (use `is_email()`) | Email addresses | Invalid emails |
+| `sanitize_file_name($filename)` | Removes special chars, replaces whitespace with dashes | File uploads | Path traversal (add `validate_file()`) |
+| `sanitize_html_class($class)` | Keeps only A-Za-z0-9_- | CSS class names | — |
+| `sanitize_key($key)` | Lowercases, keeps only a-z0-9_- | Option/meta keys | — |
+| `sanitize_mime_type($mime)` | Keeps only a-zA-Z0-9._+-/ | MIME type strings | Fake MIME types |
+| `sanitize_sql_orderby($orderby)` | Validates ORDER BY pattern; returns false if invalid | SQL ORDER BY | Complex injection patterns |
+| `sanitize_title($title)` | Generates URL slug; strips tags, converts accents | URL slugs | NOT for display |
+| `sanitize_url($url)` | Strips invalid chars, removes dangerous protocols | URL storage | Open redirects |
+| `sanitize_user($username, $strict)` | Strips tags; strict: a-zA-Z0-9 _.@- only | Usernames | — |
+| `absint($value)` | `abs(intval($value))` | Non-negative integers | Range validation |
+| `wp_kses($content, $allowed_html)` | HTML filter keeping only specified tags/attributes | Rich HTML input | — |
+| `wp_kses_post($data)` | wp_kses with 'post' context (extensive allowed tags) | Post content | XSS in allowed attributes |
+| `wp_filter_nohtml_kses($data)` | Strips ALL HTML | Plain text only | — |
+
+### Escaping functions
+
+| Function | Context | Behavior |
+|----------|---------|----------|
+| `esc_html($text)` | Text inside HTML elements | Converts `& < > " '` to HTML entities |
+| `esc_attr($text)` | HTML attribute values | Same entity conversion; does NOT double-encode |
+| `esc_url($url)` | `href`/`src` attributes | Validates URL, strips dangerous protocols (javascript:, data:), encodes entities |
+| `esc_url_raw($url)` | Database storage, API calls | Same as `esc_url` without entity encoding |
+| `esc_js($text)` | Inline JS string literals | Escapes `' " & < >`, adds slashes |
+| `esc_textarea($text)` | Inside `<textarea>` tags | `htmlspecialchars` with double-encoding |
+| `esc_sql($data)` | **DEPRECATED** — use `$wpdb->prepare()` | `mysqli_real_escape_string` wrapper; does NOT add quotes |
+| `esc_xml($text)` | XML content | Escapes for XML context |
+| `wp_json_encode($data)` | JavaScript data embedding | `json_encode` with `JSON_HEX_TAG\|JSON_HEX_AMP\|JSON_HEX_APOS\|JSON_HEX_QUOT` — safe for `<script>` blocks |
+| `tag_escape($tag_name)` | HTML tag names | Lowercases, strips non-alphanumeric chars except `_:` |
+
+### Database security ($wpdb methods)
+
+`$wpdb->prepare()` is the primary SQL injection defense. `$wpdb->insert()`, `$wpdb->update()`, `$wpdb->delete()`, and `$wpdb->replace()` use `prepare()` internally and are safe when used correctly. `$wpdb->query()`, `$wpdb->get_var()`, `$wpdb->get_row()`, `$wpdb->get_col()`, and `$wpdb->get_results()` require explicit `prepare()` for any variable data. `$wpdb->esc_like($text)` escapes `%` and `_` for LIKE queries — must be used inside `prepare()`.
+
+### File upload security
+
+- `wp_check_filetype($filename, $mimes)` — Extension-based only; does NOT examine file contents
+- `wp_check_filetype_and_ext($file, $filename, $mimes)` — Checks actual file content via `finfo`/`getimagesize` plus extension
+- `wp_handle_upload($file, $overrides)` — Complete upload handler: validates MIME type, moves to uploads dir, returns result array
+- `validate_file($file, $allowed_files)` — Returns 0 (valid), 1 (contains `..`), 2 (contains `:/` or starts with `/`), 3 (not in allowed list) — **critical for preventing directory traversal**
+
+### Cryptographic functions
+
+- `wp_hash_password($password)` — As of WP 6.8: **bcrypt with SHA-384 pre-hashing** (prefix `$wp$2y$`). Previously phpass (MD5-based). Password length limit: 4096 chars.
+- `wp_check_password($password, $hash, $user_id)` — Verifies password against hash; auto-rehashes old `$P$` format to bcrypt on verification
+- `wp_generate_password($length, $special_chars, $extra_special_chars)` — Uses `wp_rand()` (cryptographically secure via `random_int()`)
+- `wp_hash($data, $scheme)` — HMAC-MD5 using salts from wp-config.php
+- `wp_rand($min, $max)` — CSPRNG wrapper using `random_int()` (PHP 7+)
+- `wp_generate_uuid4()` — RFC 4122 UUID v4 using `random_bytes()`
+
+---
+
+## 4. Real CVEs and vulnerability patterns in major plugins (2023–2025)
+
+### The most dangerous vulnerabilities of this period
+
+**CVE-2024-10924 — Really Simple Security authentication bypass (CVSS 9.8)**. Affected 4 million installations. The `check_login_and_get_user()` function in the 2FA REST API returned a valid user object even on error conditions. Unauthenticated attackers could log in as any user, including admin, by sending crafted REST API requests with a `user_id` and invalid nonce. Wordfence called this "the most dangerous vulnerability they've seen in 12 years." WordPress.org forced an automatic security update.
+
+**CVE-2023-28121 — WooCommerce Payments authentication bypass (CVSS 9.8)**. The `determine_current_user_for_platform_checkout()` function hooked into WordPress's `determine_current_user` filter and returned the user ID from the `X-WCPAY-PLATFORM-CHECKOUT-USER` HTTP header **without any validation**. Adding `X-WCPAY-PLATFORM-CHECKOUT-USER: 1` to any request authenticated as user ID 1 (admin). Wordfence detected **1.3 million attacks against 157,000 sites** on July 16, 2023.
+
+**CVE-2024-28000 — LiteSpeed Cache privilege escalation (CVSS 9.8)**. The crawler simulation feature used `mt_rand()` seeded with microsecond time to generate security hashes — producing only ~1 million possible values. An unauthenticated AJAX endpoint (`async_litespeed`) had no capability or nonce checks, allowing anyone to trigger hash generation. The hash could then be brute-forced within hours to create admin accounts via the REST API.
+
+**CVE-2023-32243 — Essential Addons for Elementor privilege escalation (CVSS 9.8)**. The password reset function in the Login/Register Form widget never validated the `rp_key` (reset key). It directly changed the user's password without calling `check_password_reset_key()`. The nonce was obtainable from the frontend page source. Wordfence blocked 6,900+ exploit attempts within days; Sucuri observed mass infection campaigns.
+
+**CVE-2023-48777 — Elementor arbitrary file upload to RCE (CVSS 8.8)**. The template import AJAX handler allowed contributor-level users to upload files via base64-encoded `fileData`. A path traversal in the filename parameter (`/../../../../shell.php`) placed PHP webshells in web-accessible directories.
+
+### Recurring vulnerability patterns
+
+**Pattern 1: Missing/broken authorization on AJAX handlers** — The single most dangerous recurring pattern. Functions hooked to `wp_ajax_*` that check nonces but not capabilities. Affects WPForms, LiteSpeed Cache, Elementor Pro, and hundreds of smaller plugins.
+
+**Pattern 2: XSS via insufficient output escaping** — 47.7% of all vulnerabilities in 2024. Most commonly Stored XSS at contributor+ level via shortcode attributes, widget settings, custom field values, and block attributes. Direct concatenation of user input into HTML output without `esc_attr()`, `esc_html()`, or `wp_kses()`.
+
+**Pattern 3: Authentication bypass via REST API** — Improper `permission_callback` implementations, custom authentication hooks trusting user-supplied headers, error handling that falls through to success states, and case-sensitivity mismatches in route matching.
+
+**Pattern 4: Weak/predictable security tokens** — Using `mt_rand()` with predictable seeds, empty API key hash comparisons (CleanTalk CVE-2024-10781), and non-constant-time string comparison for tokens.
+
+**Pattern 5: PHP Object Injection** — Growing trend. UpdraftPlus (CVE-2024-10957), GiveWP (CVE-2024-9634), SEOPress (CVE-2024-5488). Using `unserialize()` or `maybe_unserialize()` on user-controlled data, combinable with POP chains in bundled libraries for RCE.
+
+### Vulnerability statistics
+
+| Metric | 2023 | 2024 | H1 2025 |
+|--------|------|------|---------|
+| Total new vulnerabilities | ~5,943 | 7,966 | ~6,700 |
+| XSS percentage | ~45% | 47.7% | — |
+
+codex
+Toi da co packet brief va thay claim dang o `boolean_guard`, nen trong scope nay can xac nhan xem `REQUEST_URI` co bi bien thanh HTML/JS sink hay chi dung lam dieu kien. Toi se doc schema output va hai file trong scope de neo critique bang line cu the, khong mo rong sang surface khac.
+exec
+/bin/zsh -lc "sed -n '1,260p' contracts/phase2-review-core-output.schema.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "phase2-review-core-output.schema.json",
+  "version": "1.0.0",
+  "title": "Phase 2 Review Core Output Schema",
+  "description": "Structured packet-by-packet critique from the Phase 2 reviewer core loop. Core review is limited to claim validation and field corrections; it must not propose missed findings.",
+  "type": "object",
+  "required": ["plugin_slug", "review_round", "review_status", "summary", "finding_reviews"],
+  "properties": {
+    "plugin_slug": { "type": "string" },
+    "review_round": { "type": "integer", "minimum": 1 },
+    "review_mode": { "enum": ["core", "skeptical"] },
+    "review_status": { "enum": ["stable", "needs_revision"] },
+    "summary": {
+      "type": "object",
+      "required": ["worker_findings_reviewed", "material_issues_found"],
+      "properties": {
+        "worker_findings_reviewed": { "type": "integer", "minimum": 0 },
+        "material_issues_found": { "type": "boolean" },
+        "new_candidate_count": { "type": "integer", "minimum": 0, "maximum": 0 },
+        "notes": { "type": ["string", "null"] }
+      }
+    },
+    "finding_reviews": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["finding_id", "packet_id", "assessment", "reason", "required_changes", "counter_evidence", "missing_evidence", "expansion_attempts"],
+        "properties": {
+          "finding_id": { "type": "string" },
+          "packet_id": { "type": "string" },
+          "parent_finding_id": { "type": ["string", "null"] },
+          "assessment": { "enum": ["keep", "needs_more_evidence", "downgrade", "retract", "field_fix"] },
+          "reason": { "type": "string" },
+          "required_changes": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "counter_evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["type", "file", "line", "detail"],
+              "properties": {
+                "type": { "enum": ["guard", "sanitizer", "unreachable", "scope", "impact", "other"] },
+                "file": { "type": "string" },
+                "line": { "type": "integer", "minimum": 1 },
+                "detail": { "type": "string" }
+              }
+            }
+          },
+          "missing_evidence": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "expansion_attempts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["type", "target", "reason", "outcome"],
+              "properties": {
+                "type": { "enum": ["optional_file", "out_of_band_file"] },
+                "target": { "type": "string" },
+                "reason": { "type": "string" },
+                "outcome": { "type": "string" }
+              }
+            }
+          },
+          "suggested_field_corrections": {
+            "type": ["object", "null"]
+          }
+        }
+      }
+    },
+    "missed_findings": false
+  }
+}
+
+exec
+/bin/zsh -lc "nl -ba plugins/hostinger-reach/src/Api/Webhooks/Handlers/WebhookHandler.php | sed -n '1,240p'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "nl -ba plugins/hostinger-reach/src/Admin/Surveys/SatisfactionSurvey.php | sed -n '1,220p'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "sed -n '1,220p' /Users/timomangcut/.codex/skills/application-security/references/review-workflow.md" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+     1	<?php
+     2	
+     3	namespace Hostinger\Reach\Api\Webhooks\Handlers;
+     4	
+     5	use Hostinger\Reach\Api\Handlers\ReachApiHandler;
+     6	use Hostinger\Reach\Repositories\FormRepository;
+     7	
+     8	abstract class WebhookHandler {
+     9	
+    10	    protected ReachApiHandler $reach_api_handler;
+    11	    protected FormRepository $form_repository;
+    12	
+    13	    public function __construct( ReachApiHandler $reach_api_handler, FormRepository $form_repository ) {
+    14	        $this->reach_api_handler = $reach_api_handler;
+    15	        $this->form_repository   = $form_repository;
+    16	    }
+    17	
+    18	    public function init(): void {
+    19	        add_action( 'init', array( $this, 'init_hooks' ) );
+    20	    }
+    21	
+    22	    public function is_enabled(): bool {
+    23	        return $this->reach_api_handler->is_connected() && $this->is_automation_active();
+    24	    }
+    25	
+    26	    public function is_automation_active(): bool {
+    27	        return $this->form_repository->is_form_active( $this->get_name() );
+    28	    }
+    29	
+    30	    public function increase_automation_submission_counter(): bool {
+    31	        return $this->form_repository->submit( array( 'form_id' => $this->get_name() ) );
+    32	    }
+    33	
+    34	    public function handle( string $email, mixed $data ): bool {
+    35	        $webhook_payload = array(
+    36	            'name'     => $this->get_name(),
+    37	            'contact'  => array(
+    38	                'email' => $email,
+    39	            ),
+    40	            'metadata' => $this->get_metadata( $data ),
+    41	        );
+    42	
+    43	        $response = $this->reach_api_handler->post_webhook_event( $webhook_payload );
+    44	        if ( ! $response->is_error() ) {
+    45	            $this->increase_automation_submission_counter();
+    46	            return true;
+    47	        }
+    48	
+    49	        return false;
+    50	    }
+    51	
+    52	    abstract public function init_hooks(): void;
+    53	    abstract public function get_metadata( mixed $data ): array;
+    54	    abstract public function get_name(): string;
+    55	}
+
+ succeeded in 0ms:
+     1	<?php
+     2	
+     3	namespace Hostinger\Reach\Admin\Surveys;
+     4	
+     5	use Hostinger\Reach\Api\ApiKeyManager;
+     6	use Hostinger\Reach\Functions;
+     7	
+     8	if ( ! defined( 'ABSPATH' ) ) {
+     9	    die;
+    10	}
+    11	
+    12	class SatisfactionSurvey extends Survey {
+    13	    protected function should_load_survey(): bool {
+    14	        if ( ! parent::should_load_survey() ) {
+    15	            return false;
+    16	        }
+    17	
+    18	        return $this->is_hostinger_page() && ( $this->has_any_user_action() || $this->has_been_five_days_since_connection() );
+    19	    }
+    20	
+    21	    protected function get_score_question(): string {
+    22	        return __( 'How would you rate your experience with Hostinger Reach so far?', 'hostinger-reach' );
+    23	    }
+    24	
+    25	    protected function get_comment_question(): string {
+    26	        return __( 'Any ideas or feedback to help us improve Hostinger Reach?', 'hostinger-reach' );
+    27	    }
+    28	
+    29	    protected function get_id(): string {
+    30	        return 'hostinger_reach_survey_satisfaction';
+    31	    }
+    32	
+    33	    protected function get_location(): string {
+    34	        return 'wordpress_hostinger_reach';
+    35	    }
+    36	
+    37	    protected function has_any_user_action(): bool {
+    38	        return get_option( Functions::HOSTINGER_REACH_HAS_USER_ACTION, false );
+    39	    }
+    40	
+    41	    protected function has_been_five_days_since_connection(): bool {
+    42	        $connection_time = get_option( ApiKeyManager::API_CONNECTION_TIME_NAME, null );
+    43	        if ( is_null( $connection_time ) ) {
+    44	            return false;
+    45	        }
+    46	
+    47	        return ( time() - $connection_time ) >= ( 5 * self::DAY_IN_SECONDS );
+    48	    }
+    49	
+    50	    protected function is_hostinger_page(): bool {
+    51	        return str_contains( $_SERVER['REQUEST_URI'], 'hostinger' );
+    52	    }
+    53	
+    54	    protected function get_review_url(): string {
+    55	        return 'https://wordpress.org/support/plugin/hostinger-reach/reviews/#new-post';
+    56	    }
+    57	
+    58	    protected function get_review_min_required_score(): int {
+    59	        return 7;
+    60	    }
+    61	}
+
+ succeeded in 0ms:
+# Application Security Review Workflow
+
+This file contains the reusable reasoning workflow for AppSec review.
+Project-local facts belong in the project's own `AGENTS.md` and `docs/*`.
+
+## 1. Context First
+
+Before analyzing code, establish:
+
+### Application Context
+
+- What does the application or plugin do?
+- Who uses it?
+- What data is sensitive?
+- How is it deployed?
+- What authentication and authorization model is in use?
+
+### Review Context
+
+- Is this a diff review or a full-source review?
+- What is the change or component trying to accomplish?
+- What trust boundaries does it cross?
+- Are there scope, deadline, or bounty-rule constraints?
+
+If context is missing and cannot be inferred safely, ask.
+If asking is not possible, state assumptions explicitly before proceeding.
+
+## 2. Triage By Risk Surface
+
+### Deep Trace
+
+Use line-by-line tracing for:
+- authentication and authorization
+- session and token handling
+- file upload, download, and path construction
+- database access and raw queries
+- input parsing and deserialization
+- public endpoints and trust-boundary crossings
+- crypto and sensitive data handling
+
+### Standard Review
+
+Use standard review for:
+- business logic that stays inside one trust zone
+- logging, metrics, and caching
+- transformations and formatting
+
+### Light Scan
+
+Use a quick pass for:
+- docs
+- tests, unless security-critical behavior is involved
+- styling and presentation-only changes
+
+When scope is ambiguous, choose the higher-risk category.
+
+## 3. Tool Discipline
+
+Search is good for:
+- entry points
+- sinks
+- usages
+- definitions
+- constants
+
+Reasoning is good for:
+- intent
+- data flow
+- trust assumptions
+- exploitability
+- logic flaws
+
+Rules:
+- Search hits are signals, not conclusions.
+- Read surrounding code before promoting a signal.
+- Do not guess framework behavior; verify it from code or primary docs.
+
+## 4. Finding Lifecycle
+
+### Stage 1: SIGNAL
+
+Document what was noticed and where.
+
+### Stage 2: HYPOTHESIS
+
+Turn the signal into a testable claim:
+
+- "[Actor] at [privilege level] can [action] via [entry point] because [assumption violation], resulting in [impact]."
+
+### Stage 3: CONTEXT
+
+Understand:
+- what the code is trying to do
+- why it may be designed this way
+- what trust boundaries matter
+- what defenses exist nearby
+
+### Stage 4: REFUTE
+
+Actively try to prove the hypothesis wrong.
+
+Examples:
+- a higher-layer capability check already blocks it
+- type casting or validation neutralizes the input
+- the entry point is not reachable by the claimed actor
+- framework protections make the sink safe
+- real deployment conditions make exploitation impractical
+
+Document each attempt:
+
+`REFUTATION ATTEMPT: ...`
+`RESULT: refuted / not refuted, with code references and reason`
+
+### Stage 5: IMPACT
+
+Answer:
+- what concretely changes if exploited
+- whose data or permissions are affected
+- what operations become possible
+- whether this matters in the actual deployment model
+
+If "so what?" stays weak or theoretical, downgrade.
+
+### Stage 6: VERDICT
+
+Assign exactly one:
+
+- `CONFIRMED`
+- `UNCERTAIN`
+- `RISK_NOTE`
+- `REJECTED`
+
+Rules:
+- `CONFIRMED` requires strong evidence
+- `UNCERTAIN` requires `why_uncertain` and `resolution_path`
+- `REJECTED` should include a reopening condition
+
+## 5. Reporting Requirements
+
+For each mature finding, include:
+- state
+- severity
+- violation
+- location
+- trace
+- defenses analyzed
+- refutation attempts
+- impact
+- conditions
+- severity reasoning
+
+If no confirmed findings exist, produce a review summary and note secure areas reviewed.
+
+## 6. Quality Gate
+
+Before calling something `CONFIRMED`, check:
+
+- Is every step grounded in code references?
+- Did it survive at least one refutation attempt?
+- Is impact concrete in this application context?
+- Are exploitation conditions stated honestly?
+- Is severity justified against one level lower?
+- Are assumptions explicit?
+
+If any answer is no, the finding is not ready.
+
+codex
+Packet nay co hai diem can phan bien: `entry_point_anchor` dang la `WebhookHandler::init()` co ve khong dan vao `SatisfactionSurvey`, va `REQUEST_URI` dang bi dung o ham tra ve `bool`. Toi se kiem tra nhanh trong chinh hai file scope xem co tham chieu noi bo nao noi duong di nay lai voi nhau khong.
+exec
+/bin/zsh -lc 'rg -n "SatisfactionSurvey|is_hostinger_page|should_load_survey|Survey" plugins/hostinger-reach/src/Api/Webhooks/Handlers/WebhookHandler.php plugins/hostinger-reach/src/Admin/Surveys/SatisfactionSurvey.php' in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+plugins/hostinger-reach/src/Admin/Surveys/SatisfactionSurvey.php:3:namespace Hostinger\Reach\Admin\Surveys;
+plugins/hostinger-reach/src/Admin/Surveys/SatisfactionSurvey.php:12:class SatisfactionSurvey extends Survey {
+plugins/hostinger-reach/src/Admin/Surveys/SatisfactionSurvey.php:13:    protected function should_load_survey(): bool {
+plugins/hostinger-reach/src/Admin/Surveys/SatisfactionSurvey.php:14:        if ( ! parent::should_load_survey() ) {
+plugins/hostinger-reach/src/Admin/Surveys/SatisfactionSurvey.php:18:        return $this->is_hostinger_page() && ( $this->has_any_user_action() || $this->has_been_five_days_since_connection() );
+plugins/hostinger-reach/src/Admin/Surveys/SatisfactionSurvey.php:50:    protected function is_hostinger_page(): bool {
+
+exec
+/bin/zsh -lc "tail -n +261 reports/phase2/hostinger-reach-phase2.review.r1.core.b06.input.json | sed -n '1,220p'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+      }
+    ],
+    "primary_files": [
+      "src/Admin/Surveys/SatisfactionSurvey.php",
+      "src/Api/Webhooks/Handlers/WebhookHandler.php"
+    ],
+    "primary_snippets": [
+      {
+        "file": "src/Admin/Surveys/SatisfactionSurvey.php",
+        "anchor": "src/Admin/Surveys/SatisfactionSurvey.php:51",
+        "focus_line": 51,
+        "line_start": 45,
+        "line_end": 57,
+        "kind": "finding_source",
+        "code": "    45\t        }\n    46\t\n    47\t        return ( time() - $connection_time ) >= ( 5 * self::DAY_IN_SECONDS );\n    48\t    }\n    49\t\n    50\t    protected function is_hostinger_page(): bool {\n    51\t        return str_contains( $_SERVER['REQUEST_URI'], 'hostinger' );\n    52\t    }\n    53\t\n    54\t    protected function get_review_url(): string {\n    55\t        return 'https://wordpress.org/support/plugin/hostinger-reach/reviews/#new-post';\n    56\t    }\n    57\t"
+      },
+      {
+        "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
+        "anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+        "focus_line": 19,
+        "line_start": 13,
+        "line_end": 25,
+        "kind": "entry_point",
+        "code": "    13\t    public function __construct( ReachApiHandler $reach_api_handler, FormRepository $form_repository ) {\n    14\t        $this->reach_api_handler = $reach_api_handler;\n    15\t        $this->form_repository   = $form_repository;\n    16\t    }\n    17\t\n    18\t    public function init(): void {\n    19\t        add_action( 'init', array( $this, 'init_hooks' ) );\n    20\t    }\n    21\t\n    22\t    public function is_enabled(): bool {\n    23\t        return $this->reach_api_handler->is_connected() && $this->is_automation_active();\n    24\t    }\n    25\t"
+      }
+    ],
+    "optional_evidence": {
+      "anchors": [],
+      "files": [],
+      "snippets": []
+    }
+  },
+  "threat_context_summary": null
+}
+
+codex
+Packet-local evidence hien tai co ve du de retract/field-fix ma khong can out-of-band file: khong thay lien ket giua `WebhookHandler` va `SatisfactionSurvey`, va source o `SatisfactionSurvey` tu dau da ep kieu `bool`. Toi se xem mot output mau cung schema de giu cau truc JSON khop, roi ghi file critique va validate no.
+exec
+/bin/zsh -lc "rg --files reports/phase2 | rg 'phase2\\.review\\..*\\.json"'$'"' | head -n 5" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "rg -n '\"review_status\"' reports/phase2 | head -n 20" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+reports/phase2/hostinger-reach-agent-w10-review.r1.json:5:  "review_status": "needs_revision",
+reports/phase2/hostinger-reach-phase2.review.r1.core.targeted-rerun-summary.json:28:      "review_status": "needs_revision",
+reports/phase2/hostinger-reach-phase2.review.r1.core.targeted-rerun-summary.json:63:      "review_status": "needs_revision",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b03.json:5:  "review_status": "needs_revision",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b01.json:5:  "review_status": "needs_revision",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b02.json:5:  "review_status": "needs_revision",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b04.json:5:  "review_status": "needs_revision",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b09.json:5:  "review_status": "needs_revision",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b08.json:5:  "review_status": "needs_revision",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b05.json:5:  "review_status": "needs_revision",
+
+ succeeded in 0ms:
+reports/phase2/hostinger-reach-phase2.review.r1.core.b06.input.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.b03.input.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.targeted-rerun-summary.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.b12.input.json
+
+exec
+/bin/zsh -lc "sed -n '1,240p' reports/phase2/hostinger-reach-phase2.review.r1.core.b05.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "sed -n '1,240p' reports/phase2/hostinger-reach-phase2.review.r1.core.b03.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "core",
+  "review_status": "needs_revision",
+  "summary": {
+    "worker_findings_reviewed": 1,
+    "material_issues_found": true,
+    "new_candidate_count": 0,
+    "notes": "The worker FP rationale overstates the in-handler nonce check and does not prove packet-local nonce exposure to the stated attacker."
+  },
+  "finding_reviews": [
+    {
+      "finding_id": "HR-FP-002",
+      "packet_id": "HR-FP-002",
+      "parent_finding_id": "HR-FP-002",
+      "assessment": "needs_more_evidence",
+      "reason": "reachability: the route is publicly registered because `permission_callback` is `__return_true` at src/Api/Routes/ReachRoutes.php:27-33, but the handler stops unless `is_authorized()` passes at src/Api/Handlers/ReachApiHandler.php:139-141 and 165-168. authorization: the only guard is `wp_verify_nonce( $nonce, 'wp_rest' ) && $this->get_connection_status_handler()` at src/Api/Handlers/ReachApiHandler.php:165-168; that is a nonce plus connection-status gate, not a capability or role check. dataflow: if that guard passes, attacker-controlled `email`, `name`, `surname`, `id`, `metadata`, `tags`, and `group` flow from the request into `post_contact()` at src/Api/Handlers/ReachApiHandler.php:144-160 and then into the outbound `post( 'contacts', $args )` call at src/Api/Handlers/ReachApiHandler.php:242-268. impact: the reachable behavior is concrete contact submission to the remote Reach service, so dismissing the packet as a harmless public route is overstated. missing_evidence: the current packet does not prove where a valid `X-WP-Nonce` is exposed to the relevant attacker model; the single expanded file only shows nonce creation in `SubscriptionFormBlock::data()` at src/Blocks/SubscriptionFormBlock.php:15-19, not the file:line call site that delivers it to anonymous visitors.",
+      "required_changes": [
+        "Downgrade the worker's stable FP conclusion to `needs_more_evidence` unless packet-local evidence proves the frontend nonce exposure and intended anonymous trust boundary with file:line support.",
+        "Correct the authorization analysis to state that `is_authorized()` at src/Api/Handlers/ReachApiHandler.php:165-168 is not a capability check; it is only a `wp_rest` nonce check plus a connection-status check.",
+        "If the packet is kept as FP, add the exact file:line call site that delivers `SubscriptionFormBlock::data()['nonce']` to unauthenticated visitors and explain why that makes arbitrary contact submission expected behavior rather than an access-control failure.",
+        "If the packet is upgraded toward a true issue, add file:line evidence showing how an attacker in scope can satisfy `wp_verify_nonce()` and reach `post_contact()`."
+      ],
+      "counter_evidence": [
+        {
+          "type": "scope",
+          "file": "src/Api/Routes/ReachRoutes.php",
+          "line": 33,
+          "detail": "The route itself is public because `permission_callback` is `__return_true`, so there is no route-level capability gate supporting a stable FP on authorization grounds."
+        },
+        {
+          "type": "guard",
+          "file": "src/Api/Handlers/ReachApiHandler.php",
+          "line": 168,
+          "detail": "The sink is not directly reachable from route registration alone; `post_contact_handler()` only proceeds after `wp_verify_nonce( $nonce, 'wp_rest' ) && $this->get_connection_status_handler()` succeeds."
+        },
+        {
+          "type": "impact",
+          "file": "src/Api/Handlers/ReachApiHandler.php",
+          "line": 266,
+          "detail": "If the guard passes, the handler performs a concrete outbound `post( 'contacts', $args )`, so the packet cannot be dismissed as a harmless registration artifact."
+        },
+        {
+          "type": "other",
+          "file": "src/Blocks/SubscriptionFormBlock.php",
+          "line": 18,
+          "detail": "The out-of-band block file proves only that `data()` creates a `wp_rest` nonce; it does not, by itself, prove that the nonce is rendered or otherwise disclosed to anonymous visitors."
+        }
+      ],
+      "missing_evidence": [
+        "Need the exact file:line call site that sends `SubscriptionFormBlock::data()` to frontend JavaScript or HTML for unauthenticated visitors; src/Blocks/SubscriptionFormBlock.php:15-19 only defines the array.",
+        "Need file:line evidence tying the reachable attacker model to a valid `X-WP-Nonce` for this endpoint, rather than assuming nonce availability from the existence of a public form block.",
+        "Need file:line evidence that the plugin intentionally treats anonymous `/contact` submissions as the expected trust boundary, not merely that the route exists and the block renders a form shell."
+      ],
+      "expansion_attempts": [
+        {
+          "type": "out_of_band_file",
+          "target": "src/Blocks/SubscriptionFormBlock.php",
+          "reason": "The worker FP rationale depended on alleged frontend nonce exposure that was not present in the packet's primary evidence.",
+          "outcome": "Opened the file and confirmed that `data()` creates an endpoint URL and `wp_rest` nonce at lines 15-19, but did not find a packet-local call site proving that data is delivered to anonymous visitors."
+        }
+      ],
+      "suggested_field_corrections": {
+        "recommended_assessment": "needs_more_evidence",
+        "confidence": 0.58,
+        "authorization_model": "Public REST route with an in-handler `wp_rest` nonce check and connection-status check; no capability gate evidenced in the packet."
+      }
+    }
+  ]
+}
+
+ succeeded in 0ms:
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "core",
+  "review_status": "needs_revision",
+  "summary": {
+    "worker_findings_reviewed": 1,
+    "material_issues_found": true,
+    "new_candidate_count": 0,
+    "notes": "The FP direction for HR-FP-001 is supportable, but the packet points its entry-point anchor at the POST registration block and overstates the response as purely static IntegrationsProvider metadata even though `import_status` is added dynamically."
+  },
+  "finding_reviews": [
+    {
+      "finding_id": "HR-FP-001",
+      "packet_id": "HR-FP-001",
+      "parent_finding_id": "HR-FP-001",
+      "assessment": "field_fix",
+      "reason": "Reachability: confirmed for the GET route, but the operative anchor is `src/Api/Routes/IntegrationsRoutes.php:21-27`, not `src/Api/Routes/IntegrationsRoutes.php:31`, because line 31 starts the separate POST registration that uses `permission_check()`. Authorization: there is no stronger guard than the public registration shown at `src/Api/Routes/IntegrationsRoutes.php:27`; `get_integrations_handler()` at `src/Api/Handlers/IntegrationsApiHandler.php:59-67` performs no nonce or capability check. Dataflow: the public callback serializes `get_integrations_data()` at `src/Api/Handlers/IntegrationsApiHandler.php:65`, and that method builds each item from `PluginData::to_array()` at `src/Dto/PluginData.php:200-218` plus plugin-state booleans and `import_status` at `src/Api/Handlers/IntegrationsApiHandler.php:183-192`. Impact: packet-local evidence supports only low-sensitivity integration inventory and status disclosure, not a meaningful broken-access-control impact; however, the current FP rationale is too absolute because `import_status` is not part of the static DTO fields. The one justified out-of-band check at `src/Integrations/ImportManager.php:34-47` shows `import_status` is returned as `status`, `total`, and filter-derived `summary`, which still does not show credentials, tokens, PII, or a protected admin action in the reviewed code. Missing evidence: if the worker wants to keep saying the body is entirely 'hardcoded in IntegrationsProvider::INTEGRATIONS' or that every `import_status.summary` payload is always non-sensitive across integrations, the exact provider/filter implementation lines are still absent from this packet.",
+      "required_changes": [
+        "Keep the false-positive disposition, but correct the entry-point anchor from `src/Api/Routes/IntegrationsRoutes.php:31` to the actual public GET registration at `src/Api/Routes/IntegrationsRoutes.php:21` or `src/Api/Routes/IntegrationsRoutes.php:25`.",
+        "Describe the authorization boundary precisely: the reviewed GET route is public via `permission_callback => '__return_true'`, and the handler adds no nonce or capability check.",
+        "Narrow the FP rationale from 'only hardcoded IntegrationsProvider metadata' to the packet-local response actually shown: `PluginData::to_array()` fields plus activation/install booleans and `import_status` status-summary data.",
+        "Keep the impact framing at informational inventory/status disclosure with no packet-local credential, PII, or privileged action shown, rather than implying the response contents are fully static or exhaustively characterized."
+      ],
+      "counter_evidence": [
+        {
+          "type": "scope",
+          "file": "src/Api/Routes/IntegrationsRoutes.php",
+          "line": 31,
+          "detail": "This anchor starts the separate POST `/integrations` registration that uses `permission_check()`, so it is not the operative entry point for the public GET route under review."
+        },
+        {
+          "type": "other",
+          "file": "src/Api/Routes/IntegrationsRoutes.php",
+          "line": 27,
+          "detail": "The reviewed GET route is explicitly public because its `permission_callback` is `__return_true`."
+        },
+        {
+          "type": "impact",
+          "file": "src/Dto/PluginData.php",
+          "line": 200,
+          "detail": "`PluginData::to_array()` exposes integration identifiers, plugin file/folder names, plugin/admin URLs, title, icon, and a few booleans; this supports low-sensitivity inventory disclosure rather than credentials or user records."
+        },
+        {
+          "type": "impact",
+          "file": "src/Api/Handlers/IntegrationsApiHandler.php",
+          "line": 191,
+          "detail": "The response is not limited to the DTO fields because `get_integrations_data()` appends `import_status` from `ImportManager::get_status($integration_name)`."
+        },
+        {
+          "type": "impact",
+          "file": "src/Integrations/ImportManager.php",
+          "line": 43,
+          "detail": "The reviewed `get_status()` implementation returns only `status`, `total`, and `summary` data assembled from import state and a filter-provided summary; this file still does not show credentials, API tokens, or user PII."
+        },
+        {
+          "type": "scope",
+          "file": "src/Api/Handlers/IntegrationsApiHandler.php",
+          "line": 65,
+          "detail": "The packet-local path terminates in a JSON response body and does not show any further privileged state change or browser execution sink."
+        }
+      ],
+      "missing_evidence": [
+        "If the worker wants to keep the statement that the returned plugin metadata is 'hardcoded in `IntegrationsProvider::INTEGRATIONS`', the exact provider construction file:line for the `PluginData` objects returned by `PluginManager::get_plugin()` is still missing from this packet.",
+        "If the worker wants to claim that every `import_status.summary` payload is always innocuous, the concrete `hostinger_reach_import_summary_*` filter-provider file:line is still missing; `src/Integrations/ImportManager.php:36-47` shows that portion of the response is integration-specific and filter-derived."
+      ],
+      "expansion_attempts": [
+        {
+          "type": "out_of_band_file",
+          "target": "src/Integrations/ImportManager.php",
+          "reason": "Needed one minimal out-of-band check because `import_status` is appended into the reviewed JSON response at `src/Api/Handlers/IntegrationsApiHandler.php:191` and packet-local files did not define its shape.",
+          "outcome": "Opened within the single out-of-band allowance. `ImportManager::get_status()` returns `status`, `total`, and `summary` at `src/Integrations/ImportManager.php:43-47`, with `summary` populated from `apply_filters( 'hostinger_reach_import_summary_' . $integration, array() )` at line 36."
+        }
+      ],
+      "suggested_field_corrections": {
+        "verdict": "FP",
+        "vuln_type": "False positive: intentionally public GET `/integrations` route with only low-sensitivity integration inventory/status disclosure shown packet-locally",
+        "severity": "info",
+        "confidence": 0.95,
+        "auth_required": "none; GET `/integrations` is public via `permission_callback => '__return_true'`",
+        "entry_point_anchor": "src/Api/Routes/IntegrationsRoutes.php:21",
+        "source_anchor": "src/Api/Routes/IntegrationsRoutes.php:21",
+        "sink_anchor": "src/Api/Handlers/IntegrationsApiHandler.php:65",
+        "fp_reason": "The public GET route at `src/Api/Routes/IntegrationsRoutes.php:21-27` returns JSON assembled from `PluginData::to_array()` at `src/Dto/PluginData.php:200-218` plus plugin-state booleans and `import_status` at `src/Api/Handlers/IntegrationsApiHandler.php:183-192`. The inspected code shows integration inventory and import-progress metadata, but no credentials, tokens, user records, or privileged action.",
+        "claimed_impact": "Unauthenticated informational disclosure of integration inventory and import-progress status only; no packet-local broken-access-control impact beyond reconnaissance/operational metadata is shown."
+      }
+    }
+  ]
+}
+
+web search: 
+web search: 
+exec
+/bin/zsh -lc "sed -n '1,240p' reports/phase2/hostinger-reach-agent-w10-review.r1.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "skeptical",
+  "review_status": "needs_revision",
+  "summary": {
+    "worker_findings_reviewed": 1,
+    "material_issues_found": true,
+    "new_candidate_count": 1,
+    "notes": "The FP disposition is not fully refuted. The worker treats a guest-facing nonce as a strong guard and does not address the downstream webhook path that reuses stored cart email and metadata."
+  },
+  "finding_reviews": [
+    {
+      "finding_id": "w10-cand-ep-ajax-nopriv-abandoned-carts-fp",
+      "assessment": "needs_more_evidence",
+      "reason": "The worker did not refute the concrete downstream path from the public AJAX write to the abandoned-cart webhook. `handle_ajax_action()` accepts attacker-controlled `email`, stores it in the cart record for the current WooCommerce session, and later `CartAbandoned::send()` retrieves `customer_email` and passes it with cart metadata to `WebhookHandler::handle()`. The current FP rationale over-relies on `check_ajax_referer()` even though the same action nonce is intentionally exposed to frontend visitors. Before closing this as FP, the review needs evidence that a cross-site or replayed request cannot poison another shopper's session-bound cart record and drive disclosure through the webhook automation flow.",
+      "required_changes": [
+        "Do not treat the guest-facing `abandoned-carts` nonce as a meaningful authorization boundary without showing why it cannot be reused by unauthenticated visitors.",
+        "Verify whether an attacker can update a victim's session-bound cart record through a cross-site or replayed request that carries the WooCommerce session cookie, or explain why the cart hash remains isolated per user in practice.",
+        "Address the downstream webhook sink explicitly: `customer_email` and cart metadata are later submitted by the abandoned-cart automation path, so the FP rationale must refute data-poisoning and disclosure impact instead of stopping at SQL/output checks."
+      ],
+      "counter_evidence": [
+        {
+          "type": "guard",
+          "file": "src/Tracking/AbandonedCarts.php",
+          "line": 41,
+          "detail": "`check_ajax_referer('abandoned-carts', 'nonce')` is present, but this endpoint is intentionally public and the same action nonce is emitted to frontend visitors."
+        },
+        {
+          "type": "other",
+          "file": "src/Tracking/AbandonedCarts.php",
+          "line": 64,
+          "detail": "`wp_localize_script()` publishes the AJAX action, nonce, and endpoint URL to frontend JavaScript."
+        },
+        {
+          "type": "other",
+          "file": "frontend/tracking/abandoned-carts.js",
+          "line": 25,
+          "detail": "Frontend code appends the public nonce and a user-controlled `email` value, then POSTs the request to `admin-ajax.php`."
+        },
+        {
+          "type": "impact",
+          "file": "src/Tracking/AbandonedCarts.php",
+          "line": 162,
+          "detail": "Tracked carts persist `customer_email`, `items`, and `totals`, so the AJAX input affects stored state beyond the immediate request."
+        },
+        {
+          "type": "scope",
+          "file": "src/Jobs/AbandonedCartsJob.php",
+          "line": 35,
+          "detail": "The downstream sink is conditional on abandoned-cart automation being enabled and active carts existing, which is a feature-state condition the worker did not address."
+        },
+        {
+          "type": "impact",
+          "file": "src/Api/Webhooks/Handlers/CartAbandoned.php",
+          "line": 41,
+          "detail": "The scheduled abandoned-cart flow retrieves `customer_email` from the stored cart and uses it when sending the webhook event."
+        },
+        {
+          "type": "impact",
+          "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
+          "line": 34,
+          "detail": "Webhook payloads include `contact.email` and `metadata`, so a poisoned cart record has a downstream disclosure path if cross-session writes are possible."
+        }
+      ],
+      "suggested_field_corrections": null
+    }
+  ],
+  "missed_findings": [
+    {
+      "candidate_id": "cand-ep-ajax-nopriv-wp-ajax-nopriv-abandoned-carts-src-tracking-abandonedcarts-php-recon",
+      "vuln_type": "guest_cart_email_poisoning_to_webhook_disclosure",
+      "auth_required": "none",
+      "source_file_path": "src/Tracking/AbandonedCarts.php",
+      "source_line_number": 42,
+      "sink_file_path": "src/Api/Webhooks/Handlers/WebhookHandler.php",
+      "sink_line_number": 34,
+      "reason": "One-hop adjacent code creates an omitted impact path: the public `abandoned-carts` AJAX request stores attacker-controlled `customer_email` into the cart record, and the abandoned-cart automation later submits that email together with cart metadata in an outbound webhook. The remaining verification gap is whether a public or replayed guest nonce plus browser cookie behavior lets an attacker poison another shopper's session-bound cart record.",
+      "confidence": 0.58
+    }
+  ]
+}
+
+exec
+/bin/zsh -lc "rg -n 'boolean_guard|REQUEST_URI|str_contains|no HTML output|field_fix' reports/phase2/hostinger-reach-phase2.review.r1.core.*.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+reports/phase2/hostinger-reach-phase2.review.r1.core.b08.json:15:      "assessment": "field_fix",
+reports/phase2/hostinger-reach-phase2.review.r1.core.targeted-rerun-summary.json:64:      "assessment": "field_fix",
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json:92:      "vuln_type": "XSS \u2014 SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI']",
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json:385:        "default_resolution_on_missing_terminal_evidence": "field_fix_or_retract",
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json:389:          "If packet-local evidence ends in JSON/REST response handling and no browser sink is shown, prefer field_fix, retract, or needs_more_evidence over plugin-wide rendering hunts."
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json:567:        "default_resolution_on_missing_terminal_evidence": "field_fix_or_retract",
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json:571:          "If packet-local evidence ends in JSON/REST response handling and no browser sink is shown, prefer field_fix, retract, or needs_more_evidence over plugin-wide rendering hunts."
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json:920:      "vuln_type": "XSS \u2014 SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI']",
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json:926:      "claimed_impact": "Worker claims XSS \u2014 SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI'] is materially exploitable with auth boundary `unknown` and impact reachable at src/Admin/Surveys/SatisfactionSurvey.php:51.",
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json:929:        "sink_function": "str_contains",
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json:931:        "original_fp_reason": "is_hostinger_page() only returns a boolean from str_contains() \u2014 the REQUEST_URI value is never reflected into HTML output; only the boolean result is used in a conditional.",
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json:936:            "The REQUEST_URI is only used as input to str_contains which returns a boolean \u2014 the string itself is never echoed or passed to any HTML context",
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json:945:          "hypothesis": "Semgrep flagged $_SERVER['REQUEST_URI'] at line 51 as flowing to HTML output.",
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json:946:          "trace": "is_hostinger_page() returns str_contains($_SERVER['REQUEST_URI'], 'hostinger') \u2192 returns bool \u2192 used in should_load_survey() conditional \u2192 no HTML output of the REQUEST_URI value occurs",
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json:948:            "The REQUEST_URI is only used as input to str_contains which returns a boolean \u2014 the string itself is never echoed or passed to any HTML context"
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json:951:            "REFUTATION ATTEMPT: Does REQUEST_URI flow into HTML anywhere in the call chain? RESULT: Refuted. The return value of is_hostinger_page() is a boolean that controls whether a survey is added to an array. No HTML output of REQUEST_URI occurs."
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json:953:          "conclusion": "FP \u2014 semgrep false positive on data flow; the string is consumed by str_contains and only the boolean propagates."
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json:958:        "sink_semantics": "boolean_guard",
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json:959:        "default_resolution_on_missing_terminal_evidence": "field_fix_or_retract",
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json:1004:            "note": "XSS \u2014 SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI']"
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json:1009:            "note": "XSS \u2014 SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI']"
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json:1030:          "code": "    45\t        }\n    46\t\n    47\t        return ( time() - $connection_time ) >= ( 5 * self::DAY_IN_SECONDS );\n    48\t    }\n    49\t\n    50\t    protected function is_hostinger_page(): bool {\n    51\t        return str_contains( $_SERVER['REQUEST_URI'], 'hostinger' );\n    52\t    }\n    53\t\n    54\t    protected function get_review_url(): string {\n    55\t        return 'https://wordpress.org/support/plugin/hostinger-reach/reviews/#new-post';\n    56\t    }\n    57\t"
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json:1063:          "code": "    45\t        }\n    46\t\n    47\t        return ( time() - $connection_time ) >= ( 5 * self::DAY_IN_SECONDS );\n    48\t    }\n    49\t\n    50\t    protected function is_hostinger_page(): bool {\n    51\t        return str_contains( $_SERVER['REQUEST_URI'], 'hostinger' );\n    52\t    }\n    53\t\n    54\t    protected function get_review_url(): string {\n    55\t        return 'https://wordpress.org/support/plugin/hostinger-reach/reviews/#new-post';\n    56\t    }\n    57\t"
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json:1069:        "dataflow": "Does attacker-controlled data actually flow from src/Admin/Surveys/SatisfactionSurvey.php:51 to src/Admin/Surveys/SatisfactionSurvey.php:51 for the claimed XSS \u2014 SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI'], without a refuting guard, sanitizer, or broken hop?",
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json:1090:        "sink_function": "str_contains / filter_var",
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json:1121:        "sink_semantics": "boolean_guard",
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json:1122:        "default_resolution_on_missing_terminal_evidence": "field_fix_or_retract",
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json:1202:          "code": "   117\t\n   118\t    public function is_hostinger_user(): bool {\n   119\t        return ! empty( $_SERVER['H_PLATFORM'] );\n   120\t    }\n   121\t\n   122\t    public function is_staging(): bool {\n   123\t        return isset( $_SERVER['H_STAGING'] ) && filter_var( wp_unslash( $_SERVER['H_STAGING'] ), FILTER_VALIDATE_BOOLEAN ) === true;\n   124\t    }\n   125\t\n   126\t    public function has_reach_subscription_block( int $post_id ): bool {\n   127\t        $content = get_post_field( 'post_content', $post_id );\n   128\t\n   129\t        return str_contains( $content, '<!-- wp:hostinger-reach/subscription' );"
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json:1244:          "code": "   117\t\n   118\t    public function is_hostinger_user(): bool {\n   119\t        return ! empty( $_SERVER['H_PLATFORM'] );\n   120\t    }\n   121\t\n   122\t    public function is_staging(): bool {\n   123\t        return isset( $_SERVER['H_STAGING'] ) && filter_var( wp_unslash( $_SERVER['H_STAGING'] ), FILTER_VALIDATE_BOOLEAN ) === true;\n   124\t    }\n   125\t\n   126\t    public function has_reach_subscription_block( int $post_id ): bool {\n   127\t        $content = get_post_field( 'post_content', $post_id );\n   128\t\n   129\t        return str_contains( $content, '<!-- wp:hostinger-reach/subscription' );"
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json:2607:        "note": "XSS \u2014 SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI']"
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json:2837:        "code": "    45\t        }\n    46\t\n    47\t        return ( time() - $connection_time ) >= ( 5 * self::DAY_IN_SECONDS );\n    48\t    }\n    49\t\n    50\t    protected function is_hostinger_page(): bool {\n    51\t        return str_contains( $_SERVER['REQUEST_URI'], 'hostinger' );\n    52\t    }\n    53\t\n    54\t    protected function get_review_url(): string {\n    55\t        return 'https://wordpress.org/support/plugin/hostinger-reach/reviews/#new-post';\n    56\t    }\n    57\t"
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json:2855:        "code": "   117\t\n   118\t    public function is_hostinger_user(): bool {\n   119\t        return ! empty( $_SERVER['H_PLATFORM'] );\n   120\t    }\n   121\t\n   122\t    public function is_staging(): bool {\n   123\t        return isset( $_SERVER['H_STAGING'] ) && filter_var( wp_unslash( $_SERVER['H_STAGING'] ), FILTER_VALIDATE_BOOLEAN ) === true;\n   124\t    }\n   125\t\n   126\t    public function has_reach_subscription_block( int $post_id ): bool {\n   127\t        $content = get_post_field( 'post_content', $post_id );\n   128\t\n   129\t        return str_contains( $content, '<!-- wp:hostinger-reach/subscription' );"
+reports/phase2/hostinger-reach-phase2.review.r1.core.b04.json:17:      "assessment": "field_fix",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b01.input.json:105:        "default_resolution_on_missing_terminal_evidence": "field_fix_or_retract",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b01.input.json:109:          "If packet-local evidence ends in JSON/REST response handling and no browser sink is shown, prefer field_fix, retract, or needs_more_evidence over plugin-wide rendering hunts."
+reports/phase2/hostinger-reach-phase2.review.r1.core.b03.json:17:      "assessment": "field_fix",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b06.input.json:44:      "vuln_type": "XSS \u2014 SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI']",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b06.input.json:62:      "vuln_type": "XSS \u2014 SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI']",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b06.input.json:68:      "claimed_impact": "Worker claims XSS \u2014 SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI'] is materially exploitable with auth boundary `unknown` and impact reachable at src/Admin/Surveys/SatisfactionSurvey.php:51.",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b06.input.json:71:        "sink_function": "str_contains",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b06.input.json:73:        "original_fp_reason": "is_hostinger_page() only returns a boolean from str_contains() \u2014 the REQUEST_URI value is never reflected into HTML output; only the boolean result is used in a conditional.",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b06.input.json:78:            "The REQUEST_URI is only used as input to str_contains which returns a boolean \u2014 the string itself is never echoed or passed to any HTML context",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b06.input.json:87:          "hypothesis": "Semgrep flagged $_SERVER['REQUEST_URI'] at line 51 as flowing to HTML output.",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b06.input.json:88:          "trace": "is_hostinger_page() returns str_contains($_SERVER['REQUEST_URI'], 'hostinger') \u2192 returns bool \u2192 used in should_load_survey() conditional \u2192 no HTML output of the REQUEST_URI value occurs",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b06.input.json:90:            "The REQUEST_URI is only used as input to str_contains which returns a boolean \u2014 the string itself is never echoed or passed to any HTML context"
+reports/phase2/hostinger-reach-phase2.review.r1.core.b06.input.json:93:            "REFUTATION ATTEMPT: Does REQUEST_URI flow into HTML anywhere in the call chain? RESULT: Refuted. The return value of is_hostinger_page() is a boolean that controls whether a survey is added to an array. No HTML output of REQUEST_URI occurs."
+reports/phase2/hostinger-reach-phase2.review.r1.core.b06.input.json:95:          "conclusion": "FP \u2014 semgrep false positive on data flow; the string is consumed by str_contains and only the boolean propagates."
+reports/phase2/hostinger-reach-phase2.review.r1.core.b06.input.json:100:        "sink_semantics": "boolean_guard",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b06.input.json:101:        "default_resolution_on_missing_terminal_evidence": "field_fix_or_retract",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b06.input.json:146:            "note": "XSS \u2014 SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI']"
+reports/phase2/hostinger-reach-phase2.review.r1.core.b06.input.json:151:            "note": "XSS \u2014 SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI']"
+reports/phase2/hostinger-reach-phase2.review.r1.core.b06.input.json:172:          "code": "    45\t        }\n    46\t\n    47\t        return ( time() - $connection_time ) >= ( 5 * self::DAY_IN_SECONDS );\n    48\t    }\n    49\t\n    50\t    protected function is_hostinger_page(): bool {\n    51\t        return str_contains( $_SERVER['REQUEST_URI'], 'hostinger' );\n    52\t    }\n    53\t\n    54\t    protected function get_review_url(): string {\n    55\t        return 'https://wordpress.org/support/plugin/hostinger-reach/reviews/#new-post';\n    56\t    }\n    57\t"
+reports/phase2/hostinger-reach-phase2.review.r1.core.b06.input.json:205:          "code": "    45\t        }\n    46\t\n    47\t        return ( time() - $connection_time ) >= ( 5 * self::DAY_IN_SECONDS );\n    48\t    }\n    49\t\n    50\t    protected function is_hostinger_page(): bool {\n    51\t        return str_contains( $_SERVER['REQUEST_URI'], 'hostinger' );\n    52\t    }\n    53\t\n    54\t    protected function get_review_url(): string {\n    55\t        return 'https://wordpress.org/support/plugin/hostinger-reach/reviews/#new-post';\n    56\t    }\n    57\t"
+reports/phase2/hostinger-reach-phase2.review.r1.core.b06.input.json:211:        "dataflow": "Does attacker-controlled data actually flow from src/Admin/Surveys/SatisfactionSurvey.php:51 to src/Admin/Surveys/SatisfactionSurvey.php:51 for the claimed XSS \u2014 SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI'], without a refuting guard, sanitizer, or broken hop?",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b06.input.json:244:        "note": "XSS \u2014 SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI']"
+reports/phase2/hostinger-reach-phase2.review.r1.core.b06.input.json:252:        "note": "XSS \u2014 SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI']"
+reports/phase2/hostinger-reach-phase2.review.r1.core.b06.input.json:260:        "note": "XSS \u2014 SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI']"
+reports/phase2/hostinger-reach-phase2.review.r1.core.b06.input.json:275:        "code": "    45\t        }\n    46\t\n    47\t        return ( time() - $connection_time ) >= ( 5 * self::DAY_IN_SECONDS );\n    48\t    }\n    49\t\n    50\t    protected function is_hostinger_page(): bool {\n    51\t        return str_contains( $_SERVER['REQUEST_URI'], 'hostinger' );\n    52\t    }\n    53\t\n    54\t    protected function get_review_url(): string {\n    55\t        return 'https://wordpress.org/support/plugin/hostinger-reach/reviews/#new-post';\n    56\t    }\n    57\t"
+reports/phase2/hostinger-reach-phase2.review.r1.core.b04.input.json:71:        "sink_function": "str_contains / filter_var",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b04.input.json:102:        "sink_semantics": "boolean_guard",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b04.input.json:103:        "default_resolution_on_missing_terminal_evidence": "field_fix_or_retract",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b04.input.json:183:          "code": "   117\t\n   118\t    public function is_hostinger_user(): bool {\n   119\t        return ! empty( $_SERVER['H_PLATFORM'] );\n   120\t    }\n   121\t\n   122\t    public function is_staging(): bool {\n   123\t        return isset( $_SERVER['H_STAGING'] ) && filter_var( wp_unslash( $_SERVER['H_STAGING'] ), FILTER_VALIDATE_BOOLEAN ) === true;\n   124\t    }\n   125\t\n   126\t    public function has_reach_subscription_block( int $post_id ): bool {\n   127\t        $content = get_post_field( 'post_content', $post_id );\n   128\t\n   129\t        return str_contains( $content, '<!-- wp:hostinger-reach/subscription' );"
+reports/phase2/hostinger-reach-phase2.review.r1.core.b04.input.json:225:          "code": "   117\t\n   118\t    public function is_hostinger_user(): bool {\n   119\t        return ! empty( $_SERVER['H_PLATFORM'] );\n   120\t    }\n   121\t\n   122\t    public function is_staging(): bool {\n   123\t        return isset( $_SERVER['H_STAGING'] ) && filter_var( wp_unslash( $_SERVER['H_STAGING'] ), FILTER_VALIDATE_BOOLEAN ) === true;\n   124\t    }\n   125\t\n   126\t    public function has_reach_subscription_block( int $post_id ): bool {\n   127\t        $content = get_post_field( 'post_content', $post_id );\n   128\t\n   129\t        return str_contains( $content, '<!-- wp:hostinger-reach/subscription' );"
+reports/phase2/hostinger-reach-phase2.review.r1.core.b04.input.json:304:        "code": "   117\t\n   118\t    public function is_hostinger_user(): bool {\n   119\t        return ! empty( $_SERVER['H_PLATFORM'] );\n   120\t    }\n   121\t\n   122\t    public function is_staging(): bool {\n   123\t        return isset( $_SERVER['H_STAGING'] ) && filter_var( wp_unslash( $_SERVER['H_STAGING'] ), FILTER_VALIDATE_BOOLEAN ) === true;\n   124\t    }\n   125\t\n   126\t    public function has_reach_subscription_block( int $post_id ): bool {\n   127\t        $content = get_post_field( 'post_content', $post_id );\n   128\t\n   129\t        return str_contains( $content, '<!-- wp:hostinger-reach/subscription' );"
+reports/phase2/hostinger-reach-phase2.review.r1.core.b09.json:17:      "assessment": "field_fix",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b03.input.json:104:        "default_resolution_on_missing_terminal_evidence": "field_fix_or_retract",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b03.input.json:108:          "If packet-local evidence ends in JSON/REST response handling and no browser sink is shown, prefer field_fix, retract, or needs_more_evidence over plugin-wide rendering hunts."
+
+exec
+/bin/zsh -lc "sed -n '1,240p' reports/phase2/hostinger-reach-phase2.review.r1.core.b04.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "sed -n '1,240p' reports/phase2/hostinger-reach-phase2.review.r1.core.b08.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "core",
+  "review_status": "needs_revision",
+  "summary": {
+    "worker_findings_reviewed": 1,
+    "material_issues_found": true,
+    "new_candidate_count": 0,
+    "notes": "The FP verdict for HR-FP-004 is supported, but the packet still needs field corrections: the `init` anchor is not packet-locally tied to these helpers, and the cited lines in `src/Functions.php` are boolean checks rather than an XSS sink."
+  },
+  "finding_reviews": [
+    {
+      "finding_id": "HR-FP-004",
+      "packet_id": "HR-FP-004",
+      "parent_finding_id": "HR-FP-004",
+      "assessment": "field_fix",
+      "reason": "Reachability: the packet does not show a packet-local path from `src/Api/Webhooks/Handlers/WebhookHandler.php:19` to either helper; `WebhookHandler::init()` only registers `init_hooks` on `init` and no in-scope snippet calls `Functions::is_hostinger_user()` or `Functions::is_staging()`. Authorization: no capability, nonce, or route boundary is shown in the scoped code because the cited lines are helper methods, not request handlers. Dataflow: `is_hostinger_user()` and `is_staging()` are declared `: bool` at `src/Functions.php:118` and `src/Functions.php:122`, then return boolean expressions at lines 119 and 123; line 123 further collapses its input with `FILTER_VALIDATE_BOOLEAN`, so the packet does not show attacker-controlled string data flowing into an output context. Impact: packet-local evidence shows only boolean/guard logic and no HTML, JS, attribute, or JSON reflection sink, so the XSS label and current `sink_anchor` are overstated. Missing evidence: the worker has not shown a concrete caller that copies network input into `$_SERVER['H_PLATFORM']` or `$_SERVER['H_STAGING']`, a reachable invocation path from the `init` anchor to these helpers, or any terminal output site that reflects their return values.",
+      "required_changes": [
+        "Keep the FP verdict, but replace the current XSS rationale with a packet-local explanation that `src/Functions.php:118-123` only computes booleans from server variables and does not show a terminal sink.",
+        "Remove or replace `src/Api/Webhooks/Handlers/WebhookHandler.php:19` as the packet entry point unless a packet-local caller trace to `Functions::is_hostinger_user()` or `Functions::is_staging()` is provided.",
+        "Do not treat `src/Functions.php:123` as an XSS sink; it is a boolean helper expression using `FILTER_VALIDATE_BOOLEAN`, not an output site.",
+        "If this packet is ever reopened as XSS, require file:line evidence that attacker-controlled request data reaches these `$_SERVER` keys and is later reflected into a concrete output context."
+      ],
+      "counter_evidence": [
+        {
+          "type": "unreachable",
+          "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
+          "line": 19,
+          "detail": "`WebhookHandler::init()` only registers `init_hooks` on the `init` action; the packet contains no packet-local call chain from this anchor to either helper in `src/Functions.php`."
+        },
+        {
+          "type": "other",
+          "file": "src/Functions.php",
+          "line": 118,
+          "detail": "`is_hostinger_user()` is declared with a `: bool` return type, so the method returns a boolean state rather than raw data for HTML/JS output."
+        },
+        {
+          "type": "impact",
+          "file": "src/Functions.php",
+          "line": 119,
+          "detail": "The body is only `return ! empty( $_SERVER['H_PLATFORM'] );`, which tests truthiness and does not itself emit or concatenate output."
+        },
+        {
+          "type": "other",
+          "file": "src/Functions.php",
+          "line": 122,
+          "detail": "`is_staging()` is also declared with a `: bool` return type, so the packet-local code again resolves to boolean guard logic."
+        },
+        {
+          "type": "sanitizer",
+          "file": "src/Functions.php",
+          "line": 123,
+          "detail": "`filter_var( wp_unslash( $_SERVER['H_STAGING'] ), FILTER_VALIDATE_BOOLEAN ) === true` collapses the inspected value to a boolean instead of propagating attacker-controlled string data into an output sink."
+        }
+      ],
+      "missing_evidence": [
+        "A packet-local caller trace from `src/Api/Webhooks/Handlers/WebhookHandler.php:19` to an invocation of `Functions::is_hostinger_user()` or `Functions::is_staging()` is missing.",
+        "File:line evidence that attacker-controlled request data can populate `$_SERVER['H_PLATFORM']` or `$_SERVER['H_STAGING']` before `src/Functions.php:119` or `src/Functions.php:123` is missing.",
+        "A concrete output sink showing the return value from either helper reflected into HTML, JavaScript, an attribute, or another executable browser context is missing."
+      ],
+      "expansion_attempts": [],
+      "suggested_field_corrections": {
+        "verdict": "FP",
+        "vuln_type": "False positive: boolean helper methods read server environment flags; no packet-local XSS sink shown",
+        "severity": "info",
+        "confidence": 0.99,
+        "auth_required": "not applicable in packet-local code; the cited lines are helper methods rather than a reachable request handler",
+        "source_anchor": "src/Functions.php:119",
+        "sink_anchor_note": "Do not keep `src/Functions.php:123` as a sink without a separate terminal output site; line 123 is boolean helper logic.",
+        "entry_point_anchor_note": "Do not keep `src/Api/Webhooks/Handlers/WebhookHandler.php:19` as the entry point without a packet-local caller trace into these helpers.",
+        "fp_reason": "`is_hostinger_user()` and `is_staging()` at `src/Functions.php:118-123` return booleans only, with `is_staging()` additionally normalizing the inspected value via `FILTER_VALIDATE_BOOLEAN`. The scoped packet does not show a caller path from `src/Api/Webhooks/Handlers/WebhookHandler.php:19`, attacker control over these server slots, or any terminal output sink.",
+        "claimed_impact": "No packet-local XSS impact established; the scoped code only computes boolean state from server variables."
+      }
+    }
+  ]
+}
+
+ succeeded in 0ms:
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "core",
+  "review_status": "needs_revision",
+  "summary": {
+    "worker_findings_reviewed": 1,
+    "material_issues_found": true,
+    "new_candidate_count": 0,
+    "notes": "The FP verdict for HR-FP-006 is supported, but the packet should correct the auth boundary and the query trace. The import route is admin-only, and no attacker-controlled input reaches the SQL structure in get_contacts()."
+  },
+  "finding_reviews": [
+    {
+      "finding_id": "HR-FP-006",
+      "assessment": "field_fix",
+      "reason": "Packet-local review supports the false-positive disposition, but not the packet's `auth_required: null` / `unknown` framing. Reachability is limited to the admin-only import path: `IntegrationsRoutes::register_routes()` protects `POST /import` with `permission_check()`, and `Routes::permission_check()` requires `current_user_can('manage_options')` at `src/Api/Routes/IntegrationsRoutes.php:79` and `src/Api/Routes/Routes.php:33`. On dataflow, `WooCommerceIntegration::get_contacts()` builds the table name from `$wpdb->prefix . 'wc_customer_lookup'` locally at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224`, does not interpolate `form_id`, and appends `LIMIT` and `OFFSET` only through `$wpdb->prepare()` at lines 228 and 232 before calling `get_results()` at line 248. The claimed SQL injection impact is therefore unproven and overstated for this packet.",
+      "required_changes": [
+        "Correct the auth boundary from `null` / `unknown` to an admin-only path guarded by `current_user_can('manage_options')` on the REST import route.",
+        "Fix the dataflow trace to note that `get_contacts()` constructs the queried table directly at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224`; it is not sourced from request data or from `form_id`.",
+        "Add the prepared numeric clauses at `src/Integrations/WooCommerce/WooCommerceIntegration.php:228` and `src/Integrations/WooCommerce/WooCommerceIntegration.php:232` as explicit refuting evidence.",
+        "If this packet is ever reopened as SQL injection, require evidence that an attacker can influence the table fragment or another unprepared SQL clause, not just that interpolated SQL exists."
+      ],
+      "counter_evidence": [
+        {
+          "type": "scope",
+          "file": "src/Api/Routes/IntegrationsRoutes.php",
+          "line": 79,
+          "detail": "The `POST /import` route uses `permission_callback => array( $this, 'permission_check' )`, so the entry point is not public."
+        },
+        {
+          "type": "guard",
+          "file": "src/Api/Routes/Routes.php",
+          "line": 33,
+          "detail": "`permission_check()` returns `current_user_can( 'manage_options' )`, which is a stronger authorization boundary than the packet's `auth_required: null`."
+        },
+        {
+          "type": "other",
+          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+          "line": 224,
+          "detail": "`get_contacts()` sets `$table = $wpdb->prefix . 'wc_customer_lookup'`; the table fragment is fixed by server-side configuration plus a string literal, not request input."
+        },
+        {
+          "type": "sanitizer",
+          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+          "line": 228,
+          "detail": "The `LIMIT` clause is appended with `$wpdb->prepare( ' LIMIT %d', $limit )`, preventing injection through the numeric batch size."
+        },
+        {
+          "type": "sanitizer",
+          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+          "line": 232,
+          "detail": "The `OFFSET` clause is appended with `$wpdb->prepare( ' OFFSET %d', $offset )`, so the numeric offset is also parameterized."
+        },
+        {
+          "type": "other",
+          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+          "line": 217,
+          "detail": "`$form_id` is accepted by the method signature but never interpolated into the SQL query, breaking the claimed user-controlled flow into `get_results()`."
+        },
+        {
+          "type": "impact",
+          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+          "line": 225,
+          "detail": "The query text is a fixed `SELECT email, first_name FROM {$table}` read against the WooCommerce customer lookup table; this packet does not show attacker-controlled SQL structure or a higher-impact sink."
+        }
+      ],
+      "suggested_field_corrections": {
+        "auth_required": true,
+        "verdict": "FP",
+        "severity": "info",
+        "confidence": 1.0,
+        "source_anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:217",
+        "sink_anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:248",
+        "fp_reason": "No attacker-controlled data reaches the SQL structure in `WooCommerceIntegration::get_contacts()`: the table name is fixed at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224`, `form_id` is unused, and `LIMIT` / `OFFSET` are appended via `$wpdb->prepare()` at lines 228 and 232.",
+        "missing_evidence": "To reopen this packet as SQL injection, show a concrete path where attacker input controls the table fragment or another unprepared SQL clause despite the admin-only `POST /import` gate."
+      }
+    }
+  ]
+}
+
+codex
+Toi sap ghi critique JSON. Truoc khi sua file, toi se kiem tra xem output path da ton tai chua de tranh de len artifact khac, roi se viet bang `apply_patch` va parse lai JSON.
+exec
+/bin/zsh -lc 'test -e reports/phase2/hostinger-reach-phase2.review.r1.core.b06.json && echo EXISTS || echo MISSING' in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+MISSING
+
+exec
+/bin/zsh -lc 'git status --short -- reports/phase2/hostinger-reach-phase2.review.r1.core.b06.json' in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+apply patch
+patch: completed
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase2/hostinger-reach-phase2.review.r1.core.b06.json
+diff --git a/reports/phase2/hostinger-reach-phase2.review.r1.core.b06.json b/reports/phase2/hostinger-reach-phase2.review.r1.core.b06.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..ef39689ca88f544399c3545d8e73c7e2d5a88a53
+--- /dev/null
++++ b/reports/phase2/hostinger-reach-phase2.review.r1.core.b06.json
+@@ -0,0 +1,77 @@
++{
++  "plugin_slug": "hostinger-reach",
++  "review_round": 1,
++  "review_mode": "core",
++  "review_status": "needs_revision",
++  "summary": {
++    "worker_findings_reviewed": 1,
++    "material_issues_found": true,
++    "new_candidate_count": 0,
++    "notes": "The FP verdict for HR-FP-003 is supportable, but the packet still needs field corrections: the `WebhookHandler::init()` anchor is not packet-locally tied to `SatisfactionSurvey`, and the cited `REQUEST_URI` line is boolean guard logic rather than an XSS sink."
++  },
++  "finding_reviews": [
++    {
++      "finding_id": "HR-FP-003",
++      "packet_id": "HR-FP-003",
++      "parent_finding_id": "HR-FP-003",
++      "assessment": "field_fix",
++      "reason": "Reachability: the packet does not show a packet-local path from `src/Api/Webhooks/Handlers/WebhookHandler.php:19` to `SatisfactionSurvey::is_hostinger_page()`; `WebhookHandler::init()` only registers `$this->init_hooks` on `init`, while the scoped survey file contains its own protected helpers and no packet-local link back to `WebhookHandler`. Authorization: no capability, nonce, permission_callback, or other request-boundary guard is evidenced packet-locally because the cited lines are not a request handler, so the worker's `auth_required: null` / `unknown` framing is unsupported and should be replaced with a narrower 'not applicable in packet-local code' statement. Dataflow: `is_hostinger_page()` is declared `: bool` at `src/Admin/Surveys/SatisfactionSurvey.php:50` and returns `str_contains( $_SERVER['REQUEST_URI'], 'hostinger' )` at line 51; `should_load_survey()` is also `: bool` at line 13 and uses that result only inside the boolean conjunction at line 18, so the packet does not show attacker-controlled string data reaching HTML, JavaScript, an attribute context, or another executable sink. Impact: packet-local evidence supports only survey-load guard logic, not XSS. Missing evidence: the worker has not shown a packet-local caller path from the `init` anchor, a terminal reflection site, or any file:line sink where the inspected `REQUEST_URI` value or its derived boolean becomes executable browser output.",
++      "required_changes": [
++        "Keep the FP verdict, but relabel the packet as a false positive caused by boolean guard logic around `$_SERVER['REQUEST_URI']`, not as a reachable XSS path.",
++        "Remove or replace `src/Api/Webhooks/Handlers/WebhookHandler.php:19` as the packet entry point unless a packet-local caller trace into `SatisfactionSurvey::is_hostinger_page()` is provided.",
++        "Do not keep `src/Admin/Surveys/SatisfactionSurvey.php:51` as an XSS sink; the reviewed line feeds a boolean check and no terminal output site is shown in scope.",
++        "Correct the auth/impact framing to reflect that the scoped code is protected survey helper logic with no packet-local request handler or browser-executable sink evidenced."
++      ],
++      "counter_evidence": [
++        {
++          "type": "unreachable",
++          "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
++          "line": 19,
++          "detail": "`WebhookHandler::init()` only registers `$this->init_hooks` on the `init` action; the scoped file contains no packet-local reference to `SatisfactionSurvey` or `is_hostinger_page()`."
++        },
++        {
++          "type": "other",
++          "file": "src/Admin/Surveys/SatisfactionSurvey.php",
++          "line": 13,
++          "detail": "`should_load_survey()` is declared with a `: bool` return type, so the immediate consumer shown in scope is a boolean decision point rather than an output routine."
++        },
++        {
++          "type": "impact",
++          "file": "src/Admin/Surveys/SatisfactionSurvey.php",
++          "line": 18,
++          "detail": "The only packet-local use shown for `is_hostinger_page()` is inside `return $this->is_hostinger_page() && ...`, which keeps the flow in boolean guard logic."
++        },
++        {
++          "type": "other",
++          "file": "src/Admin/Surveys/SatisfactionSurvey.php",
++          "line": 50,
++          "detail": "`is_hostinger_page()` is itself declared `: bool`, which refutes the notion that this method returns raw request data for direct browser reflection."
++        },
++        {
++          "type": "impact",
++          "file": "src/Admin/Surveys/SatisfactionSurvey.php",
++          "line": 51,
++          "detail": "The inspected line is `str_contains( $_SERVER['REQUEST_URI'], 'hostinger' )`; packet-locally this computes substring presence only, and no HTML/JS/attribute sink is shown for the original URI string."
++        }
++      ],
++      "missing_evidence": [
++        "A packet-local caller trace from `src/Api/Webhooks/Handlers/WebhookHandler.php:19` to `src/Admin/Surveys/SatisfactionSurvey.php:50-51` is missing.",
++        "A concrete terminal sink that reflects `$_SERVER['REQUEST_URI']` or the return value from `is_hostinger_page()` into HTML, JavaScript, an attribute, or another executable browser context is missing.",
++        "File:line evidence that the cited survey helper participates in a reachable request/render path relevant to the worker's XSS claim is missing."
++      ],
++      "expansion_attempts": [],
++      "suggested_field_corrections": {
++        "verdict": "FP",
++        "vuln_type": "False positive: `SatisfactionSurvey::is_hostinger_page()` inspects `$_SERVER['REQUEST_URI']` only to compute a boolean survey-load condition",
++        "severity": "info",
++        "confidence": 0.99,
++        "auth_required": "not applicable in packet-local code; the cited lines are protected survey helpers rather than a reachable request handler",
++        "source_anchor": "src/Admin/Surveys/SatisfactionSurvey.php:51",
++        "entry_point_anchor_note": "Do not keep `src/Api/Webhooks/Handlers/WebhookHandler.php:19` as the packet entry point without a packet-local caller trace into `SatisfactionSurvey`.",
++        "sink_anchor_note": "Do not keep `src/Admin/Surveys/SatisfactionSurvey.php:51` as an XSS sink; line 51 feeds boolean guard logic and no terminal output site is shown.",
++        "fp_reason": "`is_hostinger_page()` at `src/Admin/Surveys/SatisfactionSurvey.php:50-51` returns only the boolean result of `str_contains(...)`, and `should_load_survey()` at `src/Admin/Surveys/SatisfactionSurvey.php:13-18` uses that value only in a boolean conjunction. The scoped packet does not show a caller path from `src/Api/Webhooks/Handlers/WebhookHandler.php:19` or any browser-executable sink for the inspected URI value.",
++        "claimed_impact": "No packet-local XSS impact established; the reviewed code only decides whether the satisfaction survey should load."
++      }
++    }
++  ]
++}
+
+diff --git a/reports/phase2/hostinger-reach-phase2.review.r1.core.b06.json b/reports/phase2/hostinger-reach-phase2.review.r1.core.b06.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..ef39689ca88f544399c3545d8e73c7e2d5a88a53
+--- /dev/null
++++ b/reports/phase2/hostinger-reach-phase2.review.r1.core.b06.json
+@@ -0,0 +1,77 @@
++{
++  "plugin_slug": "hostinger-reach",
++  "review_round": 1,
++  "review_mode": "core",
++  "review_status": "needs_revision",
++  "summary": {
++    "worker_findings_reviewed": 1,
++    "material_issues_found": true,
++    "new_candidate_count": 0,
++    "notes": "The FP verdict for HR-FP-003 is supportable, but the packet still needs field corrections: the `WebhookHandler::init()` anchor is not packet-locally tied to `SatisfactionSurvey`, and the cited `REQUEST_URI` line is boolean guard logic rather than an XSS sink."
++  },
++  "finding_reviews": [
++    {
++      "finding_id": "HR-FP-003",
++      "packet_id": "HR-FP-003",
++      "parent_finding_id": "HR-FP-003",
++      "assessment": "field_fix",
++      "reason": "Reachability: the packet does not show a packet-local path from `src/Api/Webhooks/Handlers/WebhookHandler.php:19` to `SatisfactionSurvey::is_hostinger_page()`; `WebhookHandler::init()` only registers `$this->init_hooks` on `init`, while the scoped survey file contains its own protected helpers and no packet-local link back to `WebhookHandler`. Authorization: no capability, nonce, permission_callback, or other request-boundary guard is evidenced packet-locally because the cited lines are not a request handler, so the worker's `auth_required: null` / `unknown` framing is unsupported and should be replaced with a narrower 'not applicable in packet-local code' statement. Dataflow: `is_hostinger_page()` is declared `: bool` at `src/Admin/Surveys/SatisfactionSurvey.php:50` and returns `str_contains( $_SERVER['REQUEST_URI'], 'hostinger' )` at line 51; `should_load_survey()` is also `: bool` at line 13 and uses that result only inside the boolean conjunction at line 18, so the packet does not show attacker-controlled string data reaching HTML, JavaScript, an attribute context, or another executable sink. Impact: packet-local evidence supports only survey-load guard logic, not XSS. Missing evidence: the worker has not shown a packet-local caller path from the `init` anchor, a terminal reflection site, or any file:line sink where the inspected `REQUEST_URI` value or its derived boolean becomes executable browser output.",
++      "required_changes": [
++        "Keep the FP verdict, but relabel the packet as a false positive caused by boolean guard logic around `$_SERVER['REQUEST_URI']`, not as a reachable XSS path.",
++        "Remove or replace `src/Api/Webhooks/Handlers/WebhookHandler.php:19` as the packet entry point unless a packet-local caller trace into `SatisfactionSurvey::is_hostinger_page()` is provided.",
++        "Do not keep `src/Admin/Surveys/SatisfactionSurvey.php:51` as an XSS sink; the reviewed line feeds a boolean check and no terminal output site is shown in scope.",
++        "Correct the auth/impact framing to reflect that the scoped code is protected survey helper logic with no packet-local request handler or browser-executable sink evidenced."
++      ],
++      "counter_evidence": [
++        {
++          "type": "unreachable",
++          "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
++          "line": 19,
++          "detail": "`WebhookHandler::init()` only registers `$this->init_hooks` on the `init` action; the scoped file contains no packet-local reference to `SatisfactionSurvey` or `is_hostinger_page()`."
++        },
++        {
++          "type": "other",
++          "file": "src/Admin/Surveys/SatisfactionSurvey.php",
++          "line": 13,
++          "detail": "`should_load_survey()` is declared with a `: bool` return type, so the immediate consumer shown in scope is a boolean decision point rather than an output routine."
++        },
++        {
++          "type": "impact",
++          "file": "src/Admin/Surveys/SatisfactionSurvey.php",
++          "line": 18,
++          "detail": "The only packet-local use shown for `is_hostinger_page()` is inside `return $this->is_hostinger_page() && ...`, which keeps the flow in boolean guard logic."
++        },
++        {
++          "type": "other",
++          "file": "src/Admin/Surveys/SatisfactionSurvey.php",
++          "line": 50,
++          "detail": "`is_hostinger_page()` is itself declared `: bool`, which refutes the notion that this method returns raw request data for direct browser reflection."
++        },
++        {
++          "type": "impact",
++          "file": "src/Admin/Surveys/SatisfactionSurvey.php",
++          "line": 51,
++          "detail": "The inspected line is `str_contains( $_SERVER['REQUEST_URI'], 'hostinger' )`; packet-locally this computes substring presence only, and no HTML/JS/attribute sink is shown for the original URI string."
++        }
++      ],
++      "missing_evidence": [
++        "A packet-local caller trace from `src/Api/Webhooks/Handlers/WebhookHandler.php:19` to `src/Admin/Surveys/SatisfactionSurvey.php:50-51` is missing.",
++        "A concrete terminal sink that reflects `$_SERVER['REQUEST_URI']` or the return value from `is_hostinger_page()` into HTML, JavaScript, an attribute, or another executable browser context is missing.",
++        "File:line evidence that the cited survey helper participates in a reachable request/render path relevant to the worker's XSS claim is missing."
++      ],
++      "expansion_attempts": [],
++      "suggested_field_corrections": {
++        "verdict": "FP",
++        "vuln_type": "False positive: `SatisfactionSurvey::is_hostinger_page()` inspects `$_SERVER['REQUEST_URI']` only to compute a boolean survey-load condition",
++        "severity": "info",
++        "confidence": 0.99,
++        "auth_required": "not applicable in packet-local code; the cited lines are protected survey helpers rather than a reachable request handler",
++        "source_anchor": "src/Admin/Surveys/SatisfactionSurvey.php:51",
++        "entry_point_anchor_note": "Do not keep `src/Api/Webhooks/Handlers/WebhookHandler.php:19` as the packet entry point without a packet-local caller trace into `SatisfactionSurvey`.",
++        "sink_anchor_note": "Do not keep `src/Admin/Surveys/SatisfactionSurvey.php:51` as an XSS sink; line 51 feeds boolean guard logic and no terminal output site is shown.",
++        "fp_reason": "`is_hostinger_page()` at `src/Admin/Surveys/SatisfactionSurvey.php:50-51` returns only the boolean result of `str_contains(...)`, and `should_load_survey()` at `src/Admin/Surveys/SatisfactionSurvey.php:13-18` uses that value only in a boolean conjunction. The scoped packet does not show a caller path from `src/Api/Webhooks/Handlers/WebhookHandler.php:19` or any browser-executable sink for the inspected URI value.",
++        "claimed_impact": "No packet-local XSS impact established; the reviewed code only decides whether the satisfaction survey should load."
++      }
++    }
++  ]
++}
+
+codex
+JSON da duoc ghi. Toi dang parse lai artifact va check nhanh schema-critical fields (`summary` object, `finding_reviews`, khong co `missed_findings`) truoc khi ket thuc.
+exec
+/bin/zsh -lc 'jq empty reports/phase2/hostinger-reach-phase2.review.r1.core.b06.json' in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+exec
+/bin/zsh -lc "jq '{plugin_slug,review_round,review_mode,review_status,summary_keys:(.summary|keys),finding_reviews_count:(.finding_reviews|length),has_missed_findings:has(\"missed_findings\")}' reports/phase2/hostinger-reach-phase2.review.r1.core.b06.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "core",
+  "review_status": "needs_revision",
+  "summary_keys": [
+    "material_issues_found",
+    "new_candidate_count",
+    "notes",
+    "worker_findings_reviewed"
+  ],
+  "finding_reviews_count": 1,
+  "has_missed_findings": false
+}
+
+diff --git a/reports/phase2/hostinger-reach-phase2.review.r1.core.b06.json b/reports/phase2/hostinger-reach-phase2.review.r1.core.b06.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..ef39689ca88f544399c3545d8e73c7e2d5a88a53
+--- /dev/null
++++ b/reports/phase2/hostinger-reach-phase2.review.r1.core.b06.json
+@@ -0,0 +1,77 @@
++{
++  "plugin_slug": "hostinger-reach",
++  "review_round": 1,
++  "review_mode": "core",
++  "review_status": "needs_revision",
++  "summary": {
++    "worker_findings_reviewed": 1,
++    "material_issues_found": true,
++    "new_candidate_count": 0,
++    "notes": "The FP verdict for HR-FP-003 is supportable, but the packet still needs field corrections: the `WebhookHandler::init()` anchor is not packet-locally tied to `SatisfactionSurvey`, and the cited `REQUEST_URI` line is boolean guard logic rather than an XSS sink."
++  },
++  "finding_reviews": [
++    {
++      "finding_id": "HR-FP-003",
++      "packet_id": "HR-FP-003",
++      "parent_finding_id": "HR-FP-003",
++      "assessment": "field_fix",
++      "reason": "Reachability: the packet does not show a packet-local path from `src/Api/Webhooks/Handlers/WebhookHandler.php:19` to `SatisfactionSurvey::is_hostinger_page()`; `WebhookHandler::init()` only registers `$this->init_hooks` on `init`, while the scoped survey file contains its own protected helpers and no packet-local link back to `WebhookHandler`. Authorization: no capability, nonce, permission_callback, or other request-boundary guard is evidenced packet-locally because the cited lines are not a request handler, so the worker's `auth_required: null` / `unknown` framing is unsupported and should be replaced with a narrower 'not applicable in packet-local code' statement. Dataflow: `is_hostinger_page()` is declared `: bool` at `src/Admin/Surveys/SatisfactionSurvey.php:50` and returns `str_contains( $_SERVER['REQUEST_URI'], 'hostinger' )` at line 51; `should_load_survey()` is also `: bool` at line 13 and uses that result only inside the boolean conjunction at line 18, so the packet does not show attacker-controlled string data reaching HTML, JavaScript, an attribute context, or another executable sink. Impact: packet-local evidence supports only survey-load guard logic, not XSS. Missing evidence: the worker has not shown a packet-local caller path from the `init` anchor, a terminal reflection site, or any file:line sink where the inspected `REQUEST_URI` value or its derived boolean becomes executable browser output.",
++      "required_changes": [
++        "Keep the FP verdict, but relabel the packet as a false positive caused by boolean guard logic around `$_SERVER['REQUEST_URI']`, not as a reachable XSS path.",
++        "Remove or replace `src/Api/Webhooks/Handlers/WebhookHandler.php:19` as the packet entry point unless a packet-local caller trace into `SatisfactionSurvey::is_hostinger_page()` is provided.",
++        "Do not keep `src/Admin/Surveys/SatisfactionSurvey.php:51` as an XSS sink; the reviewed line feeds a boolean check and no terminal output site is shown in scope.",
++        "Correct the auth/impact framing to reflect that the scoped code is protected survey helper logic with no packet-local request handler or browser-executable sink evidenced."
++      ],
++      "counter_evidence": [
++        {
++          "type": "unreachable",
++          "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
++          "line": 19,
++          "detail": "`WebhookHandler::init()` only registers `$this->init_hooks` on the `init` action; the scoped file contains no packet-local reference to `SatisfactionSurvey` or `is_hostinger_page()`."
++        },
++        {
++          "type": "other",
++          "file": "src/Admin/Surveys/SatisfactionSurvey.php",
++          "line": 13,
++          "detail": "`should_load_survey()` is declared with a `: bool` return type, so the immediate consumer shown in scope is a boolean decision point rather than an output routine."
++        },
++        {
++          "type": "impact",
++          "file": "src/Admin/Surveys/SatisfactionSurvey.php",
++          "line": 18,
++          "detail": "The only packet-local use shown for `is_hostinger_page()` is inside `return $this->is_hostinger_page() && ...`, which keeps the flow in boolean guard logic."
++        },
++        {
++          "type": "other",
++          "file": "src/Admin/Surveys/SatisfactionSurvey.php",
++          "line": 50,
++          "detail": "`is_hostinger_page()` is itself declared `: bool`, which refutes the notion that this method returns raw request data for direct browser reflection."
++        },
++        {
++          "type": "impact",
++          "file": "src/Admin/Surveys/SatisfactionSurvey.php",
++          "line": 51,
++          "detail": "The inspected line is `str_contains( $_SERVER['REQUEST_URI'], 'hostinger' )`; packet-locally this computes substring presence only, and no HTML/JS/attribute sink is shown for the original URI string."
++        }
++      ],
++      "missing_evidence": [
++        "A packet-local caller trace from `src/Api/Webhooks/Handlers/WebhookHandler.php:19` to `src/Admin/Surveys/SatisfactionSurvey.php:50-51` is missing.",
++        "A concrete terminal sink that reflects `$_SERVER['REQUEST_URI']` or the return value from `is_hostinger_page()` into HTML, JavaScript, an attribute, or another executable browser context is missing.",
++        "File:line evidence that the cited survey helper participates in a reachable request/render path relevant to the worker's XSS claim is missing."
++      ],
++      "expansion_attempts": [],
++      "suggested_field_corrections": {
++        "verdict": "FP",
++        "vuln_type": "False positive: `SatisfactionSurvey::is_hostinger_page()` inspects `$_SERVER['REQUEST_URI']` only to compute a boolean survey-load condition",
++        "severity": "info",
++        "confidence": 0.99,
++        "auth_required": "not applicable in packet-local code; the cited lines are protected survey helpers rather than a reachable request handler",
++        "source_anchor": "src/Admin/Surveys/SatisfactionSurvey.php:51",
++        "entry_point_anchor_note": "Do not keep `src/Api/Webhooks/Handlers/WebhookHandler.php:19` as the packet entry point without a packet-local caller trace into `SatisfactionSurvey`.",
++        "sink_anchor_note": "Do not keep `src/Admin/Surveys/SatisfactionSurvey.php:51` as an XSS sink; line 51 feeds boolean guard logic and no terminal output site is shown.",
++        "fp_reason": "`is_hostinger_page()` at `src/Admin/Surveys/SatisfactionSurvey.php:50-51` returns only the boolean result of `str_contains(...)`, and `should_load_survey()` at `src/Admin/Surveys/SatisfactionSurvey.php:13-18` uses that value only in a boolean conjunction. The scoped packet does not show a caller path from `src/Api/Webhooks/Handlers/WebhookHandler.php:19` or any browser-executable sink for the inspected URI value.",
++        "claimed_impact": "No packet-local XSS impact established; the reviewed code only decides whether the satisfaction survey should load."
++      }
++    }
++  ]
++}
+
+codex
+Wrote the critique JSON to [hostinger-reach-phase2.review.r1.core.b06.json](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase2/hostinger-reach-phase2.review.r1.core.b06.json).
+
+The review keeps the FP direction but marks the packet for `field_fix`: the `WebhookHandler::init()` anchor is not packet-locally tied to `SatisfactionSurvey`, and [SatisfactionSurvey.php:51](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Admin/Surveys/SatisfactionSurvey.php#L51) is only boolean guard logic, not an XSS sink. I also validated that the JSON parses and includes the required top-level fields.
+diff --git a/reports/phase2/hostinger-reach-phase2.review.r1.core.b06.json b/reports/phase2/hostinger-reach-phase2.review.r1.core.b06.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..ef39689ca88f544399c3545d8e73c7e2d5a88a53
+--- /dev/null
++++ b/reports/phase2/hostinger-reach-phase2.review.r1.core.b06.json
+@@ -0,0 +1,77 @@
++{
++  "plugin_slug": "hostinger-reach",
++  "review_round": 1,
++  "review_mode": "core",
++  "review_status": "needs_revision",
++  "summary": {
++    "worker_findings_reviewed": 1,
++    "material_issues_found": true,
++    "new_candidate_count": 0,
++    "notes": "The FP verdict for HR-FP-003 is supportable, but the packet still needs field corrections: the `WebhookHandler::init()` anchor is not packet-locally tied to `SatisfactionSurvey`, and the cited `REQUEST_URI` line is boolean guard logic rather than an XSS sink."
++  },
++  "finding_reviews": [
++    {
++      "finding_id": "HR-FP-003",
++      "packet_id": "HR-FP-003",
++      "parent_finding_id": "HR-FP-003",
++      "assessment": "field_fix",
++      "reason": "Reachability: the packet does not show a packet-local path from `src/Api/Webhooks/Handlers/WebhookHandler.php:19` to `SatisfactionSurvey::is_hostinger_page()`; `WebhookHandler::init()` only registers `$this->init_hooks` on `init`, while the scoped survey file contains its own protected helpers and no packet-local link back to `WebhookHandler`. Authorization: no capability, nonce, permission_callback, or other request-boundary guard is evidenced packet-locally because the cited lines are not a request handler, so the worker's `auth_required: null` / `unknown` framing is unsupported and should be replaced with a narrower 'not applicable in packet-local code' statement. Dataflow: `is_hostinger_page()` is declared `: bool` at `src/Admin/Surveys/SatisfactionSurvey.php:50` and returns `str_contains( $_SERVER['REQUEST_URI'], 'hostinger' )` at line 51; `should_load_survey()` is also `: bool` at line 13 and uses that result only inside the boolean conjunction at line 18, so the packet does not show attacker-controlled string data reaching HTML, JavaScript, an attribute context, or another executable sink. Impact: packet-local evidence supports only survey-load guard logic, not XSS. Missing evidence: the worker has not shown a packet-local caller path from the `init` anchor, a terminal reflection site, or any file:line sink where the inspected `REQUEST_URI` value or its derived boolean becomes executable browser output.",
++      "required_changes": [
++        "Keep the FP verdict, but relabel the packet as a false positive caused by boolean guard logic around `$_SERVER['REQUEST_URI']`, not as a reachable XSS path.",
++        "Remove or replace `src/Api/Webhooks/Handlers/WebhookHandler.php:19` as the packet entry point unless a packet-local caller trace into `SatisfactionSurvey::is_hostinger_page()` is provided.",
++        "Do not keep `src/Admin/Surveys/SatisfactionSurvey.php:51` as an XSS sink; the reviewed line feeds a boolean check and no terminal output site is shown in scope.",
++        "Correct the auth/impact framing to reflect that the scoped code is protected survey helper logic with no packet-local request handler or browser-executable sink evidenced."
++      ],
++      "counter_evidence": [
++        {
++          "type": "unreachable",
++          "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
++          "line": 19,
++          "detail": "`WebhookHandler::init()` only registers `$this->init_hooks` on the `init` action; the scoped file contains no packet-local reference to `SatisfactionSurvey` or `is_hostinger_page()`."
++        },
++        {
++          "type": "other",
++          "file": "src/Admin/Surveys/SatisfactionSurvey.php",
++          "line": 13,
++          "detail": "`should_load_survey()` is declared with a `: bool` return type, so the immediate consumer shown in scope is a boolean decision point rather than an output routine."
++        },
++        {
++          "type": "impact",
++          "file": "src/Admin/Surveys/SatisfactionSurvey.php",
++          "line": 18,
++          "detail": "The only packet-local use shown for `is_hostinger_page()` is inside `return $this->is_hostinger_page() && ...`, which keeps the flow in boolean guard logic."
++        },
++        {
++          "type": "other",
++          "file": "src/Admin/Surveys/SatisfactionSurvey.php",
++          "line": 50,
++          "detail": "`is_hostinger_page()` is itself declared `: bool`, which refutes the notion that this method returns raw request data for direct browser reflection."
++        },
++        {
++          "type": "impact",
++          "file": "src/Admin/Surveys/SatisfactionSurvey.php",
++          "line": 51,
++          "detail": "The inspected line is `str_contains( $_SERVER['REQUEST_URI'], 'hostinger' )`; packet-locally this computes substring presence only, and no HTML/JS/attribute sink is shown for the original URI string."
++        }
++      ],
++      "missing_evidence": [
++        "A packet-local caller trace from `src/Api/Webhooks/Handlers/WebhookHandler.php:19` to `src/Admin/Surveys/SatisfactionSurvey.php:50-51` is missing.",
++        "A concrete terminal sink that reflects `$_SERVER['REQUEST_URI']` or the return value from `is_hostinger_page()` into HTML, JavaScript, an attribute, or another executable browser context is missing.",
++        "File:line evidence that the cited survey helper participates in a reachable request/render path relevant to the worker's XSS claim is missing."
++      ],
++      "expansion_attempts": [],
++      "suggested_field_corrections": {
++        "verdict": "FP",
++        "vuln_type": "False positive: `SatisfactionSurvey::is_hostinger_page()` inspects `$_SERVER['REQUEST_URI']` only to compute a boolean survey-load condition",
++        "severity": "info",
++        "confidence": 0.99,
++        "auth_required": "not applicable in packet-local code; the cited lines are protected survey helpers rather than a reachable request handler",
++        "source_anchor": "src/Admin/Surveys/SatisfactionSurvey.php:51",
++        "entry_point_anchor_note": "Do not keep `src/Api/Webhooks/Handlers/WebhookHandler.php:19` as the packet entry point without a packet-local caller trace into `SatisfactionSurvey`.",
++        "sink_anchor_note": "Do not keep `src/Admin/Surveys/SatisfactionSurvey.php:51` as an XSS sink; line 51 feeds boolean guard logic and no terminal output site is shown.",
++        "fp_reason": "`is_hostinger_page()` at `src/Admin/Surveys/SatisfactionSurvey.php:50-51` returns only the boolean result of `str_contains(...)`, and `should_load_survey()` at `src/Admin/Surveys/SatisfactionSurvey.php:13-18` uses that value only in a boolean conjunction. The scoped packet does not show a caller path from `src/Api/Webhooks/Handlers/WebhookHandler.php:19` or any browser-executable sink for the inspected URI value.",
++        "claimed_impact": "No packet-local XSS impact established; the reviewed code only decides whether the satisfaction survey should load."
++      }
++    }
++  ]
++}
+
+tokens used
+53,674

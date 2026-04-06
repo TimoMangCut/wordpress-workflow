@@ -1,0 +1,2319 @@
+
+=== attempt 1 ===
+2026-04-06T15:00:57.241608Z  WARN codex_core::plugins::manager: failed to warm featured plugin ids cache error=remote plugin sync request to https://chatgpt.com/backend-api/plugins/featured failed with status 403 Forbidden: <html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style global>body{font-family:Arial,Helvetica,sans-serif}.container{align-items:center;display:flex;flex-direction:column;gap:2rem;height:100%;justify-content:center;width:100%}@keyframes enlarge-appear{0%{opacity:0;transform:scale(75%) rotate(-90deg)}to{opacity:1;transform:scale(100%) rotate(0deg)}}.logo{color:#8e8ea0}.scale-appear{animation:enlarge-appear .4s ease-out}@media (min-width:768px){.scale-appear{height:48px;width:48px}}.data:empty{display:none}.data{border-radius:5px;color:#8e8ea0;text-align:center}@media (prefers-color-scheme:dark){body{background-color:#343541}.logo{color:#acacbe}}</style>
+  <meta http-equiv="refresh" content="360"></head>
+  <body>
+    <div class="container">
+      <div class="logo">
+        <svg
+          width="41"
+          height="41"
+          viewBox="0 0 41 41"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          strokeWidth="2"
+          class="scale-appear"
+        >
+          <path
+            d="M37.5324 16.8707C37.9808 15.5241 38.1363 14.0974 37.9886 12.6859C37.8409 11.2744 37.3934 9.91076 36.676 8.68622C35.6126 6.83404 33.9882 5.3676 32.0373 4.4985C30.0864 3.62941 27.9098 3.40259 25.8215 3.85078C24.8796 2.7893 23.7219 1.94125 22.4257 1.36341C21.1295 0.785575 19.7249 0.491269 18.3058 0.500197C16.1708 0.495044 14.0893 1.16803 12.3614 2.42214C10.6335 3.67624 9.34853 5.44666 8.6917 7.47815C7.30085 7.76286 5.98686 8.3414 4.8377 9.17505C3.68854 10.0087 2.73073 11.0782 2.02839 12.312C0.956464 14.1591 0.498905 16.2988 0.721698 18.4228C0.944492 20.5467 1.83612 22.5449 3.268 24.1293C2.81966 25.4759 2.66413 26.9026 2.81182 28.3141C2.95951 29.7256 3.40701 31.0892 4.12437 32.3138C5.18791 34.1659 6.8123 35.6322 8.76321 36.5013C10.7141 37.3704 12.8907 37.5973 14.9789 37.1492C15.9208 38.2107 17.0786 39.0587 18.3747 39.6366C19.6709 40.2144 21.0755 40.5087 22.4946 40.4998C24.6307 40.5054 26.7133 39.8321 28.4418 38.5772C30.1704 37.3223 31.4556 35.5506 32.1119 33.5179C33.5027 33.2332 34.8167 32.6547 35.9659 31.821C37.115 30.9874 38.0728 29.9178 38.7752 28.684C39.8458 26.8371 40.3023 24.6979 40.0789 22.5748C39.8556 20.4517 38.9639 18.4544 37.5324 16.8707ZM22.4978 37.8849C20.7443 37.8874 19.0459 37.2733 17.6994 36.1501C17.7601 36.117 17.8666 36.0586 17.936 36.0161L25.9004 31.4156C26.1003 31.3019 26.2663 31.137 26.3813 30.9378C26.4964 30.7386 26.5563 30.5124 26.5549 30.2825V19.0542L29.9213 20.998C29.9389 21.0068 29.9541 21.0198 29.9656 21.0359C29.977 21.052 29.9842 21.0707 29.9867 21.0902V30.3889C29.9842 32.375 29.1946 34.2791 27.7909 35.6841C26.3872 37.0892 24.4838 37.8806 22.4978 37.8849ZM6.39227 31.0064C5.51397 29.4888 5.19742 27.7107 5.49804 25.9832C5.55718 26.0187 5.66048 26.0818 5.73461 26.1244L13.699 30.7248C13.8975 30.8408 14.1233 30.902 14.3532 30.902C14.583 30.902 14.8088 30.8408 15.0073 30.7248L24.731 25.1103V28.9979C24.7321 29.0177 24.7283 29.0376 24.7199 29.0556C24.7115 29.0736 24.6988 29.0893 24.6829 29.1012L16.6317 33.7497C14.9096 34.7416 12.8643 35.0097 10.9447 34.4954C9.02506 33.9811 7.38785 32.7263 6.39227 31.0064ZM4.29707 13.6194C5.17156 12.0998 6.55279 10.9364 8.19885 10.3327C8.19885 10.4013 8.19491 10.5228 8.19491 10.6071V19.808C8.19351 20.0378 8.25334 20.2638 8.36823 20.4629C8.48312 20.6619 8.64893 20.8267 8.84863 20.9404L18.5723 26.5542L15.206 28.4979C15.1894 28.5089 15.1703 28.5155 15.1505 28.5173C15.1307 28.5191 15.1107 28.516 15.0924 28.5082L7.04046 23.8557C5.32135 22.8601 4.06716 21.2235 3.55289 19.3046C3.03862 17.3858 3.30624 15.3413 4.29707 13.6194ZM31.955 20.0556L22.2312 14.4411L25.5976 12.4981C25.6142 12.4872 25.6333 12.4805 25.6531 12.4787C25.6729 12.4769 25.6928 12.4801 25.7111 12.4879L33.7631 17.1364C34.9967 17.849 36.0017 18.8982 36.6606 20.1613C37.3194 21.4244 37.6047 22.849 37.4832 24.2684C37.3617 25.6878 36.8382 27.0432 35.9743 28.1759C35.1103 29.3086 33.9415 30.1717 32.6047 30.6641C32.6047 30.5947 32.6047 30.4733 32.6047 30.3889V21.188C32.6066 20.9586 32.5474 20.7328 32.4332 20.5338C32.319 20.3348 32.154 20.1698 31.955 20.0556ZM35.3055 15.0128C35.2464 14.9765 35.1431 14.9142 35.069 14.8717L27.1045 10.2712C26.906 10.1554 26.6803 10.0943 26.4504 10.0943C26.2206 10.0943 25.9948 10.1554 25.7963 10.2712L16.0726 15.8858V11.9982C16.0715 11.9783 16.0753 11.9585 16.0837 11.9405C16.0921 11.9225 16.1048 11.9068 16.1207 11.8949L24.1719 7.25025C25.4053 6.53903 26.8158 6.19376 28.2383 6.25482C29.6608 6.31589 31.0364 6.78077 32.2044 7.59508C33.3723 8.40939 34.2842 9.53945 34.8334 10.8531C35.3826 12.1667 35.5464 13.6095 35.3055 15.0128ZM14.2424 21.9419L10.8752 19.9981C10.8576 19.9893 10.8423 19.9763 10.8309 19.9602C10.8195 19.9441 10.8122 19.9254 10.8098 19.9058V10.6071C10.8107 9.18295 11.2173 7.78848 11.9819 6.58696C12.7466 5.38544 13.8377 4.42659 15.1275 3.82264C16.4173 3.21869 17.8524 2.99464 19.2649 3.1767C20.6775 3.35876 22.0089 3.93941 23.1034 4.85067C23.0427 4.88379 22.937 4.94215 22.8668 4.98473L14.9024 9.58517C14.7025 9.69878 14.5366 9.86356 14.4215 10.0626C14.3065 10.2616 14.2466 10.4877 14.2479 10.7175L14.2424 21.9419ZM16.071 17.9991L20.4018 15.4978L24.7325 17.9975V22.9985L20.4018 25.4983L16.071 22.9985V17.9991Z"
+            fill="currentColor"
+          />
+        </svg>
+      </div>
+      <div class="data"><div class="main-wrapper" role="main"><div class="main-content"><noscript><div class="h2"><span id="challenge-error-text">Enable JavaScript and cookies to continue</span></div></noscript></div></div><script>(function(){window._cf_chl_opt = {cvId: '3',cZone: 'chatgpt.com',cType: 'managed',cRay: '9e81aa421a7ea452',cH: 'QVkfIaJS9xm9mbT1j9VtdstQT3GoRfrDFARs4QO3KgE-1775487657-1.2.1.1-EZ.FuKR4i8ztSHL.v7.jSNCdjsyZcyzDdgNh1gl0rDXdov3ybf8TrIz3z1GKzVDo',cUPMDTk:"/backend-api/plugins/featured?platform=codex&__cf_chl_tk=3Or6wtDa6ykbwt9PEnEsMJMXy0n8RGrcqy8raTRn1F0-1775487657-1.0.1.1-JtYL8NapJ0l9wFC5R_D7fYWM3iiIgDVIOeV7_kqMdDo",cFPWv: 'b',cITimeS: '1775487657',cTplC:1,cTplO:0,cTplV:5,cTplB: '0',fa:"/backend-api/plugins/featured?platform=codex&__cf_chl_f_tk=3Or6wtDa6ykbwt9PEnEsMJMXy0n8RGrcqy8raTRn1F0-1775487657-1.0.1.1-JtYL8NapJ0l9wFC5R_D7fYWM3iiIgDVIOeV7_kqMdDo",md: 'BW6YgYfw34trR14o00KKMsu47MuYqwKGkJu2Qv4onc0-1775487657-1.2.1.1-QaFpjc54trI6GEeKzq0IOVrnc27E4TqJt.iLq07zTT5T5Z9qvS_g.FcUVc56QsBqhOLemmtIoVslyJw77kBEO_Xpduc1edl7dx90udw_hbLNREXe3pZCrp5UvYDUtDQWNl8x8kAOOqz726E2c8pSGAQSYTZccMzKeUmolFISkj8r9HAHCzZYfa6cNzmFrb2mMUPj_L8fmf7gP035k2_Znfcb0NLBFjoBOa2AJa6m97O.KFRT_EjmWV5a3T3.9C0zpjIjDUnh2i2Vyl9RLKjBR_pNkkCiQH9L5RNUwjsV3K3AwBtSMu_eHkc5aaEHK9RCMWLKla7RgKRc2VcM8VuCYJZ_27DjcRLwxHMxjTB2xdlO9PIvbwZ5iQE4FzfbwcnAPhEzBlwXMDEl5LXV7hFtZPLAbbhNZw0n5aMkJhysg8j0kbDiE1XGwlMCY6njX6NMXg4i26LYZ6P5Zl9eoJ4TjBky9Z37qtShPWvg2edOl1QywL_310PS2Q3c0PuW2GaqRpoeVXcsUF.NoDWGQAyMDQbK.tKIofC2l2f.LWWmIMTpIx2Yziclzn0DK_Kb8oltUgVFAQXSVpbpHbB4tTeFjzjcq741JaTDspcHscWbHJK7EJQS._JI3kA_4NgICKE7MiDSSxkC8dvijG6eX99HxwXhyS5rMzvS9HXZrUdezoprKlH_8WwkPzJfTdon6WL1B1ZJx_O88Ww.XujE0w0ad6Im9OywXm6LAgAvdmEAMZdGTCAPiLj.lj8.eqXTxv47bHjY_tMBCbM59N9dmZUMk_3Wj1_D11QHSO.5XuCC8676uaX0nEQF0QrEy3yDDXN7vCUBl9Z_N_qSl.mnHkLnqojQJbagnNWApfkw7jysLk_v4jFHg84ndpcwTyXGJOu1I3Dksowx.cM5thLUowTtOEx.8vh6980GUBzxZYfmHvmLUek.QMGxZJsnzVIUcbebhmTMNAiN4rNuQeaVruSU89LGevdauqY3ekXAPWW6ha.Em_yJx0qpufcZjQs0KtIERXWrWHUVeyQqqGAJ1BmSWfRSk.kCZrrkY1W_rT3KxVE',mdrd: 'VxIybzurNRRJ4MFivJGguR9pGUazimX7Zo7kVabs0ec-1775487657-1.2.1.1-mEOiA8o49iD8O3D_3yu.8BUaQWQltKsauvdNj3hu_YwySDI3UvKbhnmMsydjwzsADuUse8oNX5d9XoK31uiY8ToXCROyOwQO64T_YWbs8Jtt7I3nKLaprePZ4r8a1NrlQZBg4pB7Nz8Q32EHExlgmkiwXksZXTZuHl5_vgQ5cmft2Ts9M9LWhnZJUrHN9M_rVbrn3iQQ8vuCns65NVYEUVosymyhSjInG2iRlWwEghjiL9lDN6OxM6u4fr3R878BPnvPB7UBJlCzX8JLsuFiqCgaOidMM54anmrkfi9m_mGtD2FVNvxmYAp9iLTiFqG3O_FAHdXEJGGysSD_AUGUOqWy1kYDMkllevdA5u_aAwkEe9fDiWQ_JmGp1pSVEy2aCBmaE_fm_GsdKtsV4cl30XGrUa2SuM19S7kCU4tneGskejg54VBA3T2lJt7WUfQMk1_MhuVceBqy69gB_tPbTP7yfLn8jpKlGZ0YTcxpDY82m5uDniljjniHGWubRbMZtzE1G93ttBmCH9zljNYxlbX9KJY6Orpd47SdtdLj3PClkbbgpUr_3KJBo5AC66eiIKJicxIwaPM0BvVbVy89_WI7KtiZD8_TrDGhTMUb6i0vhoVCpfV03oMoKUekdloExILvDBIQACZI6K.vYl2_p2yhoiC9D4fmZ9P8zGcUtM7soeaR5DNaDssft_2fBsCvm8EcCUWckDFVdjPIYeaSDQaC9bLKGLeVllyhQcCIhVjbyBBFZuqZnI6NKqZes1crD2dmGU5tlnL69SV7SgfIzUIzFamyopkO.RUsABFpsaMLw9c9Ov_EGCVJxfBsBqrQ07AYxG99PBqUl2UNknPZwXPpBS3jE0TUoDVBQdO.6zf0nnfLMy7uGrwBQ015RX0NltcpV8rmebPedaUNXn6Nkq71GrCQxglDE3zF1A2Kl7GsfIpNdbnHho0K_qyMkd68cOixAYzT1gUlcusspARIkGxALR9SFRbos9nwNxiPpOuYBQ6ZSLQxGSfloSb04uknuNTH6SrlyyjdUsIS.OpqUi4oYRGiJSDu3r7QOSIcqX1_SD9blJ__4tC0TWfUyvZCx54xP60FEKJrISfAEJugzXA.K3XuLUSXJ171y51Oufkg_yVkC.osbia1Tx9Ol7PA7Z7JJd5MJxyw0Ah6nDKLl86l5XlBwrIp1qtSC2rs5g1.OmGZIkVbcYDfcKhxeX7gaoJcYR93HX9WhYEnB7KlN55ZIGZwFjYOpH3hERiJf7r1m3JPAlxgSWwXGCKzHeyw35gnTp1vrJCHVJovHmShwOS0gqq_qRvpasj.SoaoN7qbOB8k_RAdhfVvw2oZt4rZwe9QP8RfNGbXwtgOPUAuwJMUEGJ7h71BTUwK83tnBVAZCKIINwBj1jtSsy6yyZ_ijE8Gj_8ZK.rVVZl1Y2.thzZhdvd.fn21pQqPXKkHu2R4HzMT3kuIjQrp0XHRwvsB4i_ttBE3QCDNZuKvj3XHN0IW5xu1C01_wXUgpFNG2F6g7y7MMZO5QlqNt_VDvgTkWsSXSkJZKEVTdBX_x9YLBDj3E2oVgTqS6ZFNHpcyurb7v36JJfIjou_BrmvFp9tsYH0J1lI1kgHBzltcEOP5TAQzfeTQT53UvuUWge.BHPGsN6AzKkLLZr8Meecr6iOvkl6HS6VqZthoW69AX0mSW4nOJ6Vs9HV.n58VM3pnZG9Gx67up45TbuVzc_ZbBKxiZrGVY9Nx5ufe8xxkn2GjcICv4dZ2dE4RFRF6cEMXrQyYvoH.RQevS85ZZOROeYQcMj5h50PFhlCr2Hn0XN4QUH3cm2wuf8RZ77fzwwMKd1bN6Myax2UA1Px3vE0cOaAYj3a4IfqBYQWp..93A5ZUs9yLpsm.AuYJhnIOQHK1YnowmP4TtWaDJfT18Bzrvl1OvZeqsVWEYl.NhNxkRk2m5sBTsHRk64HvvX08JT4Oz0mQy3TrODnMkXB7RXLZk7hxlF3IwFbfsNiRgrq6w.1liwzZJNYtcZjsTTWm_cDx.v6LSrVtV4T2IHoJzf4HBkK9qDy9R7vbrH9Nl5BK1Gsm7oZQRumLABR.MJ41khM_cNSdauvg35HEQyzUKxyjZVjw0aNoxhRja0yx9Ae4F5cFR7ENiCCwXuO2UWnsLQSy0xRZugKXnBZ1s2.aON.lOkuywxmh_x1p5S8w1ijdHNPuVqYGgYIGDa8e.VvCdIw0cenzbAgvoweG.irOJKiCb5z6DJtccgtWKYXP3gUqQSEgIA',};var a = document.createElement('script');a.src = '/cdn-cgi/challenge-platform/h/b/orchestrate/chl_page/v1?ray=9e81aa421a7ea452';window._cf_chl_opt.cOgUHash = location.hash === '' && location.href.indexOf('#') !== -1 ? '#' : location.hash;window._cf_chl_opt.cOgUQuery = location.search === '' && location.href.slice(0, location.href.length - window._cf_chl_opt.cOgUHash.length).indexOf('?') !== -1 ? '?' : location.search;if (window.history && window.history.replaceState) {var ogU = location.pathname + window._cf_chl_opt.cOgUQuery + window._cf_chl_opt.cOgUHash;history.replaceState(null, null,"/backend-api/plugins/featured?platform=codex&__cf_chl_rt_tk=3Or6wtDa6ykbwt9PEnEsMJMXy0n8RGrcqy8raTRn1F0-1775487657-1.0.1.1-JtYL8NapJ0l9wFC5R_D7fYWM3iiIgDVIOeV7_kqMdDo"+ window._cf_chl_opt.cOgUHash);a.onload = function() {history.replaceState(null, null, ogU);}}document.getElementsByTagName('head')[0].appendChild(a);}());</script></div>
+    </div>
+  </body>
+</html>
+
+Reading additional input from stdin...
+OpenAI Codex v0.118.0 (research preview)
+--------
+workdir: /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+model: gpt-5.4
+provider: codex-lb
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR, /Users/timomangcut/.codex/memories]
+reasoning effort: xhigh
+reasoning summaries: none
+session id: 019d634f-a73d-7663-a1ba-45f33adfd4cc
+--------
+user
+# System Prompt - Phase 2 Reviewer Core (Project Local)
+
+Ban la reviewer core cho Phase 2 WordPress plugin audit.
+Hay ap dung truc tiep quy tac AppSec duoc neu trong prompt va project docs.
+Khong duoc phu thuoc vao skill auto-load hay provider-specific helpers.
+
+Vai tro cua ban:
+- KHONG duoc lam lai worker output tu dau.
+- Nhiem vu chinh: phan bien tung finding packet worker da dua ra bang counter-evidence, field corrections, va missing-evidence notes.
+- Round nay CHI duoc lam packet-local critique. Khong duoc bien thanh explorer hay broad re-audit ca plugin.
+- Uu tien refute-first. Neu worker khang dinh qua muc, ban phai ha muc do tin cay.
+
+Quy tac bat buoc:
+- Khong invent nonce/capability/route/option key.
+- Moi counter-evidence phai co file:line cu the.
+- Khong xoa finding mot cach cam tinh. Neu muon retract/downgrade, phai neu ly do testable.
+- `missed_findings[]` phai de trong, tru khi input round nay noi ro rang la duoc phep de xuat finding bi bo sot.
+- Neu input packet da duoc atomize, moi critique phai giu `packet_id` rieng va `finding_id` cua finding goc.
+- Neu `packet_kind = atomic_surface`, hay coi `worker_context` da duoc localized cho surface do; khong duoc mo lai sibling surfaces chi vi parent finding ban dau la aggregate.
+- Hay uu tien `review_focus.scope_statement`, `review_focus.stop_conditions`, va `review_focus.disallowed_drift` de giu reviewer dung vai packet-local critic.
+- `worker_context.reasoning_excerpt` la packet-local brief da duoc normalize; `worker_context.original_*` chi dung de tham chieu y worker ban dau, khong phai de mo rong audit.
+- Dung `worker_context`, `primary_snippets`, va `optional_snippets` lam ho so phan bien chinh; khong duoc mo rong workspace mot cach mac dinh.
+- Neu can mo them file, uu tien file trong `scope_policy.allowed_optional_files`; file ngoai scope chi duoc phep o muc rat it va phai ghi vao `expansion_attempts`.
+- Neu `review_focus.sink_semantics` la `hook_dispatch`, `json_response`, hoac `boolean_guard`, hay phan bien theo stop conditions cua packet thay vi trace lai ca plugin de tim terminal sink moi.
+- Neu evidence chua du, uu tien `needs_more_evidence` thay vi khang dinh sai/chac chan.
+- Khong grep rong ca plugin, khong audit lai translation/assets/vendor, va khong doi packet critique thanh omitted-path hunting.
+
+Yeu cau output:
+- Ghi JSON critique vao `reports/phase2/<slug>-phase2.review.rN.json`
+- Output cua ban la critique co cau truc, KHONG phai final Phase 2 findings
+- Muc tieu: dua worker ve mot artifact evidence-bound hon cho round tiep theo
+
+
+# Phase 2 Reviewer Core Loop - `hostinger-reach` - Round `1`
+
+Read reviewer input JSON first:
+- Reviewer input: `reports/phase2/hostinger-reach-phase2.review.r1.core.b10.input.json`
+
+Execution rules:
+1. Follow `task.role`, `task.goal`, and `task.constraints` from the input JSON.
+2. Treat each item in `finding_packets` as one claim packet. Review packet-by-packet, not plugin-wide.
+3. For each packet, explicitly answer its `review_questions.reachability`, `authorization`, `dataflow`, `impact`, and `missing_evidence` before writing the corresponding `finding_reviews[]` item.
+4. Start from the packet's `review_focus`, `worker_context`, `anchors`, `primary_snippets`, and `optional_snippets` before opening any file. Treat `worker_context.reasoning_excerpt` as the packet-local reviewer brief; only consult `worker_context.original_*` if you need to understand the worker's original claim wording.
+5. Treat `scope_policy.allowed_primary_files` as the default scope, `scope_policy.allowed_optional_files` as the only preferred expansion scope, and `scope_policy.max_out_of_band_files` as a hard cap for any out-of-band file opens.
+6. If packet-local evidence is still insufficient, return `needs_more_evidence` instead of exploring for new findings.
+7. Do not reopen `artifacts.worker_output_path` during core review unless the packet data is internally inconsistent and the path is present.
+8. Do not use `artifacts.ir_path`, `artifacts.semgrep_path`, `artifacts.psalm_path`, or `artifacts.threat_context_path` to restart whole-plugin hunting.
+9. Do not inspect translation files, asset bundles, vendor-style dependency trees, or unrelated plugin surfaces during core review.
+10. Keep review bounded and evidence-first. Prefer refutation, field fixes, precise counter-evidence, and explicit missing-evidence notes over rewriting the findings set.
+11. Obey `review_focus.stop_conditions` and `review_focus.disallowed_drift`. If `review_focus.sink_semantics` says the packet ends at hook dispatch, JSON response handling, or guard logic, do not compensate by expanding into whole-plugin tracing.
+12. `missed_findings[]` is not part of the core output contract. Do not invent or emit it in this round.
+13. Emit exactly one `finding_reviews[]` item per packet. Copy the packet's `packet_id`, keep `finding_id` aligned to the packet's `parent_finding_id`, and populate both `missing_evidence[]` and `expansion_attempts[]` even when they are empty.
+
+Output rules:
+- Write raw JSON only.
+- Output path: `reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json`
+- Match the schema referenced by `task.output_schema`.
+- `summary` must be an object, never a string.
+- Keep all plugin file paths relative to the plugin root.
+
+2026-04-06T15:00:57.961693Z  WARN codex_core::shell_snapshot: Failed to delete shell snapshot at "/Users/timomangcut/.codex/shell_snapshots/019d634f-a73d-7663-a1ba-45f33adfd4cc.tmp-1775487657793388000": Os { code: 2, kind: NotFound, message: "No such file or directory" }
+codex
+Toi se doc `docs/wp-context.md`, `docs/bug-bounty-rules-summary.md`, va input JSON round nay truoc, sau do critique tung packet dung theo scope cua reviewer input va ghi JSON vao duong dan duoc yeu cau.
+exec
+/bin/zsh -lc "sed -n '1,220p' docs/wp-context.md" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+# WordPress plugin security audit knowledge base
+
+**This is a comprehensive, technically precise reference for auditing WordPress 6.x plugins**, synthesizing real CVE data from 2023–2025, official WordPress developer documentation, and research from Wordfence, Patchstack, and WPScan. The WordPress plugin ecosystem saw **7,966 new vulnerabilities in 2024 alone** (a 34% increase over 2023), with XSS accounting for 47.7% of all findings, broken access control at 14.2%, and CSRF at 11.4%. REST API and AJAX endpoints are the most critically exploited attack surfaces. What follows is every detail a professional security auditor needs.
+
+---
+
+## 1. Exhaustive plugin attack surface catalog
+
+### AJAX handlers (wp_ajax_*, wp_ajax_nopriv_*)
+
+WordPress routes all AJAX through `wp-admin/admin-ajax.php`. Plugins register handlers via `add_action('wp_ajax_{action}', 'callback')` for authenticated users, and `add_action('wp_ajax_nopriv_{action}', 'callback')` for unauthenticated users. **WordPress provides zero built-in authorization for AJAX handlers** — no automatic nonce check, no capability check. The plugin developer must implement both `wp_verify_nonce()` and `current_user_can()`.
+
+The `nopriv` variant is especially dangerous: it makes the endpoint accessible to anyone on the internet without authentication. Many plugins register `nopriv` variants unnecessarily, exposing admin-level functionality. The WPForms vulnerability CVE-2024-11205 (CVSS 8.5) exemplifies this: the `wpforms_is_admin_ajax()` function verified the nonce but never checked user capabilities, allowing **subscriber-level users to issue Stripe refunds and cancel subscriptions**. Similarly, Essential Addons for Elementor (CVE-2023-32243, CVSS 9.8) exposed password reset functionality via an AJAX handler that never validated the reset key.
+
+**Required security controls for every AJAX handler:**
+- `check_ajax_referer('action_name', 'security')` or `wp_verify_nonce()` for CSRF protection
+- `current_user_can('required_capability')` for authorization
+- Sanitization of all `$_POST`/`$_GET` parameters
+- `wp_send_json_success()`/`wp_send_json_error()` for safe responses
+
+### REST API routes (register_rest_route)
+
+The REST API is the **single most critically exploited attack surface** in WordPress plugins during 2023–2025. The most impactful CVEs of this period — Really Simple Security (CVE-2024-10924, CVSS 9.8), WooCommerce Payments (CVE-2023-28121, CVSS 9.8), LiteSpeed Cache (CVE-2024-28000, CVSS 9.8), and AIOSEO (CVE-2021-25036, CVSS 9.9) — all exploited REST API endpoints with broken permission callbacks.
+
+Routes are registered via `register_rest_route('namespace/v1', '/path', $args)`. Since **WordPress 5.5**, omitting `permission_callback` triggers a `_doing_it_wrong` notice, but the endpoint still functions as public. The notice is informational only. Using `'permission_callback' => '__return_true'` explicitly makes endpoints public — this was found in production plugins like Download Monitor.
+
+Permission callbacks execute after authentication is resolved. For cookie-based auth, the `wp_rest` nonce must be passed via `X-WP-Nonce` header or `_wpnonce` parameter — without it, the current user is set to ID 0 (unauthenticated), even if the user has valid cookies. Application Passwords authenticate via HTTP Basic Auth before permission callbacks run.
+
+**REST API namespace discovery** at `/wp-json/` exposes all registered namespaces, and `/wp-json/namespace/v1` lists all routes with their methods and argument schemas. This provides attackers a complete map of available endpoints.
+
+### Shortcodes
+
+Shortcodes (`add_shortcode('name', 'callback')`) are parsed from post content and executed server-side. Their primary attack surface is **attribute injection**: shortcode attributes are passed as an array to the callback without any automatic sanitization. The `shortcode_atts()` function provides default merging but no security filtering. Contributors can embed shortcodes in post content, making contributor-level Stored XSS the dominant vulnerability pattern.
+
+Common vulnerability: `extract(shortcode_atts(['style' => ''], $atts))` followed by `echo '<div style="' . $style . '">'` — the `$style` attribute reaches HTML output unescaped. Every shortcode attribute must be escaped with the context-appropriate function (`esc_attr()`, `esc_html()`, `esc_url()`).
+
+### Gutenberg blocks (detailed in Section 7)
+
+The block editor introduces multiple attack surfaces: `render_callback` functions that output unescaped attributes, **block comment delimiter JSON** that bypasses wp_kses filtering, the `/wp/v2/block-renderer/` REST endpoint accessible to contributors, and `ServerSideRender` which can trigger server-side execution of block rendering with attacker-controlled attributes.
+
+### Admin pages and menus
+
+`admin_menu`, `admin_init`, `admin_post_*`, and `admin_post_nopriv_*` hooks create admin-side attack surfaces. **Critical misconception**: `is_admin()` checks whether the request targets wp-admin, not whether the user is an administrator. All authenticated AJAX requests go through `admin-ajax.php` in wp-admin, so `is_admin()` returns `true` for any logged-in user making AJAX calls. Always use `current_user_can()` instead.
+
+`admin_init` fires on every admin page load — including `admin-ajax.php` and `admin-post.php` — making it a particularly broad attack surface if permission checks are absent. `admin_post_nopriv_*` actions are accessible to unauthenticated users, identical in risk to `wp_ajax_nopriv_*`.
+
+### XML-RPC, WP-CLI, and Cron
+
+**XML-RPC** (`xmlrpc.php`) exposes methods for remote content management and pingbacks. Plugins extend it via `xmlrpc_methods` filter. The pingback feature was exploited for **blind SSRF via DNS rebinding** (CVE-2022-3590). XML-RPC authentication uses username/password per request (no session), enabling brute-force attacks. Best practice is to disable it entirely unless required.
+
+**WP-CLI commands** registered by plugins execute with the filesystem permissions of the CLI user (typically root or www-data), which may exceed WordPress capabilities. Commands should still validate input and use WordPress API functions rather than direct database/file operations.
+
+**Cron jobs** (`wp_schedule_event`) execute via `wp-cron.php`, triggered by site visits. WP-Cron requests are internal HTTP requests that may bypass authentication. If a cron callback performs privileged operations without validation, it could be exploited. LiteSpeed Cache's crawler simulation feature (CVE-2024-28000) demonstrates how cron/crawler functions can create critical attack surfaces.
+
+### Elementor and WooCommerce attack surfaces
+
+**Elementor** adds an extensive secondary attack surface: widget controls, template import/export, AJAX handlers for the editor, and custom CSS/JS fields. CVE-2023-48777 (CVSS 8.8) exploited the template import AJAX handler for arbitrary file upload → RCE, and CVE-2023-3124 (CVSS 8.8) exploited `update_page_option` AJAX handler for subscriber-level arbitrary options update.
+
+**WooCommerce** payment gateway integrations create critical surfaces: order status manipulation, price/quantity modification via checkout hooks, and payment callback endpoints. CVE-2023-28121 (CVSS 9.8) demonstrated that trusting a custom HTTP header (`X-WCPAY-PLATFORM-CHECKOUT-USER`) for authentication enabled unauthenticated admin access.
+
+### Multisite-specific attack surfaces
+
+In multisite, Site Admins have a restricted capability set compared to Super Admins. They lack `install_plugins`, `edit_plugins`, `edit_themes`, `unfiltered_html`, and all `manage_network_*` capabilities. Vulnerabilities that are "by design" for single-site admins become legitimate security issues in multisite because Site Admins should not be able to affect other sites or escalate to Super Admin. Cross-site data access and network-wide option modification are key multisite attack vectors.
+
+### Additional entry points
+
+- **Webhook/callback endpoints**: Payment gateways (Stripe, PayPal) require publicly accessible callback URLs. These must validate signatures/tokens from the payment provider, not just check for expected parameters.
+- **oEmbed providers**: Custom oEmbed endpoints registered via `wp_oembed_add_provider()` can introduce SSRF if they fetch user-controlled URLs server-side.
+- **Custom rewrite rules**: `add_rewrite_rule()` and `template_redirect` hook can create custom URL endpoints. Missing auth checks make these exploitable.
+- **wp_mail**: Email header injection via unsanitized `To`, `From`, `CC`, `BCC` headers. Carriage returns (`\r\n`) in header values inject additional headers.
+- **Filesystem API**: `WP_Filesystem` and direct PHP file functions. Path traversal via `../` sequences targets `wp-config.php`, `.htaccess`, and `wp-content/debug.log`.
+- **Transient API**: `set_transient()`/`get_transient()` stores data in `wp_options` (or object cache). Transients with user-controlled keys can be overwritten. If transient data is used unsanitized in output or queries, it becomes a stored attack vector.
+- **Object cache**: `wp_cache_set()`/`wp_cache_get()` data can be poisoned if cache keys are predictable and the caching backend (Redis, Memcached) is accessible.
+- **wp_options autoload**: Options with `autoload=yes` load on every page request. Plugins storing large serialized data with autoload enabled create performance issues; storing user-controlled serialized data creates object injection risks.
+- **Custom database tables**: Direct `$wpdb->query()` calls on custom tables bypass WordPress's built-in sanitization. Every variable in SQL must use `$wpdb->prepare()`.
+- **Import/Export**: File upload (ZIP, XML, CSV) combined with parsing creates surfaces for XXE, Zip Slip, CSV injection, and path traversal.
+- **Bulk action handlers**: `admin_action_*` hooks for bulk operations often lack per-item capability checks, enabling mass manipulation.
+
+---
+
+## 2. WordPress 6.x security mechanisms reference
+
+### Nonce system behavior and edge cases
+
+WordPress nonces are **HMAC hashes, not true one-time tokens**. They are generated from `$tick | $action | $user_id | $session_token` using `wp_hash()`. The default lifetime is **24 hours** (configurable via `nonce_life` filter), split into two 12-hour ticks. `wp_verify_nonce()` returns **1** for current tick (0–12h old), **2** for previous tick (12–24h old), or **false** for expired/invalid.
+
+**Critical limitations:**
+- **Not one-time-use**: The same nonce is generated for the same user+action during an entire tick period. This means nonces do not prevent replay attacks.
+- **Guest users (ID 0) all receive identical nonces** — providing zero CSRF protection for unauthenticated forms. The `nonce_user_logged_out` filter can mitigate this.
+- **Nonces verify intent, not authorization**. A valid nonce only proves the request originated from a page WordPress generated for that user. Any logged-in user can obtain valid nonces for any action. **Always pair `wp_verify_nonce()` with `current_user_can()`**.
+
+**Core nonce functions:**
+- `wp_create_nonce($action)` — Returns ~10-char alphanumeric hash
+- `wp_verify_nonce($nonce, $action)` — Returns 1, 2, or false; does NOT terminate execution
+- `check_admin_referer($action, $query_arg)` — Verifies nonce AND HTTP referer; calls `wp_die()` on failure
+- `check_ajax_referer($action, $query_arg, $stop)` — Checks nonce only (not referer); inspects `_wpnonce`, `_ajax_nonce` params and `X-WP-Nonce` header
+
+### REST API permission_callback enforcement (WP 5.5+)
+
+Since WordPress 5.5, `register_rest_route()` issues a `_doing_it_wrong` notice when `permission_callback` is omitted. **The endpoint still functions as public** — the notice is informational only. WordPress cannot distinguish intentional public endpoints from accidental omissions. Using `'permission_callback' => '__return_true'` explicitly documents public intent.
+
+Permission callbacks run **after** authentication is resolved. For cookie-based auth, the `wp_rest` nonce must be present, or the user is treated as unauthenticated (ID 0). Permission callbacks should use `current_user_can()`, not manual nonce verification — the REST API handles the `wp_rest` nonce automatically via `rest_cookie_check_errors()`.
+
+### $wpdb->prepare() in WordPress 6.x
+
+**Placeholders**: `%s` (string, auto-quoted), `%d` (integer), `%f` (float), **`%i` (identifier, backtick-quoted — added in WP 6.2)**. The `%i` placeholder allows safe table/column name parameterization: `$wpdb->prepare('SELECT * FROM %i WHERE %i = %s', $table, $column, $value)` produces `` SELECT * FROM `table` WHERE `column` = 'value' ``.
+
+**Validation rules**: placeholder count must match argument count; positional placeholders (`%1$s`) are supported but do not auto-quote; `%%` produces literal `%`; for LIKE: `'%' . $wpdb->esc_like($search) . '%'` inside `prepare()`; IN clauses require dynamic placeholder construction; **named placeholders are NOT supported**.
+
+### WordPress 6.x security changes
+
+- **WP 6.2** (March 2023): `%i` identifier placeholder in `$wpdb->prepare()`
+- **WP 6.4.3** (January 2024): POP chain vulnerability fix (potential RCE via WP_HTML_TOKEN deserialization)
+- **WP 6.5** (March 2024): Block Bindings API with `edit_block_binding` capability; Interactivity API
+- **WP 6.8** (April 2025): **Major password hashing overhaul** — phpass replaced by **bcrypt with SHA-384 pre-hashing** (prefix `$wp$2y$`). Application passwords and security keys use **BLAKE2b via Sodium**. Old `$P$` hashes remain valid and auto-rehash on login. Optional Argon2 support via `wp_hash_password_algorithm` filter.
+
+### wp_safe_redirect vs wp_redirect
+
+`wp_redirect($location)` sets the Location header with **no host validation** — vulnerable to open redirect with user-supplied URLs. `wp_safe_redirect($location)` validates the target host against an allowlist via `wp_validate_redirect()` (default: current site host only; extensible via `allowed_redirect_hosts` filter). If the host is not allowed, it falls back to `admin_url()`. **Neither function calls `exit`** — the developer must follow with `exit;` or `die;`.
+
+### REST API authentication methods
+
+- **Cookie + Nonce (built-in)**: Default for same-origin requests. Nonce action: `wp_rest`. Pass via `X-WP-Nonce` header or `_wpnonce` parameter. No valid nonce = user set to 0.
+- **Application Passwords (WP 5.6+, built-in)**: HTTP Basic Auth (`Authorization: Basic base64(username:app_password)`). HTTPS required by default. 24-character passwords (~142 bits entropy), stored hashed (BLAKE2b in WP 6.8). Cannot be used for wp-login.php. Individually revocable.
+- **OAuth (plugin-required)**: OAuth 1.0a or 2.0. Best for third-party integrations.
+- **JWT (plugin-required)**: Stateless token-based. Not native to WordPress.
+
+---
+
+## 3. Complete WordPress security functions reference
+
+### Sanitization functions
+
+| Function | Behavior | Use case | Does NOT protect against |
+|----------|----------|----------|-------------------------|
+| `sanitize_text_field($str)` | Strips tags, removes line breaks/tabs/extra whitespace, strips octets | Single-line text input | SQL injection |
+| `sanitize_textarea_field($str)` | Same as above but preserves line breaks | Multi-line text | SQL injection |
+| `sanitize_email($email)` | Strips disallowed chars; does NOT validate format (use `is_email()`) | Email addresses | Invalid emails |
+| `sanitize_file_name($filename)` | Removes special chars, replaces whitespace with dashes | File uploads | Path traversal (add `validate_file()`) |
+| `sanitize_html_class($class)` | Keeps only A-Za-z0-9_- | CSS class names | — |
+| `sanitize_key($key)` | Lowercases, keeps only a-z0-9_- | Option/meta keys | — |
+| `sanitize_mime_type($mime)` | Keeps only a-zA-Z0-9._+-/ | MIME type strings | Fake MIME types |
+| `sanitize_sql_orderby($orderby)` | Validates ORDER BY pattern; returns false if invalid | SQL ORDER BY | Complex injection patterns |
+| `sanitize_title($title)` | Generates URL slug; strips tags, converts accents | URL slugs | NOT for display |
+| `sanitize_url($url)` | Strips invalid chars, removes dangerous protocols | URL storage | Open redirects |
+| `sanitize_user($username, $strict)` | Strips tags; strict: a-zA-Z0-9 _.@- only | Usernames | — |
+| `absint($value)` | `abs(intval($value))` | Non-negative integers | Range validation |
+| `wp_kses($content, $allowed_html)` | HTML filter keeping only specified tags/attributes | Rich HTML input | — |
+| `wp_kses_post($data)` | wp_kses with 'post' context (extensive allowed tags) | Post content | XSS in allowed attributes |
+| `wp_filter_nohtml_kses($data)` | Strips ALL HTML | Plain text only | — |
+
+### Escaping functions
+
+| Function | Context | Behavior |
+|----------|---------|----------|
+| `esc_html($text)` | Text inside HTML elements | Converts `& < > " '` to HTML entities |
+| `esc_attr($text)` | HTML attribute values | Same entity conversion; does NOT double-encode |
+| `esc_url($url)` | `href`/`src` attributes | Validates URL, strips dangerous protocols (javascript:, data:), encodes entities |
+| `esc_url_raw($url)` | Database storage, API calls | Same as `esc_url` without entity encoding |
+| `esc_js($text)` | Inline JS string literals | Escapes `' " & < >`, adds slashes |
+| `esc_textarea($text)` | Inside `<textarea>` tags | `htmlspecialchars` with double-encoding |
+| `esc_sql($data)` | **DEPRECATED** — use `$wpdb->prepare()` | `mysqli_real_escape_string` wrapper; does NOT add quotes |
+| `esc_xml($text)` | XML content | Escapes for XML context |
+| `wp_json_encode($data)` | JavaScript data embedding | `json_encode` with `JSON_HEX_TAG\|JSON_HEX_AMP\|JSON_HEX_APOS\|JSON_HEX_QUOT` — safe for `<script>` blocks |
+| `tag_escape($tag_name)` | HTML tag names | Lowercases, strips non-alphanumeric chars except `_:` |
+
+### Database security ($wpdb methods)
+
+`$wpdb->prepare()` is the primary SQL injection defense. `$wpdb->insert()`, `$wpdb->update()`, `$wpdb->delete()`, and `$wpdb->replace()` use `prepare()` internally and are safe when used correctly. `$wpdb->query()`, `$wpdb->get_var()`, `$wpdb->get_row()`, `$wpdb->get_col()`, and `$wpdb->get_results()` require explicit `prepare()` for any variable data. `$wpdb->esc_like($text)` escapes `%` and `_` for LIKE queries — must be used inside `prepare()`.
+
+### File upload security
+
+- `wp_check_filetype($filename, $mimes)` — Extension-based only; does NOT examine file contents
+- `wp_check_filetype_and_ext($file, $filename, $mimes)` — Checks actual file content via `finfo`/`getimagesize` plus extension
+- `wp_handle_upload($file, $overrides)` — Complete upload handler: validates MIME type, moves to uploads dir, returns result array
+- `validate_file($file, $allowed_files)` — Returns 0 (valid), 1 (contains `..`), 2 (contains `:/` or starts with `/`), 3 (not in allowed list) — **critical for preventing directory traversal**
+
+### Cryptographic functions
+
+- `wp_hash_password($password)` — As of WP 6.8: **bcrypt with SHA-384 pre-hashing** (prefix `$wp$2y$`). Previously phpass (MD5-based). Password length limit: 4096 chars.
+- `wp_check_password($password, $hash, $user_id)` — Verifies password against hash; auto-rehashes old `$P$` format to bcrypt on verification
+- `wp_generate_password($length, $special_chars, $extra_special_chars)` — Uses `wp_rand()` (cryptographically secure via `random_int()`)
+- `wp_hash($data, $scheme)` — HMAC-MD5 using salts from wp-config.php
+- `wp_rand($min, $max)` — CSPRNG wrapper using `random_int()` (PHP 7+)
+- `wp_generate_uuid4()` — RFC 4122 UUID v4 using `random_bytes()`
+
+---
+
+## 4. Real CVEs and vulnerability patterns in major plugins (2023–2025)
+
+### The most dangerous vulnerabilities of this period
+
+**CVE-2024-10924 — Really Simple Security authentication bypass (CVSS 9.8)**. Affected 4 million installations. The `check_login_and_get_user()` function in the 2FA REST API returned a valid user object even on error conditions. Unauthenticated attackers could log in as any user, including admin, by sending crafted REST API requests with a `user_id` and invalid nonce. Wordfence called this "the most dangerous vulnerability they've seen in 12 years." WordPress.org forced an automatic security update.
+
+**CVE-2023-28121 — WooCommerce Payments authentication bypass (CVSS 9.8)**. The `determine_current_user_for_platform_checkout()` function hooked into WordPress's `determine_current_user` filter and returned the user ID from the `X-WCPAY-PLATFORM-CHECKOUT-USER` HTTP header **without any validation**. Adding `X-WCPAY-PLATFORM-CHECKOUT-USER: 1` to any request authenticated as user ID 1 (admin). Wordfence detected **1.3 million attacks against 157,000 sites** on July 16, 2023.
+
+**CVE-2024-28000 — LiteSpeed Cache privilege escalation (CVSS 9.8)**. The crawler simulation feature used `mt_rand()` seeded with microsecond time to generate security hashes — producing only ~1 million possible values. An unauthenticated AJAX endpoint (`async_litespeed`) had no capability or nonce checks, allowing anyone to trigger hash generation. The hash could then be brute-forced within hours to create admin accounts via the REST API.
+
+**CVE-2023-32243 — Essential Addons for Elementor privilege escalation (CVSS 9.8)**. The password reset function in the Login/Register Form widget never validated the `rp_key` (reset key). It directly changed the user's password without calling `check_password_reset_key()`. The nonce was obtainable from the frontend page source. Wordfence blocked 6,900+ exploit attempts within days; Sucuri observed mass infection campaigns.
+
+**CVE-2023-48777 — Elementor arbitrary file upload to RCE (CVSS 8.8)**. The template import AJAX handler allowed contributor-level users to upload files via base64-encoded `fileData`. A path traversal in the filename parameter (`/../../../../shell.php`) placed PHP webshells in web-accessible directories.
+
+### Recurring vulnerability patterns
+
+**Pattern 1: Missing/broken authorization on AJAX handlers** — The single most dangerous recurring pattern. Functions hooked to `wp_ajax_*` that check nonces but not capabilities. Affects WPForms, LiteSpeed Cache, Elementor Pro, and hundreds of smaller plugins.
+
+**Pattern 2: XSS via insufficient output escaping** — 47.7% of all vulnerabilities in 2024. Most commonly Stored XSS at contributor+ level via shortcode attributes, widget settings, custom field values, and block attributes. Direct concatenation of user input into HTML output without `esc_attr()`, `esc_html()`, or `wp_kses()`.
+
+**Pattern 3: Authentication bypass via REST API** — Improper `permission_callback` implementations, custom authentication hooks trusting user-supplied headers, error handling that falls through to success states, and case-sensitivity mismatches in route matching.
+
+**Pattern 4: Weak/predictable security tokens** — Using `mt_rand()` with predictable seeds, empty API key hash comparisons (CleanTalk CVE-2024-10781), and non-constant-time string comparison for tokens.
+
+**Pattern 5: PHP Object Injection** — Growing trend. UpdraftPlus (CVE-2024-10957), GiveWP (CVE-2024-9634), SEOPress (CVE-2024-5488). Using `unserialize()` or `maybe_unserialize()` on user-controlled data, combinable with POP chains in bundled libraries for RCE.
+
+### Vulnerability statistics
+
+| Metric | 2023 | 2024 | H1 2025 |
+|--------|------|------|---------|
+| Total new vulnerabilities | ~5,943 | 7,966 | ~6,700 |
+| XSS percentage | ~45% | 47.7% | — |
+
+exec
+/bin/zsh -lc "sed -n '1,220p' docs/bug-bounty-rules-summary.md" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+# Tóm tắt Bug Bounty Rules - Patchstack & Wordfence
+
+> Tài liệu này được viết lại theo bố cục gần giống file mẫu đính kèm, nhưng đã rút gọn để tập trung vào **quy tắc cốt lõi**, đặc biệt là **in-scope / out-of-scope**, điều kiện hợp lệ của report, tính duy nhất, và các lý do thường bị từ chối.
+>
+> Nguồn tham chiếu:
+> - Patchstack: https://patchstack.com/articles/bug-bounty-guidelines-rules/
+> - Wordfence: https://www.wordfence.com/threat-intel/bug-bounty-program/#scope
+
+---
+
+## Table of Contents
+- Introduction
+- Patchstack
+  - Reporting Protocol
+  - Scope
+  - Uniqueness Requirement
+  - Quality Assurance
+  - Rejection Criteria
+  - Disclosure / CVE
+- Wordfence
+  - Program Overview
+  - In-Scope Assets
+  - Out-of-Scope Assets
+  - Explicitly In-Scope Vulnerabilities
+  - Explicitly Out-of-Scope Vulnerabilities
+  - Submission Rules & Key Notes
+- Quick Comparison
+
+---
+
+# Introduction
+
+Tài liệu này tổng hợp hai chương trình bug bounty trong hệ sinh thái WordPress:
+
+1. **Patchstack Bug Bounty Program**
+2. **Wordfence Intelligence Bug Bounty Program**
+
+Mục tiêu của bản tóm tắt là giúp nhanh chóng xác định:
+- Report nào có khả năng **được chấp nhận**
+- Thành phần nào **in scope / out of scope**
+- Điều kiện nào khiến report **không đủ bounty** hoặc chỉ được **CVE / disclosure**
+- Những yêu cầu tối thiểu để report được xem là **valid**
+
+---
+
+# Patchstack
+
+## Reporting Protocol
+
+### Kênh gửi report
+- Chỉ chấp nhận report qua form chính thức: `https://patchstack.com/database/report`
+- Không chấp nhận qua email hoặc kênh khác.
+
+### Tài khoản & tư cách tham gia
+- Tài khoản researcher được tạo sau khi có ít nhất một report hợp lệ và in-scope.
+- Mỗi researcher chỉ được dùng **một account**.
+- Cá nhân và công ty đều có thể tham gia, nhưng **không hỗ trợ team submissions**.
+
+---
+
+## Scope
+
+### In scope
+Patchstack chấp nhận các thành phần trong hệ sinh thái WordPress, bao gồm:
+- **WordPress core**
+- **WordPress plugins**
+- **WordPress themes**
+
+Cả **free** và **premium** đều có thể được chấp nhận.
+- Với sản phẩm premium, cần cung cấp **bản archive gốc, không chỉnh sửa** để xác minh.
+- Nếu theme phụ thuộc plugin cụ thể, cần cung cấp cả plugin phụ thuộc đó.
+
+Một report chỉ được coi là hợp lệ nếu có **security impact rõ ràng và đo lường được**.
+
+### Out of scope / không được chấp nhận
+Các trường hợp sau thường bị loại:
+
+#### 1) Severity / CVSS quá thấp
+- Vulnerability có **CVSS v3.1 < 6.5** không được chấp nhận trực tiếp theo rules hiện tại.
+
+#### 2) Active installs quá thấp
+- Component có **< 1,000 active installs** nhìn chung là out of scope.
+- Ngoại lệ: có thể được xem xét nếu:
+  - có **CVSS >= 8.5**,
+  - yêu cầu quyền không vượt quá **Unauthenticated / Subscriber / Customer**,
+  - và component có **ít nhất 100 active installs**.
+
+#### 3) Quyền khai thác quá cao
+- Chỉ ưu tiên lỗ hổng khai thác được bởi:
+  - **Unauthenticated**
+  - **Subscriber / Customer**
+- **Contributor** chỉ được chấp nhận nếu severity đủ cao.
+- Các lỗ hổng yêu cầu **Admin / quyền cao hơn** là out of scope.
+- Với **custom roles**, chỉ chấp nhận nếu capability tương đương gần với Subscriber/Customer; nếu mạnh hơn thì không chấp nhận.
+
+#### 4) Các loại issue thường không được chấp nhận
+- **CSV Injection**
+- **IP spoofing** (trừ khi trực tiếp phá vỡ một cơ chế bảo vệ phụ thuộc vào IP)
+- **Race condition** có tác động không rõ ràng hoặc severity thấp
+- **CAPTCHA / Turing test bypass**
+- **Arbitrary user registration** nếu không dẫn đến tạo được **admin account**
+- **Authenticated shortcode preview issues** ở mức Contributor trở lên, trừ khi lộ dữ liệu nhạy cảm có tác động rõ ràng
+- **CSRF / Broken Access Control** chỉ dùng để dismiss notice mà không có security impact thực tế
+- **IP bypass** cho các thao tác không quan trọng như likes/views/counters
+
+#### 5) Thành phần không đủ điều kiện
+- Phiên bản cuối cùng phát hành đã quá **3 năm**
+- Lỗ hổng **không còn tồn tại ở phiên bản mới nhất**
+- Component **không public**
+- Component là hàng **custom / modified / private**, không được phân phối công khai qua:
+  - WordPress.org
+  - website chính thức của vendor
+  - GitHub
+  - CodeCanyon / ThemeForest
+  - hoặc nguồn public tương đương
+
+---
+
+## Uniqueness Requirement
+
+- Report phải là **mới**, **unique**, chưa từng được public hoặc báo trước đó.
+- Nếu nhiều người báo cùng một issue, **người gửi valid report đầu tiên** sẽ được tính.
+- Nếu issue đã được báo trực tiếp cho vendor trước đó, Patchstack chỉ chấp nhận nếu:
+  - vendor xác nhận issue,
+  - và vendor có ý định vá.
+- Với sản phẩm của **Automattic**, phải report qua **HackerOne của Automattic** trước.
+- Incomplete patch đã public thường **không được xem là issue mới**, trừ khi tạo ra attack vector mới.
+
+---
+
+## Quality Assurance
+
+Một report Patchstack cần có tối thiểu:
+- PoC dạng text, từng bước rõ ràng
+- Các bước từ lúc cài plugin/theme cho đến khi exploit thành công
+- Raw HTTP request cần thiết
+- Payload chính xác đã dùng
+- Video screenshot là điểm cộng
+
+### Rủi ro khi gửi report kém chất lượng
+- Report không đầy đủ, không tái hiện được, hoặc sai sẽ bị reject.
+- Gửi lặp lại false positive / AI-generated false positive có thể dẫn tới:
+  - cooldown,
+  - bị khóa dashboard tạm thời,
+  - hoặc khóa vĩnh viễn.
+
+---
+
+## Rejection Criteria
+
+Các lý do reject phổ biến:
+- Thông tin không đầy đủ hoặc không chính xác
+- Claim không phải vulnerability hợp lệ
+- Dùng role không chuẩn / role đã chỉnh sửa
+- Plugin/theme đã đóng hoặc không truy cập được
+- Component không được phân phối công khai qua nguồn đáng tin cậy
+- Developer/vendor gửi issue cho chính sản phẩm của họ: có thể dùng cho disclosure nhưng **không đủ điều kiện bounty**
+
+---
+
+## Disclosure / CVE
+
+- Patchstack là **CNA**, nên issue hợp lệ có thể được cấp **CVE**.
+- Việc cấp CVE có thể bị trì hoãn để tránh trùng với CNA khác.
+- Tất cả valid in-scope reports sẽ được đưa vào **Patchstack Vulnerability Database**.
+- Researcher không được public vulnerability cho bên thứ ba trước khi Patchstack công bố chính thức.
+
+---
+
+# Wordfence
+
+## Program Overview
+
+Wordfence tập trung vào bug bounty cho **WordPress plugins và themes**. Chương trình phân scope khá mạnh dựa trên:
+- loại vulnerability,
+- mức quyền yêu cầu,
+- active installs,
+- và **researcher tier**.
+
+Wordfence cũng có thể cấp **CVE** cho cả một số report out of scope, nhưng **không phải report nào cũng đủ điều kiện nhận bounty**.
+
+---
+
+## In-Scope Assets
+
+### Nhóm 1: High Threat Vulnerabilities
+Tất cả plugin/theme WordPress (free và premium), trừ các asset bị liệt kê out of scope, sẽ in scope nếu có:
+- **>= 25 active installs**
+- khai thác được bởi **unauthenticated** hoặc **low-level authenticated** (Subscriber/Customer)
+- thuộc một trong các loại sau:
+  - Arbitrary PHP File Upload or Read
+  - Arbitrary PHP File Deletion
+  - Arbitrary Options Update
+  - Remote Code Execution
+  - Authentication Bypass to Admin
+  - Privilege Escalation to Admin
+
+Ghi chú:
+- Nếu plugin/theme có từ **25 đến 999 installs**, nó phải có trên **WordPress.org Plugin Repository** mới được tính in scope.
+
+### Nhóm 2: Common and Dangerous Vulnerabilities
+Tất cả plugin/theme WordPress (free và premium), trừ asset out of scope, sẽ in scope nếu có:
+- **>= 500 active installs**
+- khai thác được bởi **unauthenticated** hoặc **Subscriber/Customer**
+- thuộc một trong các loại:
+  - **Stored XSS**
+  - **SQL Injection**
+
+Ghi chú:
+- Với mốc **500 đến 999 installs**, component phải có trên **WordPress.org Plugin Repository**.
+- **Premium plugin/theme** bị loại khỏi nhóm này nếu **< 1,000 installs**.
+
+### Nhóm 3: All Other Vulnerabilities
+Các vulnerability khác có thể in scope, nhưng phụ thuộc vào **researcher tier**:
+- **Standard Researchers**: component cần **>= 50,000 installs**
+- **Resourceful Researchers**: component cần **>= 10,000 installs**
+- **1337 Researchers**: component cần **>= 500 installs**
+
+---
+
+
+exec
+/bin/zsh -lc "sed -n '1,260p' reports/phase2/hostinger-reach-phase2.review.r1.core.b10.input.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "core",
+  "task": {
+    "role": "phase2_reviewer_core",
+    "goal": "Challenge the worker output packet-by-packet with concrete counter-evidence, field corrections, and explicit missing-evidence notes.",
+    "output_schema": "contracts/phase2-review-core-output.schema.json",
+    "output_path": "reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json",
+    "packet_schema": "contracts/phase2-reviewer-packet.schema.json",
+    "allow_missed_findings": false,
+    "constraints": [
+      "Treat each finding packet as the unit of review; do not restart whole-plugin auditing.",
+      "Answer reachability, authorization, dataflow, impact, and missing-evidence questions for each packet before finalizing finding_reviews.",
+      "Start from finding_packets, worker_findings, and phase1_context before opening other artifacts.",
+      "Refute before confirm; keep objections evidence-bound with file:line anchors.",
+      "Do not rewrite the full findings set; produce critique JSON only.",
+      "Default to packet-local critique only. Focus on finding_reviews plus field corrections for the existing finding packets.",
+      "Treat finding_packets as the reviewer core evidence pack. If packet-local evidence is insufficient, prefer needs_more_evidence over broad exploration."
+    ],
+    "max_candidates": null
+  },
+  "artifacts": {
+    "worker_output_path": null,
+    "ir_path": null,
+    "semgrep_path": null,
+    "psalm_path": null,
+    "threat_context_path": null,
+    "source_root": "plugins/hostinger-reach"
+  },
+  "worker_summary": {
+    "total_findings": 1,
+    "true_positive_count": 0,
+    "false_positive_count": 1,
+    "needs_review_count": 0,
+    "negative_findings_count": 0,
+    "overall_risk": "low",
+    "analysis_summary": "Reviewer core batch scoped to 1 packet(s)."
+  },
+  "worker_findings": [
+    {
+      "finding_id": "HR-FP-007",
+      "verdict": "FP",
+      "vuln_type": "XSS \u2014 Multiple semgrep-flagged echo-without-escape in handler/integration files",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 1.0,
+      "entry_point_id": "ep_rest_api_init_rest_api_init",
+      "source_anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+      "sink_anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+      "patchstack_eligible": false
+    }
+  ],
+  "finding_packets": [
+    {
+      "packet_id": "HR-FP-007__p03",
+      "parent_finding_id": "HR-FP-007",
+      "packet_kind": "atomic_surface",
+      "focus_anchor": "src/Integrations/Elementor/ElementorIntegration.php:88",
+      "finding_id": "HR-FP-007",
+      "verdict": "FP",
+      "vuln_type": "XSS \u2014 Multiple semgrep-flagged echo-without-escape in handler/integration files [src/Integrations/Elementor/ElementorIntegration.php]",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 1.0,
+      "entry_point_id": "ep_rest_api_init_rest_api_init",
+      "patchstack_eligible": false,
+      "claimed_impact": "Review only the ElementorIntegration surface for XSS \u2014 Multiple semgrep-flagged echo-without-escape in handler/integration files. Confirm whether the path around src/Integrations/Elementor/ElementorIntegration.php:88 has concrete impact for auth boundary `unknown` without inheriting conclusions from sibling surfaces.",
+      "worker_context": {
+        "source_function": "ElementorIntegration",
+        "sink_function": "Various boolean/method returns",
+        "fp_reason": "Aggregate worker finding was atomized for reviewer_core. This packet is limited to ElementorIntegration and anchors src/Integrations/Elementor/ElementorIntegration.php:88, src/Integrations/Elementor/ElementorIntegration.php:390, src/Integrations/Elementor/ElementorIntegration.php:406.",
+        "original_fp_reason": "All semgrep XSS hits in handler PHP files are in methods that return arrays/objects or booleans (not HTML) \u2014 these methods are called in REST API response contexts where JSON encoding is applied, not direct HTML output.",
+        "reasoning_excerpt": {
+          "hypothesis": "Validate only the packet-local claim for ElementorIntegration. Determine whether anchors src/Integrations/Elementor/ElementorIntegration.php:88, src/Integrations/Elementor/ElementorIntegration.php:390, src/Integrations/Elementor/ElementorIntegration.php:406 actually support the worker's claim without widening to other surfaces.",
+          "trace": "Packet-local review only. Focus file: src/Integrations/Elementor/ElementorIntegration.php. Focus anchors: src/Integrations/Elementor/ElementorIntegration.php:88, src/Integrations/Elementor/ElementorIntegration.php:390, src/Integrations/Elementor/ElementorIntegration.php:406. Primary files: src/Api/Routes/Routes.php, src/Integrations/Elementor/ElementorIntegration.php. Entry point: src/Api/Routes/Routes.php:22. Treat unrelated callers, consumers, and sibling surfaces as out of scope unless an explicit expansion attempt is justified.",
+          "defenses": [
+            "REST API callbacks return WP_REST_Response objects \u2014 all output goes through WP_REST_Server which JSON-encodes the data",
+            "JSON encoding inherently prevents HTML injection in the API response context",
+            "Keep critique packet-local; do not reuse sibling-surface defenses or conclusions without code evidence in this packet."
+          ],
+          "refutation": [
+            "Refute or keep this packet on ElementorIntegration alone. Do not carry over conclusions from plugin-wide traces without packet-local code evidence."
+          ],
+          "conclusion": "Keep, downgrade, retract, or mark needs_more_evidence based only on packet-local evidence for ElementorIntegration."
+        },
+        "original_reasoning_excerpt": {
+          "hypothesis": "Semgrep flagged multiple XSS patterns across handler and integration files.",
+          "trace": "All flagged lines in ReachApiHandler (152, 168, 383, 386), IntegrationsApiHandler (56, 153, 205, 210), ElementorIntegration (88, 390, 406), ForminatorIntegration (173), OptInMonsterIntegration (255, 268) are either: (a) return statements returning PHP arrays/strings that are subsequently JSON-encoded by wp_json_encode before output, or (b) boolean return values, or (c) parts of methods that are never directly echoed.",
+          "defenses": [
+            "REST API callbacks return WP_REST_Response objects \u2014 all output goes through WP_REST_Server which JSON-encodes the data",
+            "JSON encoding inherently prevents HTML injection in the API response context"
+          ],
+          "refutation": [
+            "REFUTATION ATTEMPT: Do any of these flagged lines produce direct HTML output? RESULT: Refuted upon review. ReachApiHandler lines 152/168 are in post_contact_handler and is_authorized \u2014 both return WP_REST_Response. IntegrationsApiHandler lines are in REST handler methods. No direct echo of user-controlled HTML was found."
+          ],
+          "conclusion": "FP batch \u2014 semgrep over-triggered on data flow patterns that terminate in JSON-encoded REST responses, not HTML output."
+        }
+      },
+      "review_focus": {
+        "scope_statement": "Review only the packet-local claim centered on src/Integrations/Elementor/ElementorIntegration.php:88 in src/Integrations/Elementor/ElementorIntegration.php. Start from the listed packet evidence, not from a plugin-wide hypothesis.",
+        "sink_semantics": "local_output",
+        "default_resolution_on_missing_terminal_evidence": "needs_more_evidence",
+        "stop_conditions": [
+          "Once packet-local reachability, authorization, dataflow, impact, and missing evidence are answered with file:line support, stop and write critique JSON.",
+          "Do not reopen unrelated plugin surfaces just because the parent finding or worker narrative mentions them."
+        ],
+        "disallowed_drift": [
+          "whole_plugin_reaudit",
+          "translation_or_asset_search",
+          "sibling_surface_expansion_without_evidence"
+        ],
+        "primary_scope_files": [
+          "src/Api/Routes/Routes.php",
+          "src/Integrations/Elementor/ElementorIntegration.php"
+        ],
+        "optional_scope_files": [
+          "src/Integrations/Elementor/ElementorIntegration.php"
+        ],
+        "entry_point_anchor": "src/Api/Routes/Routes.php:22"
+      },
+      "scope_policy": {
+        "allowed_primary_files": [
+          "src/Api/Routes/Routes.php",
+          "src/Integrations/Elementor/ElementorIntegration.php"
+        ],
+        "allowed_optional_files": [
+          "src/Integrations/Elementor/ElementorIntegration.php"
+        ],
+        "max_out_of_band_files": 1
+      },
+      "anchors": {
+        "entry_point_anchor": "src/Api/Routes/Routes.php:22",
+        "source_anchor": "src/Integrations/Elementor/ElementorIntegration.php:88",
+        "sink_anchor": "src/Integrations/Elementor/ElementorIntegration.php:88",
+        "review_anchor_candidates": [
+          {
+            "kind": "aggregate_reference",
+            "anchor": "src/Integrations/Elementor/ElementorIntegration.php:88",
+            "note": "ElementorIntegration"
+          },
+          {
+            "kind": "aggregate_reference",
+            "anchor": "src/Integrations/Elementor/ElementorIntegration.php:390",
+            "note": "ElementorIntegration"
+          },
+          {
+            "kind": "aggregate_reference",
+            "anchor": "src/Integrations/Elementor/ElementorIntegration.php:406",
+            "note": "ElementorIntegration"
+          }
+        ]
+      },
+      "primary_files": [
+        "src/Api/Routes/Routes.php",
+        "src/Integrations/Elementor/ElementorIntegration.php"
+      ],
+      "primary_snippets": [
+        {
+          "file": "src/Integrations/Elementor/ElementorIntegration.php",
+          "anchor": "src/Integrations/Elementor/ElementorIntegration.php:88",
+          "focus_line": 88,
+          "line_start": 82,
+          "line_end": 94,
+          "kind": "finding_source",
+          "code": "    82\t\n    83\t    public static function get_name(): string {\n    84\t        return self::INTEGRATION_NAME;\n    85\t    }\n    86\t\n    87\t    public function get_form_ids( WP_Post $post ): array {\n    88\t        return array_merge( $this->get_elementor_form_ids_from_content( $post->post_content ), $this->get_elementor_form_ids_from_actions() );\n    89\t    }\n    90\t\n    91\t    public function get_plugin_data(): PluginData {\n    92\t        if ( class_exists( 'Elementor\\Core\\Documents_Manager' ) ) {\n    93\t            $add_form_url = add_query_arg(\n    94\t                array("
+        },
+        {
+          "file": "src/Api/Routes/Routes.php",
+          "anchor": "src/Api/Routes/Routes.php:22",
+          "focus_line": 22,
+          "line_start": 16,
+          "line_end": 28,
+          "kind": "entry_point",
+          "code": "    16\t    public function __construct( ApiHandler $handler, ApiKeyManager $api_key_manager ) {\n    17\t        $this->handler         = $handler;\n    18\t        $this->api_key_manager = $api_key_manager;\n    19\t    }\n    20\t\n    21\t    public function init(): void {\n    22\t        add_action( 'rest_api_init', array( $this, 'register_routes' ) );\n    23\t    }\n    24\t\n    25\t    public function permission_check(): bool {\n    26\t        if ( has_action( 'litespeed_control_set_nocache' ) ) {\n    27\t            do_action(\n    28\t                'litespeed_control_set_nocache',"
+        }
+      ],
+      "optional_files": [
+        "src/Integrations/Elementor/ElementorIntegration.php"
+      ],
+      "optional_snippets": [
+        {
+          "file": "src/Integrations/Elementor/ElementorIntegration.php",
+          "anchor": "src/Integrations/Elementor/ElementorIntegration.php:88",
+          "focus_line": 88,
+          "line_start": 82,
+          "line_end": 94,
+          "kind": "aggregate_reference",
+          "code": "    82\t\n    83\t    public static function get_name(): string {\n    84\t        return self::INTEGRATION_NAME;\n    85\t    }\n    86\t\n    87\t    public function get_form_ids( WP_Post $post ): array {\n    88\t        return array_merge( $this->get_elementor_form_ids_from_content( $post->post_content ), $this->get_elementor_form_ids_from_actions() );\n    89\t    }\n    90\t\n    91\t    public function get_plugin_data(): PluginData {\n    92\t        if ( class_exists( 'Elementor\\Core\\Documents_Manager' ) ) {\n    93\t            $add_form_url = add_query_arg(\n    94\t                array("
+        },
+        {
+          "file": "src/Integrations/Elementor/ElementorIntegration.php",
+          "anchor": "src/Integrations/Elementor/ElementorIntegration.php:390",
+          "focus_line": 390,
+          "line_start": 384,
+          "line_end": 396,
+          "kind": "aggregate_reference",
+          "code": "   384\t        if ( ! empty( $elements ) && $status === 'publish' ) {\n   385\t            foreach ( $elements as $element ) {\n   386\t                $form_ids = array_merge( $form_ids, $this->find_form_widget( $element ) );\n   387\t            }\n   388\t        }\n   389\t\n   390\t        return $form_ids;\n   391\t    }\n   392\t\n   393\t    private function find_form_widget( array $element ): array {\n   394\t        $form_ids = array();\n   395\t\n   396\t        if ( isset( $element['widgetType'] ) && $element['widgetType'] === 'form' && isset( $element['id'] ) ) {"
+        },
+        {
+          "file": "src/Integrations/Elementor/ElementorIntegration.php",
+          "anchor": "src/Integrations/Elementor/ElementorIntegration.php:406",
+          "focus_line": 406,
+          "line_start": 400,
+          "line_end": 412,
+          "kind": "aggregate_reference",
+          "code": "   400\t        if ( isset( $element['elements'] ) && is_array( $element['elements'] ) ) {\n   401\t            foreach ( $element['elements'] as $nested_element ) {\n   402\t                $form_ids = array_merge( $form_ids, $this->find_form_widget( $nested_element ) );\n   403\t            }\n   404\t        }\n   405\t\n   406\t        return $form_ids;\n   407\t    }\n   408\t\n   409\t    private function is_elementor_form_id( string $form_id ): bool {\n   410\t        return str_starts_with( $form_id, SubscriptionFormElementorWidget::FORM_ID_PREFIX );\n   411\t    }\n   412\t"
+        }
+      ],
+      "review_questions": {
+        "reachability": "Can an attacker really reach the claimed path from src/Api/Routes/Routes.php:22 without hidden preconditions or workflow assumptions?",
+        "authorization": "Does the path have a stronger guard than the worker claims, including capability, permission_callback, nonce semantics, or trust-boundary limits for auth `unknown`?",
+        "dataflow": "Does attacker-controlled data actually flow from src/Integrations/Elementor/ElementorIntegration.php:88 to src/Integrations/Elementor/ElementorIntegration.php:88 for the claimed XSS \u2014 Multiple semgrep-flagged echo-without-escape in handler/integration files [src/Integrations/Elementor/ElementorIntegration.php], without a refuting guard, sanitizer, or broken hop?",
+        "impact": "Assuming the path reaches src/Integrations/Elementor/ElementorIntegration.php:88, is the worker's claimed impact concrete and not overstated for this plugin context?",
+        "missing_evidence": "What exact file:line evidence is still missing before this finding can be kept, downgraded, or retracted with confidence?"
+      }
+    }
+  ],
+  "phase1_context": {
+    "entry_point_count": 25,
+    "anomaly_count": 3,
+    "unresolved_hook_count": 8,
+    "related_entry_points": [
+      {
+        "id": "ep_rest_api_init_rest_api_init",
+        "type": "rest_api_init",
+        "hook_name": "rest_api_init",
+        "auth_level": "none",
+        "file": "src/Api/Routes/Routes.php",
+        "line": 22,
+        "callback_name": "register_routes",
+        "callback_class": "Hostinger\\Reach\\Integrations\\OptInMonster\\OptInMonsterIntegration"
+      }
+    ],
+    "top_anomalies": [],
+    "unresolved_hooks": []
+  },
+  "evidence": {
+    "primary_anchors": [
+      {
+        "kind": "entry_point",
+        "anchor": "src/Api/Routes/Routes.php:22",
+        "packet_id": "HR-FP-007__p03",
+        "finding_id": "HR-FP-007",
+        "entry_point_id": "ep_rest_api_init_rest_api_init",
+        "note": "XSS \u2014 Multiple semgrep-flagged echo-without-escape in handler/integration files [src/Integrations/Elementor/ElementorIntegration.php]"
+      },
+      {
+        "kind": "finding_source",
+        "anchor": "src/Integrations/Elementor/ElementorIntegration.php:88",
+        "packet_id": "HR-FP-007__p03",
+        "finding_id": "HR-FP-007",
+        "entry_point_id": "ep_rest_api_init_rest_api_init",
+        "note": "XSS \u2014 Multiple semgrep-flagged echo-without-escape in handler/integration files [src/Integrations/Elementor/ElementorIntegration.php]"
+      },
+      {
+        "kind": "finding_sink",
+        "anchor": "src/Integrations/Elementor/ElementorIntegration.php:88",
+        "packet_id": "HR-FP-007__p03",
+        "finding_id": "HR-FP-007",
+
+codex
+Toi da co packet scope va thay round nay chi co 1 atomic packet trong `ElementorIntegration`. Tiep theo toi se doc schema output va cac dong lien quan quanh anchor de tra loi 5 cau hoi review bang counter-evidence co line cu the, khong mo rong sang sibling surfaces.
+exec
+/bin/zsh -lc "sed -n '261,420p' reports/phase2/hostinger-reach-phase2.review.r1.core.b10.input.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+        "entry_point_id": "ep_rest_api_init_rest_api_init",
+        "note": "XSS \u2014 Multiple semgrep-flagged echo-without-escape in handler/integration files [src/Integrations/Elementor/ElementorIntegration.php]"
+      }
+    ],
+    "primary_files": [
+      "src/Api/Routes/Routes.php",
+      "src/Integrations/Elementor/ElementorIntegration.php"
+    ],
+    "primary_snippets": [
+      {
+        "file": "src/Integrations/Elementor/ElementorIntegration.php",
+        "anchor": "src/Integrations/Elementor/ElementorIntegration.php:88",
+        "focus_line": 88,
+        "line_start": 82,
+        "line_end": 94,
+        "kind": "finding_source",
+        "code": "    82\t\n    83\t    public static function get_name(): string {\n    84\t        return self::INTEGRATION_NAME;\n    85\t    }\n    86\t\n    87\t    public function get_form_ids( WP_Post $post ): array {\n    88\t        return array_merge( $this->get_elementor_form_ids_from_content( $post->post_content ), $this->get_elementor_form_ids_from_actions() );\n    89\t    }\n    90\t\n    91\t    public function get_plugin_data(): PluginData {\n    92\t        if ( class_exists( 'Elementor\\Core\\Documents_Manager' ) ) {\n    93\t            $add_form_url = add_query_arg(\n    94\t                array("
+      },
+      {
+        "file": "src/Api/Routes/Routes.php",
+        "anchor": "src/Api/Routes/Routes.php:22",
+        "focus_line": 22,
+        "line_start": 16,
+        "line_end": 28,
+        "kind": "entry_point",
+        "code": "    16\t    public function __construct( ApiHandler $handler, ApiKeyManager $api_key_manager ) {\n    17\t        $this->handler         = $handler;\n    18\t        $this->api_key_manager = $api_key_manager;\n    19\t    }\n    20\t\n    21\t    public function init(): void {\n    22\t        add_action( 'rest_api_init', array( $this, 'register_routes' ) );\n    23\t    }\n    24\t\n    25\t    public function permission_check(): bool {\n    26\t        if ( has_action( 'litespeed_control_set_nocache' ) ) {\n    27\t            do_action(\n    28\t                'litespeed_control_set_nocache',"
+      }
+    ],
+    "optional_evidence": {
+      "anchors": [],
+      "files": [],
+      "snippets": []
+    }
+  },
+  "threat_context_summary": null
+}
+
+exec
+/bin/zsh -lc "sed -n '1,260p' contracts/phase2-review-core-output.schema.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "phase2-review-core-output.schema.json",
+  "version": "1.0.0",
+  "title": "Phase 2 Review Core Output Schema",
+  "description": "Structured packet-by-packet critique from the Phase 2 reviewer core loop. Core review is limited to claim validation and field corrections; it must not propose missed findings.",
+  "type": "object",
+  "required": ["plugin_slug", "review_round", "review_status", "summary", "finding_reviews"],
+  "properties": {
+    "plugin_slug": { "type": "string" },
+    "review_round": { "type": "integer", "minimum": 1 },
+    "review_mode": { "enum": ["core", "skeptical"] },
+    "review_status": { "enum": ["stable", "needs_revision"] },
+    "summary": {
+      "type": "object",
+      "required": ["worker_findings_reviewed", "material_issues_found"],
+      "properties": {
+        "worker_findings_reviewed": { "type": "integer", "minimum": 0 },
+        "material_issues_found": { "type": "boolean" },
+        "new_candidate_count": { "type": "integer", "minimum": 0, "maximum": 0 },
+        "notes": { "type": ["string", "null"] }
+      }
+    },
+    "finding_reviews": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["finding_id", "packet_id", "assessment", "reason", "required_changes", "counter_evidence", "missing_evidence", "expansion_attempts"],
+        "properties": {
+          "finding_id": { "type": "string" },
+          "packet_id": { "type": "string" },
+          "parent_finding_id": { "type": ["string", "null"] },
+          "assessment": { "enum": ["keep", "needs_more_evidence", "downgrade", "retract", "field_fix"] },
+          "reason": { "type": "string" },
+          "required_changes": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "counter_evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["type", "file", "line", "detail"],
+              "properties": {
+                "type": { "enum": ["guard", "sanitizer", "unreachable", "scope", "impact", "other"] },
+                "file": { "type": "string" },
+                "line": { "type": "integer", "minimum": 1 },
+                "detail": { "type": "string" }
+              }
+            }
+          },
+          "missing_evidence": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "expansion_attempts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["type", "target", "reason", "outcome"],
+              "properties": {
+                "type": { "enum": ["optional_file", "out_of_band_file"] },
+                "target": { "type": "string" },
+                "reason": { "type": "string" },
+                "outcome": { "type": "string" }
+              }
+            }
+          },
+          "suggested_field_corrections": {
+            "type": ["object", "null"]
+          }
+        }
+      }
+    },
+    "missed_findings": false
+  }
+}
+
+exec
+/bin/zsh -lc "nl -ba plugins/hostinger-reach/src/Integrations/Elementor/ElementorIntegration.php | sed -n '1,460p'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+     1	<?php
+     2	
+     3	namespace Hostinger\Reach\Integrations\Elementor;
+     4	
+     5	use Elementor\Core\Documents_Manager;
+     6	use Elementor\Plugin as ElementorPlugin;
+     7	use Elementor\Utils;
+     8	use Elementor\Widget_Base;
+     9	use ElementorPro\Modules\Forms\Classes\Form_Record;
+    10	use ElementorPro\Modules\Forms\Submissions\Database\Entities\Form_Snapshot;
+    11	use ElementorPro\Modules\Forms\Submissions\Database\Query;
+    12	use ElementorPro\Modules\Forms\Submissions\Database\Repositories\Form_Snapshot_Repository;
+    13	use Exception;
+    14	use Hostinger\Reach\Dto\PluginData;
+    15	use Hostinger\Reach\Dto\ReachContact;
+    16	use Hostinger\Reach\Functions;
+    17	use Hostinger\Reach\Integrations\IntegrationInterface;
+    18	use Hostinger\Reach\Integrations\IntegrationWithForms;
+    19	use WP_Post;
+    20	
+    21	if ( ! DEFINED( 'ABSPATH' ) ) {
+    22	    exit;
+    23	}
+    24	
+    25	class ElementorIntegration extends IntegrationWithForms implements IntegrationInterface {
+    26	
+    27	    public const INTEGRATION_NAME  = 'elementor';
+    28	    public const AUTOLOAD_META_KEY = 'hostinger_reach_add_elementor_widget';
+    29	    protected SubscriptionFormElementorWidget $widget;
+    30	
+    31	    public function init(): void {
+    32	        parent::init();
+    33	        add_action( 'hostinger_reach_integration_activated', array( $this, 'on_integration_activated' ) );
+    34	        add_action( 'wp_insert_post', array( $this, 'flag_new_elementor_post' ), 10, 3 );
+    35	        add_action( 'elementor/editor/before_enqueue_scripts', array( $this, 'maybe_insert_reach_widget' ) );
+    36	    }
+    37	
+    38	    public function active_integration_hooks(): void {
+    39	        add_action( 'elementor/widgets/register', array( $this, 'register_new_widgets' ) );
+    40	        add_action( 'transition_post_status', array( $this, 'handle_transition_post_status' ), 10, 3 );
+    41	        add_filter( 'hostinger_reach_get_group', array( $this, 'filter_hostinger_reach_get_group' ), 10, 2 );
+    42	        add_action( 'elementor_pro/forms/new_record', array( $this, 'handle_elementor_pro_new_record' ) );
+    43	    }
+    44	
+    45	    public function on_integration_activated( string $integration_name ): void {
+    46	        if ( $integration_name === self::INTEGRATION_NAME ) {
+    47	            $this->set_elementor_onboarding();
+    48	            $this->init_existing_forms();
+    49	        }
+    50	    }
+    51	
+    52	    public function handle_transition_post_status( string $new_status, string $old_status, WP_Post $post ): void {
+    53	        if ( $new_status === 'publish' ) {
+    54	            $this->set_forms( $post );
+    55	            $this->maybe_unset_forms( $post );
+    56	        } elseif ( $old_status === 'publish' ) {
+    57	            $this->unset_all_forms( $post );
+    58	        }
+    59	    }
+    60	
+    61	    public function register_new_widgets(): void {
+    62	        ElementorPlugin::instance()->widgets_manager->register( $this->get_widget() );
+    63	    }
+    64	
+    65	    public function filter_hostinger_reach_get_group( string $group, string $form_id ): string {
+    66	        if ( ! empty( $group ) || ! $this->is_elementor_form_id( $form_id ) ) {
+    67	            return $group;
+    68	        }
+    69	
+    70	        try {
+    71	            $form = $this->form_repository->get( $form_id );
+    72	            $post = $form['post'] ?? null;
+    73	            if ( $post ) {
+    74	                return $post['post_title'] ?? self::INTEGRATION_NAME;
+    75	            }
+    76	        } catch ( Exception $e ) {
+    77	            return self::INTEGRATION_NAME;
+    78	        }
+    79	
+    80	        return self::INTEGRATION_NAME;
+    81	    }
+    82	
+    83	    public static function get_name(): string {
+    84	        return self::INTEGRATION_NAME;
+    85	    }
+    86	
+    87	    public function get_form_ids( WP_Post $post ): array {
+    88	        return array_merge( $this->get_elementor_form_ids_from_content( $post->post_content ), $this->get_elementor_form_ids_from_actions() );
+    89	    }
+    90	
+    91	    public function get_plugin_data(): PluginData {
+    92	        if ( class_exists( 'Elementor\Core\Documents_Manager' ) ) {
+    93	            $add_form_url = add_query_arg(
+    94	                array(
+    95	                    self::AUTOLOAD_META_KEY => '1',
+    96	                ),
+    97	                Documents_Manager::get_create_new_post_url()
+    98	            );
+    99	        } else {
+   100	            $add_form_url = '';
+   101	        }
+   102	
+   103	        return PluginData::from_array(
+   104	            array(
+   105	                'id'                  => self::INTEGRATION_NAME,
+   106	                'folder'              => 'elementor',
+   107	                'file'                => 'elementor.php',
+   108	                'admin_url'           => 'admin.php?page=elementor',
+   109	                'add_form_url'        => $add_form_url,
+   110	                'edit_url'            => 'post.php?post={post_id}&action=elementor',
+   111	                'url'                 => 'https://wordpress.org/plugins/elementor/',
+   112	                'download_url'        => 'https://downloads.wordpress.org/plugin/elementor.zip',
+   113	                'title'               => __( 'Elementor', 'hostinger-reach' ),
+   114	                'icon'                => null,
+   115	                'is_view_form_hidden' => false,
+   116	                'is_edit_form_hidden' => false,
+   117	                'can_toggle_forms'    => true,
+   118	                'import_enabled'      => $this->is_import_supported(),
+   119	            )
+   120	        );
+   121	    }
+   122	
+   123	    public function handle_elementor_pro_new_record( Form_Record $record ): void {
+   124	        $email = $this->find_email( $record->get_formatted_data() );
+   125	        if ( $email ) {
+   126	            $form                 = $this->get_form_by_request();
+   127	            $form_repository_item = $this->form_repository->get( $form->id ?? '' );
+   128	            if ( empty( $form_repository_item ) || $form_repository_item['is_active'] === false ) {
+   129	                return;
+   130	            }
+   131	
+   132	            do_action(
+   133	                'hostinger_reach_submit',
+   134	                array(
+   135	                    'group'    => ! empty( $form ) ? $form->name : self::INTEGRATION_NAME,
+   136	                    'email'    => $email,
+   137	                    'metadata' => array(
+   138	                        'plugin'  => self::INTEGRATION_NAME . '-pro',
+   139	                        'form_id' => ! empty( $form ) ? $form->id : null,
+   140	                    ),
+   141	                )
+   142	            );
+   143	        }
+   144	    }
+   145	
+   146	    public function flag_new_elementor_post( int $post_id, WP_Post $post, bool $update ): void {
+   147	        if ( $update ) {
+   148	            return;
+   149	        }
+   150	
+   151	        if ( empty( $_GET[ self::AUTOLOAD_META_KEY ] ) ) {
+   152	            return;
+   153	        }
+   154	
+   155	        update_post_meta( $post_id, self::AUTOLOAD_META_KEY, '1' );
+   156	    }
+   157	
+   158	    public function maybe_insert_reach_widget(): void {
+   159	        if ( ! class_exists( 'Elementor\Utils' ) || ! class_exists( 'Elementor\Plugin' ) ) {
+   160	            return;
+   161	        }
+   162	
+   163	        $post_id = get_the_ID();
+   164	        if ( ! $post_id ) {
+   165	            return;
+   166	        }
+   167	
+   168	        $should_add_widget = get_post_meta( $post_id, self::AUTOLOAD_META_KEY, true ) === '1' || ! empty( $_GET['hostinger_reach_add_block'] );
+   169	        if ( ! $should_add_widget ) {
+   170	            return;
+   171	        }
+   172	
+   173	        $document = ElementorPlugin::instance()->documents->get( $post_id );
+   174	        if ( ! $document ) {
+   175	            return;
+   176	        }
+   177	
+   178	        $elements = $document->get_elements_data();
+   179	        if ( ! empty( $elements ) ) {
+   180	            return;
+   181	        }
+   182	
+   183	        $widget_data = array(
+   184	            array(
+   185	                'id'       => Utils::generate_random_string(),
+   186	                'elType'   => 'section',
+   187	                'settings' => array(),
+   188	                'elements' => array(
+   189	                    array(
+   190	                        'id'       => Utils::generate_random_string(),
+   191	                        'elType'   => 'column',
+   192	                        'settings' => array(
+   193	                            '_column_size' => 100,
+   194	                        ),
+   195	                        'elements' => array(
+   196	                            array(
+   197	                                'id'         => Utils::generate_random_string(),
+   198	                                'elType'     => 'widget',
+   199	                                'widgetType' => SubscriptionFormElementorWidget::WIDGET_NAME,
+   200	                                'settings'   => array(
+   201	                                    'formId'      => SubscriptionFormElementorWidget::FORM_ID_PREFIX . random_int( 1, PHP_INT_MAX ),
+   202	                                    'showName'    => 0,
+   203	                                    'showSurname' => 0,
+   204	                                ),
+   205	                            ),
+   206	                        ),
+   207	                    ),
+   208	                ),
+   209	            ),
+   210	        );
+   211	
+   212	        $document->save( array( 'elements' => $widget_data ) );
+   213	        delete_post_meta( $post_id, self::AUTOLOAD_META_KEY );
+   214	    }
+   215	
+   216	    public function is_import_supported(): bool {
+   217	        return class_exists( 'ElementorPro\Modules\Forms\Submissions\Database\Repositories\Form_Snapshot_Repository' )
+   218	                && class_exists( 'ElementorPro\Modules\Forms\Submissions\Database\Query' );
+   219	    }
+   220	
+   221	    public function get_import_summary(): array {
+   222	        $summary = array();
+   223	
+   224	        if ( ! $this->is_import_supported() ) {
+   225	            return $summary;
+   226	        }
+   227	
+   228	        $forms = Form_Snapshot_Repository::instance()->all();
+   229	        $query = Query::get_instance();
+   230	
+   231	        foreach ( $forms as $form ) {
+   232	            $form_id = $form->id ?? null;
+   233	            $post_id = $form->post_id ?? null;
+   234	
+   235	            if ( ! $form_id || ! $post_id ) {
+   236	                continue;
+   237	            }
+   238	
+   239	            $counts = $query->count_submissions_by_status(
+   240	                array(
+   241	                    'form' => array(
+   242	                        'value' => $post_id . '_' . $form_id,
+   243	                    ),
+   244	                )
+   245	            );
+   246	
+   247	            $summary[ $form_id ] = array(
+   248	                'title'    => $form->name ?? $form_id,
+   249	                'contacts' => (int) $counts->get( 'read', 0 ) + (int) $counts->get( 'unread', 0 ),
+   250	            );
+   251	        }
+   252	
+   253	        return $summary;
+   254	    }
+   255	
+   256	    public function get_contacts( mixed $form_id = null, ?int $limit = 100, ?int $offset = 0 ): array {
+   257	        if ( ! $this->is_import_supported() ) {
+   258	            return array();
+   259	        }
+   260	
+   261	        if ( empty( $form_id ) ) {
+   262	            return array();
+   263	        }
+   264	
+   265	        try {
+   266	            $form = $this->form_repository->get( $form_id );
+   267	        } catch ( Exception $e ) {
+   268	            return array();
+   269	        }
+   270	
+   271	        $post_id = $form['post']['ID'] ?? null;
+   272	        $page    = (int) floor( $offset / $limit ) + 1;
+   273	        $result  = Query::get_instance()->get_submissions(
+   274	            array(
+   275	                'page'             => $page,
+   276	                'per_page'         => $limit,
+   277	                'filters'          => array(
+   278	                    'form'   => array(
+   279	                        'value' => $post_id . '_' . $form_id,
+   280	                    ),
+   281	                    'status' => array(
+   282	                        'value' => 'all',
+   283	                    ),
+   284	                ),
+   285	                'with_meta'        => true,
+   286	                'with_form_fields' => false,
+   287	            )
+   288	        );
+   289	
+   290	        $submissions = $result['data'] ?? array();
+   291	        $entries     = array();
+   292	
+   293	        foreach ( $submissions as $submission ) {
+   294	            $email = $this->find_email( array( $submission['main']['value'] ?? '' ) );
+   295	
+   296	            if ( ! $email ) {
+   297	                $email = $this->find_email( array_column( $submission['values'], 'value' ) );
+   298	            }
+   299	
+   300	            if ( ! $email ) {
+   301	                continue;
+   302	            }
+   303	
+   304	            $contact = new ReachContact(
+   305	                $email,
+   306	                '',
+   307	                '',
+   308	                array(
+   309	                    'plugin'  => self::INTEGRATION_NAME,
+   310	                    'form_id' => $form_id,
+   311	                    'group'   => $form->name ?? self::INTEGRATION_NAME,
+   312	                )
+   313	            );
+   314	
+   315	            $entries[] = $contact->to_array();
+   316	        }
+   317	
+   318	        return $entries;
+   319	    }
+   320	
+   321	    public function init_existing_forms(): void {
+   322	        $post_ids = $this->get_elementor_posts();
+   323	        foreach ( $post_ids as $post_id ) {
+   324	            $this->update_forms_from_post( $post_id );
+   325	        }
+   326	    }
+   327	
+   328	    public function set_elementor_onboarding(): void {
+   329	        update_option( 'elementor_onboarded', 1 );
+   330	    }
+   331	
+   332	    private function get_widget(): Widget_Base {
+   333	        return new SubscriptionFormElementorWidget();
+   334	    }
+   335	
+   336	    private function update_forms_from_post( int $post_id ): void {
+   337	        $form_ids = $this->get_forms_from_post_id( $post_id );
+   338	        $this->update_form_repository( $form_ids, $post_id );
+   339	    }
+   340	
+   341	    private function set_forms( WP_Post $post ): void {
+   342	        $elementor_reach_forms = $this->get_elementor_form_ids_from_content( $post->post_content );
+   343	        $elementor_pro_forms   = $this->get_elementor_form_ids_from_actions();
+   344	        $form_ids              = array_merge( $elementor_reach_forms, $elementor_pro_forms );
+   345	
+   346	        $this->update_form_repository( $form_ids, $post->ID );
+   347	    }
+   348	
+   349	    private function update_form_repository( array $form_ids, int $post_id ): void {
+   350	        if ( empty( $form_ids ) ) {
+   351	            update_option( Functions::HOSTINGER_REACH_HAS_FORMS, true );
+   352	        }
+   353	        foreach ( $form_ids as $form_id ) {
+   354	            $form = array(
+   355	                'form_id' => $form_id,
+   356	                'type'    => self::INTEGRATION_NAME,
+   357	            );
+   358	
+   359	            if ( $this->form_repository->exists( $form_id ) ) {
+   360	                $this->form_repository->update( $form );
+   361	            } else {
+   362	                $this->form_repository->insert( array_merge( $form, array( 'post_id' => $post_id ) ) );
+   363	            }
+   364	        }
+   365	    }
+   366	
+   367	    private function get_elementor_form_ids_from_content( string $content ): array {
+   368	        $form_ids = array();
+   369	        $pattern  = '/<form id="' . SubscriptionFormElementorWidget::FORM_ID_PREFIX . '(\d+)"/';
+   370	        preg_match_all( $pattern, $content, $matches );
+   371	        foreach ( $matches[1] as $form_id ) {
+   372	            $form_ids[] = SubscriptionFormElementorWidget::FORM_ID_PREFIX . $form_id;
+   373	        }
+   374	
+   375	        return $form_ids;
+   376	    }
+   377	
+   378	    private function get_elementor_form_ids_from_actions(): array {
+   379	        $form_ids = array();
+   380	        $actions  = json_decode( wp_unslash( $_POST['actions'] ?? '' ), true );
+   381	        $status   = $actions['save_builder']['data']['status'] ?? 'draft';
+   382	        $elements = $actions['save_builder']['data']['elements'] ?? array();
+   383	
+   384	        if ( ! empty( $elements ) && $status === 'publish' ) {
+   385	            foreach ( $elements as $element ) {
+   386	                $form_ids = array_merge( $form_ids, $this->find_form_widget( $element ) );
+   387	            }
+   388	        }
+   389	
+   390	        return $form_ids;
+   391	    }
+   392	
+   393	    private function find_form_widget( array $element ): array {
+   394	        $form_ids = array();
+   395	
+   396	        if ( isset( $element['widgetType'] ) && $element['widgetType'] === 'form' && isset( $element['id'] ) ) {
+   397	            $form_ids[] = $element['id'];
+   398	        }
+   399	
+   400	        if ( isset( $element['elements'] ) && is_array( $element['elements'] ) ) {
+   401	            foreach ( $element['elements'] as $nested_element ) {
+   402	                $form_ids = array_merge( $form_ids, $this->find_form_widget( $nested_element ) );
+   403	            }
+   404	        }
+   405	
+   406	        return $form_ids;
+   407	    }
+   408	
+   409	    private function is_elementor_form_id( string $form_id ): bool {
+   410	        return str_starts_with( $form_id, SubscriptionFormElementorWidget::FORM_ID_PREFIX );
+   411	    }
+   412	
+   413	    private function find_email( array $data ): string {
+   414	        foreach ( $data as $value ) {
+   415	            $sanitized_value = sanitize_email( $value );
+   416	            if ( filter_var( $sanitized_value, FILTER_VALIDATE_EMAIL ) ) {
+   417	                return $value;
+   418	            }
+   419	        }
+   420	
+   421	        return '';
+   422	    }
+   423	
+   424	    private function get_form_by_request(): ?Form_Snapshot {
+   425	        $post_id = sanitize_text_field( $_POST['post_id'] ?? '' );
+   426	        $form_id = sanitize_text_field( $_POST['form_id'] ?? '' );
+   427	
+   428	        return Form_Snapshot_Repository::instance()->find( $post_id, $form_id );
+   429	    }
+   430	
+   431	    private function get_forms_from_post_id( int $post_id ): array {
+   432	        $form_ids           = array();
+   433	        $elementor_metadata = get_post_meta( $post_id, '_elementor_data', true );
+   434	        if ( ! is_string( $elementor_metadata ) || $elementor_metadata === '' ) {
+   435	            return $form_ids;
+   436	        }
+   437	
+   438	        $elementor_metadata = json_decode( $elementor_metadata, true );
+   439	        if ( ! is_array( $elementor_metadata ) ) {
+   440	            return $form_ids;
+   441	        }
+   442	
+   443	        foreach ( $elementor_metadata as $element ) {
+   444	            $form_ids = array_merge( $form_ids, $this->find_form_widget( $element ) );
+   445	        }
+   446	
+   447	        return $form_ids;
+   448	    }
+   449	
+   450	    private function get_elementor_posts(): array {
+   451	        $args = array(
+   452	            'post_type'      => array( 'page', 'post', 'product', 'elementor_library' ),
+   453	            'post_status'    => 'publish',
+   454	            'posts_per_page' => 100,
+   455	            'fields'         => 'ids',
+   456	            'meta_query'     => array(
+   457	                array(
+   458	                    'key'     => '_elementor_data',
+   459	                    'value'   => '"widgetType":"form"',
+   460	                    'compare' => 'LIKE',
+
+exec
+/bin/zsh -lc "nl -ba plugins/hostinger-reach/src/Api/Routes/Routes.php | sed -n '1,260p'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+     1	<?php
+     2	
+     3	namespace Hostinger\Reach\Api\Routes;
+     4	
+     5	use Hostinger\Reach\Api\ApiKeyManager;
+     6	use Hostinger\Reach\Api\Handlers\ApiHandler;
+     7	
+     8	if ( ! defined( 'ABSPATH' ) ) {
+     9	    die;
+    10	}
+    11	
+    12	class Routes {
+    13	    private ApiHandler $handler;
+    14	    private ApiKeyManager $api_key_manager;
+    15	
+    16	    public function __construct( ApiHandler $handler, ApiKeyManager $api_key_manager ) {
+    17	        $this->handler         = $handler;
+    18	        $this->api_key_manager = $api_key_manager;
+    19	    }
+    20	
+    21	    public function init(): void {
+    22	        add_action( 'rest_api_init', array( $this, 'register_routes' ) );
+    23	    }
+    24	
+    25	    public function permission_check(): bool {
+    26	        if ( has_action( 'litespeed_control_set_nocache' ) ) {
+    27	            do_action(
+    28	                'litespeed_control_set_nocache',
+    29	                'Custom Rest API endpoint, not cacheable.'
+    30	            );
+    31	        }
+    32	
+    33	        return current_user_can( 'manage_options' );
+    34	    }
+    35	}
+
+codex
+Packet-local evidence dang cho thay `ElementorIntegration.php:88` chi la mot helper tra ve mang ID, nhung toi chua co noi tu packet den mot terminal HTML sink nao. Toi se xem them cac reference rat gan trong plugin de xac dinh worker co dang dua vao mot giai thich qua rong ve REST/JSON hay khong, va neu can se ghi ro la thieu evidence thay vi lap lai ket luan worker.
+exec
+/bin/zsh -lc "rg -n \"get_form_ids\\(\" plugins/hostinger-reach/src" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "rg -n \"register_routes|permission_callback|register_rest_route|get_plugin_data\\(|get_contacts\\(|get_import_summary\\(\" plugins/hostinger-reach/src" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc 'rg -n "ElementorIntegration" plugins/hostinger-reach/src' in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+plugins/hostinger-reach/src/Integrations/ReachFormIntegration.php:81:    public function get_form_ids( WP_Post $post ): array {
+plugins/hostinger-reach/src/Integrations/IntegrationWithForms.php:20:    abstract public function get_form_ids( WP_Post $post ): array;
+plugins/hostinger-reach/src/Integrations/IntegrationWithForms.php:30:        $current_form_ids  = $this->get_form_ids( $post );
+plugins/hostinger-reach/src/Integrations/Elementor/ElementorIntegration.php:87:    public function get_form_ids( WP_Post $post ): array {
+plugins/hostinger-reach/src/Integrations/Reach/ReachFormIntegration.php:87:    public function get_form_ids( WP_Post $post ): array {
+plugins/hostinger-reach/src/Integrations/WooCommerce/WooCommerceIntegration.php:200:    public function get_form_ids( WP_Post $post ): array {
+
+ succeeded in 0ms:
+plugins/hostinger-reach/src/Jobs/ImportJob.php:31:        return $this->import_manager->get_contacts( $integration, $form_id, $limit, ( $batch_number - 1 ) * $limit );
+plugins/hostinger-reach/src/Api/Routes/IntegrationsRoutes.php:20:    public function register_routes(): void {
+plugins/hostinger-reach/src/Api/Routes/IntegrationsRoutes.php:21:        register_rest_route(
+plugins/hostinger-reach/src/Api/Routes/IntegrationsRoutes.php:27:                'permission_callback' => '__return_true',
+plugins/hostinger-reach/src/Api/Routes/IntegrationsRoutes.php:31:        register_rest_route(
+plugins/hostinger-reach/src/Api/Routes/IntegrationsRoutes.php:37:                'permission_callback' => array( $this, 'permission_check' ),
+plugins/hostinger-reach/src/Api/Routes/IntegrationsRoutes.php:54:        register_rest_route(
+plugins/hostinger-reach/src/Api/Routes/IntegrationsRoutes.php:60:                'permission_callback' => array( $this, 'permission_check' ),
+plugins/hostinger-reach/src/Api/Routes/IntegrationsRoutes.php:73:        register_rest_route(
+plugins/hostinger-reach/src/Api/Routes/IntegrationsRoutes.php:79:                'permission_callback' => array( $this, 'permission_check' ),
+plugins/hostinger-reach/src/Api/Routes/Routes.php:22:        add_action( 'rest_api_init', array( $this, 'register_routes' ) );
+plugins/hostinger-reach/src/Api/Routes/FormsRoutes.php:24:        add_action( 'rest_api_init', array( $this, 'register_routes' ) );
+plugins/hostinger-reach/src/Api/Routes/FormsRoutes.php:28:    public function register_routes(): void {
+plugins/hostinger-reach/src/Api/Routes/FormsRoutes.php:29:        register_rest_route(
+plugins/hostinger-reach/src/Api/Routes/FormsRoutes.php:35:                'permission_callback' => array( $this, 'permission_check' ),
+plugins/hostinger-reach/src/Api/Routes/FormsRoutes.php:39:        register_rest_route(
+plugins/hostinger-reach/src/Api/Routes/FormsRoutes.php:45:                'permission_callback' => array( $this, 'permission_check' ),
+plugins/hostinger-reach/src/Api/Routes/FormsRoutes.php:68:        register_rest_route(
+plugins/hostinger-reach/src/Api/Routes/FormsRoutes.php:74:                'permission_callback' => array( $this, 'permission_check' ),
+plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php:26:    public function register_routes(): void {
+plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php:27:        register_rest_route(
+plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php:33:                'permission_callback' => '__return_true',
+plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php:80:        register_rest_route(
+plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php:86:                'permission_callback' => function ( WP_REST_Request $request ) {
+plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php:104:        register_rest_route(
+plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php:110:                'permission_callback' => array( $this, 'permission_check' ),
+plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php:114:        register_rest_route(
+plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php:120:                'permission_callback' => array( $this, 'permission_check' ),
+plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php:124:        register_rest_route(
+plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php:131:                    'permission_callback' => array( $this, 'permission_check' ),
+plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php:136:                    'permission_callback' => array( $this, 'permission_check' ),
+plugins/hostinger-reach/src/Integrations/ContactForm7Integration.php:99:    public function get_plugin_data( array $plugin_data ): array {
+plugins/hostinger-reach/src/Integrations/Reach/ReachFormIntegration.php:67:    public function get_plugin_data(): PluginData {
+plugins/hostinger-reach/src/Integrations/IntegrationInterface.php:17:    public function get_plugin_data(): PluginData;
+plugins/hostinger-reach/src/Integrations/Integration.php:34:    abstract public function get_plugin_data(): PluginData;
+plugins/hostinger-reach/src/Integrations/Integration.php:124:        $plugin_data[ $this->get_name() ] = $this->get_plugin_data();
+plugins/hostinger-reach/src/Integrations/Integration.php:146:            $plugin_data = $this->get_plugin_data()->to_array();
+plugins/hostinger-reach/src/Integrations/Integration.php:206:    public function get_contacts( mixed $form_id = null, ?int $limit = 100, ?int $offset = 0 ): array {
+plugins/hostinger-reach/src/Integrations/Integration.php:210:    public function get_import_summary(): array {
+plugins/hostinger-reach/src/Integrations/WPFormsLite/WpFormsLiteIntegration.php:18:    public function get_plugin_data(): PluginData {
+plugins/hostinger-reach/src/Integrations/WSForms/WSFormsIntegration.php:17:    public function get_plugin_data(): PluginData {
+plugins/hostinger-reach/src/Integrations/ContactForm7/ContactForm7Integration.php:107:    public function get_plugin_data(): PluginData {
+plugins/hostinger-reach/src/Integrations/WpFormsLiteIntegration.php:85:    public function get_plugin_data( array $plugin_data ): array {
+plugins/hostinger-reach/src/Integrations/SureForms/SureFormsIntegration.php:24:    public function get_plugin_data(): PluginData {
+plugins/hostinger-reach/src/Integrations/SureForms/SureFormsIntegration.php:59:    public function get_import_summary(): array {
+plugins/hostinger-reach/src/Integrations/SureForms/SureFormsIntegration.php:84:    public function get_contacts( mixed $form_id = null, ?int $limit = 100, ?int $offset = 0 ): array {
+plugins/hostinger-reach/src/Integrations/Elementor/ElementorIntegration.php:91:    public function get_plugin_data(): PluginData {
+plugins/hostinger-reach/src/Integrations/Elementor/ElementorIntegration.php:221:    public function get_import_summary(): array {
+plugins/hostinger-reach/src/Integrations/Elementor/ElementorIntegration.php:256:    public function get_contacts( mixed $form_id = null, ?int $limit = 100, ?int $offset = 0 ): array {
+plugins/hostinger-reach/src/Integrations/Forminator/ForminatorIntegration.php:23:    public function get_plugin_data(): PluginData {
+plugins/hostinger-reach/src/Integrations/Forminator/ForminatorIntegration.php:69:    public function get_import_summary(): array {
+plugins/hostinger-reach/src/Integrations/Forminator/ForminatorIntegration.php:96:    public function get_contacts( mixed $form_id = null, ?int $limit = 100, ?int $offset = 0 ): array {
+plugins/hostinger-reach/src/Integrations/NinjaForms/NinjaFormsIntegration.php:34:    public function get_plugin_data(): PluginData {
+plugins/hostinger-reach/src/Integrations/NinjaForms/NinjaFormsIntegration.php:184:    public function get_import_summary(): array {
+plugins/hostinger-reach/src/Integrations/NinjaForms/NinjaFormsIntegration.php:210:    public function get_contacts( mixed $form_id = null, ?int $limit = 100, ?int $offset = 0 ): array {
+plugins/hostinger-reach/src/Integrations/OptInMonster/OptInMonsterIntegration.php:33:        $this->register_routes();
+plugins/hostinger-reach/src/Integrations/OptInMonster/OptInMonsterIntegration.php:44:    public function get_plugin_data(): PluginData {
+plugins/hostinger-reach/src/Integrations/OptInMonster/OptInMonsterIntegration.php:96:    public function get_import_summary(): array {
+plugins/hostinger-reach/src/Integrations/OptInMonster/OptInMonsterIntegration.php:111:    public function get_contacts( mixed $form_id = null, ?int $limit = 100, ?int $offset = 0 ): array {
+plugins/hostinger-reach/src/Integrations/OptInMonster/OptInMonsterIntegration.php:210:    private function register_routes(): void {
+plugins/hostinger-reach/src/Integrations/OptInMonster/OptInMonsterIntegration.php:214:                register_rest_route(
+plugins/hostinger-reach/src/Integrations/OptInMonster/OptInMonsterIntegration.php:220:                        'permission_callback' => '__return_true',
+plugins/hostinger-reach/src/Integrations/WooCommerce/WooCommerceIntegration.php:180:    public function get_plugin_data(): PluginData {
+plugins/hostinger-reach/src/Integrations/WooCommerce/WooCommerceIntegration.php:204:    public function get_import_summary(): array {
+plugins/hostinger-reach/src/Integrations/WooCommerce/WooCommerceIntegration.php:217:    public function get_contacts( mixed $form_id = null, ?int $limit = 100, ?int $offset = 0 ): array {
+plugins/hostinger-reach/src/Integrations/ReachFormIntegration.php:61:    public function get_plugin_data( array $plugin_data ): array {
+plugins/hostinger-reach/src/Integrations/ThriveLeads/ThriveLeadsIntegration.php:68:    public function get_plugin_data(): PluginData {
+plugins/hostinger-reach/src/Integrations/ThriveLeads/ThriveLeadsIntegration.php:86:    public function get_import_summary(): array {
+plugins/hostinger-reach/src/Integrations/ThriveLeads/ThriveLeadsIntegration.php:95:    public function get_contacts( mixed $form_id = null, ?int $limit = 100, ?int $offset = 0 ): array {
+plugins/hostinger-reach/src/Integrations/Brave/BraveIntegration.php:25:    public function get_plugin_data(): PluginData {
+plugins/hostinger-reach/src/Integrations/ImportManager.php:54:    public function get_contacts( string $integration, mixed $form_id = null, ?int $limit = 100, ?int $offset = 0 ): array {
+
+ succeeded in 0ms:
+plugins/hostinger-reach/src/Providers/IntegrationsProvider.php:10:use Hostinger\Reach\Integrations\Elementor\ElementorIntegration;
+plugins/hostinger-reach/src/Providers/IntegrationsProvider.php:33:        ElementorIntegration::INTEGRATION_NAME    => ElementorIntegration::class,
+plugins/hostinger-reach/src/Providers/IntegrationsProvider.php:54:            ElementorIntegration::class    => array(
+plugins/hostinger-reach/src/Integrations/Elementor/SubscriptionFormElementorWidget.php:94:        SubscriptionFormBlock::render_block_html( $settings, ElementorIntegration::INTEGRATION_NAME );
+plugins/hostinger-reach/src/Integrations/Elementor/ElementorIntegration.php:25:class ElementorIntegration extends IntegrationWithForms implements IntegrationInterface {
+
+codex
+Toi can mot file ngoai scope de xac dinh consumer thuc su cua `get_form_ids()`; file hop ly nhat la class cha `IntegrationWithForms.php`. Neu consumer o day chi la workflow noi bo/post hook thay vi REST route, worker dang dua vao narrative REST/JSON khong chat packet-local.
+exec
+/bin/zsh -lc "nl -ba plugins/hostinger-reach/src/Integrations/IntegrationWithForms.php | sed -n '1,220p'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+     1	<?php
+     2	
+     3	namespace Hostinger\Reach\Integrations;
+     4	
+     5	use Hostinger\Reach\Repositories\FormRepository;
+     6	use WP_Post;
+     7	
+     8	if ( ! defined( 'ABSPATH' ) ) {
+     9	    die;
+    10	}
+    11	
+    12	abstract class IntegrationWithForms extends Integration {
+    13	
+    14	    public FormRepository $form_repository;
+    15	
+    16	    public function __construct( FormRepository $form_repository ) {
+    17	        $this->form_repository = $form_repository;
+    18	    }
+    19	
+    20	    abstract public function get_form_ids( WP_Post $post ): array;
+    21	
+    22	    protected function maybe_unset_forms( WP_Post $post ): void {
+    23	        $previous_forms    = $this->form_repository->all(
+    24	            array(
+    25	                'post_id' => $post->ID,
+    26	                'type'    => $this->get_name(),
+    27	            )
+    28	        );
+    29	        $previous_form_ids = array_column( $previous_forms, 'form_id' );
+    30	        $current_form_ids  = $this->get_form_ids( $post );
+    31	
+    32	        foreach ( $previous_form_ids as $form_id ) {
+    33	            if ( ! in_array( $form_id, $current_form_ids, true ) ) {
+    34	                $this->form_repository->delete( $form_id );
+    35	            }
+    36	        }
+    37	    }
+    38	
+    39	    protected function unset_all_forms( WP_Post $post ): void {
+    40	        $this->form_repository->delete_all_from_post( $post->ID, $this->get_name() );
+    41	    }
+    42	
+    43	    public function get_forms(): array {
+    44	        $args['type'] = $this->get_name();
+    45	        return $this->form_repository->all( $args );
+    46	    }
+    47	}
+
+codex
+Toi da du packet-local evidence de viet critique: worker dung huong khi dismiss XSS, nhung ly do dang drift sang REST/JSON va entry point REST khong duoc packet nay support. Toi se ghi file output voi danh gia `field_fix`, kem missing-evidence ro rang va mot expansion duy nhat da dung de tim consumer cua `get_form_ids()`.
+exec
+/bin/zsh -lc "ls reports/phase2 | rg 'hostinger-reach-phase2.review.r1.core.b10.json'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ exited 1 in 0ms:
+Packet-local core review is complete. Writing the critique JSON and then validating it against the schema.
+  ✓ Read project docs and reviewer input packet
+  ✓ Inspect packet-local anchors and one justified out-of-band consumer file
+  → Write core critique JSON for the packet
+  • Validate JSON structure and save final artifact
+apply patch
+patch: completed
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json
+diff --git a/reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json b/reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..2f7e817f57430b0eeaaf643ec65978611a0ca3d1
+--- /dev/null
++++ b/reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json
+@@ -0,0 +1,99 @@
++{
++  "plugin_slug": "hostinger-reach",
++  "review_round": 1,
++  "review_mode": "core",
++  "review_status": "needs_revision",
++  "summary": {
++    "worker_findings_reviewed": 1,
++    "material_issues_found": true,
++    "new_candidate_count": 0,
++    "notes": "Packet-local review supports dismissing the XSS claim, but the worker's REST/JSON framing and entry-point linkage are not supported by this packet."
++  },
++  "finding_reviews": [
++    {
++      "finding_id": "HR-FP-007",
++      "packet_id": "HR-FP-007__p03",
++      "parent_finding_id": "HR-FP-007",
++      "assessment": "field_fix",
++      "reason": "Packet-local review still refutes XSS, but not for the worker's stated reason. `src/Api/Routes/Routes.php:22` only shows route registration and does not tie any REST callback to `ElementorIntegration::get_form_ids()`, so reachability from the cited REST entry point is unproven. On the code actually reviewed, `src/Integrations/Elementor/ElementorIntegration.php:88`, `:390`, and `:406` only assemble and return form ID arrays, and the one justified consumer expansion shows those arrays are used for repository diff/delete logic in `src/Integrations/IntegrationWithForms.php:22-35`, not HTML output. Authorization therefore remains unresolved on the actual helper path rather than proven REST-public, and the claimed XSS impact is overstated.",
++      "required_changes": [
++        "Remove or correct the packet's REST entry-point linkage (`entry_point_id` `ep_rest_api_init_rest_api_init`), because `src/Api/Routes/Routes.php:22` alone does not show any callback into `ElementorIntegration::get_form_ids()`.",
++        "Replace the worker's JSON-response rationale with the packet-local fact that `src/Integrations/Elementor/ElementorIntegration.php:88`, `:390`, and `:406` are helper return sites that only produce form ID arrays.",
++        "Narrow the impact statement to 'no packet-local HTML/JS sink demonstrated' instead of relying on a broader plugin-wide REST/JSON explanation.",
++        "Treat authorization as unresolved for this packet unless a concrete callback file:line is supplied; the reviewed helper path does not itself carry a permission callback or capability check."
++      ],
++      "counter_evidence": [
++        {
++          "type": "scope",
++          "file": "src/Api/Routes/Routes.php",
++          "line": 22,
++          "detail": "The cited entry point only registers routes on `rest_api_init`; this line does not show any REST callback reaching `ElementorIntegration::get_form_ids()`."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/Elementor/ElementorIntegration.php",
++          "line": 88,
++          "detail": "`get_form_ids()` returns the merged results of two helper methods. It does not echo, print, or build HTML."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/Elementor/ElementorIntegration.php",
++          "line": 369,
++          "detail": "`get_elementor_form_ids_from_content()` extracts IDs with a fixed-prefix regex and returns reconstructed form ID strings, not markup."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/Elementor/ElementorIntegration.php",
++          "line": 390,
++          "detail": "`get_elementor_form_ids_from_actions()` returns the accumulated `$form_ids` array after parsing `$_POST['actions']`; the anchor is still a data return, not an output sink."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/Elementor/ElementorIntegration.php",
++          "line": 406,
++          "detail": "`find_form_widget()` also terminates by returning an array of collected element IDs, with no rendering step in the reviewed function."
++        },
++        {
++          "type": "impact",
++          "file": "src/Integrations/IntegrationWithForms.php",
++          "line": 30,
++          "detail": "The justified consumer expansion shows the returned values are assigned to `$current_form_ids` inside `maybe_unset_forms()` for repository comparison logic."
++        },
++        {
++          "type": "impact",
++          "file": "src/Integrations/IntegrationWithForms.php",
++          "line": 34,
++          "detail": "The identified downstream action is `$this->form_repository->delete( $form_id )`; this is bookkeeping side effect, not HTML/JS execution."
++        }
++      ],
++      "missing_evidence": [
++        "A packet-local callback file:line showing any registered REST route invokes `src/Integrations/Elementor/ElementorIntegration.php:87-88`; `src/Api/Routes/Routes.php:22` alone is insufficient.",
++        "A terminal sink file:line where values returned from `src/Integrations/Elementor/ElementorIntegration.php:88`, `:390`, or `:406` are emitted into HTML or JavaScript without escaping.",
++        "If the worker wants to keep the REST/JSON defense, the concrete response-building file:line that consumes this packet's return values instead of the current helper-only packet."
++      ],
++      "expansion_attempts": [
++        {
++          "type": "out_of_band_file",
++          "target": "src/Integrations/IntegrationWithForms.php",
++          "reason": "The primary packet did not show any consumer of `get_form_ids()`, so one out-of-band file was needed to determine whether the returned data reaches a sink.",
++          "outcome": "Found `maybe_unset_forms()` at `src/Integrations/IntegrationWithForms.php:22-35`, where the returned IDs are compared against repository entries and used for deletion, not rendering."
++        }
++      ],
++      "suggested_field_corrections": {
++        "verdict": "FP",
++        "confidence": 0.92,
++        "entry_point_id": null,
++        "auth_required": null,
++        "sink_anchor": null,
++        "claimed_impact": "No packet-local XSS impact shown. The reviewed methods only derive and return form ID arrays used for repository bookkeeping.",
++        "question_answers": {
++          "reachability": "Not established from `src/Api/Routes/Routes.php:22`; the packet does not show a REST callback into `ElementorIntegration::get_form_ids()`.",
++          "authorization": "No packet-local permission callback or capability check is shown on the actual helper path because the reviewed code is not tied to a demonstrated REST route in this packet.",
++          "dataflow": "Input may enter via `$post->post_content` or `$_POST['actions']`, but the reviewed anchors only collect form IDs and return arrays. The justified downstream use is repository comparison/deletion, not rendering.",
++          "impact": "The packet does not support XSS. At most it supports internal form-repository bookkeeping effects on the located consumer path.",
++          "missing_evidence": "A real callback-to-sink path is still missing: specifically a REST callback or other caller file:line plus a terminal HTML/JS sink file:line."
++        }
++      }
++    }
++  ]
++}
+
+diff --git a/reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json b/reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..2f7e817f57430b0eeaaf643ec65978611a0ca3d1
+--- /dev/null
++++ b/reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json
+@@ -0,0 +1,99 @@
++{
++  "plugin_slug": "hostinger-reach",
++  "review_round": 1,
++  "review_mode": "core",
++  "review_status": "needs_revision",
++  "summary": {
++    "worker_findings_reviewed": 1,
++    "material_issues_found": true,
++    "new_candidate_count": 0,
++    "notes": "Packet-local review supports dismissing the XSS claim, but the worker's REST/JSON framing and entry-point linkage are not supported by this packet."
++  },
++  "finding_reviews": [
++    {
++      "finding_id": "HR-FP-007",
++      "packet_id": "HR-FP-007__p03",
++      "parent_finding_id": "HR-FP-007",
++      "assessment": "field_fix",
++      "reason": "Packet-local review still refutes XSS, but not for the worker's stated reason. `src/Api/Routes/Routes.php:22` only shows route registration and does not tie any REST callback to `ElementorIntegration::get_form_ids()`, so reachability from the cited REST entry point is unproven. On the code actually reviewed, `src/Integrations/Elementor/ElementorIntegration.php:88`, `:390`, and `:406` only assemble and return form ID arrays, and the one justified consumer expansion shows those arrays are used for repository diff/delete logic in `src/Integrations/IntegrationWithForms.php:22-35`, not HTML output. Authorization therefore remains unresolved on the actual helper path rather than proven REST-public, and the claimed XSS impact is overstated.",
++      "required_changes": [
++        "Remove or correct the packet's REST entry-point linkage (`entry_point_id` `ep_rest_api_init_rest_api_init`), because `src/Api/Routes/Routes.php:22` alone does not show any callback into `ElementorIntegration::get_form_ids()`.",
++        "Replace the worker's JSON-response rationale with the packet-local fact that `src/Integrations/Elementor/ElementorIntegration.php:88`, `:390`, and `:406` are helper return sites that only produce form ID arrays.",
++        "Narrow the impact statement to 'no packet-local HTML/JS sink demonstrated' instead of relying on a broader plugin-wide REST/JSON explanation.",
++        "Treat authorization as unresolved for this packet unless a concrete callback file:line is supplied; the reviewed helper path does not itself carry a permission callback or capability check."
++      ],
++      "counter_evidence": [
++        {
++          "type": "scope",
++          "file": "src/Api/Routes/Routes.php",
++          "line": 22,
++          "detail": "The cited entry point only registers routes on `rest_api_init`; this line does not show any REST callback reaching `ElementorIntegration::get_form_ids()`."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/Elementor/ElementorIntegration.php",
++          "line": 88,
++          "detail": "`get_form_ids()` returns the merged results of two helper methods. It does not echo, print, or build HTML."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/Elementor/ElementorIntegration.php",
++          "line": 369,
++          "detail": "`get_elementor_form_ids_from_content()` extracts IDs with a fixed-prefix regex and returns reconstructed form ID strings, not markup."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/Elementor/ElementorIntegration.php",
++          "line": 390,
++          "detail": "`get_elementor_form_ids_from_actions()` returns the accumulated `$form_ids` array after parsing `$_POST['actions']`; the anchor is still a data return, not an output sink."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/Elementor/ElementorIntegration.php",
++          "line": 406,
++          "detail": "`find_form_widget()` also terminates by returning an array of collected element IDs, with no rendering step in the reviewed function."
++        },
++        {
++          "type": "impact",
++          "file": "src/Integrations/IntegrationWithForms.php",
++          "line": 30,
++          "detail": "The justified consumer expansion shows the returned values are assigned to `$current_form_ids` inside `maybe_unset_forms()` for repository comparison logic."
++        },
++        {
++          "type": "impact",
++          "file": "src/Integrations/IntegrationWithForms.php",
++          "line": 34,
++          "detail": "The identified downstream action is `$this->form_repository->delete( $form_id )`; this is bookkeeping side effect, not HTML/JS execution."
++        }
++      ],
++      "missing_evidence": [
++        "A packet-local callback file:line showing any registered REST route invokes `src/Integrations/Elementor/ElementorIntegration.php:87-88`; `src/Api/Routes/Routes.php:22` alone is insufficient.",
++        "A terminal sink file:line where values returned from `src/Integrations/Elementor/ElementorIntegration.php:88`, `:390`, or `:406` are emitted into HTML or JavaScript without escaping.",
++        "If the worker wants to keep the REST/JSON defense, the concrete response-building file:line that consumes this packet's return values instead of the current helper-only packet."
++      ],
++      "expansion_attempts": [
++        {
++          "type": "out_of_band_file",
++          "target": "src/Integrations/IntegrationWithForms.php",
++          "reason": "The primary packet did not show any consumer of `get_form_ids()`, so one out-of-band file was needed to determine whether the returned data reaches a sink.",
++          "outcome": "Found `maybe_unset_forms()` at `src/Integrations/IntegrationWithForms.php:22-35`, where the returned IDs are compared against repository entries and used for deletion, not rendering."
++        }
++      ],
++      "suggested_field_corrections": {
++        "verdict": "FP",
++        "confidence": 0.92,
++        "entry_point_id": null,
++        "auth_required": null,
++        "sink_anchor": null,
++        "claimed_impact": "No packet-local XSS impact shown. The reviewed methods only derive and return form ID arrays used for repository bookkeeping.",
++        "question_answers": {
++          "reachability": "Not established from `src/Api/Routes/Routes.php:22`; the packet does not show a REST callback into `ElementorIntegration::get_form_ids()`.",
++          "authorization": "No packet-local permission callback or capability check is shown on the actual helper path because the reviewed code is not tied to a demonstrated REST route in this packet.",
++          "dataflow": "Input may enter via `$post->post_content` or `$_POST['actions']`, but the reviewed anchors only collect form IDs and return arrays. The justified downstream use is repository comparison/deletion, not rendering.",
++          "impact": "The packet does not support XSS. At most it supports internal form-repository bookkeeping effects on the located consumer path.",
++          "missing_evidence": "A real callback-to-sink path is still missing: specifically a REST callback or other caller file:line plus a terminal HTML/JS sink file:line."
++        }
++      }
++    }
++  ]
++}
+
+codex
+Critique JSON da duoc ghi. Bay gio toi se parse lai file va check nhanh rang cac truong bat buoc trong schema co day du, de tranh de lai artifact sai cau truc.
+exec
+/bin/zsh -lc "jq '.' reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json >/dev/null && echo OK" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+OK
+
+exec
+/bin/zsh -lc "node -e \"const fs=require('fs'); const out=JSON.parse(fs.readFileSync('reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json','utf8')); const schema=JSON.parse(fs.readFileSync('contracts/phase2-review-core-output.schema.json','utf8')); const req=schema.required||[]; for (const k of req) if ("'!(k in out)) throw new Error('"'missing '+k); if (typeof out.summary "'!== '"'object' || Array.isArray(out.summary) || out.summary===null) throw new Error('summary not object'); if ("'!Array.isArray(out.finding_reviews) || out.finding_reviews.length !== 1) throw new Error('"'finding_reviews length'); const fr=out.finding_reviews[0]; for (const k of schema.properties.finding_reviews.items.required) if ("'!(k in fr)) throw new Error('"'finding_reviews[0] missing '+k); console.log('OK');\"" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ exited 127 in 0ms:
+zsh:1: command not found: node
+
+The critique file is written. Validating JSON parseability and required schema fields now.
+  ✓ Read project docs and reviewer input packet
+  ✓ Inspect packet-local anchors and one justified out-of-band consumer file
+  ✓ Write core critique JSON for the packet
+  → Validate JSON structure and save final artifact
+diff --git a/reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json b/reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..2f7e817f57430b0eeaaf643ec65978611a0ca3d1
+--- /dev/null
++++ b/reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json
+@@ -0,0 +1,99 @@
++{
++  "plugin_slug": "hostinger-reach",
++  "review_round": 1,
++  "review_mode": "core",
++  "review_status": "needs_revision",
++  "summary": {
++    "worker_findings_reviewed": 1,
++    "material_issues_found": true,
++    "new_candidate_count": 0,
++    "notes": "Packet-local review supports dismissing the XSS claim, but the worker's REST/JSON framing and entry-point linkage are not supported by this packet."
++  },
++  "finding_reviews": [
++    {
++      "finding_id": "HR-FP-007",
++      "packet_id": "HR-FP-007__p03",
++      "parent_finding_id": "HR-FP-007",
++      "assessment": "field_fix",
++      "reason": "Packet-local review still refutes XSS, but not for the worker's stated reason. `src/Api/Routes/Routes.php:22` only shows route registration and does not tie any REST callback to `ElementorIntegration::get_form_ids()`, so reachability from the cited REST entry point is unproven. On the code actually reviewed, `src/Integrations/Elementor/ElementorIntegration.php:88`, `:390`, and `:406` only assemble and return form ID arrays, and the one justified consumer expansion shows those arrays are used for repository diff/delete logic in `src/Integrations/IntegrationWithForms.php:22-35`, not HTML output. Authorization therefore remains unresolved on the actual helper path rather than proven REST-public, and the claimed XSS impact is overstated.",
++      "required_changes": [
++        "Remove or correct the packet's REST entry-point linkage (`entry_point_id` `ep_rest_api_init_rest_api_init`), because `src/Api/Routes/Routes.php:22` alone does not show any callback into `ElementorIntegration::get_form_ids()`.",
++        "Replace the worker's JSON-response rationale with the packet-local fact that `src/Integrations/Elementor/ElementorIntegration.php:88`, `:390`, and `:406` are helper return sites that only produce form ID arrays.",
++        "Narrow the impact statement to 'no packet-local HTML/JS sink demonstrated' instead of relying on a broader plugin-wide REST/JSON explanation.",
++        "Treat authorization as unresolved for this packet unless a concrete callback file:line is supplied; the reviewed helper path does not itself carry a permission callback or capability check."
++      ],
++      "counter_evidence": [
++        {
++          "type": "scope",
++          "file": "src/Api/Routes/Routes.php",
++          "line": 22,
++          "detail": "The cited entry point only registers routes on `rest_api_init`; this line does not show any REST callback reaching `ElementorIntegration::get_form_ids()`."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/Elementor/ElementorIntegration.php",
++          "line": 88,
++          "detail": "`get_form_ids()` returns the merged results of two helper methods. It does not echo, print, or build HTML."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/Elementor/ElementorIntegration.php",
++          "line": 369,
++          "detail": "`get_elementor_form_ids_from_content()` extracts IDs with a fixed-prefix regex and returns reconstructed form ID strings, not markup."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/Elementor/ElementorIntegration.php",
++          "line": 390,
++          "detail": "`get_elementor_form_ids_from_actions()` returns the accumulated `$form_ids` array after parsing `$_POST['actions']`; the anchor is still a data return, not an output sink."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/Elementor/ElementorIntegration.php",
++          "line": 406,
++          "detail": "`find_form_widget()` also terminates by returning an array of collected element IDs, with no rendering step in the reviewed function."
++        },
++        {
++          "type": "impact",
++          "file": "src/Integrations/IntegrationWithForms.php",
++          "line": 30,
++          "detail": "The justified consumer expansion shows the returned values are assigned to `$current_form_ids` inside `maybe_unset_forms()` for repository comparison logic."
++        },
++        {
++          "type": "impact",
++          "file": "src/Integrations/IntegrationWithForms.php",
++          "line": 34,
++          "detail": "The identified downstream action is `$this->form_repository->delete( $form_id )`; this is bookkeeping side effect, not HTML/JS execution."
++        }
++      ],
++      "missing_evidence": [
++        "A packet-local callback file:line showing any registered REST route invokes `src/Integrations/Elementor/ElementorIntegration.php:87-88`; `src/Api/Routes/Routes.php:22` alone is insufficient.",
++        "A terminal sink file:line where values returned from `src/Integrations/Elementor/ElementorIntegration.php:88`, `:390`, or `:406` are emitted into HTML or JavaScript without escaping.",
++        "If the worker wants to keep the REST/JSON defense, the concrete response-building file:line that consumes this packet's return values instead of the current helper-only packet."
++      ],
++      "expansion_attempts": [
++        {
++          "type": "out_of_band_file",
++          "target": "src/Integrations/IntegrationWithForms.php",
++          "reason": "The primary packet did not show any consumer of `get_form_ids()`, so one out-of-band file was needed to determine whether the returned data reaches a sink.",
++          "outcome": "Found `maybe_unset_forms()` at `src/Integrations/IntegrationWithForms.php:22-35`, where the returned IDs are compared against repository entries and used for deletion, not rendering."
++        }
++      ],
++      "suggested_field_corrections": {
++        "verdict": "FP",
++        "confidence": 0.92,
++        "entry_point_id": null,
++        "auth_required": null,
++        "sink_anchor": null,
++        "claimed_impact": "No packet-local XSS impact shown. The reviewed methods only derive and return form ID arrays used for repository bookkeeping.",
++        "question_answers": {
++          "reachability": "Not established from `src/Api/Routes/Routes.php:22`; the packet does not show a REST callback into `ElementorIntegration::get_form_ids()`.",
++          "authorization": "No packet-local permission callback or capability check is shown on the actual helper path because the reviewed code is not tied to a demonstrated REST route in this packet.",
++          "dataflow": "Input may enter via `$post->post_content` or `$_POST['actions']`, but the reviewed anchors only collect form IDs and return arrays. The justified downstream use is repository comparison/deletion, not rendering.",
++          "impact": "The packet does not support XSS. At most it supports internal form-repository bookkeeping effects on the located consumer path.",
++          "missing_evidence": "A real callback-to-sink path is still missing: specifically a REST callback or other caller file:line plus a terminal HTML/JS sink file:line."
++        }
++      }
++    }
++  ]
++}
+
+codex
+`jq` parse OK. `node` khong co trong environment, nen toi se dung `python3` de check nhe cac truong bat buoc theo schema thay vi de validation dang do.
+exec
+/bin/zsh -lc "python3 - <<'PY'
+import json
+from pathlib import Path
+out = json.loads(Path('reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json').read_text())
+schema = json.loads(Path('contracts/phase2-review-core-output.schema.json').read_text())
+for key in schema['required']:
+    assert key in out, f'missing top-level key: {key}'
+assert isinstance(out['summary'], dict), 'summary must be object'
+assert isinstance(out['finding_reviews'], list) and len(out['finding_reviews']) == 1, 'finding_reviews length'
+fr = out['finding_reviews'][0]
+for key in schema['properties']['finding_reviews']['items']['required']:
+    assert key in fr, f'missing finding_reviews key: {key}'nprint('OK')
+PY" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ exited 1 in 0ms:
+  File "<stdin>", line 11
+    assert key in fr, f'missing finding_reviews key: {key}'nprint('OK')
+                                                           ^
+SyntaxError: invalid syntax
+
+Switching the lightweight required-field validation to python3 because node is unavailable in this workspace.
+  ✓ Read project docs and reviewer input packet
+  ✓ Inspect packet-local anchors and one justified out-of-band consumer file
+  ✓ Write core critique JSON for the packet
+  → Validate JSON structure and save final artifact
+diff --git a/reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json b/reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..2f7e817f57430b0eeaaf643ec65978611a0ca3d1
+--- /dev/null
++++ b/reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json
+@@ -0,0 +1,99 @@
++{
++  "plugin_slug": "hostinger-reach",
++  "review_round": 1,
++  "review_mode": "core",
++  "review_status": "needs_revision",
++  "summary": {
++    "worker_findings_reviewed": 1,
++    "material_issues_found": true,
++    "new_candidate_count": 0,
++    "notes": "Packet-local review supports dismissing the XSS claim, but the worker's REST/JSON framing and entry-point linkage are not supported by this packet."
++  },
++  "finding_reviews": [
++    {
++      "finding_id": "HR-FP-007",
++      "packet_id": "HR-FP-007__p03",
++      "parent_finding_id": "HR-FP-007",
++      "assessment": "field_fix",
++      "reason": "Packet-local review still refutes XSS, but not for the worker's stated reason. `src/Api/Routes/Routes.php:22` only shows route registration and does not tie any REST callback to `ElementorIntegration::get_form_ids()`, so reachability from the cited REST entry point is unproven. On the code actually reviewed, `src/Integrations/Elementor/ElementorIntegration.php:88`, `:390`, and `:406` only assemble and return form ID arrays, and the one justified consumer expansion shows those arrays are used for repository diff/delete logic in `src/Integrations/IntegrationWithForms.php:22-35`, not HTML output. Authorization therefore remains unresolved on the actual helper path rather than proven REST-public, and the claimed XSS impact is overstated.",
++      "required_changes": [
++        "Remove or correct the packet's REST entry-point linkage (`entry_point_id` `ep_rest_api_init_rest_api_init`), because `src/Api/Routes/Routes.php:22` alone does not show any callback into `ElementorIntegration::get_form_ids()`.",
++        "Replace the worker's JSON-response rationale with the packet-local fact that `src/Integrations/Elementor/ElementorIntegration.php:88`, `:390`, and `:406` are helper return sites that only produce form ID arrays.",
++        "Narrow the impact statement to 'no packet-local HTML/JS sink demonstrated' instead of relying on a broader plugin-wide REST/JSON explanation.",
++        "Treat authorization as unresolved for this packet unless a concrete callback file:line is supplied; the reviewed helper path does not itself carry a permission callback or capability check."
++      ],
++      "counter_evidence": [
++        {
++          "type": "scope",
++          "file": "src/Api/Routes/Routes.php",
++          "line": 22,
++          "detail": "The cited entry point only registers routes on `rest_api_init`; this line does not show any REST callback reaching `ElementorIntegration::get_form_ids()`."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/Elementor/ElementorIntegration.php",
++          "line": 88,
++          "detail": "`get_form_ids()` returns the merged results of two helper methods. It does not echo, print, or build HTML."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/Elementor/ElementorIntegration.php",
++          "line": 369,
++          "detail": "`get_elementor_form_ids_from_content()` extracts IDs with a fixed-prefix regex and returns reconstructed form ID strings, not markup."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/Elementor/ElementorIntegration.php",
++          "line": 390,
++          "detail": "`get_elementor_form_ids_from_actions()` returns the accumulated `$form_ids` array after parsing `$_POST['actions']`; the anchor is still a data return, not an output sink."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/Elementor/ElementorIntegration.php",
++          "line": 406,
++          "detail": "`find_form_widget()` also terminates by returning an array of collected element IDs, with no rendering step in the reviewed function."
++        },
++        {
++          "type": "impact",
++          "file": "src/Integrations/IntegrationWithForms.php",
++          "line": 30,
++          "detail": "The justified consumer expansion shows the returned values are assigned to `$current_form_ids` inside `maybe_unset_forms()` for repository comparison logic."
++        },
++        {
++          "type": "impact",
++          "file": "src/Integrations/IntegrationWithForms.php",
++          "line": 34,
++          "detail": "The identified downstream action is `$this->form_repository->delete( $form_id )`; this is bookkeeping side effect, not HTML/JS execution."
++        }
++      ],
++      "missing_evidence": [
++        "A packet-local callback file:line showing any registered REST route invokes `src/Integrations/Elementor/ElementorIntegration.php:87-88`; `src/Api/Routes/Routes.php:22` alone is insufficient.",
++        "A terminal sink file:line where values returned from `src/Integrations/Elementor/ElementorIntegration.php:88`, `:390`, or `:406` are emitted into HTML or JavaScript without escaping.",
++        "If the worker wants to keep the REST/JSON defense, the concrete response-building file:line that consumes this packet's return values instead of the current helper-only packet."
++      ],
++      "expansion_attempts": [
++        {
++          "type": "out_of_band_file",
++          "target": "src/Integrations/IntegrationWithForms.php",
++          "reason": "The primary packet did not show any consumer of `get_form_ids()`, so one out-of-band file was needed to determine whether the returned data reaches a sink.",
++          "outcome": "Found `maybe_unset_forms()` at `src/Integrations/IntegrationWithForms.php:22-35`, where the returned IDs are compared against repository entries and used for deletion, not rendering."
++        }
++      ],
++      "suggested_field_corrections": {
++        "verdict": "FP",
++        "confidence": 0.92,
++        "entry_point_id": null,
++        "auth_required": null,
++        "sink_anchor": null,
++        "claimed_impact": "No packet-local XSS impact shown. The reviewed methods only derive and return form ID arrays used for repository bookkeeping.",
++        "question_answers": {
++          "reachability": "Not established from `src/Api/Routes/Routes.php:22`; the packet does not show a REST callback into `ElementorIntegration::get_form_ids()`.",
++          "authorization": "No packet-local permission callback or capability check is shown on the actual helper path because the reviewed code is not tied to a demonstrated REST route in this packet.",
++          "dataflow": "Input may enter via `$post->post_content` or `$_POST['actions']`, but the reviewed anchors only collect form IDs and return arrays. The justified downstream use is repository comparison/deletion, not rendering.",
++          "impact": "The packet does not support XSS. At most it supports internal form-repository bookkeeping effects on the located consumer path.",
++          "missing_evidence": "A real callback-to-sink path is still missing: specifically a REST callback or other caller file:line plus a terminal HTML/JS sink file:line."
++        }
++      }
++    }
++  ]
++}
+
+codex
+Co mot loi syntax nho trong check `python3`; toi sua lai va rerun validation ngay.
+exec
+/bin/zsh -lc "python3 - <<'PY'
+import json
+from pathlib import Path
+out = json.loads(Path('reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json').read_text())
+schema = json.loads(Path('contracts/phase2-review-core-output.schema.json').read_text())
+for key in schema['required']:
+    assert key in out, f'missing top-level key: {key}'
+assert isinstance(out['summary'], dict), 'summary must be object'
+assert isinstance(out['finding_reviews'], list) and len(out['finding_reviews']) == 1, 'finding_reviews length'
+fr = out['finding_reviews'][0]
+for key in schema['properties']['finding_reviews']['items']['required']:
+    assert key in fr, f'missing finding_reviews key: {key}'
+print('OK')
+PY" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+OK
+
+Rerunning the lightweight schema-field validation after fixing the python syntax error.
+  ✓ Read project docs and reviewer input packet
+  ✓ Inspect packet-local anchors and one justified out-of-band consumer file
+  ✓ Write core critique JSON for the packet
+  → Validate JSON structure and save final artifact
+diff --git a/reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json b/reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..2f7e817f57430b0eeaaf643ec65978611a0ca3d1
+--- /dev/null
++++ b/reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json
+@@ -0,0 +1,99 @@
++{
++  "plugin_slug": "hostinger-reach",
++  "review_round": 1,
++  "review_mode": "core",
++  "review_status": "needs_revision",
++  "summary": {
++    "worker_findings_reviewed": 1,
++    "material_issues_found": true,
++    "new_candidate_count": 0,
++    "notes": "Packet-local review supports dismissing the XSS claim, but the worker's REST/JSON framing and entry-point linkage are not supported by this packet."
++  },
++  "finding_reviews": [
++    {
++      "finding_id": "HR-FP-007",
++      "packet_id": "HR-FP-007__p03",
++      "parent_finding_id": "HR-FP-007",
++      "assessment": "field_fix",
++      "reason": "Packet-local review still refutes XSS, but not for the worker's stated reason. `src/Api/Routes/Routes.php:22` only shows route registration and does not tie any REST callback to `ElementorIntegration::get_form_ids()`, so reachability from the cited REST entry point is unproven. On the code actually reviewed, `src/Integrations/Elementor/ElementorIntegration.php:88`, `:390`, and `:406` only assemble and return form ID arrays, and the one justified consumer expansion shows those arrays are used for repository diff/delete logic in `src/Integrations/IntegrationWithForms.php:22-35`, not HTML output. Authorization therefore remains unresolved on the actual helper path rather than proven REST-public, and the claimed XSS impact is overstated.",
++      "required_changes": [
++        "Remove or correct the packet's REST entry-point linkage (`entry_point_id` `ep_rest_api_init_rest_api_init`), because `src/Api/Routes/Routes.php:22` alone does not show any callback into `ElementorIntegration::get_form_ids()`.",
++        "Replace the worker's JSON-response rationale with the packet-local fact that `src/Integrations/Elementor/ElementorIntegration.php:88`, `:390`, and `:406` are helper return sites that only produce form ID arrays.",
++        "Narrow the impact statement to 'no packet-local HTML/JS sink demonstrated' instead of relying on a broader plugin-wide REST/JSON explanation.",
++        "Treat authorization as unresolved for this packet unless a concrete callback file:line is supplied; the reviewed helper path does not itself carry a permission callback or capability check."
++      ],
++      "counter_evidence": [
++        {
++          "type": "scope",
++          "file": "src/Api/Routes/Routes.php",
++          "line": 22,
++          "detail": "The cited entry point only registers routes on `rest_api_init`; this line does not show any REST callback reaching `ElementorIntegration::get_form_ids()`."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/Elementor/ElementorIntegration.php",
++          "line": 88,
++          "detail": "`get_form_ids()` returns the merged results of two helper methods. It does not echo, print, or build HTML."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/Elementor/ElementorIntegration.php",
++          "line": 369,
++          "detail": "`get_elementor_form_ids_from_content()` extracts IDs with a fixed-prefix regex and returns reconstructed form ID strings, not markup."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/Elementor/ElementorIntegration.php",
++          "line": 390,
++          "detail": "`get_elementor_form_ids_from_actions()` returns the accumulated `$form_ids` array after parsing `$_POST['actions']`; the anchor is still a data return, not an output sink."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/Elementor/ElementorIntegration.php",
++          "line": 406,
++          "detail": "`find_form_widget()` also terminates by returning an array of collected element IDs, with no rendering step in the reviewed function."
++        },
++        {
++          "type": "impact",
++          "file": "src/Integrations/IntegrationWithForms.php",
++          "line": 30,
++          "detail": "The justified consumer expansion shows the returned values are assigned to `$current_form_ids` inside `maybe_unset_forms()` for repository comparison logic."
++        },
++        {
++          "type": "impact",
++          "file": "src/Integrations/IntegrationWithForms.php",
++          "line": 34,
++          "detail": "The identified downstream action is `$this->form_repository->delete( $form_id )`; this is bookkeeping side effect, not HTML/JS execution."
++        }
++      ],
++      "missing_evidence": [
++        "A packet-local callback file:line showing any registered REST route invokes `src/Integrations/Elementor/ElementorIntegration.php:87-88`; `src/Api/Routes/Routes.php:22` alone is insufficient.",
++        "A terminal sink file:line where values returned from `src/Integrations/Elementor/ElementorIntegration.php:88`, `:390`, or `:406` are emitted into HTML or JavaScript without escaping.",
++        "If the worker wants to keep the REST/JSON defense, the concrete response-building file:line that consumes this packet's return values instead of the current helper-only packet."
++      ],
++      "expansion_attempts": [
++        {
++          "type": "out_of_band_file",
++          "target": "src/Integrations/IntegrationWithForms.php",
++          "reason": "The primary packet did not show any consumer of `get_form_ids()`, so one out-of-band file was needed to determine whether the returned data reaches a sink.",
++          "outcome": "Found `maybe_unset_forms()` at `src/Integrations/IntegrationWithForms.php:22-35`, where the returned IDs are compared against repository entries and used for deletion, not rendering."
++        }
++      ],
++      "suggested_field_corrections": {
++        "verdict": "FP",
++        "confidence": 0.92,
++        "entry_point_id": null,
++        "auth_required": null,
++        "sink_anchor": null,
++        "claimed_impact": "No packet-local XSS impact shown. The reviewed methods only derive and return form ID arrays used for repository bookkeeping.",
++        "question_answers": {
++          "reachability": "Not established from `src/Api/Routes/Routes.php:22`; the packet does not show a REST callback into `ElementorIntegration::get_form_ids()`.",
++          "authorization": "No packet-local permission callback or capability check is shown on the actual helper path because the reviewed code is not tied to a demonstrated REST route in this packet.",
++          "dataflow": "Input may enter via `$post->post_content` or `$_POST['actions']`, but the reviewed anchors only collect form IDs and return arrays. The justified downstream use is repository comparison/deletion, not rendering.",
++          "impact": "The packet does not support XSS. At most it supports internal form-repository bookkeeping effects on the located consumer path.",
++          "missing_evidence": "A real callback-to-sink path is still missing: specifically a REST callback or other caller file:line plus a terminal HTML/JS sink file:line."
++        }
++      }
++    }
++  ]
++}
+
+codex
+Da ghi critique JSON vao [hostinger-reach-phase2.review.r1.core.b10.json](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json).
+
+Ket qua packet `HR-FP-007__p03` la `field_fix`: packet-local evidence van refute XSS, nhung worker dang dua vao REST/JSON framing va `entry_point_id` khong duoc packet nay support. Critique da doi ly do sang helper-return/repository-bookkeeping path, them missing-evidence cho callback-to-sink, va ghi ro expansion duy nhat sang [IntegrationWithForms.php](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/IntegrationWithForms.php#L30).
+
+Validation: JSON parse OK voi `jq`, va required fields check OK bang `python3`.
+diff --git a/reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json b/reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..2f7e817f57430b0eeaaf643ec65978611a0ca3d1
+--- /dev/null
++++ b/reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json
+@@ -0,0 +1,99 @@
++{
++  "plugin_slug": "hostinger-reach",
++  "review_round": 1,
++  "review_mode": "core",
++  "review_status": "needs_revision",
++  "summary": {
++    "worker_findings_reviewed": 1,
++    "material_issues_found": true,
++    "new_candidate_count": 0,
++    "notes": "Packet-local review supports dismissing the XSS claim, but the worker's REST/JSON framing and entry-point linkage are not supported by this packet."
++  },
++  "finding_reviews": [
++    {
++      "finding_id": "HR-FP-007",
++      "packet_id": "HR-FP-007__p03",
++      "parent_finding_id": "HR-FP-007",
++      "assessment": "field_fix",
++      "reason": "Packet-local review still refutes XSS, but not for the worker's stated reason. `src/Api/Routes/Routes.php:22` only shows route registration and does not tie any REST callback to `ElementorIntegration::get_form_ids()`, so reachability from the cited REST entry point is unproven. On the code actually reviewed, `src/Integrations/Elementor/ElementorIntegration.php:88`, `:390`, and `:406` only assemble and return form ID arrays, and the one justified consumer expansion shows those arrays are used for repository diff/delete logic in `src/Integrations/IntegrationWithForms.php:22-35`, not HTML output. Authorization therefore remains unresolved on the actual helper path rather than proven REST-public, and the claimed XSS impact is overstated.",
++      "required_changes": [
++        "Remove or correct the packet's REST entry-point linkage (`entry_point_id` `ep_rest_api_init_rest_api_init`), because `src/Api/Routes/Routes.php:22` alone does not show any callback into `ElementorIntegration::get_form_ids()`.",
++        "Replace the worker's JSON-response rationale with the packet-local fact that `src/Integrations/Elementor/ElementorIntegration.php:88`, `:390`, and `:406` are helper return sites that only produce form ID arrays.",
++        "Narrow the impact statement to 'no packet-local HTML/JS sink demonstrated' instead of relying on a broader plugin-wide REST/JSON explanation.",
++        "Treat authorization as unresolved for this packet unless a concrete callback file:line is supplied; the reviewed helper path does not itself carry a permission callback or capability check."
++      ],
++      "counter_evidence": [
++        {
++          "type": "scope",
++          "file": "src/Api/Routes/Routes.php",
++          "line": 22,
++          "detail": "The cited entry point only registers routes on `rest_api_init`; this line does not show any REST callback reaching `ElementorIntegration::get_form_ids()`."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/Elementor/ElementorIntegration.php",
++          "line": 88,
++          "detail": "`get_form_ids()` returns the merged results of two helper methods. It does not echo, print, or build HTML."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/Elementor/ElementorIntegration.php",
++          "line": 369,
++          "detail": "`get_elementor_form_ids_from_content()` extracts IDs with a fixed-prefix regex and returns reconstructed form ID strings, not markup."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/Elementor/ElementorIntegration.php",
++          "line": 390,
++          "detail": "`get_elementor_form_ids_from_actions()` returns the accumulated `$form_ids` array after parsing `$_POST['actions']`; the anchor is still a data return, not an output sink."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/Elementor/ElementorIntegration.php",
++          "line": 406,
++          "detail": "`find_form_widget()` also terminates by returning an array of collected element IDs, with no rendering step in the reviewed function."
++        },
++        {
++          "type": "impact",
++          "file": "src/Integrations/IntegrationWithForms.php",
++          "line": 30,
++          "detail": "The justified consumer expansion shows the returned values are assigned to `$current_form_ids` inside `maybe_unset_forms()` for repository comparison logic."
++        },
++        {
++          "type": "impact",
++          "file": "src/Integrations/IntegrationWithForms.php",
++          "line": 34,
++          "detail": "The identified downstream action is `$this->form_repository->delete( $form_id )`; this is bookkeeping side effect, not HTML/JS execution."
++        }
++      ],
++      "missing_evidence": [
++        "A packet-local callback file:line showing any registered REST route invokes `src/Integrations/Elementor/ElementorIntegration.php:87-88`; `src/Api/Routes/Routes.php:22` alone is insufficient.",
++        "A terminal sink file:line where values returned from `src/Integrations/Elementor/ElementorIntegration.php:88`, `:390`, or `:406` are emitted into HTML or JavaScript without escaping.",
++        "If the worker wants to keep the REST/JSON defense, the concrete response-building file:line that consumes this packet's return values instead of the current helper-only packet."
++      ],
++      "expansion_attempts": [
++        {
++          "type": "out_of_band_file",
++          "target": "src/Integrations/IntegrationWithForms.php",
++          "reason": "The primary packet did not show any consumer of `get_form_ids()`, so one out-of-band file was needed to determine whether the returned data reaches a sink.",
++          "outcome": "Found `maybe_unset_forms()` at `src/Integrations/IntegrationWithForms.php:22-35`, where the returned IDs are compared against repository entries and used for deletion, not rendering."
++        }
++      ],
++      "suggested_field_corrections": {
++        "verdict": "FP",
++        "confidence": 0.92,
++        "entry_point_id": null,
++        "auth_required": null,
++        "sink_anchor": null,
++        "claimed_impact": "No packet-local XSS impact shown. The reviewed methods only derive and return form ID arrays used for repository bookkeeping.",
++        "question_answers": {
++          "reachability": "Not established from `src/Api/Routes/Routes.php:22`; the packet does not show a REST callback into `ElementorIntegration::get_form_ids()`.",
++          "authorization": "No packet-local permission callback or capability check is shown on the actual helper path because the reviewed code is not tied to a demonstrated REST route in this packet.",
++          "dataflow": "Input may enter via `$post->post_content` or `$_POST['actions']`, but the reviewed anchors only collect form IDs and return arrays. The justified downstream use is repository comparison/deletion, not rendering.",
++          "impact": "The packet does not support XSS. At most it supports internal form-repository bookkeeping effects on the located consumer path.",
++          "missing_evidence": "A real callback-to-sink path is still missing: specifically a REST callback or other caller file:line plus a terminal HTML/JS sink file:line."
++        }
++      }
++    }
++  ]
++}
+
+tokens used
+49,767

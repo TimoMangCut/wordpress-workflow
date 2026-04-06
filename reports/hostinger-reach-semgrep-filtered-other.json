@@ -1,0 +1,1769 @@
+{
+  "version": "1.136.0",
+  "results": [
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-xss-echo-no-escape",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+      "start": {
+        "line": 56,
+        "col": 9,
+        "offset": 1947
+      },
+      "end": {
+        "line": 56,
+        "col": 45,
+        "offset": 1983
+      },
+      "extra": {
+        "metavars": {
+          "$EXPR": {
+            "start": {
+              "line": 56,
+              "col": 16,
+              "offset": 1954
+            },
+            "end": {
+              "line": 56,
+              "col": 45,
+              "offset": 1983
+            },
+            "abstract_content": "$is_active&&$import_enabled"
+          }
+        },
+        "message": "Cross-Site Scripting: User input flows into HTML output without context-appropriate escaping. Use esc_html() for HTML body, esc_attr() for attributes, esc_url() for URLs.",
+        "metadata": {
+          "cwe": [
+            "CWE-79"
+          ],
+          "owasp": [
+            "A03:2021 - Injection"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "MEDIUM",
+          "likelihood": "MEDIUM",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "cd3603840a52e4e7eb494237c35f1e3bd7a93f010129ea1cf87a6e234af4ba8d422554abbf348a2ad99773b120915cabda507d33fbc71d81d85e23bffe2b1214_0",
+        "lines": "        return $is_active && $import_enabled;",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "dataflow_trace": {
+          "taint_source": [
+            "CliLoc",
+            [
+              {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                "start": {
+                  "line": 111,
+                  "col": 24,
+                  "offset": 4012
+                },
+                "end": {
+                  "line": 111,
+                  "col": 60,
+                  "offset": 4048
+                }
+              },
+              "$request->get_param( 'integration' )"
+            ]
+          ],
+          "intermediate_vars": [
+            {
+              "location": {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                "start": {
+                  "line": 111,
+                  "col": 9,
+                  "offset": 3997
+                },
+                "end": {
+                  "line": 111,
+                  "col": 21,
+                  "offset": 4009
+                }
+              },
+              "content": "$integration"
+            }
+          ],
+          "taint_sink": [
+            "CliCall",
+            [
+              [
+                {
+                  "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                  "start": {
+                    "line": 113,
+                    "col": 16,
+                    "offset": 4066
+                  },
+                  "end": {
+                    "line": 113,
+                    "col": 40,
+                    "offset": 4090
+                  }
+                },
+                "$this->is_import_enabled"
+              ],
+              [
+                {
+                  "location": {
+                    "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                    "start": {
+                      "line": 50,
+                      "col": 47,
+                      "offset": 1654
+                    },
+                    "end": {
+                      "line": 50,
+                      "col": 64,
+                      "offset": 1671
+                    }
+                  },
+                  "content": "$integration_name"
+                },
+                {
+                  "location": {
+                    "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                    "start": {
+                      "line": 53,
+                      "col": 9,
+                      "offset": 1739
+                    },
+                    "end": {
+                      "line": 53,
+                      "col": 19,
+                      "offset": 1749
+                    }
+                  },
+                  "content": "$is_active"
+                }
+              ],
+              [
+                "CliLoc",
+                [
+                  {
+                    "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                    "start": {
+                      "line": 56,
+                      "col": 9,
+                      "offset": 1947
+                    },
+                    "end": {
+                      "line": 56,
+                      "col": 45,
+                      "offset": 1983
+                    }
+                  },
+                  "return $is_active && $import_enabled"
+                ]
+              ]
+            ]
+          ]
+        },
+        "engine_kind": [
+          "PRO_REQUIRED",
+          {
+            "interproc_taint": true,
+            "interfile_taint": false,
+            "proprietary_language": false
+          }
+        ]
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-xss-echo-no-escape",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+      "start": {
+        "line": 153,
+        "col": 9,
+        "offset": 5427
+      },
+      "end": {
+        "line": 153,
+        "col": 26,
+        "offset": 5444
+      },
+      "extra": {
+        "metavars": {
+          "$EXPR": {
+            "start": {
+              "line": 153,
+              "col": 16,
+              "offset": 5434
+            },
+            "end": {
+              "line": 153,
+              "col": 26,
+              "offset": 5444
+            },
+            "abstract_content": "$activated",
+            "propagated_value": {
+              "svalue_start": {
+                "line": 147,
+                "col": 22,
+                "offset": 5162
+              },
+              "svalue_end": {
+                "line": 147,
+                "col": 74,
+                "offset": 5214
+              },
+              "svalue_abstract_content": "$this->plugin_manager->activate($integration_name)"
+            }
+          }
+        },
+        "message": "Cross-Site Scripting: User input flows into HTML output without context-appropriate escaping. Use esc_html() for HTML body, esc_attr() for attributes, esc_url() for URLs.",
+        "metadata": {
+          "cwe": [
+            "CWE-79"
+          ],
+          "owasp": [
+            "A03:2021 - Injection"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "MEDIUM",
+          "likelihood": "MEDIUM",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "e4dc0ae080084ebe7536bf489ed5c609e1416f7e0086362f6348a943fe62c2a241fb898ac3b239a776316f36e428e1019858e43609cfaf9087bcb7c257a49b84_0",
+        "lines": "        return $activated;",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "dataflow_trace": {
+          "taint_source": [
+            "CliLoc",
+            [
+              {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                "start": {
+                  "line": 72,
+                  "col": 30,
+                  "offset": 2531
+                },
+                "end": {
+                  "line": 72,
+                  "col": 66,
+                  "offset": 2567
+                }
+              },
+              "$request->get_param( 'integration' )"
+            ]
+          ],
+          "intermediate_vars": [
+            {
+              "location": {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                "start": {
+                  "line": 72,
+                  "col": 9,
+                  "offset": 2510
+                },
+                "end": {
+                  "line": 72,
+                  "col": 21,
+                  "offset": 2522
+                }
+              },
+              "content": "$integration"
+            }
+          ],
+          "taint_sink": [
+            "CliCall",
+            [
+              [
+                {
+                  "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                  "start": {
+                    "line": 78,
+                    "col": 46,
+                    "offset": 3014
+                  },
+                  "end": {
+                    "line": 78,
+                    "col": 73,
+                    "offset": 3041
+                  }
+                },
+                "$this->activate_integration"
+              ],
+              [
+                {
+                  "location": {
+                    "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                    "start": {
+                      "line": 134,
+                      "col": 50,
+                      "offset": 4724
+                    },
+                    "end": {
+                      "line": 134,
+                      "col": 67,
+                      "offset": 4741
+                    }
+                  },
+                  "content": "$integration_name"
+                },
+                {
+                  "location": {
+                    "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                    "start": {
+                      "line": 147,
+                      "col": 9,
+                      "offset": 5149
+                    },
+                    "end": {
+                      "line": 147,
+                      "col": 19,
+                      "offset": 5159
+                    }
+                  },
+                  "content": "$activated"
+                }
+              ],
+              [
+                "CliLoc",
+                [
+                  {
+                    "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                    "start": {
+                      "line": 153,
+                      "col": 9,
+                      "offset": 5427
+                    },
+                    "end": {
+                      "line": 153,
+                      "col": 26,
+                      "offset": 5444
+                    }
+                  },
+                  "return $activated"
+                ]
+              ]
+            ]
+          ]
+        },
+        "engine_kind": [
+          "PRO_REQUIRED",
+          {
+            "interproc_taint": true,
+            "interfile_taint": false,
+            "proprietary_language": false
+          }
+        ]
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-xss-echo-no-escape",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+      "start": {
+        "line": 205,
+        "col": 9,
+        "offset": 8352
+      },
+      "end": {
+        "line": 205,
+        "col": 67,
+        "offset": 8410
+      },
+      "extra": {
+        "metavars": {
+          "$EXPR": {
+            "start": {
+              "line": 205,
+              "col": 16,
+              "offset": 8359
+            },
+            "end": {
+              "line": 205,
+              "col": 67,
+              "offset": 8410
+            },
+            "abstract_content": "$this->save_integrations_data($integrations_data)"
+          }
+        },
+        "message": "Cross-Site Scripting: User input flows into HTML output without context-appropriate escaping. Use esc_html() for HTML body, esc_attr() for attributes, esc_url() for URLs.",
+        "metadata": {
+          "cwe": [
+            "CWE-79"
+          ],
+          "owasp": [
+            "A03:2021 - Injection"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "MEDIUM",
+          "likelihood": "MEDIUM",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "1a700d3d8e83af4e71ca376552052cfd6f5a9a4161ccd52d32609f0011c445e0c5e7ac0357e6adb50c33cb2c0a8f8eae1740caee17c95d73226e1e289d8c3724_0",
+        "lines": "        return $this->save_integrations_data( $integrations_data );",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "dataflow_trace": {
+          "taint_source": [
+            "CliLoc",
+            [
+              {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                "start": {
+                  "line": 71,
+                  "col": 30,
+                  "offset": 2443
+                },
+                "end": {
+                  "line": 71,
+                  "col": 87,
+                  "offset": 2500
+                }
+              },
+              "$request->get_param( Integration::INTEGRATION_IS_ACTIVE )"
+            ]
+          ],
+          "intermediate_vars": [
+            {
+              "location": {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                "start": {
+                  "line": 71,
+                  "col": 9,
+                  "offset": 2422
+                },
+                "end": {
+                  "line": 71,
+                  "col": 19,
+                  "offset": 2432
+                }
+              },
+              "content": "$is_active"
+            }
+          ],
+          "taint_sink": [
+            "CliCall",
+            [
+              [
+                {
+                  "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                  "start": {
+                    "line": 85,
+                    "col": 13,
+                    "offset": 3221
+                  },
+                  "end": {
+                    "line": 85,
+                    "col": 36,
+                    "offset": 3244
+                  }
+                },
+                "$this->save_integration"
+              ],
+              [
+                {
+                  "location": {
+                    "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                    "start": {
+                      "line": 201,
+                      "col": 72,
+                      "offset": 8188
+                    },
+                    "end": {
+                      "line": 201,
+                      "col": 77,
+                      "offset": 8193
+                    }
+                  },
+                  "content": "$data"
+                },
+                {
+                  "location": {
+                    "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                    "start": {
+                      "line": 203,
+                      "col": 9,
+                      "offset": 8294
+                    },
+                    "end": {
+                      "line": 203,
+                      "col": 27,
+                      "offset": 8312
+                    }
+                  },
+                  "content": "$integrations_data"
+                }
+              ],
+              [
+                "CliLoc",
+                [
+                  {
+                    "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                    "start": {
+                      "line": 205,
+                      "col": 9,
+                      "offset": 8352
+                    },
+                    "end": {
+                      "line": 205,
+                      "col": 67,
+                      "offset": 8410
+                    }
+                  },
+                  "return $this->save_integrations_data( $integrations_data )"
+                ]
+              ]
+            ]
+          ]
+        },
+        "engine_kind": [
+          "PRO_REQUIRED",
+          {
+            "interproc_taint": true,
+            "interfile_taint": false,
+            "proprietary_language": false
+          }
+        ]
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-xss-echo-no-escape",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+      "start": {
+        "line": 210,
+        "col": 9,
+        "offset": 8495
+      },
+      "end": {
+        "line": 210,
+        "col": 70,
+        "offset": 8556
+      },
+      "extra": {
+        "metavars": {
+          "$EXPR": {
+            "start": {
+              "line": 210,
+              "col": 16,
+              "offset": 8502
+            },
+            "end": {
+              "line": 210,
+              "col": 70,
+              "offset": 8556
+            },
+            "abstract_content": "update_option(self::INTEGRATIONS_OPTION_NAME$data)"
+          }
+        },
+        "message": "Cross-Site Scripting: User input flows into HTML output without context-appropriate escaping. Use esc_html() for HTML body, esc_attr() for attributes, esc_url() for URLs.",
+        "metadata": {
+          "cwe": [
+            "CWE-79"
+          ],
+          "owasp": [
+            "A03:2021 - Injection"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "MEDIUM",
+          "likelihood": "MEDIUM",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "668f539a362914e5c66c1ba0f29b02dc4b50b5a18ab90bc40e0c3a2193ecf5fe16e85a163b5673e27e158b24b2cea1b725042bf65632c75ef3975834dfc9fc08_0",
+        "lines": "        return update_option( self::INTEGRATIONS_OPTION_NAME, $data );",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "dataflow_trace": {
+          "taint_source": [
+            "CliLoc",
+            [
+              {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                "start": {
+                  "line": 71,
+                  "col": 30,
+                  "offset": 2443
+                },
+                "end": {
+                  "line": 71,
+                  "col": 87,
+                  "offset": 2500
+                }
+              },
+              "$request->get_param( Integration::INTEGRATION_IS_ACTIVE )"
+            ]
+          ],
+          "intermediate_vars": [
+            {
+              "location": {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                "start": {
+                  "line": 71,
+                  "col": 9,
+                  "offset": 2422
+                },
+                "end": {
+                  "line": 71,
+                  "col": 19,
+                  "offset": 2432
+                }
+              },
+              "content": "$is_active"
+            }
+          ],
+          "taint_sink": [
+            "CliCall",
+            [
+              [
+                {
+                  "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                  "start": {
+                    "line": 85,
+                    "col": 13,
+                    "offset": 3221
+                  },
+                  "end": {
+                    "line": 85,
+                    "col": 36,
+                    "offset": 3244
+                  }
+                },
+                "$this->save_integration"
+              ],
+              [
+                {
+                  "location": {
+                    "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                    "start": {
+                      "line": 201,
+                      "col": 72,
+                      "offset": 8188
+                    },
+                    "end": {
+                      "line": 201,
+                      "col": 77,
+                      "offset": 8193
+                    }
+                  },
+                  "content": "$data"
+                },
+                {
+                  "location": {
+                    "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                    "start": {
+                      "line": 203,
+                      "col": 9,
+                      "offset": 8294
+                    },
+                    "end": {
+                      "line": 203,
+                      "col": 27,
+                      "offset": 8312
+                    }
+                  },
+                  "content": "$integrations_data"
+                }
+              ],
+              [
+                "CliCall",
+                [
+                  [
+                    {
+                      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                      "start": {
+                        "line": 205,
+                        "col": 16,
+                        "offset": 8359
+                      },
+                      "end": {
+                        "line": 205,
+                        "col": 45,
+                        "offset": 8388
+                      }
+                    },
+                    "$this->save_integrations_data"
+                  ],
+                  [
+                    {
+                      "location": {
+                        "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                        "start": {
+                          "line": 209,
+                          "col": 52,
+                          "offset": 8471
+                        },
+                        "end": {
+                          "line": 209,
+                          "col": 57,
+                          "offset": 8476
+                        }
+                      },
+                      "content": "$data"
+                    }
+                  ],
+                  [
+                    "CliLoc",
+                    [
+                      {
+                        "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                        "start": {
+                          "line": 210,
+                          "col": 9,
+                          "offset": 8495
+                        },
+                        "end": {
+                          "line": 210,
+                          "col": 70,
+                          "offset": 8556
+                        }
+                      },
+                      "return update_option( self::INTEGRATIONS_OPTION_NAME, $data )"
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        },
+        "engine_kind": [
+          "PRO_REQUIRED",
+          {
+            "interproc_taint": true,
+            "interfile_taint": false,
+            "proprietary_language": false
+          }
+        ]
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-privesc-option-update",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+      "start": {
+        "line": 210,
+        "col": 16,
+        "offset": 8502
+      },
+      "end": {
+        "line": 210,
+        "col": 70,
+        "offset": 8556
+      },
+      "extra": {
+        "metavars": {},
+        "message": "Privilege Escalation via Option Update: User input controls option key/value. Can set users_can_register=1 + default_role=administrator for account takeover.",
+        "metadata": {
+          "cwe": [
+            "CWE-269",
+            "CWE-862"
+          ],
+          "owasp": [
+            "A01:2021 - Broken Access Control"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "MEDIUM",
+          "likelihood": "MEDIUM",
+          "impact": "HIGH"
+        },
+        "severity": "ERROR",
+        "fingerprint": "7769d90dac7e82490ae05f2c208876e4fd01607c61c2adf02968e1f7088228452ec9e0b61024c859bf50c298d0faf8c6881895341fe9fdfe14a0b54702361e2c_0",
+        "lines": "        return update_option( self::INTEGRATIONS_OPTION_NAME, $data );",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "dataflow_trace": {
+          "taint_source": [
+            "CliLoc",
+            [
+              {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                "start": {
+                  "line": 71,
+                  "col": 30,
+                  "offset": 2443
+                },
+                "end": {
+                  "line": 71,
+                  "col": 87,
+                  "offset": 2500
+                }
+              },
+              "$request->get_param( Integration::INTEGRATION_IS_ACTIVE )"
+            ]
+          ],
+          "intermediate_vars": [
+            {
+              "location": {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                "start": {
+                  "line": 71,
+                  "col": 9,
+                  "offset": 2422
+                },
+                "end": {
+                  "line": 71,
+                  "col": 19,
+                  "offset": 2432
+                }
+              },
+              "content": "$is_active"
+            }
+          ],
+          "taint_sink": [
+            "CliCall",
+            [
+              [
+                {
+                  "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                  "start": {
+                    "line": 85,
+                    "col": 13,
+                    "offset": 3221
+                  },
+                  "end": {
+                    "line": 85,
+                    "col": 36,
+                    "offset": 3244
+                  }
+                },
+                "$this->save_integration"
+              ],
+              [
+                {
+                  "location": {
+                    "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                    "start": {
+                      "line": 201,
+                      "col": 72,
+                      "offset": 8188
+                    },
+                    "end": {
+                      "line": 201,
+                      "col": 77,
+                      "offset": 8193
+                    }
+                  },
+                  "content": "$data"
+                },
+                {
+                  "location": {
+                    "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                    "start": {
+                      "line": 203,
+                      "col": 9,
+                      "offset": 8294
+                    },
+                    "end": {
+                      "line": 203,
+                      "col": 27,
+                      "offset": 8312
+                    }
+                  },
+                  "content": "$integrations_data"
+                }
+              ],
+              [
+                "CliCall",
+                [
+                  [
+                    {
+                      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                      "start": {
+                        "line": 205,
+                        "col": 16,
+                        "offset": 8359
+                      },
+                      "end": {
+                        "line": 205,
+                        "col": 45,
+                        "offset": 8388
+                      }
+                    },
+                    "$this->save_integrations_data"
+                  ],
+                  [
+                    {
+                      "location": {
+                        "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                        "start": {
+                          "line": 209,
+                          "col": 52,
+                          "offset": 8471
+                        },
+                        "end": {
+                          "line": 209,
+                          "col": 57,
+                          "offset": 8476
+                        }
+                      },
+                      "content": "$data"
+                    }
+                  ],
+                  [
+                    "CliLoc",
+                    [
+                      {
+                        "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                        "start": {
+                          "line": 210,
+                          "col": 16,
+                          "offset": 8502
+                        },
+                        "end": {
+                          "line": 210,
+                          "col": 70,
+                          "offset": 8556
+                        }
+                      },
+                      "update_option( self::INTEGRATIONS_OPTION_NAME, $data )"
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        },
+        "engine_kind": [
+          "PRO_REQUIRED",
+          {
+            "interproc_taint": true,
+            "interfile_taint": false,
+            "proprietary_language": false
+          }
+        ]
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-rest-unsafe-storage",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+      "start": {
+        "line": 210,
+        "col": 16,
+        "offset": 8502
+      },
+      "end": {
+        "line": 210,
+        "col": 70,
+        "offset": 8556
+      },
+      "extra": {
+        "metavars": {},
+        "message": "REST API input stored without sanitization. Data from WP_REST_Request is UNSLASHED. Sanitize before passing to WordPress storage functions to prevent stored XSS and second-order injection.",
+        "metadata": {
+          "cwe": [
+            "CWE-79",
+            "CWE-89"
+          ],
+          "owasp": [
+            "A03:2021 - Injection"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "MEDIUM",
+          "likelihood": "MEDIUM",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "b1c24c85ae2ea4e8ed83a14179ce46118f97dbadee1012a9e6567ad576d865e3c4d396eb16143c382d4e2b447007972a573c1b1f1e30e72a57fad0b4aad9e756_0",
+        "lines": "        return update_option( self::INTEGRATIONS_OPTION_NAME, $data );",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "dataflow_trace": {
+          "taint_source": [
+            "CliLoc",
+            [
+              {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                "start": {
+                  "line": 71,
+                  "col": 30,
+                  "offset": 2443
+                },
+                "end": {
+                  "line": 71,
+                  "col": 87,
+                  "offset": 2500
+                }
+              },
+              "$request->get_param( Integration::INTEGRATION_IS_ACTIVE )"
+            ]
+          ],
+          "intermediate_vars": [
+            {
+              "location": {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                "start": {
+                  "line": 71,
+                  "col": 9,
+                  "offset": 2422
+                },
+                "end": {
+                  "line": 71,
+                  "col": 19,
+                  "offset": 2432
+                }
+              },
+              "content": "$is_active"
+            }
+          ],
+          "taint_sink": [
+            "CliCall",
+            [
+              [
+                {
+                  "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                  "start": {
+                    "line": 85,
+                    "col": 13,
+                    "offset": 3221
+                  },
+                  "end": {
+                    "line": 85,
+                    "col": 36,
+                    "offset": 3244
+                  }
+                },
+                "$this->save_integration"
+              ],
+              [
+                {
+                  "location": {
+                    "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                    "start": {
+                      "line": 201,
+                      "col": 72,
+                      "offset": 8188
+                    },
+                    "end": {
+                      "line": 201,
+                      "col": 77,
+                      "offset": 8193
+                    }
+                  },
+                  "content": "$data"
+                },
+                {
+                  "location": {
+                    "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                    "start": {
+                      "line": 203,
+                      "col": 9,
+                      "offset": 8294
+                    },
+                    "end": {
+                      "line": 203,
+                      "col": 27,
+                      "offset": 8312
+                    }
+                  },
+                  "content": "$integrations_data"
+                }
+              ],
+              [
+                "CliCall",
+                [
+                  [
+                    {
+                      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                      "start": {
+                        "line": 205,
+                        "col": 16,
+                        "offset": 8359
+                      },
+                      "end": {
+                        "line": 205,
+                        "col": 45,
+                        "offset": 8388
+                      }
+                    },
+                    "$this->save_integrations_data"
+                  ],
+                  [
+                    {
+                      "location": {
+                        "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                        "start": {
+                          "line": 209,
+                          "col": 52,
+                          "offset": 8471
+                        },
+                        "end": {
+                          "line": 209,
+                          "col": 57,
+                          "offset": 8476
+                        }
+                      },
+                      "content": "$data"
+                    }
+                  ],
+                  [
+                    "CliLoc",
+                    [
+                      {
+                        "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+                        "start": {
+                          "line": 210,
+                          "col": 16,
+                          "offset": 8502
+                        },
+                        "end": {
+                          "line": 210,
+                          "col": 70,
+                          "offset": 8556
+                        }
+                      },
+                      "update_option( self::INTEGRATIONS_OPTION_NAME, $data )"
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        },
+        "engine_kind": [
+          "PRO_REQUIRED",
+          {
+            "interproc_taint": true,
+            "interfile_taint": false,
+            "proprietary_language": false
+          }
+        ]
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-bac-rest-return-true",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+      "start": {
+        "line": 214,
+        "col": 17,
+        "offset": 7405
+      },
+      "end": {
+        "line": 222,
+        "col": 18,
+        "offset": 7782
+      },
+      "extra": {
+        "metavars": {
+          "$NS": {
+            "start": {
+              "line": 215,
+              "col": 21,
+              "offset": 7446
+            },
+            "end": {
+              "line": 215,
+              "col": 41,
+              "offset": 7466
+            },
+            "abstract_content": "'hostinger-reach/v1'"
+          },
+          "$ROUTE": {
+            "start": {
+              "line": 216,
+              "col": 21,
+              "offset": 7488
+            },
+            "end": {
+              "line": 216,
+              "col": 36,
+              "offset": 7503
+            },
+            "abstract_content": "'/optinmonster'"
+          }
+        },
+        "message": "Broken Access Control: REST route with __return_true permission callback  is publicly accessible. Use current_user_can() in permission_callback.",
+        "metadata": {
+          "cwe": [
+            "CWE-862"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "HIGH",
+          "impact": "HIGH"
+        },
+        "severity": "WARNING",
+        "fingerprint": "2e1572fe4f2b7e074df9bbe670f065308ce3bf42ca5bcf609d676ca807f6992f4c684c540c36ada06e91cd978c01399673dfe164f4650448a8bf79d416540855_0",
+        "lines": "                register_rest_route(\n                    'hostinger-reach/v1',\n                    '/optinmonster',\n                    array(\n                        'methods'             => 'POST',\n                        'callback'            => array( $this, 'submit_optinmonster' ),\n                        'permission_callback' => '__return_true',\n                    )\n                );",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "engine_kind": "PRO"
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-xss-echo-no-escape",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+      "start": {
+        "line": 255,
+        "col": 17,
+        "offset": 8935
+      },
+      "end": {
+        "line": 255,
+        "col": 30,
+        "offset": 8948
+      },
+      "extra": {
+        "metavars": {
+          "$EXPR": {
+            "start": {
+              "line": 255,
+              "col": 24,
+              "offset": 8942
+            },
+            "end": {
+              "line": 255,
+              "col": 30,
+              "offset": 8948
+            },
+            "abstract_content": "$value"
+          }
+        },
+        "message": "Cross-Site Scripting: User input flows into HTML output without context-appropriate escaping. Use esc_html() for HTML body, esc_attr() for attributes, esc_url() for URLs.",
+        "metadata": {
+          "cwe": [
+            "CWE-79"
+          ],
+          "owasp": [
+            "A03:2021 - Injection"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "MEDIUM",
+          "likelihood": "MEDIUM",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "7c92a8b38332f1023637d08a244d270b67d0913847f1b719d8404b7f1b37893deb5da4e4c7f2b8805c46fa3433552a67aad6ad8b8802cdec5c7d4824a12c6a19_0",
+        "lines": "                return $value;",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "dataflow_trace": {
+          "taint_source": [
+            "CliLoc",
+            [
+              {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+                "start": {
+                  "line": 68,
+                  "col": 37,
+                  "offset": 2261
+                },
+                "end": {
+                  "line": 68,
+                  "col": 57,
+                  "offset": 2281
+                }
+              },
+              "$request->get_body()"
+            ]
+          ],
+          "intermediate_vars": [
+            {
+              "location": {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+                "start": {
+                  "line": 68,
+                  "col": 13,
+                  "offset": 2237
+                },
+                "end": {
+                  "line": 68,
+                  "col": 18,
+                  "offset": 2242
+                }
+              },
+              "content": "$data"
+            }
+          ],
+          "taint_sink": [
+            "CliCall",
+            [
+              [
+                {
+                  "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+                  "start": {
+                    "line": 73,
+                    "col": 22,
+                    "offset": 2578
+                  },
+                  "end": {
+                    "line": 73,
+                    "col": 39,
+                    "offset": 2595
+                  }
+                },
+                "$this->find_email"
+              ],
+              [
+                {
+                  "location": {
+                    "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+                    "start": {
+                      "line": 251,
+                      "col": 40,
+                      "offset": 8731
+                    },
+                    "end": {
+                      "line": 251,
+                      "col": 45,
+                      "offset": 8736
+                    }
+                  },
+                  "content": "$data"
+                },
+                {
+                  "location": {
+                    "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+                    "start": {
+                      "line": 252,
+                      "col": 25,
+                      "offset": 8773
+                    },
+                    "end": {
+                      "line": 252,
+                      "col": 27,
+                      "offset": 8775
+                    }
+                  },
+                  "content": "as"
+                },
+                {
+                  "location": {
+                    "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+                    "start": {
+                      "line": 252,
+                      "col": 28,
+                      "offset": 8776
+                    },
+                    "end": {
+                      "line": 252,
+                      "col": 34,
+                      "offset": 8782
+                    }
+                  },
+                  "content": "$value"
+                }
+              ],
+              [
+                "CliLoc",
+                [
+                  {
+                    "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+                    "start": {
+                      "line": 255,
+                      "col": 17,
+                      "offset": 8935
+                    },
+                    "end": {
+                      "line": 255,
+                      "col": 30,
+                      "offset": 8948
+                    }
+                  },
+                  "return $value"
+                ]
+              ]
+            ]
+          ]
+        },
+        "engine_kind": [
+          "PRO_REQUIRED",
+          {
+            "interproc_taint": true,
+            "interfile_taint": false,
+            "proprietary_language": false
+          }
+        ]
+      }
+    },
+    {
+      "check_id": "tools.config.semgrep-wp-rules.wp-xss-echo-no-escape",
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+      "start": {
+        "line": 268,
+        "col": 13,
+        "offset": 9248
+      },
+      "end": {
+        "line": 268,
+        "col": 29,
+        "offset": 9264
+      },
+      "extra": {
+        "metavars": {
+          "$EXPR": {
+            "start": {
+              "line": 268,
+              "col": 20,
+              "offset": 9255
+            },
+            "end": {
+              "line": 268,
+              "col": 29,
+              "offset": 9264
+            },
+            "abstract_content": "$post->ID"
+          }
+        },
+        "message": "Cross-Site Scripting: User input flows into HTML output without context-appropriate escaping. Use esc_html() for HTML body, esc_attr() for attributes, esc_url() for URLs.",
+        "metadata": {
+          "cwe": [
+            "CWE-79"
+          ],
+          "owasp": [
+            "A03:2021 - Injection"
+          ],
+          "category": "security",
+          "technology": [
+            "wordpress"
+          ],
+          "confidence": "MEDIUM",
+          "likelihood": "MEDIUM",
+          "impact": "MEDIUM"
+        },
+        "severity": "WARNING",
+        "fingerprint": "78bae8d4baab5bc7085c4b6ba7ce5733f51d1054543edecb12c25f59eb8ca3557bef254846e09688716bea802cfa1416fa988c0b9e803f850b134336770a1516_0",
+        "lines": "            return $post->ID;",
+        "is_ignored": false,
+        "validation_state": "NO_VALIDATOR",
+        "dataflow_trace": {
+          "taint_source": [
+            "CliLoc",
+            [
+              {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+                "start": {
+                  "line": 68,
+                  "col": 37,
+                  "offset": 2261
+                },
+                "end": {
+                  "line": 68,
+                  "col": 57,
+                  "offset": 2281
+                }
+              },
+              "$request->get_body()"
+            ]
+          ],
+          "intermediate_vars": [
+            {
+              "location": {
+                "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+                "start": {
+                  "line": 68,
+                  "col": 13,
+                  "offset": 2237
+                },
+                "end": {
+                  "line": 68,
+                  "col": 18,
+                  "offset": 2242
+                }
+              },
+              "content": "$data"
+            }
+          ],
+          "taint_sink": [
+            "CliCall",
+            [
+              [
+                {
+                  "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+                  "start": {
+                    "line": 69,
+                    "col": 24,
+                    "offset": 2320
+                  },
+                  "end": {
+                    "line": 69,
+                    "col": 53,
+                    "offset": 2349
+                  }
+                },
+                "$this->get_post_id_by_form_id"
+              ],
+              [
+                {
+                  "location": {
+                    "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+                    "start": {
+                      "line": 262,
+                      "col": 53,
+                      "offset": 9053
+                    },
+                    "end": {
+                      "line": 262,
+                      "col": 61,
+                      "offset": 9061
+                    }
+                  },
+                  "content": "$form_id"
+                },
+                {
+                  "location": {
+                    "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+                    "start": {
+                      "line": 266,
+                      "col": 9,
+                      "offset": 9139
+                    },
+                    "end": {
+                      "line": 266,
+                      "col": 14,
+                      "offset": 9144
+                    }
+                  },
+                  "content": "$post"
+                }
+              ],
+              [
+                "CliLoc",
+                [
+                  {
+                    "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+                    "start": {
+                      "line": 268,
+                      "col": 13,
+                      "offset": 9248
+                    },
+                    "end": {
+                      "line": 268,
+                      "col": 29,
+                      "offset": 9264
+                    }
+                  },
+                  "return $post->ID"
+                ]
+              ]
+            ]
+          ]
+        },
+        "engine_kind": [
+          "PRO_REQUIRED",
+          {
+            "interproc_taint": true,
+            "interfile_taint": false,
+            "proprietary_language": false
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [],
+  "paths": {
+    "scanned": [
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/hostinger-reach.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/languages/hostinger-reach-ar.l10n.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/languages/hostinger-reach-de_DE.l10n.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/languages/hostinger-reach-es_AR.l10n.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/languages/hostinger-reach-es_CO.l10n.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/languages/hostinger-reach-es_ES.l10n.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/languages/hostinger-reach-es_MX.l10n.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/languages/hostinger-reach-fr_FR.l10n.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/languages/hostinger-reach-he_IL.l10n.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/languages/hostinger-reach-id_ID.l10n.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/languages/hostinger-reach-it_IT.l10n.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/languages/hostinger-reach-ja.l10n.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/languages/hostinger-reach-ko_KR.l10n.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/languages/hostinger-reach-lt_LT.l10n.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/languages/hostinger-reach-nl_NL.l10n.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/languages/hostinger-reach-nl_NL_formal.l10n.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/languages/hostinger-reach-pl_PL.l10n.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/languages/hostinger-reach-pt_BR.l10n.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/languages/hostinger-reach-pt_PT.l10n.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/languages/hostinger-reach-ro_RO.l10n.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/languages/hostinger-reach-th.l10n.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/languages/hostinger-reach-tr_TR.l10n.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/languages/hostinger-reach-uk.l10n.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/languages/hostinger-reach-vi.l10n.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/languages/hostinger-reach-zh_CN.l10n.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Admin/Database/CartsTable.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Admin/Database/ContactListsTable.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Admin/Database/DatabaseInterface.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Admin/Database/DatabaseTable.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Admin/Database/FormsTable.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Admin/Menus.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Admin/Notices/AddFormNotice.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Admin/Notices/ConnectionNotice.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Admin/Redirects.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Admin/Surveys/SatisfactionSurvey.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Admin/Surveys/Survey.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/ApiKeyManager.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/ApiHandler.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/FormsApiHandler.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/IntegrationsApiHandler.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Handlers/ReachApiHandler.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/ResourceIdManager.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/FormsRoutes.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/IntegrationsRoutes.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Routes/Routes.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Webhooks/Handlers/CartAbandoned.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Webhooks/Handlers/OrderPurchased.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Api/Webhooks/Handlers/WebhookHandler.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Blocks/Block.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Blocks/SubscriptionFormBlock.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Boot.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Container.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Dto/Cart.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Dto/CartItem.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Dto/PluginData.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Dto/ReachContact.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Dto/Totals.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Functions.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/Brave/BraveIntegration.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/ContactForm7/ContactForm7Integration.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/ContactForm7Integration.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/Elementor/ElementorIntegration.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/Elementor/SubscriptionFormElementorWidget.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/Forminator/ForminatorIntegration.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/ImportManager.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/Integration.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/IntegrationInterface.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/IntegrationWithForms.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/NinjaForms/NinjaFormsIntegration.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/PluginManager.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/Reach/ReachFormIntegration.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/ReachFormIntegration.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/SureForms/SureFormsIntegration.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/ThriveLeads/ThriveLeadsIntegration.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/WPFormsLite/WpFormsLiteIntegration.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/WSForms/WSFormsIntegration.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/WooCommerce/WooCommerceIntegration.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/WpFormsLiteIntegration.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Jobs/AbandonedCartsJob.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Jobs/AbstractBatchedJob.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Jobs/AbstractJob.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Jobs/ActionScheduler.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Jobs/CleanupCartsJob.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Jobs/ImportJob.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Jobs/JobInterface.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Jobs/RecurringJobInterface.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Models/Cart.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Models/ContactList.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Models/Form.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Models/Model.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Models/PluginData.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Providers/AssetsProvider.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Providers/BlocksProvider.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Providers/ContainerProvider.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Providers/DatabaseProvider.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Providers/IntegrationsProvider.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Providers/JobsProvider.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Providers/MenusProvider.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Providers/NoticesProvider.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Providers/ProviderInterface.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Providers/RedirectsProvider.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Providers/RoutesProvider.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Providers/SurveysProvider.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Providers/TrackingProvider.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Providers/WebhooksProvider.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Providers/WpdbProvider.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Repositories/CartRepository.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Repositories/ContactListRepository.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Repositories/FormRepository.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Repositories/Repository.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Repositories/RepositoryInterface.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Setup/Activator.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Setup/Assets.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Setup/Blocks.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Setup/Database.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Setup/Encrypt.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Tracking/AbandonedCarts.php",
+      "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/templates/optin-checkbox.php"
+    ]
+  },
+  "time": {
+    "rules": [],
+    "rules_parse_time": 0.023051023483276367,
+    "profiling_times": {
+      "config_time": 0.8524651527404785,
+      "core_time": 1.3326880931854248,
+      "ignores_time": 6.771087646484375e-05,
+      "total_time": 2.1855900287628174
+    },
+    "parsing_time": {
+      "total_time": 0.0,
+      "per_file_time": {
+        "mean": 0.0,
+        "std_dev": 0.0
+      },
+      "very_slow_stats": {
+        "time_ratio": 0.0,
+        "count_ratio": 0.0
+      },
+      "very_slow_files": []
+    },
+    "scanning_time": {
+      "total_time": 0.8638153076171875,
+      "per_file_time": {
+        "mean": 0.007198460896809897,
+        "std_dev": 0.00018621749132983554
+      },
+      "very_slow_stats": {
+        "time_ratio": 0.0,
+        "count_ratio": 0.0
+      },
+      "very_slow_files": []
+    },
+    "matching_time": {
+      "total_time": 0.0,
+      "per_file_and_rule_time": {
+        "mean": 0.0,
+        "std_dev": 0.0
+      },
+      "very_slow_stats": {
+        "time_ratio": 0.0,
+        "count_ratio": 0.0
+      },
+      "very_slow_rules_on_files": []
+    },
+    "tainting_time": {
+      "total_time": 0.0,
+      "per_def_and_rule_time": {
+        "mean": 0.0,
+        "std_dev": 0.0
+      },
+      "very_slow_stats": {
+        "time_ratio": 0.0,
+        "count_ratio": 0.0
+      },
+      "very_slow_rules_on_defs": []
+    },
+    "fixpoint_timeouts": [],
+    "prefiltering": {
+      "project_level_time": 0.0,
+      "file_level_time": 0.0,
+      "rules_with_project_prefilters_ratio": 0.0,
+      "rules_with_file_prefilters_ratio": 0.0,
+      "rules_selected_ratio": 0.0,
+      "rules_matched_ratio": 0.0
+    },
+    "targets": [],
+    "total_bytes": 0,
+    "max_memory_bytes": 167063616
+  },
+  "engine_requested": "PRO",
+  "interfile_languages_used": [],
+  "skipped_rules": []
+}

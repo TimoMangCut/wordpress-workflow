@@ -1049,7 +1049,7 @@
     },
     {
       "finding_id": "agent-d-unresolved-001",
-      "verdict": "REVIEW",
+      "verdict": "FP",
       "vuln_type": "unresolved_dynamic_hook",
       "cwe_id": null,
       "severity": "informational",
@@ -1074,7 +1074,39 @@
       "remediation": null,
       "source_agents": [
         "agent-d"
-      ]
+      ],
+      "phase3_review_prior_verdict": "REVIEW",
+      "phase3_review": {
+        "original_status": "UNCERTAIN",
+        "reason": "The reviewed lite plugin defines PrliAddonUpdates, but there is no constructor call for that class anywhere in the analyzed source tree, so the dynamic hook in that constructor is not reachable here. The live lite code instead registers a concrete update-message hook through PrliUpdateController, which does not expose the unresolved dynamic path claimed by this finding.",
+        "counter_evidence": [
+          {
+            "type": "unreachable",
+            "file": "app/lib/PrliAddonUpdates.php",
+            "line": 8,
+            "detail": "PrliAddonUpdates relies on constructor execution to register the dynamic hook, but no `new PrliAddonUpdates(...)` call exists in the analyzed lite plugin source."
+          },
+          {
+            "type": "guard",
+            "file": "app/controllers/PrliUpdateController.php",
+            "line": 31,
+            "detail": "The lite plugin already registers a concrete update-message hook through PrliUpdateController, so the relevant runtime path in the shipped codebase is the static controller callback rather than the unresolved PrliAddonUpdates constructor hook."
+          }
+        ],
+        "missing_evidence": [
+          "A reachable constructor call for PrliAddonUpdates inside the analyzed source tree",
+          "A concrete runtime binding for $main_file that makes the dynamic hook executable in this plugin build"
+        ],
+        "dynamic_test_plan": [
+          "Step 1: Activate the lite Pretty Link plugin in a clean WordPress lab and keep only the shipped source under test.",
+          "Step 2: Trigger the plugin update notice flow and verify that the runtime callback comes from PrliUpdateController::check_incorrect_edition, not from PrliAddonUpdates.",
+          "Step 3: Confirm that no runtime path instantiates PrliAddonUpdates in the lite build."
+        ],
+        "verdict_change": "reject",
+        "proposed_final_state": "REJECTED",
+        "final_state": "REJECTED",
+        "reopening_condition": "Reopen only if the analyzed codebase gains a real instantiation path for PrliAddonUpdates or another concrete runtime source that binds $main_file to attacker-influenced input."
+      }
     },
     {
       "finding_id": "agent-d-fp-002",
@@ -1328,5 +1360,17 @@
     "duplicates_merged": 7,
     "conflicts_flagged": 0,
     "schema_errors": 0
+  },
+  "postprocess": {
+    "phase3_review_applied": {
+      "applied_edits": 0,
+      "reviewed_findings": 1,
+      "review_counts": {
+        "reject": 1,
+        "downgrade": 0,
+        "keep": 0,
+        "upgrade": 0
+      }
+    }
   }
 }

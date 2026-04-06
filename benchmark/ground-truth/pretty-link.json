@@ -1,12 +1,12 @@
 {
   "plugin_slug": "pretty-link",
   "plugin_version": "unknown",
-  "verified_by": "manual_review",
-  "verified_date": "2026-04-03",
+  "verified_by": "pipeline_derived",
+  "verified_date": "2026-04-05",
+  "_benchmark_semantics": "PIPELINE-DERIVED CLEAN REFERENCE — NOT a full independent clean audit. This file tracks the current closed state after the remaining unresolved dynamic-hook candidate was rejected with concrete counter-evidence.",
   "findings": [],
   "confirmed_clean_areas": [
-    "Phase2 produced 0 findings — pipeline found no data flows from entry points to sinks",
-    "68 entry points scanned, 33 anomalies flagged by phase1, but 0 paths confirmed exploitable in phase2"
+    "The lite Pretty Link build does not expose a reachable PrliAddonUpdates constructor path in the analyzed source tree; the remaining dynamic-hook candidate was rejected unless a real instantiation path appears."
   ],
-  "_notes": "Ground truth seeded from pipeline phase2 output (total=0, tp=0, fp=0, review=0). High anomaly count (33) vs 0 phase2 findings is interesting — either anomalies did not pair with sinks, or IR filtering is aggressive. Suitable for FP-rate benchmarking. Manual source review recommended to verify clean status."
+  "_notes": "Use this file for regression detection only. It is appropriate for catching future reintroductions of the previously rejected unresolved-dynamic-hook case, but it does not certify the entire plugin as independently clean."
 }

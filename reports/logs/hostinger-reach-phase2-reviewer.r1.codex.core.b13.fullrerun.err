@@ -1,0 +1,2285 @@
+
+=== attempt 1 ===
+Reading additional input from stdin...
+OpenAI Codex v0.118.0 (research preview)
+--------
+workdir: /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+model: gpt-5.4
+provider: codex-lb
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR, /Users/timomangcut/.codex/memories]
+reasoning effort: xhigh
+reasoning summaries: none
+session id: 019d635c-7b7b-7ce3-994a-a1737c3f487f
+--------
+user
+# System Prompt - Phase 2 Reviewer Core (Project Local)
+
+Ban la reviewer core cho Phase 2 WordPress plugin audit.
+Hay ap dung truc tiep quy tac AppSec duoc neu trong prompt va project docs.
+Khong duoc phu thuoc vao skill auto-load hay provider-specific helpers.
+
+Vai tro cua ban:
+- KHONG duoc lam lai worker output tu dau.
+- Nhiem vu chinh: phan bien tung finding packet worker da dua ra bang counter-evidence, field corrections, va missing-evidence notes.
+- Round nay CHI duoc lam packet-local critique. Khong duoc bien thanh explorer hay broad re-audit ca plugin.
+- Uu tien refute-first. Neu worker khang dinh qua muc, ban phai ha muc do tin cay.
+
+Quy tac bat buoc:
+- Khong invent nonce/capability/route/option key.
+- Moi counter-evidence phai co file:line cu the.
+- Khong xoa finding mot cach cam tinh. Neu muon retract/downgrade, phai neu ly do testable.
+- `missed_findings[]` phai de trong, tru khi input round nay noi ro rang la duoc phep de xuat finding bi bo sot.
+- Neu input packet da duoc atomize, moi critique phai giu `packet_id` rieng va `finding_id` cua finding goc.
+- Neu `packet_kind = atomic_surface`, hay coi `worker_context` da duoc localized cho surface do; khong duoc mo lai sibling surfaces chi vi parent finding ban dau la aggregate.
+- Hay uu tien `review_focus.scope_statement`, `review_focus.stop_conditions`, va `review_focus.disallowed_drift` de giu reviewer dung vai packet-local critic.
+- `worker_context.reasoning_excerpt` la packet-local brief da duoc normalize; `worker_context.original_*` chi dung de tham chieu y worker ban dau, khong phai de mo rong audit.
+- Dung `worker_context`, `primary_snippets`, va `optional_snippets` lam ho so phan bien chinh; khong duoc mo rong workspace mot cach mac dinh.
+- Neu can mo them file, uu tien file trong `scope_policy.allowed_optional_files`; file ngoai scope chi duoc phep o muc rat it va phai ghi vao `expansion_attempts`.
+- Neu `review_focus.sink_semantics` la `hook_dispatch`, `json_response`, hoac `boolean_guard`, hay phan bien theo stop conditions cua packet thay vi trace lai ca plugin de tim terminal sink moi.
+- Neu evidence chua du, uu tien `needs_more_evidence` thay vi khang dinh sai/chac chan.
+- Khong grep rong ca plugin, khong audit lai translation/assets/vendor, va khong doi packet critique thanh omitted-path hunting.
+
+Yeu cau output:
+- Ghi JSON critique vao `reports/phase2/<slug>-phase2.review.rN.json`
+- Output cua ban la critique co cau truc, KHONG phai final Phase 2 findings
+- Muc tieu: dua worker ve mot artifact evidence-bound hon cho round tiep theo
+
+
+# Phase 2 Reviewer Core Loop - `hostinger-reach` - Round `1`
+
+Read reviewer input JSON first:
+- Reviewer input: `reports/phase2/hostinger-reach-phase2.review.r1.core.b13.input.json`
+
+Execution rules:
+1. Follow `task.role`, `task.goal`, and `task.constraints` from the input JSON.
+2. Treat each item in `finding_packets` as one claim packet. Review packet-by-packet, not plugin-wide.
+3. For each packet, explicitly answer its `review_questions.reachability`, `authorization`, `dataflow`, `impact`, and `missing_evidence` before writing the corresponding `finding_reviews[]` item.
+4. Start from the packet's `review_focus`, `worker_context`, `anchors`, `primary_snippets`, and `optional_snippets` before opening any file. Treat `worker_context.reasoning_excerpt` as the packet-local reviewer brief; only consult `worker_context.original_*` if you need to understand the worker's original claim wording.
+5. Treat `scope_policy.allowed_primary_files` as the default scope, `scope_policy.allowed_optional_files` as the only preferred expansion scope, and `scope_policy.max_out_of_band_files` as a hard cap for any out-of-band file opens.
+6. If packet-local evidence is still insufficient, return `needs_more_evidence` instead of exploring for new findings.
+7. Do not reopen `artifacts.worker_output_path` during core review unless the packet data is internally inconsistent and the path is present.
+8. Do not use `artifacts.ir_path`, `artifacts.semgrep_path`, `artifacts.psalm_path`, or `artifacts.threat_context_path` to restart whole-plugin hunting.
+9. Do not inspect translation files, asset bundles, vendor-style dependency trees, or unrelated plugin surfaces during core review.
+10. Keep review bounded and evidence-first. Prefer refutation, field fixes, precise counter-evidence, and explicit missing-evidence notes over rewriting the findings set.
+11. Obey `review_focus.stop_conditions` and `review_focus.disallowed_drift`. If `review_focus.sink_semantics` says the packet ends at hook dispatch, JSON response handling, or guard logic, do not compensate by expanding into whole-plugin tracing.
+12. `missed_findings[]` is not part of the core output contract. Do not invent or emit it in this round.
+13. Emit exactly one `finding_reviews[]` item per packet. Copy the packet's `packet_id`, keep `finding_id` aligned to the packet's `parent_finding_id`, and populate both `missing_evidence[]` and `expansion_attempts[]` even when they are empty.
+
+Output rules:
+- Write raw JSON only.
+- Output path: `reports/phase2/hostinger-reach-phase2.review.r1.core.b13.json`
+- Match the schema referenced by `task.output_schema`.
+- `summary` must be an object, never a string.
+- Keep all plugin file paths relative to the plugin root.
+
+2026-04-06T15:14:58.790871Z  WARN codex_core::shell_snapshot: Failed to delete shell snapshot at "/Users/timomangcut/.codex/shell_snapshots/019d635c-7b7b-7ce3-994a-a1737c3f487f.tmp-1775488498557748000": Os { code: 2, kind: NotFound, message: "No such file or directory" }
+codex
+Toi se doc `AGENTS.md`, project docs bat buoc, va input JSON de giu review dung packet-local scope truoc khi mo them file nao khac. Sau do toi se phan bien tung packet theo dung schema va ghi JSON critique vao duong dan duoc chi dinh.
+exec
+/bin/zsh -lc "sed -n '1,220p' docs/bug-bounty-rules-summary.md" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "sed -n '1,220p' .codex/skills/Review-Code/SKILL.md" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "sed -n '1,220p' docs/wp-context.md" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "sed -n '1,260p' reports/phase2/hostinger-reach-phase2.review.r1.core.b13.input.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+---
+name: wp-security-audit
+description:
+  WordPress plugin/theme security audit methodology for SAST and multi-phase reasoning.
+  Use for audit, exploitability review, Patchstack scope triage, and evidence-based validation.
+---
+
+# WP Security Audit Skill (Project Local, EN)
+
+## Language Variants
+
+- Active (English): `SKILL.md`
+- Vietnamese version: `SKILL.vi.md`
+
+When this skill is active, also load:
+
+- `references/wp-context.md`
+- `references/patchstack-rules.md`
+
+## 1) Core Method
+
+Follow this order:
+
+1. Map attack surface (entry points, auth, guards, sources, sinks)
+2. Build source-to-sink trace with file:line evidence
+3. Validate defenses (nonce/capability/sanitizer/prepare/ownership)
+4. Refute-first reasoning
+5. Assess real exploitability and impact
+6. Apply Patchstack scope filters
+
+## 2) Entry Point Coverage
+
+Always include:
+
+- REST routes: `register_rest_route`, `permission_callback`, ownership checks
+- AJAX hooks: `wp_ajax_*`, `wp_ajax_nopriv_*`
+- `admin_post_*`
+- Shortcodes and block `render_callback`
+- Import/export handlers
+- Webhook/cron handlers reachable via user influence
+
+## 3) Source and Sink Rules
+
+### Sources
+
+- `$_GET`, `$_POST`, `$_REQUEST`, `$_COOKIE`, `$_FILES`
+- REST params/body/json (`get_param`, `get_json_params`, etc.)
+- Shortcode/block attributes
+- Stored values with tainted origin (`get_option`, `get_post_meta`, etc.)
+
+### Sinks
+
+- SQL (`$wpdb->query/get_results/get_var/get_row/get_col`)
+- HTML/attribute/URL output
+- File write/read/include operations
+- `include`/`require`
+- Redirects
+- Deserialization (`unserialize`, `maybe_unserialize`)
+- Outbound HTTP (`wp_remote_*`)
+
+## 4) WordPress-Specific Critical Notes
+
+- `is_admin()` is not a role/capability check.
+- `admin_init` can still be reached by low-privileged users.
+- REST JSON body is not processed by `wp_magic_quotes()`.
+- `check_ajax_referer(..., false)` does not stop execution by itself.
+- `wp_redirect()` should usually be followed by `exit;`.
+
+## 5) Finding Quality Gates
+
+Keep a finding only when:
+
+- Source-to-sink trace is complete and verifiable
+- Security impact is measurable
+- Minimum required role and conditions are explicit
+- Refutation attempt failed to disprove the issue
+
+If evidence is incomplete:
+
+- Mark as `REVIEW` or `Needs Dynamic Verification`
+- Do not force `TP`
+
+## 6) Patchstack Scope Discipline
+
+Reject or mark out-of-scope when applicable:
+
+- Admin-only with negligible impact
+- Very low severity/non-exploitable behavior
+- Captcha bypass / CSV injection / low-grade race cases outside scope threshold
+
+## 7) Phase Alignment
+
+### Phase 2
+
+- Validate and normalize `phase2.json` in an evidence-bound format.
+- Preserve ambiguity as `REVIEW`.
+
+### Phase 3
+
+- Deterministic gate is authoritative.
+- LLM only performs skeptic review for `PLAUSIBLE/UNCERTAIN`.
+
+## 8) Output Discipline
+
+- No TODO-list output
+- No generic claims
+- Every conclusion must be backed by concrete code evidence
+
+ succeeded in 0ms:
+# Tóm tắt Bug Bounty Rules - Patchstack & Wordfence
+
+> Tài liệu này được viết lại theo bố cục gần giống file mẫu đính kèm, nhưng đã rút gọn để tập trung vào **quy tắc cốt lõi**, đặc biệt là **in-scope / out-of-scope**, điều kiện hợp lệ của report, tính duy nhất, và các lý do thường bị từ chối.
+>
+> Nguồn tham chiếu:
+> - Patchstack: https://patchstack.com/articles/bug-bounty-guidelines-rules/
+> - Wordfence: https://www.wordfence.com/threat-intel/bug-bounty-program/#scope
+
+---
+
+## Table of Contents
+- Introduction
+- Patchstack
+  - Reporting Protocol
+  - Scope
+  - Uniqueness Requirement
+  - Quality Assurance
+  - Rejection Criteria
+  - Disclosure / CVE
+- Wordfence
+  - Program Overview
+  - In-Scope Assets
+  - Out-of-Scope Assets
+  - Explicitly In-Scope Vulnerabilities
+  - Explicitly Out-of-Scope Vulnerabilities
+  - Submission Rules & Key Notes
+- Quick Comparison
+
+---
+
+# Introduction
+
+Tài liệu này tổng hợp hai chương trình bug bounty trong hệ sinh thái WordPress:
+
+1. **Patchstack Bug Bounty Program**
+2. **Wordfence Intelligence Bug Bounty Program**
+
+Mục tiêu của bản tóm tắt là giúp nhanh chóng xác định:
+- Report nào có khả năng **được chấp nhận**
+- Thành phần nào **in scope / out of scope**
+- Điều kiện nào khiến report **không đủ bounty** hoặc chỉ được **CVE / disclosure**
+- Những yêu cầu tối thiểu để report được xem là **valid**
+
+---
+
+# Patchstack
+
+## Reporting Protocol
+
+### Kênh gửi report
+- Chỉ chấp nhận report qua form chính thức: `https://patchstack.com/database/report`
+- Không chấp nhận qua email hoặc kênh khác.
+
+### Tài khoản & tư cách tham gia
+- Tài khoản researcher được tạo sau khi có ít nhất một report hợp lệ và in-scope.
+- Mỗi researcher chỉ được dùng **một account**.
+- Cá nhân và công ty đều có thể tham gia, nhưng **không hỗ trợ team submissions**.
+
+---
+
+## Scope
+
+### In scope
+Patchstack chấp nhận các thành phần trong hệ sinh thái WordPress, bao gồm:
+- **WordPress core**
+- **WordPress plugins**
+- **WordPress themes**
+
+Cả **free** và **premium** đều có thể được chấp nhận.
+- Với sản phẩm premium, cần cung cấp **bản archive gốc, không chỉnh sửa** để xác minh.
+- Nếu theme phụ thuộc plugin cụ thể, cần cung cấp cả plugin phụ thuộc đó.
+
+Một report chỉ được coi là hợp lệ nếu có **security impact rõ ràng và đo lường được**.
+
+### Out of scope / không được chấp nhận
+Các trường hợp sau thường bị loại:
+
+#### 1) Severity / CVSS quá thấp
+- Vulnerability có **CVSS v3.1 < 6.5** không được chấp nhận trực tiếp theo rules hiện tại.
+
+#### 2) Active installs quá thấp
+- Component có **< 1,000 active installs** nhìn chung là out of scope.
+- Ngoại lệ: có thể được xem xét nếu:
+  - có **CVSS >= 8.5**,
+  - yêu cầu quyền không vượt quá **Unauthenticated / Subscriber / Customer**,
+  - và component có **ít nhất 100 active installs**.
+
+#### 3) Quyền khai thác quá cao
+- Chỉ ưu tiên lỗ hổng khai thác được bởi:
+  - **Unauthenticated**
+  - **Subscriber / Customer**
+- **Contributor** chỉ được chấp nhận nếu severity đủ cao.
+- Các lỗ hổng yêu cầu **Admin / quyền cao hơn** là out of scope.
+- Với **custom roles**, chỉ chấp nhận nếu capability tương đương gần với Subscriber/Customer; nếu mạnh hơn thì không chấp nhận.
+
+#### 4) Các loại issue thường không được chấp nhận
+- **CSV Injection**
+- **IP spoofing** (trừ khi trực tiếp phá vỡ một cơ chế bảo vệ phụ thuộc vào IP)
+- **Race condition** có tác động không rõ ràng hoặc severity thấp
+- **CAPTCHA / Turing test bypass**
+- **Arbitrary user registration** nếu không dẫn đến tạo được **admin account**
+- **Authenticated shortcode preview issues** ở mức Contributor trở lên, trừ khi lộ dữ liệu nhạy cảm có tác động rõ ràng
+- **CSRF / Broken Access Control** chỉ dùng để dismiss notice mà không có security impact thực tế
+- **IP bypass** cho các thao tác không quan trọng như likes/views/counters
+
+#### 5) Thành phần không đủ điều kiện
+- Phiên bản cuối cùng phát hành đã quá **3 năm**
+- Lỗ hổng **không còn tồn tại ở phiên bản mới nhất**
+- Component **không public**
+- Component là hàng **custom / modified / private**, không được phân phối công khai qua:
+  - WordPress.org
+  - website chính thức của vendor
+  - GitHub
+  - CodeCanyon / ThemeForest
+  - hoặc nguồn public tương đương
+
+---
+
+## Uniqueness Requirement
+
+- Report phải là **mới**, **unique**, chưa từng được public hoặc báo trước đó.
+- Nếu nhiều người báo cùng một issue, **người gửi valid report đầu tiên** sẽ được tính.
+- Nếu issue đã được báo trực tiếp cho vendor trước đó, Patchstack chỉ chấp nhận nếu:
+  - vendor xác nhận issue,
+  - và vendor có ý định vá.
+- Với sản phẩm của **Automattic**, phải report qua **HackerOne của Automattic** trước.
+- Incomplete patch đã public thường **không được xem là issue mới**, trừ khi tạo ra attack vector mới.
+
+---
+
+## Quality Assurance
+
+Một report Patchstack cần có tối thiểu:
+- PoC dạng text, từng bước rõ ràng
+- Các bước từ lúc cài plugin/theme cho đến khi exploit thành công
+- Raw HTTP request cần thiết
+- Payload chính xác đã dùng
+- Video screenshot là điểm cộng
+
+### Rủi ro khi gửi report kém chất lượng
+- Report không đầy đủ, không tái hiện được, hoặc sai sẽ bị reject.
+- Gửi lặp lại false positive / AI-generated false positive có thể dẫn tới:
+  - cooldown,
+  - bị khóa dashboard tạm thời,
+  - hoặc khóa vĩnh viễn.
+
+---
+
+## Rejection Criteria
+
+Các lý do reject phổ biến:
+- Thông tin không đầy đủ hoặc không chính xác
+- Claim không phải vulnerability hợp lệ
+- Dùng role không chuẩn / role đã chỉnh sửa
+- Plugin/theme đã đóng hoặc không truy cập được
+- Component không được phân phối công khai qua nguồn đáng tin cậy
+- Developer/vendor gửi issue cho chính sản phẩm của họ: có thể dùng cho disclosure nhưng **không đủ điều kiện bounty**
+
+---
+
+## Disclosure / CVE
+
+- Patchstack là **CNA**, nên issue hợp lệ có thể được cấp **CVE**.
+- Việc cấp CVE có thể bị trì hoãn để tránh trùng với CNA khác.
+- Tất cả valid in-scope reports sẽ được đưa vào **Patchstack Vulnerability Database**.
+- Researcher không được public vulnerability cho bên thứ ba trước khi Patchstack công bố chính thức.
+
+---
+
+# Wordfence
+
+## Program Overview
+
+Wordfence tập trung vào bug bounty cho **WordPress plugins và themes**. Chương trình phân scope khá mạnh dựa trên:
+- loại vulnerability,
+- mức quyền yêu cầu,
+- active installs,
+- và **researcher tier**.
+
+Wordfence cũng có thể cấp **CVE** cho cả một số report out of scope, nhưng **không phải report nào cũng đủ điều kiện nhận bounty**.
+
+---
+
+## In-Scope Assets
+
+### Nhóm 1: High Threat Vulnerabilities
+Tất cả plugin/theme WordPress (free và premium), trừ các asset bị liệt kê out of scope, sẽ in scope nếu có:
+- **>= 25 active installs**
+- khai thác được bởi **unauthenticated** hoặc **low-level authenticated** (Subscriber/Customer)
+- thuộc một trong các loại sau:
+  - Arbitrary PHP File Upload or Read
+  - Arbitrary PHP File Deletion
+  - Arbitrary Options Update
+  - Remote Code Execution
+  - Authentication Bypass to Admin
+  - Privilege Escalation to Admin
+
+Ghi chú:
+- Nếu plugin/theme có từ **25 đến 999 installs**, nó phải có trên **WordPress.org Plugin Repository** mới được tính in scope.
+
+### Nhóm 2: Common and Dangerous Vulnerabilities
+Tất cả plugin/theme WordPress (free và premium), trừ asset out of scope, sẽ in scope nếu có:
+- **>= 500 active installs**
+- khai thác được bởi **unauthenticated** hoặc **Subscriber/Customer**
+- thuộc một trong các loại:
+  - **Stored XSS**
+  - **SQL Injection**
+
+Ghi chú:
+- Với mốc **500 đến 999 installs**, component phải có trên **WordPress.org Plugin Repository**.
+- **Premium plugin/theme** bị loại khỏi nhóm này nếu **< 1,000 installs**.
+
+### Nhóm 3: All Other Vulnerabilities
+Các vulnerability khác có thể in scope, nhưng phụ thuộc vào **researcher tier**:
+- **Standard Researchers**: component cần **>= 50,000 installs**
+- **Resourceful Researchers**: component cần **>= 10,000 installs**
+- **1337 Researchers**: component cần **>= 500 installs**
+
+---
+
+
+ succeeded in 0ms:
+# WordPress plugin security audit knowledge base
+
+**This is a comprehensive, technically precise reference for auditing WordPress 6.x plugins**, synthesizing real CVE data from 2023–2025, official WordPress developer documentation, and research from Wordfence, Patchstack, and WPScan. The WordPress plugin ecosystem saw **7,966 new vulnerabilities in 2024 alone** (a 34% increase over 2023), with XSS accounting for 47.7% of all findings, broken access control at 14.2%, and CSRF at 11.4%. REST API and AJAX endpoints are the most critically exploited attack surfaces. What follows is every detail a professional security auditor needs.
+
+---
+
+## 1. Exhaustive plugin attack surface catalog
+
+### AJAX handlers (wp_ajax_*, wp_ajax_nopriv_*)
+
+WordPress routes all AJAX through `wp-admin/admin-ajax.php`. Plugins register handlers via `add_action('wp_ajax_{action}', 'callback')` for authenticated users, and `add_action('wp_ajax_nopriv_{action}', 'callback')` for unauthenticated users. **WordPress provides zero built-in authorization for AJAX handlers** — no automatic nonce check, no capability check. The plugin developer must implement both `wp_verify_nonce()` and `current_user_can()`.
+
+The `nopriv` variant is especially dangerous: it makes the endpoint accessible to anyone on the internet without authentication. Many plugins register `nopriv` variants unnecessarily, exposing admin-level functionality. The WPForms vulnerability CVE-2024-11205 (CVSS 8.5) exemplifies this: the `wpforms_is_admin_ajax()` function verified the nonce but never checked user capabilities, allowing **subscriber-level users to issue Stripe refunds and cancel subscriptions**. Similarly, Essential Addons for Elementor (CVE-2023-32243, CVSS 9.8) exposed password reset functionality via an AJAX handler that never validated the reset key.
+
+**Required security controls for every AJAX handler:**
+- `check_ajax_referer('action_name', 'security')` or `wp_verify_nonce()` for CSRF protection
+- `current_user_can('required_capability')` for authorization
+- Sanitization of all `$_POST`/`$_GET` parameters
+- `wp_send_json_success()`/`wp_send_json_error()` for safe responses
+
+### REST API routes (register_rest_route)
+
+The REST API is the **single most critically exploited attack surface** in WordPress plugins during 2023–2025. The most impactful CVEs of this period — Really Simple Security (CVE-2024-10924, CVSS 9.8), WooCommerce Payments (CVE-2023-28121, CVSS 9.8), LiteSpeed Cache (CVE-2024-28000, CVSS 9.8), and AIOSEO (CVE-2021-25036, CVSS 9.9) — all exploited REST API endpoints with broken permission callbacks.
+
+Routes are registered via `register_rest_route('namespace/v1', '/path', $args)`. Since **WordPress 5.5**, omitting `permission_callback` triggers a `_doing_it_wrong` notice, but the endpoint still functions as public. The notice is informational only. Using `'permission_callback' => '__return_true'` explicitly makes endpoints public — this was found in production plugins like Download Monitor.
+
+Permission callbacks execute after authentication is resolved. For cookie-based auth, the `wp_rest` nonce must be passed via `X-WP-Nonce` header or `_wpnonce` parameter — without it, the current user is set to ID 0 (unauthenticated), even if the user has valid cookies. Application Passwords authenticate via HTTP Basic Auth before permission callbacks run.
+
+**REST API namespace discovery** at `/wp-json/` exposes all registered namespaces, and `/wp-json/namespace/v1` lists all routes with their methods and argument schemas. This provides attackers a complete map of available endpoints.
+
+### Shortcodes
+
+Shortcodes (`add_shortcode('name', 'callback')`) are parsed from post content and executed server-side. Their primary attack surface is **attribute injection**: shortcode attributes are passed as an array to the callback without any automatic sanitization. The `shortcode_atts()` function provides default merging but no security filtering. Contributors can embed shortcodes in post content, making contributor-level Stored XSS the dominant vulnerability pattern.
+
+Common vulnerability: `extract(shortcode_atts(['style' => ''], $atts))` followed by `echo '<div style="' . $style . '">'` — the `$style` attribute reaches HTML output unescaped. Every shortcode attribute must be escaped with the context-appropriate function (`esc_attr()`, `esc_html()`, `esc_url()`).
+
+### Gutenberg blocks (detailed in Section 7)
+
+The block editor introduces multiple attack surfaces: `render_callback` functions that output unescaped attributes, **block comment delimiter JSON** that bypasses wp_kses filtering, the `/wp/v2/block-renderer/` REST endpoint accessible to contributors, and `ServerSideRender` which can trigger server-side execution of block rendering with attacker-controlled attributes.
+
+### Admin pages and menus
+
+`admin_menu`, `admin_init`, `admin_post_*`, and `admin_post_nopriv_*` hooks create admin-side attack surfaces. **Critical misconception**: `is_admin()` checks whether the request targets wp-admin, not whether the user is an administrator. All authenticated AJAX requests go through `admin-ajax.php` in wp-admin, so `is_admin()` returns `true` for any logged-in user making AJAX calls. Always use `current_user_can()` instead.
+
+`admin_init` fires on every admin page load — including `admin-ajax.php` and `admin-post.php` — making it a particularly broad attack surface if permission checks are absent. `admin_post_nopriv_*` actions are accessible to unauthenticated users, identical in risk to `wp_ajax_nopriv_*`.
+
+### XML-RPC, WP-CLI, and Cron
+
+**XML-RPC** (`xmlrpc.php`) exposes methods for remote content management and pingbacks. Plugins extend it via `xmlrpc_methods` filter. The pingback feature was exploited for **blind SSRF via DNS rebinding** (CVE-2022-3590). XML-RPC authentication uses username/password per request (no session), enabling brute-force attacks. Best practice is to disable it entirely unless required.
+
+**WP-CLI commands** registered by plugins execute with the filesystem permissions of the CLI user (typically root or www-data), which may exceed WordPress capabilities. Commands should still validate input and use WordPress API functions rather than direct database/file operations.
+
+**Cron jobs** (`wp_schedule_event`) execute via `wp-cron.php`, triggered by site visits. WP-Cron requests are internal HTTP requests that may bypass authentication. If a cron callback performs privileged operations without validation, it could be exploited. LiteSpeed Cache's crawler simulation feature (CVE-2024-28000) demonstrates how cron/crawler functions can create critical attack surfaces.
+
+### Elementor and WooCommerce attack surfaces
+
+**Elementor** adds an extensive secondary attack surface: widget controls, template import/export, AJAX handlers for the editor, and custom CSS/JS fields. CVE-2023-48777 (CVSS 8.8) exploited the template import AJAX handler for arbitrary file upload → RCE, and CVE-2023-3124 (CVSS 8.8) exploited `update_page_option` AJAX handler for subscriber-level arbitrary options update.
+
+**WooCommerce** payment gateway integrations create critical surfaces: order status manipulation, price/quantity modification via checkout hooks, and payment callback endpoints. CVE-2023-28121 (CVSS 9.8) demonstrated that trusting a custom HTTP header (`X-WCPAY-PLATFORM-CHECKOUT-USER`) for authentication enabled unauthenticated admin access.
+
+### Multisite-specific attack surfaces
+
+In multisite, Site Admins have a restricted capability set compared to Super Admins. They lack `install_plugins`, `edit_plugins`, `edit_themes`, `unfiltered_html`, and all `manage_network_*` capabilities. Vulnerabilities that are "by design" for single-site admins become legitimate security issues in multisite because Site Admins should not be able to affect other sites or escalate to Super Admin. Cross-site data access and network-wide option modification are key multisite attack vectors.
+
+### Additional entry points
+
+- **Webhook/callback endpoints**: Payment gateways (Stripe, PayPal) require publicly accessible callback URLs. These must validate signatures/tokens from the payment provider, not just check for expected parameters.
+- **oEmbed providers**: Custom oEmbed endpoints registered via `wp_oembed_add_provider()` can introduce SSRF if they fetch user-controlled URLs server-side.
+- **Custom rewrite rules**: `add_rewrite_rule()` and `template_redirect` hook can create custom URL endpoints. Missing auth checks make these exploitable.
+- **wp_mail**: Email header injection via unsanitized `To`, `From`, `CC`, `BCC` headers. Carriage returns (`\r\n`) in header values inject additional headers.
+- **Filesystem API**: `WP_Filesystem` and direct PHP file functions. Path traversal via `../` sequences targets `wp-config.php`, `.htaccess`, and `wp-content/debug.log`.
+- **Transient API**: `set_transient()`/`get_transient()` stores data in `wp_options` (or object cache). Transients with user-controlled keys can be overwritten. If transient data is used unsanitized in output or queries, it becomes a stored attack vector.
+- **Object cache**: `wp_cache_set()`/`wp_cache_get()` data can be poisoned if cache keys are predictable and the caching backend (Redis, Memcached) is accessible.
+- **wp_options autoload**: Options with `autoload=yes` load on every page request. Plugins storing large serialized data with autoload enabled create performance issues; storing user-controlled serialized data creates object injection risks.
+- **Custom database tables**: Direct `$wpdb->query()` calls on custom tables bypass WordPress's built-in sanitization. Every variable in SQL must use `$wpdb->prepare()`.
+- **Import/Export**: File upload (ZIP, XML, CSV) combined with parsing creates surfaces for XXE, Zip Slip, CSV injection, and path traversal.
+- **Bulk action handlers**: `admin_action_*` hooks for bulk operations often lack per-item capability checks, enabling mass manipulation.
+
+---
+
+## 2. WordPress 6.x security mechanisms reference
+
+### Nonce system behavior and edge cases
+
+WordPress nonces are **HMAC hashes, not true one-time tokens**. They are generated from `$tick | $action | $user_id | $session_token` using `wp_hash()`. The default lifetime is **24 hours** (configurable via `nonce_life` filter), split into two 12-hour ticks. `wp_verify_nonce()` returns **1** for current tick (0–12h old), **2** for previous tick (12–24h old), or **false** for expired/invalid.
+
+**Critical limitations:**
+- **Not one-time-use**: The same nonce is generated for the same user+action during an entire tick period. This means nonces do not prevent replay attacks.
+- **Guest users (ID 0) all receive identical nonces** — providing zero CSRF protection for unauthenticated forms. The `nonce_user_logged_out` filter can mitigate this.
+- **Nonces verify intent, not authorization**. A valid nonce only proves the request originated from a page WordPress generated for that user. Any logged-in user can obtain valid nonces for any action. **Always pair `wp_verify_nonce()` with `current_user_can()`**.
+
+**Core nonce functions:**
+- `wp_create_nonce($action)` — Returns ~10-char alphanumeric hash
+- `wp_verify_nonce($nonce, $action)` — Returns 1, 2, or false; does NOT terminate execution
+- `check_admin_referer($action, $query_arg)` — Verifies nonce AND HTTP referer; calls `wp_die()` on failure
+- `check_ajax_referer($action, $query_arg, $stop)` — Checks nonce only (not referer); inspects `_wpnonce`, `_ajax_nonce` params and `X-WP-Nonce` header
+
+### REST API permission_callback enforcement (WP 5.5+)
+
+Since WordPress 5.5, `register_rest_route()` issues a `_doing_it_wrong` notice when `permission_callback` is omitted. **The endpoint still functions as public** — the notice is informational only. WordPress cannot distinguish intentional public endpoints from accidental omissions. Using `'permission_callback' => '__return_true'` explicitly documents public intent.
+
+Permission callbacks run **after** authentication is resolved. For cookie-based auth, the `wp_rest` nonce must be present, or the user is treated as unauthenticated (ID 0). Permission callbacks should use `current_user_can()`, not manual nonce verification — the REST API handles the `wp_rest` nonce automatically via `rest_cookie_check_errors()`.
+
+### $wpdb->prepare() in WordPress 6.x
+
+**Placeholders**: `%s` (string, auto-quoted), `%d` (integer), `%f` (float), **`%i` (identifier, backtick-quoted — added in WP 6.2)**. The `%i` placeholder allows safe table/column name parameterization: `$wpdb->prepare('SELECT * FROM %i WHERE %i = %s', $table, $column, $value)` produces `` SELECT * FROM `table` WHERE `column` = 'value' ``.
+
+**Validation rules**: placeholder count must match argument count; positional placeholders (`%1$s`) are supported but do not auto-quote; `%%` produces literal `%`; for LIKE: `'%' . $wpdb->esc_like($search) . '%'` inside `prepare()`; IN clauses require dynamic placeholder construction; **named placeholders are NOT supported**.
+
+### WordPress 6.x security changes
+
+- **WP 6.2** (March 2023): `%i` identifier placeholder in `$wpdb->prepare()`
+- **WP 6.4.3** (January 2024): POP chain vulnerability fix (potential RCE via WP_HTML_TOKEN deserialization)
+- **WP 6.5** (March 2024): Block Bindings API with `edit_block_binding` capability; Interactivity API
+- **WP 6.8** (April 2025): **Major password hashing overhaul** — phpass replaced by **bcrypt with SHA-384 pre-hashing** (prefix `$wp$2y$`). Application passwords and security keys use **BLAKE2b via Sodium**. Old `$P$` hashes remain valid and auto-rehash on login. Optional Argon2 support via `wp_hash_password_algorithm` filter.
+
+### wp_safe_redirect vs wp_redirect
+
+`wp_redirect($location)` sets the Location header with **no host validation** — vulnerable to open redirect with user-supplied URLs. `wp_safe_redirect($location)` validates the target host against an allowlist via `wp_validate_redirect()` (default: current site host only; extensible via `allowed_redirect_hosts` filter). If the host is not allowed, it falls back to `admin_url()`. **Neither function calls `exit`** — the developer must follow with `exit;` or `die;`.
+
+### REST API authentication methods
+
+- **Cookie + Nonce (built-in)**: Default for same-origin requests. Nonce action: `wp_rest`. Pass via `X-WP-Nonce` header or `_wpnonce` parameter. No valid nonce = user set to 0.
+- **Application Passwords (WP 5.6+, built-in)**: HTTP Basic Auth (`Authorization: Basic base64(username:app_password)`). HTTPS required by default. 24-character passwords (~142 bits entropy), stored hashed (BLAKE2b in WP 6.8). Cannot be used for wp-login.php. Individually revocable.
+- **OAuth (plugin-required)**: OAuth 1.0a or 2.0. Best for third-party integrations.
+- **JWT (plugin-required)**: Stateless token-based. Not native to WordPress.
+
+---
+
+## 3. Complete WordPress security functions reference
+
+### Sanitization functions
+
+| Function | Behavior | Use case | Does NOT protect against |
+|----------|----------|----------|-------------------------|
+| `sanitize_text_field($str)` | Strips tags, removes line breaks/tabs/extra whitespace, strips octets | Single-line text input | SQL injection |
+| `sanitize_textarea_field($str)` | Same as above but preserves line breaks | Multi-line text | SQL injection |
+| `sanitize_email($email)` | Strips disallowed chars; does NOT validate format (use `is_email()`) | Email addresses | Invalid emails |
+| `sanitize_file_name($filename)` | Removes special chars, replaces whitespace with dashes | File uploads | Path traversal (add `validate_file()`) |
+| `sanitize_html_class($class)` | Keeps only A-Za-z0-9_- | CSS class names | — |
+| `sanitize_key($key)` | Lowercases, keeps only a-z0-9_- | Option/meta keys | — |
+| `sanitize_mime_type($mime)` | Keeps only a-zA-Z0-9._+-/ | MIME type strings | Fake MIME types |
+| `sanitize_sql_orderby($orderby)` | Validates ORDER BY pattern; returns false if invalid | SQL ORDER BY | Complex injection patterns |
+| `sanitize_title($title)` | Generates URL slug; strips tags, converts accents | URL slugs | NOT for display |
+| `sanitize_url($url)` | Strips invalid chars, removes dangerous protocols | URL storage | Open redirects |
+| `sanitize_user($username, $strict)` | Strips tags; strict: a-zA-Z0-9 _.@- only | Usernames | — |
+| `absint($value)` | `abs(intval($value))` | Non-negative integers | Range validation |
+| `wp_kses($content, $allowed_html)` | HTML filter keeping only specified tags/attributes | Rich HTML input | — |
+| `wp_kses_post($data)` | wp_kses with 'post' context (extensive allowed tags) | Post content | XSS in allowed attributes |
+| `wp_filter_nohtml_kses($data)` | Strips ALL HTML | Plain text only | — |
+
+### Escaping functions
+
+| Function | Context | Behavior |
+|----------|---------|----------|
+| `esc_html($text)` | Text inside HTML elements | Converts `& < > " '` to HTML entities |
+| `esc_attr($text)` | HTML attribute values | Same entity conversion; does NOT double-encode |
+| `esc_url($url)` | `href`/`src` attributes | Validates URL, strips dangerous protocols (javascript:, data:), encodes entities |
+| `esc_url_raw($url)` | Database storage, API calls | Same as `esc_url` without entity encoding |
+| `esc_js($text)` | Inline JS string literals | Escapes `' " & < >`, adds slashes |
+| `esc_textarea($text)` | Inside `<textarea>` tags | `htmlspecialchars` with double-encoding |
+| `esc_sql($data)` | **DEPRECATED** — use `$wpdb->prepare()` | `mysqli_real_escape_string` wrapper; does NOT add quotes |
+| `esc_xml($text)` | XML content | Escapes for XML context |
+| `wp_json_encode($data)` | JavaScript data embedding | `json_encode` with `JSON_HEX_TAG\|JSON_HEX_AMP\|JSON_HEX_APOS\|JSON_HEX_QUOT` — safe for `<script>` blocks |
+| `tag_escape($tag_name)` | HTML tag names | Lowercases, strips non-alphanumeric chars except `_:` |
+
+### Database security ($wpdb methods)
+
+`$wpdb->prepare()` is the primary SQL injection defense. `$wpdb->insert()`, `$wpdb->update()`, `$wpdb->delete()`, and `$wpdb->replace()` use `prepare()` internally and are safe when used correctly. `$wpdb->query()`, `$wpdb->get_var()`, `$wpdb->get_row()`, `$wpdb->get_col()`, and `$wpdb->get_results()` require explicit `prepare()` for any variable data. `$wpdb->esc_like($text)` escapes `%` and `_` for LIKE queries — must be used inside `prepare()`.
+
+### File upload security
+
+- `wp_check_filetype($filename, $mimes)` — Extension-based only; does NOT examine file contents
+- `wp_check_filetype_and_ext($file, $filename, $mimes)` — Checks actual file content via `finfo`/`getimagesize` plus extension
+- `wp_handle_upload($file, $overrides)` — Complete upload handler: validates MIME type, moves to uploads dir, returns result array
+- `validate_file($file, $allowed_files)` — Returns 0 (valid), 1 (contains `..`), 2 (contains `:/` or starts with `/`), 3 (not in allowed list) — **critical for preventing directory traversal**
+
+### Cryptographic functions
+
+- `wp_hash_password($password)` — As of WP 6.8: **bcrypt with SHA-384 pre-hashing** (prefix `$wp$2y$`). Previously phpass (MD5-based). Password length limit: 4096 chars.
+- `wp_check_password($password, $hash, $user_id)` — Verifies password against hash; auto-rehashes old `$P$` format to bcrypt on verification
+- `wp_generate_password($length, $special_chars, $extra_special_chars)` — Uses `wp_rand()` (cryptographically secure via `random_int()`)
+- `wp_hash($data, $scheme)` — HMAC-MD5 using salts from wp-config.php
+- `wp_rand($min, $max)` — CSPRNG wrapper using `random_int()` (PHP 7+)
+- `wp_generate_uuid4()` — RFC 4122 UUID v4 using `random_bytes()`
+
+---
+
+## 4. Real CVEs and vulnerability patterns in major plugins (2023–2025)
+
+### The most dangerous vulnerabilities of this period
+
+**CVE-2024-10924 — Really Simple Security authentication bypass (CVSS 9.8)**. Affected 4 million installations. The `check_login_and_get_user()` function in the 2FA REST API returned a valid user object even on error conditions. Unauthenticated attackers could log in as any user, including admin, by sending crafted REST API requests with a `user_id` and invalid nonce. Wordfence called this "the most dangerous vulnerability they've seen in 12 years." WordPress.org forced an automatic security update.
+
+**CVE-2023-28121 — WooCommerce Payments authentication bypass (CVSS 9.8)**. The `determine_current_user_for_platform_checkout()` function hooked into WordPress's `determine_current_user` filter and returned the user ID from the `X-WCPAY-PLATFORM-CHECKOUT-USER` HTTP header **without any validation**. Adding `X-WCPAY-PLATFORM-CHECKOUT-USER: 1` to any request authenticated as user ID 1 (admin). Wordfence detected **1.3 million attacks against 157,000 sites** on July 16, 2023.
+
+**CVE-2024-28000 — LiteSpeed Cache privilege escalation (CVSS 9.8)**. The crawler simulation feature used `mt_rand()` seeded with microsecond time to generate security hashes — producing only ~1 million possible values. An unauthenticated AJAX endpoint (`async_litespeed`) had no capability or nonce checks, allowing anyone to trigger hash generation. The hash could then be brute-forced within hours to create admin accounts via the REST API.
+
+**CVE-2023-32243 — Essential Addons for Elementor privilege escalation (CVSS 9.8)**. The password reset function in the Login/Register Form widget never validated the `rp_key` (reset key). It directly changed the user's password without calling `check_password_reset_key()`. The nonce was obtainable from the frontend page source. Wordfence blocked 6,900+ exploit attempts within days; Sucuri observed mass infection campaigns.
+
+**CVE-2023-48777 — Elementor arbitrary file upload to RCE (CVSS 8.8)**. The template import AJAX handler allowed contributor-level users to upload files via base64-encoded `fileData`. A path traversal in the filename parameter (`/../../../../shell.php`) placed PHP webshells in web-accessible directories.
+
+### Recurring vulnerability patterns
+
+**Pattern 1: Missing/broken authorization on AJAX handlers** — The single most dangerous recurring pattern. Functions hooked to `wp_ajax_*` that check nonces but not capabilities. Affects WPForms, LiteSpeed Cache, Elementor Pro, and hundreds of smaller plugins.
+
+**Pattern 2: XSS via insufficient output escaping** — 47.7% of all vulnerabilities in 2024. Most commonly Stored XSS at contributor+ level via shortcode attributes, widget settings, custom field values, and block attributes. Direct concatenation of user input into HTML output without `esc_attr()`, `esc_html()`, or `wp_kses()`.
+
+**Pattern 3: Authentication bypass via REST API** — Improper `permission_callback` implementations, custom authentication hooks trusting user-supplied headers, error handling that falls through to success states, and case-sensitivity mismatches in route matching.
+
+**Pattern 4: Weak/predictable security tokens** — Using `mt_rand()` with predictable seeds, empty API key hash comparisons (CleanTalk CVE-2024-10781), and non-constant-time string comparison for tokens.
+
+**Pattern 5: PHP Object Injection** — Growing trend. UpdraftPlus (CVE-2024-10957), GiveWP (CVE-2024-9634), SEOPress (CVE-2024-5488). Using `unserialize()` or `maybe_unserialize()` on user-controlled data, combinable with POP chains in bundled libraries for RCE.
+
+### Vulnerability statistics
+
+| Metric | 2023 | 2024 | H1 2025 |
+|--------|------|------|---------|
+| Total new vulnerabilities | ~5,943 | 7,966 | ~6,700 |
+| XSS percentage | ~45% | 47.7% | — |
+
+ succeeded in 0ms:
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "core",
+  "task": {
+    "role": "phase2_reviewer_core",
+    "goal": "Challenge the worker output packet-by-packet with concrete counter-evidence, field corrections, and explicit missing-evidence notes.",
+    "output_schema": "contracts/phase2-review-core-output.schema.json",
+    "output_path": "reports/phase2/hostinger-reach-phase2.review.r1.core.b13.json",
+    "packet_schema": "contracts/phase2-reviewer-packet.schema.json",
+    "allow_missed_findings": false,
+    "constraints": [
+      "Treat each finding packet as the unit of review; do not restart whole-plugin auditing.",
+      "Answer reachability, authorization, dataflow, impact, and missing-evidence questions for each packet before finalizing finding_reviews.",
+      "Start from finding_packets, worker_findings, and phase1_context before opening other artifacts.",
+      "Refute before confirm; keep objections evidence-bound with file:line anchors.",
+      "Do not rewrite the full findings set; produce critique JSON only.",
+      "Default to packet-local critique only. Focus on finding_reviews plus field corrections for the existing finding packets.",
+      "Treat finding_packets as the reviewer core evidence pack. If packet-local evidence is insufficient, prefer needs_more_evidence over broad exploration."
+    ],
+    "max_candidates": null
+  },
+  "artifacts": {
+    "worker_output_path": null,
+    "ir_path": null,
+    "semgrep_path": null,
+    "psalm_path": null,
+    "threat_context_path": null,
+    "source_root": "plugins/hostinger-reach"
+  },
+  "worker_summary": {
+    "total_findings": 1,
+    "true_positive_count": 0,
+    "false_positive_count": 1,
+    "needs_review_count": 0,
+    "negative_findings_count": 0,
+    "overall_risk": "low",
+    "analysis_summary": "Reviewer core batch scoped to 1 packet(s)."
+  },
+  "worker_findings": [
+    {
+      "finding_id": "HR-FP-006",
+      "verdict": "FP",
+      "vuln_type": "SQL Injection \u2014 WooCommerce get_contacts() uses interpolated table name",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 1.0,
+      "entry_point_id": "ep_rest__import___P_integration__a_z0_9____",
+      "source_anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:217",
+      "sink_anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:248",
+      "patchstack_eligible": false
+    }
+  ],
+  "finding_packets": [
+    {
+      "packet_id": "HR-FP-006",
+      "parent_finding_id": "HR-FP-006",
+      "packet_kind": "base",
+      "focus_anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:217",
+      "finding_id": "HR-FP-006",
+      "verdict": "FP",
+      "vuln_type": "SQL Injection \u2014 WooCommerce get_contacts() uses interpolated table name",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 1.0,
+      "entry_point_id": "ep_rest__import___P_integration__a_z0_9____",
+      "patchstack_eligible": false,
+      "claimed_impact": "Worker claims SQL Injection \u2014 WooCommerce get_contacts() uses interpolated table name is materially exploitable with auth boundary `unknown` and impact reachable at src/Integrations/WooCommerce/WooCommerceIntegration.php:248.",
+      "worker_context": {
+        "source_function": "WooCommerceIntegration::get_contacts",
+        "sink_function": "wpdb::get_results",
+        "fp_reason": "Packet-local reviewer scope: WooCommerceIntegration at src/Integrations/WooCommerce/WooCommerceIntegration.php:217. Primary files: src/Integrations/WooCommerce/WooCommerceIntegration.php.",
+        "original_fp_reason": "The table name is assembled from $wpdb->prefix concatenated with the hardcoded string 'wc_customer_lookup' in get_woocommerce_customer_table() \u2014 no user input flows into the table name.",
+        "reasoning_excerpt": {
+          "hypothesis": "Validate only the packet-local claim for WooCommerceIntegration. Determine whether anchors src/Integrations/WooCommerce/WooCommerceIntegration.php:217, src/Integrations/WooCommerce/WooCommerceIntegration.php:248, src/Integrations/WooCommerce/WooCommerceIntegration.php:291 actually support the worker's claim without widening to other surfaces.",
+          "trace": "Packet-local review only. Focus file: src/Integrations/WooCommerce/WooCommerceIntegration.php. Focus anchors: src/Integrations/WooCommerce/WooCommerceIntegration.php:217, src/Integrations/WooCommerce/WooCommerceIntegration.php:248, src/Integrations/WooCommerce/WooCommerceIntegration.php:291. Primary files: src/Integrations/WooCommerce/WooCommerceIntegration.php. Entry point: <unknown>. Treat unrelated callers, consumers, and sibling surfaces as out of scope unless an explicit expansion attempt is justified.",
+          "defenses": [
+            "get_woocommerce_customer_table() at line 289-292 returns a hardcoded concatenation of $wpdb->prefix and 'wc_customer_lookup' \u2014 neither component is user-controlled",
+            "$wpdb->prefix is set by WordPress from configuration and cannot be influenced via HTTP request",
+            "Keep critique packet-local; do not reuse sibling-surface defenses or conclusions without code evidence in this packet."
+          ],
+          "refutation": [
+            "Refute or keep this packet on WooCommerceIntegration alone. Do not carry over conclusions from plugin-wide traces without packet-local code evidence."
+          ],
+          "conclusion": "Keep, downgrade, retract, or mark needs_more_evidence based only on packet-local evidence for WooCommerceIntegration."
+        },
+        "original_reasoning_excerpt": {
+          "hypothesis": "Interpolated table name in raw SQL query could allow SQL injection.",
+          "trace": "$table = $this->get_woocommerce_customer_table() (line 224) \u2192 get_woocommerce_customer_table() returns '{$wpdb->prefix}wc_customer_lookup' (line 291) \u2192 used as \"{$table}\" in SQL at line 225",
+          "defenses": [
+            "get_woocommerce_customer_table() at line 289-292 returns a hardcoded concatenation of $wpdb->prefix and 'wc_customer_lookup' \u2014 neither component is user-controlled",
+            "$wpdb->prefix is set by WordPress from configuration and cannot be influenced via HTTP request"
+          ],
+          "refutation": [
+            "REFUTATION ATTEMPT: Is any portion of the table name derived from user input? RESULT: Refuted. The table name is entirely derived from $wpdb->prefix (server-side configuration) and the string literal 'wc_customer_lookup'."
+          ],
+          "conclusion": "FP \u2014 hardcoded table name, no user input reachable."
+        }
+      },
+      "review_focus": {
+        "scope_statement": "Review only the packet-local claim centered on src/Integrations/WooCommerce/WooCommerceIntegration.php:217 in src/Integrations/WooCommerce/WooCommerceIntegration.php. Start from the listed packet evidence, not from a plugin-wide hypothesis.",
+        "sink_semantics": "unknown",
+        "default_resolution_on_missing_terminal_evidence": "needs_more_evidence",
+        "stop_conditions": [
+          "Once packet-local reachability, authorization, dataflow, impact, and missing evidence are answered with file:line support, stop and write critique JSON.",
+          "Do not reopen unrelated plugin surfaces just because the parent finding or worker narrative mentions them."
+        ],
+        "disallowed_drift": [
+          "whole_plugin_reaudit",
+          "translation_or_asset_search",
+          "sibling_surface_expansion_without_evidence"
+        ],
+        "primary_scope_files": [
+          "src/Integrations/WooCommerce/WooCommerceIntegration.php"
+        ],
+        "optional_scope_files": [
+          "src/Integrations/WooCommerce/WooCommerceIntegration.php"
+        ],
+        "entry_point_anchor": null
+      },
+      "scope_policy": {
+        "allowed_primary_files": [
+          "src/Integrations/WooCommerce/WooCommerceIntegration.php"
+        ],
+        "allowed_optional_files": [
+          "src/Integrations/WooCommerce/WooCommerceIntegration.php"
+        ],
+        "max_out_of_band_files": 1
+      },
+      "anchors": {
+        "entry_point_anchor": null,
+        "source_anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:217",
+        "sink_anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:248",
+        "review_anchor_candidates": [
+          {
+            "kind": "finding_source",
+            "anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:217",
+            "note": "SQL Injection \u2014 WooCommerce get_contacts() uses interpolated table name"
+          },
+          {
+            "kind": "finding_sink",
+            "anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:248",
+            "note": "SQL Injection \u2014 WooCommerce get_contacts() uses interpolated table name"
+          },
+          {
+            "kind": "fp_evidence",
+            "anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:291",
+            "note": "hardcoded_value"
+          }
+        ]
+      },
+      "primary_files": [
+        "src/Integrations/WooCommerce/WooCommerceIntegration.php"
+      ],
+      "primary_snippets": [
+        {
+          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+          "anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:217",
+          "focus_line": 217,
+          "line_start": 211,
+          "line_end": 223,
+          "kind": "finding_source",
+          "code": "   211\t                'title'    => __( 'WooCommerce Customers', 'hostinger-reach' ),\n   212\t                'contacts' => $this->get_contacts_count(),\n   213\t            ),\n   214\t        );\n   215\t    }\n   216\t\n   217\t    public function get_contacts( mixed $form_id = null, ?int $limit = 100, ?int $offset = 0 ): array {\n   218\t        if ( ! $this->is_woo_customer_data_available() ) {\n   219\t            return array();\n   220\t        }\n   221\t\n   222\t        global $wpdb;\n   223\t        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared"
+        },
+        {
+          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+          "anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:248",
+          "focus_line": 248,
+          "line_start": 242,
+          "line_end": 254,
+          "kind": "finding_sink",
+          "code": "   242\t                        'plugin'  => self::INTEGRATION_NAME,\n   243\t                        'group'   => self::INTEGRATION_NAME,\n   244\t                    ),\n   245\t                );\n   246\t            },\n   247\t            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared\n   248\t            $wpdb->get_results( $sql )\n   249\t        );\n   250\t    }\n   251\t\n   252\t    public function get_contacts_count(): int {\n   253\t        global $wpdb;\n   254\t        if ( ! $this->is_woo_customer_data_available() ) {"
+        }
+      ],
+      "optional_files": [
+        "src/Integrations/WooCommerce/WooCommerceIntegration.php"
+      ],
+      "optional_snippets": [
+        {
+          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+          "anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:217",
+          "focus_line": 217,
+          "line_start": 211,
+          "line_end": 223,
+          "kind": "finding_source",
+          "code": "   211\t                'title'    => __( 'WooCommerce Customers', 'hostinger-reach' ),\n   212\t                'contacts' => $this->get_contacts_count(),\n   213\t            ),\n   214\t        );\n   215\t    }\n   216\t\n   217\t    public function get_contacts( mixed $form_id = null, ?int $limit = 100, ?int $offset = 0 ): array {\n   218\t        if ( ! $this->is_woo_customer_data_available() ) {\n   219\t            return array();\n   220\t        }\n   221\t\n   222\t        global $wpdb;\n   223\t        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared"
+        },
+        {
+          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+          "anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:248",
+          "focus_line": 248,
+          "line_start": 242,
+          "line_end": 254,
+          "kind": "finding_sink",
+          "code": "   242\t                        'plugin'  => self::INTEGRATION_NAME,\n   243\t                        'group'   => self::INTEGRATION_NAME,\n   244\t                    ),\n   245\t                );\n   246\t            },\n   247\t            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared\n   248\t            $wpdb->get_results( $sql )\n   249\t        );\n   250\t    }\n   251\t\n   252\t    public function get_contacts_count(): int {\n   253\t        global $wpdb;\n   254\t        if ( ! $this->is_woo_customer_data_available() ) {"
+        },
+        {
+          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+          "anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:291",
+          "focus_line": 291,
+          "line_start": 285,
+          "line_end": 297,
+          "kind": "fp_evidence",
+          "code": "   285\t\n   286\t        return $is_opted_in === 'yes';\n   287\t    }\n   288\t\n   289\t    private function get_woocommerce_customer_table(): string {\n   290\t        global $wpdb;\n   291\t        return \"{$wpdb->prefix}wc_customer_lookup\";\n   292\t    }\n   293\t\n   294\t    private function is_woo_customer_data_available(): bool {\n   295\t        global $wpdb;\n   296\t        $table = $this->get_woocommerce_customer_table();\n   297\t        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared"
+        }
+      ],
+      "review_questions": {
+        "reachability": "Can an attacker really reach the claimed path from ep_rest__import___P_integration__a_z0_9____ without hidden preconditions or workflow assumptions?",
+        "authorization": "Does the path have a stronger guard than the worker claims, including capability, permission_callback, nonce semantics, or trust-boundary limits for auth `unknown`?",
+        "dataflow": "Does attacker-controlled data actually flow from src/Integrations/WooCommerce/WooCommerceIntegration.php:217 to src/Integrations/WooCommerce/WooCommerceIntegration.php:248 for the claimed SQL Injection \u2014 WooCommerce get_contacts() uses interpolated table name, without a refuting guard, sanitizer, or broken hop?",
+        "impact": "Assuming the path reaches src/Integrations/WooCommerce/WooCommerceIntegration.php:248, is the worker's claimed impact concrete and not overstated for this plugin context?",
+        "missing_evidence": "What exact file:line evidence is still missing before this finding can be kept, downgraded, or retracted with confidence?"
+      }
+    }
+  ],
+  "phase1_context": {
+    "entry_point_count": 25,
+    "anomaly_count": 3,
+    "unresolved_hook_count": 8,
+    "related_entry_points": [],
+    "top_anomalies": [],
+    "unresolved_hooks": []
+  },
+  "evidence": {
+    "primary_anchors": [
+      {
+        "kind": "finding_source",
+        "anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:217",
+        "packet_id": "HR-FP-006",
+        "finding_id": "HR-FP-006",
+        "entry_point_id": "ep_rest__import___P_integration__a_z0_9____",
+        "note": "SQL Injection \u2014 WooCommerce get_contacts() uses interpolated table name"
+      },
+      {
+        "kind": "finding_sink",
+        "anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:248",
+        "packet_id": "HR-FP-006",
+        "finding_id": "HR-FP-006",
+        "entry_point_id": "ep_rest__import___P_integration__a_z0_9____",
+        "note": "SQL Injection \u2014 WooCommerce get_contacts() uses interpolated table name"
+      }
+    ],
+    "primary_files": [
+      "src/Integrations/WooCommerce/WooCommerceIntegration.php"
+    ],
+    "primary_snippets": [
+      {
+        "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+        "anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:217",
+        "focus_line": 217,
+        "line_start": 211,
+        "line_end": 223,
+        "kind": "finding_source",
+        "code": "   211\t                'title'    => __( 'WooCommerce Customers', 'hostinger-reach' ),\n   212\t                'contacts' => $this->get_contacts_count(),\n   213\t            ),\n   214\t        );\n   215\t    }\n   216\t\n   217\t    public function get_contacts( mixed $form_id = null, ?int $limit = 100, ?int $offset = 0 ): array {\n   218\t        if ( ! $this->is_woo_customer_data_available() ) {\n   219\t            return array();\n   220\t        }\n   221\t\n   222\t        global $wpdb;\n   223\t        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared"
+      },
+      {
+        "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+        "anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:248",
+        "focus_line": 248,
+        "line_start": 242,
+
+codex
+Toi dang dung skill `wp-security-audit` o muc toi thieu de giu review theo thu tu trace-defenses-refutation, nhung van giu packet-local scope nhu input yeu cau. Buoc tiep theo la mo schema output va doan code quanh cac anchor trong `WooCommerceIntegration.php` de kiem tra reachability/dataflow ma khong mo rong sang surface khac.
+exec
+/bin/zsh -lc "sed -n '260,520p' reports/phase2/hostinger-reach-phase2.review.r1.core.b13.input.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+        "line_start": 242,
+        "line_end": 254,
+        "kind": "finding_sink",
+        "code": "   242\t                        'plugin'  => self::INTEGRATION_NAME,\n   243\t                        'group'   => self::INTEGRATION_NAME,\n   244\t                    ),\n   245\t                );\n   246\t            },\n   247\t            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared\n   248\t            $wpdb->get_results( $sql )\n   249\t        );\n   250\t    }\n   251\t\n   252\t    public function get_contacts_count(): int {\n   253\t        global $wpdb;\n   254\t        if ( ! $this->is_woo_customer_data_available() ) {"
+      }
+    ],
+    "optional_evidence": {
+      "anchors": [],
+      "files": [],
+      "snippets": []
+    }
+  },
+  "threat_context_summary": null
+}
+
+exec
+/bin/zsh -lc "sed -n '1,260p' contracts/phase2-review-core-output.schema.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "sed -n '210,320p' plugins/hostinger-reach/src/Integrations/WooCommerce/WooCommerceIntegration.php" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+            wc_get_page_id( 'checkout' ) => array(
+                'title'    => __( 'WooCommerce Customers', 'hostinger-reach' ),
+                'contacts' => $this->get_contacts_count(),
+            ),
+        );
+    }
+
+    public function get_contacts( mixed $form_id = null, ?int $limit = 100, ?int $offset = 0 ): array {
+        if ( ! $this->is_woo_customer_data_available() ) {
+            return array();
+        }
+
+        global $wpdb;
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+        $table = $wpdb->prefix . 'wc_customer_lookup';
+        $sql   = "SELECT email, first_name FROM {$table}";
+
+        if ( $limit > 0 ) {
+            $sql .= $wpdb->prepare( ' LIMIT %d', $limit );
+        }
+
+        if ( $offset > 0 ) {
+            $sql .= $wpdb->prepare( ' OFFSET %d', $offset );
+        }
+
+        return array_map(
+            function ( stdClass $user ) {
+                return array(
+                    'email'    => $user->email ?? '',
+                    'name'     => $user->first_name ?? '',
+                    'metadata' => array(
+                        'form_id' => wc_get_page_id( 'checkout' ),
+                        'plugin'  => self::INTEGRATION_NAME,
+                        'group'   => self::INTEGRATION_NAME,
+                    ),
+                );
+            },
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+            $wpdb->get_results( $sql )
+        );
+    }
+
+    public function get_contacts_count(): int {
+        global $wpdb;
+        if ( ! $this->is_woo_customer_data_available() ) {
+            return 0;
+        }
+
+        $table = $this->get_woocommerce_customer_table();
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        return $wpdb->get_var( "SELECT COUNT(*) FROM {$table}" ) ?? 0;
+    }
+
+    private function set_opted_in( bool $opted_in, mixed $oder_id ): void {
+        $customer_id = get_current_user_id();
+        $order       = wc_get_order( $oder_id );
+
+        if ( $customer_id > 0 ) {
+            update_user_meta( $customer_id, self::OPTIN_KEY, $opted_in ? 'yes' : 'no' );
+        } elseif ( $order ) {
+            $order->update_meta_data( self::ORDER_META_OPTIN_KEY, $opted_in ? 'yes' : 'no' );
+            $order->save();
+        }
+    }
+
+    private function is_opted_in( mixed $oder_id = false ): bool {
+        $customer_id = get_current_user_id();
+        $order       = wc_get_order( $oder_id );
+        $is_opted_in = false;
+
+        if ( $customer_id > 0 ) {
+            $is_opted_in = get_user_meta( get_current_user_id(), self::OPTIN_KEY, true );
+        } elseif ( $order ) {
+            $is_opted_in = $order->get_meta( self::ORDER_META_OPTIN_KEY, true );
+        }
+
+        return $is_opted_in === 'yes';
+    }
+
+    private function get_woocommerce_customer_table(): string {
+        global $wpdb;
+        return "{$wpdb->prefix}wc_customer_lookup";
+    }
+
+    private function is_woo_customer_data_available(): bool {
+        global $wpdb;
+        $table = $this->get_woocommerce_customer_table();
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        $table_exists = $wpdb->get_var( "SHOW TABLES LIKE '$table'" ) === $table;
+        return function_exists( 'wc_get_page_id' ) && $table_exists;
+    }
+
+    private function load_template(): void {
+        $template      = 'optin-checkbox.php';
+        $template_path = 'hostinger-reach/';
+        $default_path  = HOSTINGER_REACH_PLUGIN_DIR . 'templates/';
+
+        // phpcs:ignore WordPress.PHP.DontExtract.extract_extract -- Extracting variables for use in template.
+        extract( array( 'is_opted_in' => $this->is_opted_in() ) );
+
+        $located = wc_locate_template( $template, $template_path, $default_path );
+        if ( file_exists( $located ) ) {
+            include $located;
+        }
+    }
+}
+
+ succeeded in 0ms:
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "phase2-review-core-output.schema.json",
+  "version": "1.0.0",
+  "title": "Phase 2 Review Core Output Schema",
+  "description": "Structured packet-by-packet critique from the Phase 2 reviewer core loop. Core review is limited to claim validation and field corrections; it must not propose missed findings.",
+  "type": "object",
+  "required": ["plugin_slug", "review_round", "review_status", "summary", "finding_reviews"],
+  "properties": {
+    "plugin_slug": { "type": "string" },
+    "review_round": { "type": "integer", "minimum": 1 },
+    "review_mode": { "enum": ["core", "skeptical"] },
+    "review_status": { "enum": ["stable", "needs_revision"] },
+    "summary": {
+      "type": "object",
+      "required": ["worker_findings_reviewed", "material_issues_found"],
+      "properties": {
+        "worker_findings_reviewed": { "type": "integer", "minimum": 0 },
+        "material_issues_found": { "type": "boolean" },
+        "new_candidate_count": { "type": "integer", "minimum": 0, "maximum": 0 },
+        "notes": { "type": ["string", "null"] }
+      }
+    },
+    "finding_reviews": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["finding_id", "packet_id", "assessment", "reason", "required_changes", "counter_evidence", "missing_evidence", "expansion_attempts"],
+        "properties": {
+          "finding_id": { "type": "string" },
+          "packet_id": { "type": "string" },
+          "parent_finding_id": { "type": ["string", "null"] },
+          "assessment": { "enum": ["keep", "needs_more_evidence", "downgrade", "retract", "field_fix"] },
+          "reason": { "type": "string" },
+          "required_changes": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "counter_evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["type", "file", "line", "detail"],
+              "properties": {
+                "type": { "enum": ["guard", "sanitizer", "unreachable", "scope", "impact", "other"] },
+                "file": { "type": "string" },
+                "line": { "type": "integer", "minimum": 1 },
+                "detail": { "type": "string" }
+              }
+            }
+          },
+          "missing_evidence": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "expansion_attempts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["type", "target", "reason", "outcome"],
+              "properties": {
+                "type": { "enum": ["optional_file", "out_of_band_file"] },
+                "target": { "type": "string" },
+                "reason": { "type": "string" },
+                "outcome": { "type": "string" }
+              }
+            }
+          },
+          "suggested_field_corrections": {
+            "type": ["object", "null"]
+          }
+        }
+      }
+    },
+    "missed_findings": false
+  }
+}
+
+exec
+/bin/zsh -lc "rg -n 'phase2\\.review\\.r1\\.core\\..*\\.json"'$'"' reports/phase2 -g '*.json'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ exited 1 in 0ms:
+codex
+Packet nay co ve la false positive ro rang hon worker summary: doan SQL chi noi suy ten bang tu `$wpdb->prefix` va chuoi hang, con `LIMIT/OFFSET` di qua `%d`. Toi se tim mot output mau cung schema de canh format, roi tao critique JSON voi counter-evidence va cac field correction toi thieu.
+exec
+/bin/zsh -lc "rg --files reports/phase2 | rg 'phase2\\.review\\..*\\.json"'$'"'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+reports/phase2/hostinger-reach-phase2.review.r1.core.b06.input.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.b03.input.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.input.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.targeted-rerun-summary.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.b12.input.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.b01.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.b09.input.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.b06.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.b04.input.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.b11.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.b01.input.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.b07.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.b10.input.json
+reports/phase2/hostinger-reach-phase2.review.r1.skeptical.input.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.b02.input.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.b08.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.b12.json
+reports/phase2/hostinger-reach-phase2.review.r2.explore.input.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.b04.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.b13.input.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.b05.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.b09.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.b07.input.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.batch-plan.json
+reports/phase2/hostinger-reach-phase2.review.r2.forced_exploration.input.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.b02.json
+reports/phase2/hostinger-reach-phase2.review.r3.skeptical.input.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.b11.input.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.b14.input.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.b08.input.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.b03.json
+reports/phase2/hostinger-reach-phase2.review.r1.core.b05.input.json
+
+exec
+/bin/zsh -lc "rg -n '\"finding_reviews\"' reports/phase2 -g '*.json'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+reports/phase2/hostinger-reach-agent-w10-review.r1.json:12:  "finding_reviews": [
+reports/phase2/hostinger-reach-phase2.review.r1.core.b01.json:12:  "finding_reviews": [
+reports/phase2/hostinger-reach-phase2.review.r1.core.b06.json:12:  "finding_reviews": [
+reports/phase2/hostinger-reach-phase2.review.r1.core.b11.json:12:  "finding_reviews": [
+reports/phase2/hostinger-reach-phase2.review.r1.core.b03.json:12:  "finding_reviews": [
+reports/phase2/hostinger-reach-phase2.review.r1.core.b04.json:12:  "finding_reviews": [
+reports/phase2/hostinger-reach-phase2.review.r1.core.b02.json:12:  "finding_reviews": [
+reports/phase2/hostinger-reach-phase2.review.r1.core.b07.json:12:  "finding_reviews": [
+reports/phase2/hostinger-reach-phase2.review.r1.core.b12.json:12:  "finding_reviews": [
+reports/phase2/hostinger-reach-phase2.review.r1.core.b05.json:12:  "finding_reviews": [
+reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json:12:  "finding_reviews": [
+reports/phase2/hostinger-reach-phase2.review.r1.core.b09.json:12:  "finding_reviews": [
+reports/phase2/hostinger-reach-phase2.review.r1.core.b08.json:12:  "finding_reviews": [
+
+exec
+/bin/zsh -lc "sed -n '1,220p' reports/phase2/hostinger-reach-phase2.review.r1.core.b01.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "sed -n '1,220p' reports/phase2/hostinger-reach-phase2.review.r1.core.b12.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "core",
+  "review_status": "needs_revision",
+  "summary": {
+    "worker_findings_reviewed": 1,
+    "material_issues_found": true,
+    "new_candidate_count": 0,
+    "notes": "Packet HR-002 needs field correction and stronger evidence before it can be kept as a security finding."
+  },
+  "finding_reviews": [
+    {
+      "finding_id": "HR-002",
+      "packet_id": "HR-002",
+      "parent_finding_id": "HR-002",
+      "assessment": "needs_more_evidence",
+      "reason": "Reachability: the packet's cited entry point at src/Api/Webhooks/Handlers/WebhookHandler.php:19 is not packet-locally connected to this AJAX handler; the actual reachable hook in scope is the wp_ajax registration at src/Admin/Notices/AddFormNotice.php:28. Authorization: handle_ajax_action() has no capability check, but execution is still limited to authenticated AJAX requests with a valid nonce, and nonce delivery is gated by should_render() and admin-screen conditions. Dataflow: sanitized $_POST['choice'] at src/Admin/Notices/AddFormNotice.php:45 only selects between a one-week transient write at line 59 and a fixed redirect string at line 66. Impact: packet-local evidence supports, at most, global dismissal of an onboarding notice, not subscriber privilege escalation or a meaningful security state change. Missing evidence: the worker has not shown that a subscriber can actually obtain the localized nonce on the whitelisted screens, nor that this notice toggle has concrete security impact.",
+      "required_changes": [
+        "Remove src/Api/Webhooks/Handlers/WebhookHandler.php:19 as the entry point for this packet unless a packet-local trace to AddFormNotice::init() is provided; the in-scope registration is src/Admin/Notices/AddFormNotice.php:28.",
+        "Do not describe the issue as 'subscriber privilege escalation' without evidence that a subscriber or equivalent low-privileged role can reach a whitelisted screen and receive the nonce localized at src/Admin/Notices/AddFormNotice.php:155.",
+        "Narrow the authorization precondition to an authenticated user with a valid notice nonce obtained from the screens allowed by src/Admin/Notices/AddFormNotice.php:103-117.",
+        "Narrow the impact statement to the concrete packet-local effects: setting the notice-dismiss transient at src/Admin/Notices/AddFormNotice.php:59 or returning the fixed redirect URL at src/Admin/Notices/AddFormNotice.php:66."
+      ],
+      "counter_evidence": [
+        {
+          "type": "scope",
+          "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
+          "line": 19,
+          "detail": "This abstract webhook handler only registers init_hooks on init; the packet provides no packet-local path from this anchor to AddFormNotice::handle_ajax_action(), so the current entry-point anchor is mismapped."
+        },
+        {
+          "type": "guard",
+          "file": "src/Admin/Notices/AddFormNotice.php",
+          "line": 28,
+          "detail": "The handler is registered only on wp_ajax_hostinger_reach_add_form_notice_action, not on a wp_ajax_nopriv_* hook, so the route is authenticated-only."
+        },
+        {
+          "type": "guard",
+          "file": "src/Admin/Notices/AddFormNotice.php",
+          "line": 44,
+          "detail": "check_ajax_referer(self::NOTICE_ACTION, 'nonce') must pass before either branch executes."
+        },
+        {
+          "type": "guard",
+          "file": "src/Admin/Notices/AddFormNotice.php",
+          "line": 103,
+          "detail": "should_render() restricts notice rendering to a fixed set of admin screens, so nonce distribution is not shown as universally available to all logged-in roles."
+        },
+        {
+          "type": "guard",
+          "file": "src/Admin/Notices/AddFormNotice.php",
+          "line": 155,
+          "detail": "The nonce is localized only when enqueue_notice_assets() runs, which depends on should_render(); packet-local evidence does not prove a subscriber can obtain it."
+        },
+        {
+          "type": "impact",
+          "file": "src/Admin/Notices/AddFormNotice.php",
+          "line": 59,
+          "detail": "The dismiss branch only sets the hostinger_reach_add_form_notice_dismissed transient for one week and returns wp_send_json_success()."
+        },
+        {
+          "type": "impact",
+          "file": "src/Admin/Notices/AddFormNotice.php",
+          "line": 66,
+          "detail": "The success branch only returns a fixed admin.php?page=hostinger-reach&addForm=1 redirect string; it does not change plugin settings, capabilities, or stored credentials."
+        }
+      ],
+      "missing_evidence": [
+        "File:line or reproducible evidence that a subscriber or equivalent low-privileged role can reach one of the screens whitelisted at src/Admin/Notices/AddFormNotice.php:103-110 and receive the nonce localized at src/Admin/Notices/AddFormNotice.php:155.",
+        "Packet-local evidence that the transient written at src/Admin/Notices/AddFormNotice.php:59 causes a measurable security consequence beyond hiding this onboarding notice.",
+        "A packet-local trace connecting the claimed entry-point anchor src/Api/Webhooks/Handlers/WebhookHandler.php:19 to AddFormNotice::init() if that anchor is to remain in the packet."
+      ],
+      "expansion_attempts": [],
+      "suggested_field_corrections": {
+        "entry_point_anchor": "src/Admin/Notices/AddFormNotice.php:28",
+        "source_anchor": "src/Admin/Notices/AddFormNotice.php:43",
+        "sink_anchor": "src/Admin/Notices/AddFormNotice.php:59",
+        "auth_required": "authenticated user with a valid nonce from the AddFormNotice admin UI",
+        "vuln_type": "Missing capability check on authenticated AJAX notice action",
+        "severity": "low",
+        "patchstack_eligible": false,
+        "claimed_impact": "Global dismissal of the Add Form admin notice for one week; success branch only returns a fixed admin redirect URL."
+      }
+    }
+  ]
+}
+
+ succeeded in 0ms:
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "core",
+  "review_status": "needs_revision",
+  "summary": {
+    "worker_findings_reviewed": 1,
+    "material_issues_found": true,
+    "new_candidate_count": 0,
+    "notes": "HR-FP-007__p04 does not support a stable JSON-response-based FP. The flagged line is only a return of the original value, and the packet does not pin a single caller, auth boundary, or terminal non-HTML sink."
+  },
+  "finding_reviews": [
+    {
+      "finding_id": "HR-FP-007",
+      "packet_id": "HR-FP-007__p04",
+      "parent_finding_id": "HR-FP-007",
+      "assessment": "needs_more_evidence",
+      "reason": "Reachability: `src/Api/Routes/Routes.php:22` is only the generic `rest_api_init` bootstrap and does not packet-locally connect to `ForminatorIntegration::find_email()`. In-scope code shows one non-REST caller via `forminator_form_after_save_entry` at `src/Integrations/Forminator/ForminatorIntegration.php:42`, with `handle_submission()` passing `$_POST` into `find_email()` at line 51, and the single justified expansion file shows separate admin-only import routes at `src/Api/Routes/IntegrationsRoutes.php:54-60` and `73-79`, but the packet does not trace either route callback to line 173. Authorization: the packet therefore has no single established auth boundary; the generic `manage_options` guard in `src/Api/Routes/Routes.php:33` is not a packet-local defense for the submission-hook path, while the import routes are admin-only only if they are the relevant caller. Dataflow: attacker-controlled input can reach line 173 because `handle_submission()` calls `find_email( $_POST )` at `src/Integrations/Forminator/ForminatorIntegration.php:51`, but `sanitize_email( $value )` at line 171 only validates a derived copy and the function returns the original `$value` at line 173. Impact: line 173 is not an output sink; packet-local uses are hook dispatch at `src/Integrations/Forminator/ForminatorIntegration.php:56-66` and `ReachContact` array construction at `src/Integrations/Forminator/ForminatorIntegration.php:118-129`, neither of which demonstrates browser execution. Missing evidence: the worker has not shown which caller is in scope, what the real entry point/auth model is for this packet, or a downstream consumer proving the returned value terminates in non-HTML output.",
+      "required_changes": [
+        "Replace the mismapped entry-point anchor `src/Api/Routes/Routes.php:22`. Either trace the Forminator submission path at `src/Integrations/Forminator/ForminatorIntegration.php:42-51` or the import REST path beginning at `src/Api/Routes/IntegrationsRoutes.php:54-60` or `73-79` with a packet-local callback chain to line 173.",
+        "Do not rely on a generic 'REST responses are JSON-encoded' rationale for this packet. `find_email()` is also used by the Forminator submission hook path at `src/Integrations/Forminator/ForminatorIntegration.php:42-66`, where the returned value is forwarded to `do_action( 'hostinger_reach_submit', ... )` rather than directly placed in a REST body.",
+        "Correct the dataflow language around sanitization: `sanitize_email()` at `src/Integrations/Forminator/ForminatorIntegration.php:171` validates a derived copy, but line 173 returns the original `$value`. Unless downstream normalization is shown, describe the result as a validated email-like candidate, not sanitized output.",
+        "If the worker keeps the false-positive direction, narrow the packet-local conclusion to 'no packet-local HTML sink shown' and add file:line evidence for the chosen caller's actual terminal sink."
+      ],
+      "counter_evidence": [
+        {
+          "type": "scope",
+          "file": "src/Api/Routes/Routes.php",
+          "line": 22,
+          "detail": "This file only attaches `register_routes` to `rest_api_init`; it is not, by itself, the packet-local registration or caller for `ForminatorIntegration::find_email()`."
+        },
+        {
+          "type": "scope",
+          "file": "src/Integrations/Forminator/ForminatorIntegration.php",
+          "line": 42,
+          "detail": "The same class exposes a separate non-REST reachable surface by registering `handle_submission()` on `forminator_form_after_save_entry`."
+        },
+        {
+          "type": "other",
+          "file": "src/Integrations/Forminator/ForminatorIntegration.php",
+          "line": 171,
+          "detail": "`sanitize_email( $value )` is used only for validation of a temporary copy; the function does not return `$sanitized_value`."
+        },
+        {
+          "type": "scope",
+          "file": "src/Integrations/Forminator/ForminatorIntegration.php",
+          "line": 173,
+          "detail": "The flagged line is a bare `return $value;` and does not echo, print, or render HTML at this location."
+        },
+        {
+          "type": "scope",
+          "file": "src/Integrations/Forminator/ForminatorIntegration.php",
+          "line": 56,
+          "detail": "On the submission path, the returned value is forwarded into the `hostinger_reach_submit` hook payload, so the next packet-local hop is hook dispatch rather than browser output."
+        },
+        {
+          "type": "impact",
+          "file": "src/Integrations/Forminator/ForminatorIntegration.php",
+          "line": 118,
+          "detail": "On the import path, the returned value is placed into a `ReachContact` object and then converted to an array; this still does not show HTML or script execution in the reviewed packet."
+        },
+        {
+          "type": "guard",
+          "file": "src/Api/Routes/IntegrationsRoutes.php",
+          "line": 60,
+          "detail": "If the relevant caller is the integration import REST surface, that route uses `permission_check()`, so the packet cannot simultaneously rely on a generic public `rest_api_init` entry boundary without a callback trace."
+        }
+      ],
+      "missing_evidence": [
+        "A file:line callback chain from the chosen entry point to `src/Integrations/Forminator/ForminatorIntegration.php:173`; the current packet does not connect either `src/Integrations/Forminator/ForminatorIntegration.php:42` or `src/Api/Routes/IntegrationsRoutes.php:54-60` / `73-79` to the reviewed line with a concrete caller trace.",
+        "File:line evidence fixing which caller is actually in scope for this packet: the submission path at `src/Integrations/Forminator/ForminatorIntegration.php:45-66` or the import path at `src/Integrations/Forminator/ForminatorIntegration.php:96-134`.",
+        "File:line downstream-consumer evidence showing that the original value returned at `src/Integrations/Forminator/ForminatorIntegration.php:173` terminates in a non-HTML sink; the current packet stops at hook dispatch or array construction.",
+        "If the worker wants to rely on sanitization as a refutation, file:line evidence that the value returned at `src/Integrations/Forminator/ForminatorIntegration.php:173` is normalized or escaped before any output context, because line 171 does not sanitize the returned string."
+      ],
+      "expansion_attempts": [
+        {
+          "type": "out_of_band_file",
+          "target": "src/Api/Routes/IntegrationsRoutes.php",
+          "reason": "The packet tied line 173 to `rest_api_init` but only provided the generic bootstrap file, so one route-registration file was needed to test whether a concrete REST caller existed in scope.",
+          "outcome": "Opened the file and confirmed that integration import routes are registered here and guarded by `permission_check()` at lines 60 and 79, but the packet still lacks a callback trace from those routes to `ForminatorIntegration::find_email()`."
+        }
+      ],
+      "suggested_field_corrections": {
+        "recommended_assessment": "needs_more_evidence",
+        "confidence": 0.69,
+        "auth_required": "unknown until the packet chooses and traces either the Forminator submission hook path or the admin-only import route path",
+        "fp_reason": "Packet-local evidence shows no HTML sink at or after `src/Integrations/Forminator/ForminatorIntegration.php:173`, but the current FP rationale is overstated because the function has multiple callers and returns the original value rather than the sanitized copy."
+      }
+    }
+  ]
+}
+
+codex
+Packet-local trace da du: claim SQLi nay bi phan bien boi chinh doan truy van trong file scope. Toi mo lai doan file co so dong day du de co counter-evidence va field correction chinh xac truoc khi ghi JSON.
+exec
+/bin/zsh -lc "nl -ba plugins/hostinger-reach/src/Integrations/WooCommerce/WooCommerceIntegration.php | sed -n '217,235p'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+   217	    public function get_contacts( mixed $form_id = null, ?int $limit = 100, ?int $offset = 0 ): array {
+   218	        if ( ! $this->is_woo_customer_data_available() ) {
+   219	            return array();
+   220	        }
+   221	
+   222	        global $wpdb;
+   223	        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+   224	        $table = $wpdb->prefix . 'wc_customer_lookup';
+   225	        $sql   = "SELECT email, first_name FROM {$table}";
+   226	
+   227	        if ( $limit > 0 ) {
+   228	            $sql .= $wpdb->prepare( ' LIMIT %d', $limit );
+   229	        }
+   230	
+   231	        if ( $offset > 0 ) {
+   232	            $sql .= $wpdb->prepare( ' OFFSET %d', $offset );
+   233	        }
+   234	
+   235	        return array_map(
+
+exec
+/bin/zsh -lc "nl -ba plugins/hostinger-reach/src/Integrations/WooCommerce/WooCommerceIntegration.php | sed -n '289,299p'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+   289	    private function get_woocommerce_customer_table(): string {
+   290	        global $wpdb;
+   291	        return "{$wpdb->prefix}wc_customer_lookup";
+   292	    }
+   293	
+   294	    private function is_woo_customer_data_available(): bool {
+   295	        global $wpdb;
+   296	        $table = $this->get_woocommerce_customer_table();
+   297	        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+   298	        $table_exists = $wpdb->get_var( "SHOW TABLES LIKE '$table'" ) === $table;
+   299	        return function_exists( 'wc_get_page_id' ) && $table_exists;
+
+exec
+/bin/zsh -lc "sed -n '1,120p' plugins/hostinger-reach/src/Integrations/WooCommerce/WooCommerceIntegration.php" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+<?php
+
+namespace Hostinger\Reach\Integrations\WooCommerce;
+
+use Automattic\WooCommerce\Internal\Admin\Onboarding\OnboardingProfile;
+use Hostinger\Reach\Api\Webhooks\Handlers\CartAbandoned;
+use Hostinger\Reach\Api\Webhooks\Handlers\OrderPurchased;
+use Hostinger\Reach\Integrations\IntegrationInterface;
+use Hostinger\Reach\Integrations\IntegrationWithForms;
+use Hostinger\Reach\Dto\PluginData;
+use Hostinger\Reach\Repositories\FormRepository;
+use stdClass;
+use WC_Order;
+use WP_Post;
+use WP_REST_Request;
+
+class WooCommerceIntegration extends IntegrationWithForms implements IntegrationInterface {
+    public FormRepository $form_repository;
+
+    public const INTEGRATION_NAME     = 'woocommerce';
+    public const OPTIN_KEY            = 'hostinger_reach_optin';
+    public const ORDER_META_OPTIN_KEY = '_wc_other/hostinger-reach/newsletter-optin';
+
+    public static function get_name(): string {
+        return self::INTEGRATION_NAME;
+    }
+
+    public function init(): void {
+        parent::init();
+        add_action( 'hostinger_reach_integration_activated', array( $this, 'set_woocommerce_onboarding_skipped' ) );
+    }
+
+    public function active_integration_hooks(): void {
+        $this->add_form();
+        $this->add_automations();
+        if ( $this->form_repository->is_form_active( self::INTEGRATION_NAME ) ) {
+            $this->init_optin_actions();
+
+            add_action( 'woocommerce_thankyou', array( $this, 'subscribe_customer_to_hostinger_reach' ) );
+            add_action( 'woocommerce_checkout_order_processed', array( $this, 'handle_optin' ) );
+            add_action( 'hostinger_reach_contact_submitted', array( $this, 'handle_submission' ) );
+        }
+    }
+
+    public function init_optin_actions(): void {
+        if ( did_action( 'woocommerce_blocks_loaded' ) ) {
+            $this->register_checkout_blocks_field();
+        } else {
+            add_action( 'woocommerce_blocks_loaded', array( $this, 'register_checkout_blocks_field' ) );
+        }
+
+        add_action(
+            'woocommerce_store_api_checkout_update_order_from_request',
+            array(
+                $this,
+                'handle_checkout_blocks_optin',
+            ),
+            10,
+            2
+        );
+        add_action( 'woocommerce_checkout_after_terms_and_conditions', array( $this, 'add_optin_checkbox' ) );
+    }
+
+
+    public function register_checkout_blocks_field(): void {
+        if ( ! function_exists( 'woocommerce_register_additional_checkout_field' ) ) {
+            return;
+        }
+
+        woocommerce_register_additional_checkout_field(
+            array(
+                'id'                         => 'hostinger-reach/newsletter-optin',
+                'label'                      => __( 'Subscribe to our newsletter', 'hostinger-reach' ),
+                'location'                   => 'contact',
+                'type'                       => 'checkbox',
+                'required'                   => false,
+                'attributes'                 => array(
+                    'data-custom' => 'hostinger-reach-optin',
+                ),
+                'show_in_order_confirmation' => true,
+            )
+        );
+    }
+
+    public function add_optin_checkbox(): void {
+        $this->load_template();
+    }
+
+    public function handle_optin( int $oder_id ): void {
+        $this->set_opted_in( isset( $_POST[ self::OPTIN_KEY ] ), $oder_id );
+    }
+
+    public function handle_checkout_blocks_optin( WC_Order $order, WP_REST_Request $request ): void {
+        $newsletter_optin = false;
+
+        if ( ! $newsletter_optin && isset( $request['additional_fields']['hostinger-reach/newsletter-optin'] ) ) {
+            $newsletter_optin = (bool) $request['additional_fields']['hostinger-reach/newsletter-optin'];
+        }
+
+        $this->set_opted_in( $newsletter_optin, $order->get_id() );
+    }
+
+    public function add_form(): void {
+        $checkout_page_id = null;
+
+        if ( method_exists( $this, 'wc_get_page_id' ) ) {
+            $checkout_page_id = wc_get_page_id( 'checkout' );
+        }
+
+        if ( ! $this->form_repository->exists( self::INTEGRATION_NAME ) ) {
+            $this->form_repository->insert(
+                array(
+                    'form_id'    => self::INTEGRATION_NAME,
+                    'type'       => self::INTEGRATION_NAME,
+                    'post_id'    => $checkout_page_id,
+                    'form_title' => __( 'Checkout', 'hostinger-reach' ),
+                )
+            );
+        }
+    }
+
+exec
+/bin/zsh -lc "rg -n \"get_contacts\\(|add_action\\(|add_filter\\(|register_rest_route|permission_callback|wp_ajax\" plugins/hostinger-reach/src/Integrations/WooCommerce/WooCommerceIntegration.php" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+30:        add_action( 'hostinger_reach_integration_activated', array( $this, 'set_woocommerce_onboarding_skipped' ) );
+39:            add_action( 'woocommerce_thankyou', array( $this, 'subscribe_customer_to_hostinger_reach' ) );
+40:            add_action( 'woocommerce_checkout_order_processed', array( $this, 'handle_optin' ) );
+41:            add_action( 'hostinger_reach_contact_submitted', array( $this, 'handle_submission' ) );
+49:            add_action( 'woocommerce_blocks_loaded', array( $this, 'register_checkout_blocks_field' ) );
+52:        add_action(
+61:        add_action( 'woocommerce_checkout_after_terms_and_conditions', array( $this, 'add_optin_checkbox' ) );
+217:    public function get_contacts( mixed $form_id = null, ?int $limit = 100, ?int $offset = 0 ): array {
+
+exec
+/bin/zsh -lc "rg -n '\"assessment\": \"keep\"|\"assessment\": \"field_fix\"' reports/phase2/hostinger-reach-phase2.review.r1.core.b*.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+reports/phase2/hostinger-reach-phase2.review.r1.core.b03.json:17:      "assessment": "field_fix",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b08.json:17:      "assessment": "field_fix",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b07.json:17:      "assessment": "field_fix",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b06.json:17:      "assessment": "field_fix",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b11.json:17:      "assessment": "field_fix",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json:17:      "assessment": "field_fix",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b04.json:17:      "assessment": "field_fix",
+reports/phase2/hostinger-reach-phase2.review.r1.core.b09.json:17:      "assessment": "field_fix",
+
+exec
+/bin/zsh -lc "sed -n '1,220p' reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "core",
+  "review_status": "needs_revision",
+  "summary": {
+    "worker_findings_reviewed": 1,
+    "material_issues_found": true,
+    "new_candidate_count": 0,
+    "notes": "Packet-local review supports dismissing the XSS claim, but the worker's REST/JSON framing and entry-point linkage are not supported by this packet."
+  },
+  "finding_reviews": [
+    {
+      "finding_id": "HR-FP-007",
+      "packet_id": "HR-FP-007__p03",
+      "parent_finding_id": "HR-FP-007",
+      "assessment": "field_fix",
+      "reason": "Packet-local review still refutes XSS, but not for the worker's stated reason. `src/Api/Routes/Routes.php:22` only shows route registration and does not tie any REST callback to `ElementorIntegration::get_form_ids()`, so reachability from the cited REST entry point is unproven. On the code actually reviewed, `src/Integrations/Elementor/ElementorIntegration.php:88`, `:390`, and `:406` only assemble and return form ID arrays, and the one justified consumer expansion shows those arrays are used for repository diff/delete logic in `src/Integrations/IntegrationWithForms.php:22-35`, not HTML output. Authorization therefore remains unresolved on the actual helper path rather than proven REST-public, and the claimed XSS impact is overstated.",
+      "required_changes": [
+        "Remove or correct the packet's REST entry-point linkage (`entry_point_id` `ep_rest_api_init_rest_api_init`), because `src/Api/Routes/Routes.php:22` alone does not show any callback into `ElementorIntegration::get_form_ids()`.",
+        "Replace the worker's JSON-response rationale with the packet-local fact that `src/Integrations/Elementor/ElementorIntegration.php:88`, `:390`, and `:406` are helper return sites that only produce form ID arrays.",
+        "Narrow the impact statement to 'no packet-local HTML/JS sink demonstrated' instead of relying on a broader plugin-wide REST/JSON explanation.",
+        "Treat authorization as unresolved for this packet unless a concrete callback file:line is supplied; the reviewed helper path does not itself carry a permission callback or capability check."
+      ],
+      "counter_evidence": [
+        {
+          "type": "scope",
+          "file": "src/Api/Routes/Routes.php",
+          "line": 22,
+          "detail": "The cited entry point only registers routes on `rest_api_init`; this line does not show any REST callback reaching `ElementorIntegration::get_form_ids()`."
+        },
+        {
+          "type": "other",
+          "file": "src/Integrations/Elementor/ElementorIntegration.php",
+          "line": 88,
+          "detail": "`get_form_ids()` returns the merged results of two helper methods. It does not echo, print, or build HTML."
+        },
+        {
+          "type": "other",
+          "file": "src/Integrations/Elementor/ElementorIntegration.php",
+          "line": 369,
+          "detail": "`get_elementor_form_ids_from_content()` extracts IDs with a fixed-prefix regex and returns reconstructed form ID strings, not markup."
+        },
+        {
+          "type": "other",
+          "file": "src/Integrations/Elementor/ElementorIntegration.php",
+          "line": 390,
+          "detail": "`get_elementor_form_ids_from_actions()` returns the accumulated `$form_ids` array after parsing `$_POST['actions']`; the anchor is still a data return, not an output sink."
+        },
+        {
+          "type": "other",
+          "file": "src/Integrations/Elementor/ElementorIntegration.php",
+          "line": 406,
+          "detail": "`find_form_widget()` also terminates by returning an array of collected element IDs, with no rendering step in the reviewed function."
+        },
+        {
+          "type": "impact",
+          "file": "src/Integrations/IntegrationWithForms.php",
+          "line": 30,
+          "detail": "The justified consumer expansion shows the returned values are assigned to `$current_form_ids` inside `maybe_unset_forms()` for repository comparison logic."
+        },
+        {
+          "type": "impact",
+          "file": "src/Integrations/IntegrationWithForms.php",
+          "line": 34,
+          "detail": "The identified downstream action is `$this->form_repository->delete( $form_id )`; this is bookkeeping side effect, not HTML/JS execution."
+        }
+      ],
+      "missing_evidence": [
+        "A packet-local callback file:line showing any registered REST route invokes `src/Integrations/Elementor/ElementorIntegration.php:87-88`; `src/Api/Routes/Routes.php:22` alone is insufficient.",
+        "A terminal sink file:line where values returned from `src/Integrations/Elementor/ElementorIntegration.php:88`, `:390`, or `:406` are emitted into HTML or JavaScript without escaping.",
+        "If the worker wants to keep the REST/JSON defense, the concrete response-building file:line that consumes this packet's return values instead of the current helper-only packet."
+      ],
+      "expansion_attempts": [
+        {
+          "type": "out_of_band_file",
+          "target": "src/Integrations/IntegrationWithForms.php",
+          "reason": "The primary packet did not show any consumer of `get_form_ids()`, so one out-of-band file was needed to determine whether the returned data reaches a sink.",
+          "outcome": "Found `maybe_unset_forms()` at `src/Integrations/IntegrationWithForms.php:22-35`, where the returned IDs are compared against repository entries and used for deletion, not rendering."
+        }
+      ],
+      "suggested_field_corrections": {
+        "verdict": "FP",
+        "confidence": 0.92,
+        "entry_point_id": null,
+        "auth_required": null,
+        "sink_anchor": null,
+        "claimed_impact": "No packet-local XSS impact shown. The reviewed methods only derive and return form ID arrays used for repository bookkeeping.",
+        "question_answers": {
+          "reachability": "Not established from `src/Api/Routes/Routes.php:22`; the packet does not show a REST callback into `ElementorIntegration::get_form_ids()`.",
+          "authorization": "No packet-local permission callback or capability check is shown on the actual helper path because the reviewed code is not tied to a demonstrated REST route in this packet.",
+          "dataflow": "Input may enter via `$post->post_content` or `$_POST['actions']`, but the reviewed anchors only collect form IDs and return arrays. The justified downstream use is repository comparison/deletion, not rendering.",
+          "impact": "The packet does not support XSS. At most it supports internal form-repository bookkeeping effects on the located consumer path.",
+          "missing_evidence": "A real callback-to-sink path is still missing: specifically a REST callback or other caller file:line plus a terminal HTML/JS sink file:line."
+        }
+      }
+    }
+  ]
+}
+
+codex
+Ke hoach packet-local cho batch nay:
+
+1. Tong hop cau tra loi reachability, authorization, dataflow, impact, va missing evidence chi tu `WooCommerceIntegration.php`, uu tien refute-first.
+2. Chot assessment theo huong `field_fix`: giu FP direction neu query-shape da bi refute, nhung ha muc do chac chan o cac field reachability/auth neu packet khong chung minh duoc entry point.
+3. Ghi `reports/phase2/hostinger-reach-phase2.review.r1.core.b13.json` dung schema, sau do validate JSON bang `jq`.
+
+
+Packet-local evidence review is complete; next I am writing the structured critique JSON and then validating it.
+  ✓ Synthesize packet-local critique from the provided evidence and in-scope file lines
+  → Write the Phase 2 core review JSON for batch b13
+  • Validate the written JSON against basic syntax/schema expectations
+codex
+Toi se ghi file JSON voi huong `field_fix`: giu false-positive direction, nhung buoc worker phai sua lai phan entry point/auth boundary va neo ly do phan bien vao query-shape that su duoc code chung minh. Sau khi ghi xong toi se validate cu phap JSON bang `jq`.
+apply patch
+patch: completed
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase2/hostinger-reach-phase2.review.r1.core.b13.json
+diff --git a/reports/phase2/hostinger-reach-phase2.review.r1.core.b13.json b/reports/phase2/hostinger-reach-phase2.review.r1.core.b13.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..6aefd937648427362b05461f35aacd8ba7a3c261
+--- /dev/null
++++ b/reports/phase2/hostinger-reach-phase2.review.r1.core.b13.json
+@@ -0,0 +1,94 @@
++{
++  "plugin_slug": "hostinger-reach",
++  "review_round": 1,
++  "review_mode": "core",
++  "review_status": "needs_revision",
++  "summary": {
++    "worker_findings_reviewed": 1,
++    "material_issues_found": true,
++    "new_candidate_count": 0,
++    "notes": "Packet-local evidence supports the false-positive direction for HR-FP-006, but the packet should stop tying `get_contacts()` to an unproven REST entry point and should anchor the refutation on the fixed table name plus prepared integer pagination."
++  },
++  "finding_reviews": [
++    {
++      "finding_id": "HR-FP-006",
++      "packet_id": "HR-FP-006",
++      "parent_finding_id": "HR-FP-006",
++      "assessment": "field_fix",
++      "reason": "Reachability: the packet does not packet-locally connect `entry_point_id` `ep_rest__import___P_integration__a_z0_9____` to `WooCommerceIntegration::get_contacts()`; in the scoped file, `src/Integrations/WooCommerce/WooCommerceIntegration.php:217` is only the method declaration and no caller or route registration for this method is shown. Authorization: because no packet-local caller is established, the auth boundary remains unknown rather than proven REST-reachable. Dataflow: the SQL injection claim is still refuted on the code actually shown. `get_contacts()` builds `$table` as `$wpdb->prefix . 'wc_customer_lookup'` at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224`, uses it in the fixed `SELECT email, first_name FROM {$table}` template at line 225, and only appends `LIMIT` and `OFFSET` via `%d` placeholders at lines 228 and 232 before executing `$wpdb->get_results( $sql )` at line 248; `$form_id` is not used in the SQL-building block. Impact: packet-local evidence supports no SQL injection primitive, only a fixed read query against the WooCommerce lookup table. Missing evidence: the worker has not shown any file:line caller into line 217 or any user-controlled string reaching the table name or SQL syntax.",
++      "required_changes": [
++        "Remove or null out the packet's `entry_point_id` unless a packet-local caller trace to `src/Integrations/WooCommerce/WooCommerceIntegration.php:217` is provided; the current packet does not establish reachability from the cited REST surface.",
++        "Move the query-construction/source anchor from the method signature at `src/Integrations/WooCommerce/WooCommerceIntegration.php:217` to the actual SQL assembly at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224-225` if the packet continues to discuss query dataflow.",
++        "Rewrite the FP rationale to mention both refuting facts in scope: the table name is fixed at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224` and `src/Integrations/WooCommerce/WooCommerceIntegration.php:291`, and the only variable clauses are appended through `%d` placeholders at `src/Integrations/WooCommerce/WooCommerceIntegration.php:228` and `src/Integrations/WooCommerce/WooCommerceIntegration.php:232`.",
++        "Keep `auth_required` unresolved or null unless a caller file:line is supplied; this packet does not itself prove any REST permission model."
++      ],
++      "counter_evidence": [
++        {
++          "type": "scope",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 217,
++          "detail": "This anchor is only the `get_contacts()` declaration. The packet does not provide a packet-local caller from the claimed REST surface, and the SQL-building block does not consume the `$form_id` parameter."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 224,
++          "detail": "The interpolated table name is constructed only from `$wpdb->prefix` and the hardcoded suffix `wc_customer_lookup`, not from request data."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 225,
++          "detail": "The base query template is a fixed `SELECT email, first_name FROM {$table}` string that only incorporates the fixed table value from line 224."
++        },
++        {
++          "type": "sanitizer",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 228,
++          "detail": "The optional `LIMIT` clause is appended with `$wpdb->prepare( ' LIMIT %d', $limit )`, constraining this hop to an integer placeholder rather than raw SQL."
++        },
++        {
++          "type": "sanitizer",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 232,
++          "detail": "The optional `OFFSET` clause is likewise appended through `%d`, so the packet does not show a user-controlled SQL fragment entering query structure here either."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 291,
++          "detail": "The helper `get_woocommerce_customer_table()` returns the same fixed `{$wpdb->prefix}wc_customer_lookup` string, reinforcing that the table name is configuration-derived rather than attacker-controlled."
++        },
++        {
++          "type": "impact",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 248,
++          "detail": "The sink executes the SQL assembled above, which remains a fixed read query against the WooCommerce customer lookup table with optional integer pagination."
++        }
++      ],
++      "missing_evidence": [
++        "A file:line callback trace from the claimed `entry_point_id` `ep_rest__import___P_integration__a_z0_9____` or any other chosen caller to `src/Integrations/WooCommerce/WooCommerceIntegration.php:217`.",
++        "File:line evidence that user-controlled data, rather than `$wpdb->prefix` plus the literal `wc_customer_lookup`, reaches `$table` or changes the SQL template at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224-225`.",
++        "File:line evidence that any attacker-controlled value bypasses the `%d` placeholder handling at `src/Integrations/WooCommerce/WooCommerceIntegration.php:228` and `src/Integrations/WooCommerce/WooCommerceIntegration.php:232` to alter SQL structure."
++      ],
++      "expansion_attempts": [],
++      "suggested_field_corrections": {
++        "verdict": "FP",
++        "confidence": 0.97,
++        "entry_point_id": null,
++        "auth_required": null,
++        "source_anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:224",
++        "sink_anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:248",
++        "claimed_impact": "No packet-local SQL injection is shown. The reviewed method executes a fixed SELECT against the WooCommerce customer lookup table with optional integer `LIMIT` and `OFFSET` clauses.",
++        "fp_reason": "The query shape is fixed: the table name comes from `$wpdb->prefix` plus a literal suffix, and the only variable clauses are appended through `%d` placeholders.",
++        "question_answers": {
++          "reachability": "Not established. The packet does not show a caller from `ep_rest__import___P_integration__a_z0_9____` to `src/Integrations/WooCommerce/WooCommerceIntegration.php:217`.",
++          "authorization": "Unresolved for the same reason; no packet-local caller or permission callback is shown for `get_contacts()`.",
++          "dataflow": "No attacker-controlled string reaches SQL syntax. `$form_id` is unused, the table name is fixed at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224`, and `LIMIT` and `OFFSET` are appended via `%d` placeholders at `src/Integrations/WooCommerce/WooCommerceIntegration.php:228` and `src/Integrations/WooCommerce/WooCommerceIntegration.php:232`.",
++          "impact": "No SQL injection primitive is demonstrated. The packet only shows a fixed read query ending at `src/Integrations/WooCommerce/WooCommerceIntegration.php:248`.",
++          "missing_evidence": "Still missing are a real caller trace and any file:line proof that untrusted data can modify the query structure."
++        }
++      }
++    }
++  ]
++}
+
+diff --git a/reports/phase2/hostinger-reach-phase2.review.r1.core.b13.json b/reports/phase2/hostinger-reach-phase2.review.r1.core.b13.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..6aefd937648427362b05461f35aacd8ba7a3c261
+--- /dev/null
++++ b/reports/phase2/hostinger-reach-phase2.review.r1.core.b13.json
+@@ -0,0 +1,94 @@
++{
++  "plugin_slug": "hostinger-reach",
++  "review_round": 1,
++  "review_mode": "core",
++  "review_status": "needs_revision",
++  "summary": {
++    "worker_findings_reviewed": 1,
++    "material_issues_found": true,
++    "new_candidate_count": 0,
++    "notes": "Packet-local evidence supports the false-positive direction for HR-FP-006, but the packet should stop tying `get_contacts()` to an unproven REST entry point and should anchor the refutation on the fixed table name plus prepared integer pagination."
++  },
++  "finding_reviews": [
++    {
++      "finding_id": "HR-FP-006",
++      "packet_id": "HR-FP-006",
++      "parent_finding_id": "HR-FP-006",
++      "assessment": "field_fix",
++      "reason": "Reachability: the packet does not packet-locally connect `entry_point_id` `ep_rest__import___P_integration__a_z0_9____` to `WooCommerceIntegration::get_contacts()`; in the scoped file, `src/Integrations/WooCommerce/WooCommerceIntegration.php:217` is only the method declaration and no caller or route registration for this method is shown. Authorization: because no packet-local caller is established, the auth boundary remains unknown rather than proven REST-reachable. Dataflow: the SQL injection claim is still refuted on the code actually shown. `get_contacts()` builds `$table` as `$wpdb->prefix . 'wc_customer_lookup'` at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224`, uses it in the fixed `SELECT email, first_name FROM {$table}` template at line 225, and only appends `LIMIT` and `OFFSET` via `%d` placeholders at lines 228 and 232 before executing `$wpdb->get_results( $sql )` at line 248; `$form_id` is not used in the SQL-building block. Impact: packet-local evidence supports no SQL injection primitive, only a fixed read query against the WooCommerce lookup table. Missing evidence: the worker has not shown any file:line caller into line 217 or any user-controlled string reaching the table name or SQL syntax.",
++      "required_changes": [
++        "Remove or null out the packet's `entry_point_id` unless a packet-local caller trace to `src/Integrations/WooCommerce/WooCommerceIntegration.php:217` is provided; the current packet does not establish reachability from the cited REST surface.",
++        "Move the query-construction/source anchor from the method signature at `src/Integrations/WooCommerce/WooCommerceIntegration.php:217` to the actual SQL assembly at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224-225` if the packet continues to discuss query dataflow.",
++        "Rewrite the FP rationale to mention both refuting facts in scope: the table name is fixed at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224` and `src/Integrations/WooCommerce/WooCommerceIntegration.php:291`, and the only variable clauses are appended through `%d` placeholders at `src/Integrations/WooCommerce/WooCommerceIntegration.php:228` and `src/Integrations/WooCommerce/WooCommerceIntegration.php:232`.",
++        "Keep `auth_required` unresolved or null unless a caller file:line is supplied; this packet does not itself prove any REST permission model."
++      ],
++      "counter_evidence": [
++        {
++          "type": "scope",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 217,
++          "detail": "This anchor is only the `get_contacts()` declaration. The packet does not provide a packet-local caller from the claimed REST surface, and the SQL-building block does not consume the `$form_id` parameter."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 224,
++          "detail": "The interpolated table name is constructed only from `$wpdb->prefix` and the hardcoded suffix `wc_customer_lookup`, not from request data."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 225,
++          "detail": "The base query template is a fixed `SELECT email, first_name FROM {$table}` string that only incorporates the fixed table value from line 224."
++        },
++        {
++          "type": "sanitizer",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 228,
++          "detail": "The optional `LIMIT` clause is appended with `$wpdb->prepare( ' LIMIT %d', $limit )`, constraining this hop to an integer placeholder rather than raw SQL."
++        },
++        {
++          "type": "sanitizer",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 232,
++          "detail": "The optional `OFFSET` clause is likewise appended through `%d`, so the packet does not show a user-controlled SQL fragment entering query structure here either."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 291,
++          "detail": "The helper `get_woocommerce_customer_table()` returns the same fixed `{$wpdb->prefix}wc_customer_lookup` string, reinforcing that the table name is configuration-derived rather than attacker-controlled."
++        },
++        {
++          "type": "impact",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 248,
++          "detail": "The sink executes the SQL assembled above, which remains a fixed read query against the WooCommerce customer lookup table with optional integer pagination."
++        }
++      ],
++      "missing_evidence": [
++        "A file:line callback trace from the claimed `entry_point_id` `ep_rest__import___P_integration__a_z0_9____` or any other chosen caller to `src/Integrations/WooCommerce/WooCommerceIntegration.php:217`.",
++        "File:line evidence that user-controlled data, rather than `$wpdb->prefix` plus the literal `wc_customer_lookup`, reaches `$table` or changes the SQL template at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224-225`.",
++        "File:line evidence that any attacker-controlled value bypasses the `%d` placeholder handling at `src/Integrations/WooCommerce/WooCommerceIntegration.php:228` and `src/Integrations/WooCommerce/WooCommerceIntegration.php:232` to alter SQL structure."
++      ],
++      "expansion_attempts": [],
++      "suggested_field_corrections": {
++        "verdict": "FP",
++        "confidence": 0.97,
++        "entry_point_id": null,
++        "auth_required": null,
++        "source_anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:224",
++        "sink_anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:248",
++        "claimed_impact": "No packet-local SQL injection is shown. The reviewed method executes a fixed SELECT against the WooCommerce customer lookup table with optional integer `LIMIT` and `OFFSET` clauses.",
++        "fp_reason": "The query shape is fixed: the table name comes from `$wpdb->prefix` plus a literal suffix, and the only variable clauses are appended through `%d` placeholders.",
++        "question_answers": {
++          "reachability": "Not established. The packet does not show a caller from `ep_rest__import___P_integration__a_z0_9____` to `src/Integrations/WooCommerce/WooCommerceIntegration.php:217`.",
++          "authorization": "Unresolved for the same reason; no packet-local caller or permission callback is shown for `get_contacts()`.",
++          "dataflow": "No attacker-controlled string reaches SQL syntax. `$form_id` is unused, the table name is fixed at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224`, and `LIMIT` and `OFFSET` are appended via `%d` placeholders at `src/Integrations/WooCommerce/WooCommerceIntegration.php:228` and `src/Integrations/WooCommerce/WooCommerceIntegration.php:232`.",
++          "impact": "No SQL injection primitive is demonstrated. The packet only shows a fixed read query ending at `src/Integrations/WooCommerce/WooCommerceIntegration.php:248`.",
++          "missing_evidence": "Still missing are a real caller trace and any file:line proof that untrusted data can modify the query structure."
++        }
++      }
++    }
++  ]
++}
+
+codex
+File da duoc tao. Toi dang validate cu phap va doc lai ban ghi de dam bao `summary` la object, `finding_reviews` co du cac field bat buoc, va khong co `missed_findings`.
+exec
+/bin/zsh -lc "sed -n '1,240p' reports/phase2/hostinger-reach-phase2.review.r1.core.b13.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "core",
+  "review_status": "needs_revision",
+  "summary": {
+    "worker_findings_reviewed": 1,
+    "material_issues_found": true,
+    "new_candidate_count": 0,
+    "notes": "Packet-local evidence supports the false-positive direction for HR-FP-006, but the packet should stop tying `get_contacts()` to an unproven REST entry point and should anchor the refutation on the fixed table name plus prepared integer pagination."
+  },
+  "finding_reviews": [
+    {
+      "finding_id": "HR-FP-006",
+      "packet_id": "HR-FP-006",
+      "parent_finding_id": "HR-FP-006",
+      "assessment": "field_fix",
+      "reason": "Reachability: the packet does not packet-locally connect `entry_point_id` `ep_rest__import___P_integration__a_z0_9____` to `WooCommerceIntegration::get_contacts()`; in the scoped file, `src/Integrations/WooCommerce/WooCommerceIntegration.php:217` is only the method declaration and no caller or route registration for this method is shown. Authorization: because no packet-local caller is established, the auth boundary remains unknown rather than proven REST-reachable. Dataflow: the SQL injection claim is still refuted on the code actually shown. `get_contacts()` builds `$table` as `$wpdb->prefix . 'wc_customer_lookup'` at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224`, uses it in the fixed `SELECT email, first_name FROM {$table}` template at line 225, and only appends `LIMIT` and `OFFSET` via `%d` placeholders at lines 228 and 232 before executing `$wpdb->get_results( $sql )` at line 248; `$form_id` is not used in the SQL-building block. Impact: packet-local evidence supports no SQL injection primitive, only a fixed read query against the WooCommerce lookup table. Missing evidence: the worker has not shown any file:line caller into line 217 or any user-controlled string reaching the table name or SQL syntax.",
+      "required_changes": [
+        "Remove or null out the packet's `entry_point_id` unless a packet-local caller trace to `src/Integrations/WooCommerce/WooCommerceIntegration.php:217` is provided; the current packet does not establish reachability from the cited REST surface.",
+        "Move the query-construction/source anchor from the method signature at `src/Integrations/WooCommerce/WooCommerceIntegration.php:217` to the actual SQL assembly at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224-225` if the packet continues to discuss query dataflow.",
+        "Rewrite the FP rationale to mention both refuting facts in scope: the table name is fixed at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224` and `src/Integrations/WooCommerce/WooCommerceIntegration.php:291`, and the only variable clauses are appended through `%d` placeholders at `src/Integrations/WooCommerce/WooCommerceIntegration.php:228` and `src/Integrations/WooCommerce/WooCommerceIntegration.php:232`.",
+        "Keep `auth_required` unresolved or null unless a caller file:line is supplied; this packet does not itself prove any REST permission model."
+      ],
+      "counter_evidence": [
+        {
+          "type": "scope",
+          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+          "line": 217,
+          "detail": "This anchor is only the `get_contacts()` declaration. The packet does not provide a packet-local caller from the claimed REST surface, and the SQL-building block does not consume the `$form_id` parameter."
+        },
+        {
+          "type": "other",
+          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+          "line": 224,
+          "detail": "The interpolated table name is constructed only from `$wpdb->prefix` and the hardcoded suffix `wc_customer_lookup`, not from request data."
+        },
+        {
+          "type": "other",
+          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+          "line": 225,
+          "detail": "The base query template is a fixed `SELECT email, first_name FROM {$table}` string that only incorporates the fixed table value from line 224."
+        },
+        {
+          "type": "sanitizer",
+          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+          "line": 228,
+          "detail": "The optional `LIMIT` clause is appended with `$wpdb->prepare( ' LIMIT %d', $limit )`, constraining this hop to an integer placeholder rather than raw SQL."
+        },
+        {
+          "type": "sanitizer",
+          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+          "line": 232,
+          "detail": "The optional `OFFSET` clause is likewise appended through `%d`, so the packet does not show a user-controlled SQL fragment entering query structure here either."
+        },
+        {
+          "type": "other",
+          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+          "line": 291,
+          "detail": "The helper `get_woocommerce_customer_table()` returns the same fixed `{$wpdb->prefix}wc_customer_lookup` string, reinforcing that the table name is configuration-derived rather than attacker-controlled."
+        },
+        {
+          "type": "impact",
+          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+          "line": 248,
+          "detail": "The sink executes the SQL assembled above, which remains a fixed read query against the WooCommerce customer lookup table with optional integer pagination."
+        }
+      ],
+      "missing_evidence": [
+        "A file:line callback trace from the claimed `entry_point_id` `ep_rest__import___P_integration__a_z0_9____` or any other chosen caller to `src/Integrations/WooCommerce/WooCommerceIntegration.php:217`.",
+        "File:line evidence that user-controlled data, rather than `$wpdb->prefix` plus the literal `wc_customer_lookup`, reaches `$table` or changes the SQL template at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224-225`.",
+        "File:line evidence that any attacker-controlled value bypasses the `%d` placeholder handling at `src/Integrations/WooCommerce/WooCommerceIntegration.php:228` and `src/Integrations/WooCommerce/WooCommerceIntegration.php:232` to alter SQL structure."
+      ],
+      "expansion_attempts": [],
+      "suggested_field_corrections": {
+        "verdict": "FP",
+        "confidence": 0.97,
+        "entry_point_id": null,
+        "auth_required": null,
+        "source_anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:224",
+        "sink_anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:248",
+        "claimed_impact": "No packet-local SQL injection is shown. The reviewed method executes a fixed SELECT against the WooCommerce customer lookup table with optional integer `LIMIT` and `OFFSET` clauses.",
+        "fp_reason": "The query shape is fixed: the table name comes from `$wpdb->prefix` plus a literal suffix, and the only variable clauses are appended through `%d` placeholders.",
+        "question_answers": {
+          "reachability": "Not established. The packet does not show a caller from `ep_rest__import___P_integration__a_z0_9____` to `src/Integrations/WooCommerce/WooCommerceIntegration.php:217`.",
+          "authorization": "Unresolved for the same reason; no packet-local caller or permission callback is shown for `get_contacts()`.",
+          "dataflow": "No attacker-controlled string reaches SQL syntax. `$form_id` is unused, the table name is fixed at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224`, and `LIMIT` and `OFFSET` are appended via `%d` placeholders at `src/Integrations/WooCommerce/WooCommerceIntegration.php:228` and `src/Integrations/WooCommerce/WooCommerceIntegration.php:232`.",
+          "impact": "No SQL injection primitive is demonstrated. The packet only shows a fixed read query ending at `src/Integrations/WooCommerce/WooCommerceIntegration.php:248`.",
+          "missing_evidence": "Still missing are a real caller trace and any file:line proof that untrusted data can modify the query structure."
+        }
+      }
+    }
+  ]
+}
+
+exec
+/bin/zsh -lc 'jq empty reports/phase2/hostinger-reach-phase2.review.r1.core.b13.json' in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+diff --git a/reports/phase2/hostinger-reach-phase2.review.r1.core.b13.json b/reports/phase2/hostinger-reach-phase2.review.r1.core.b13.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..6aefd937648427362b05461f35aacd8ba7a3c261
+--- /dev/null
++++ b/reports/phase2/hostinger-reach-phase2.review.r1.core.b13.json
+@@ -0,0 +1,94 @@
++{
++  "plugin_slug": "hostinger-reach",
++  "review_round": 1,
++  "review_mode": "core",
++  "review_status": "needs_revision",
++  "summary": {
++    "worker_findings_reviewed": 1,
++    "material_issues_found": true,
++    "new_candidate_count": 0,
++    "notes": "Packet-local evidence supports the false-positive direction for HR-FP-006, but the packet should stop tying `get_contacts()` to an unproven REST entry point and should anchor the refutation on the fixed table name plus prepared integer pagination."
++  },
++  "finding_reviews": [
++    {
++      "finding_id": "HR-FP-006",
++      "packet_id": "HR-FP-006",
++      "parent_finding_id": "HR-FP-006",
++      "assessment": "field_fix",
++      "reason": "Reachability: the packet does not packet-locally connect `entry_point_id` `ep_rest__import___P_integration__a_z0_9____` to `WooCommerceIntegration::get_contacts()`; in the scoped file, `src/Integrations/WooCommerce/WooCommerceIntegration.php:217` is only the method declaration and no caller or route registration for this method is shown. Authorization: because no packet-local caller is established, the auth boundary remains unknown rather than proven REST-reachable. Dataflow: the SQL injection claim is still refuted on the code actually shown. `get_contacts()` builds `$table` as `$wpdb->prefix . 'wc_customer_lookup'` at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224`, uses it in the fixed `SELECT email, first_name FROM {$table}` template at line 225, and only appends `LIMIT` and `OFFSET` via `%d` placeholders at lines 228 and 232 before executing `$wpdb->get_results( $sql )` at line 248; `$form_id` is not used in the SQL-building block. Impact: packet-local evidence supports no SQL injection primitive, only a fixed read query against the WooCommerce lookup table. Missing evidence: the worker has not shown any file:line caller into line 217 or any user-controlled string reaching the table name or SQL syntax.",
++      "required_changes": [
++        "Remove or null out the packet's `entry_point_id` unless a packet-local caller trace to `src/Integrations/WooCommerce/WooCommerceIntegration.php:217` is provided; the current packet does not establish reachability from the cited REST surface.",
++        "Move the query-construction/source anchor from the method signature at `src/Integrations/WooCommerce/WooCommerceIntegration.php:217` to the actual SQL assembly at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224-225` if the packet continues to discuss query dataflow.",
++        "Rewrite the FP rationale to mention both refuting facts in scope: the table name is fixed at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224` and `src/Integrations/WooCommerce/WooCommerceIntegration.php:291`, and the only variable clauses are appended through `%d` placeholders at `src/Integrations/WooCommerce/WooCommerceIntegration.php:228` and `src/Integrations/WooCommerce/WooCommerceIntegration.php:232`.",
++        "Keep `auth_required` unresolved or null unless a caller file:line is supplied; this packet does not itself prove any REST permission model."
++      ],
++      "counter_evidence": [
++        {
++          "type": "scope",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 217,
++          "detail": "This anchor is only the `get_contacts()` declaration. The packet does not provide a packet-local caller from the claimed REST surface, and the SQL-building block does not consume the `$form_id` parameter."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 224,
++          "detail": "The interpolated table name is constructed only from `$wpdb->prefix` and the hardcoded suffix `wc_customer_lookup`, not from request data."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 225,
++          "detail": "The base query template is a fixed `SELECT email, first_name FROM {$table}` string that only incorporates the fixed table value from line 224."
++        },
++        {
++          "type": "sanitizer",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 228,
++          "detail": "The optional `LIMIT` clause is appended with `$wpdb->prepare( ' LIMIT %d', $limit )`, constraining this hop to an integer placeholder rather than raw SQL."
++        },
++        {
++          "type": "sanitizer",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 232,
++          "detail": "The optional `OFFSET` clause is likewise appended through `%d`, so the packet does not show a user-controlled SQL fragment entering query structure here either."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 291,
++          "detail": "The helper `get_woocommerce_customer_table()` returns the same fixed `{$wpdb->prefix}wc_customer_lookup` string, reinforcing that the table name is configuration-derived rather than attacker-controlled."
++        },
++        {
++          "type": "impact",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 248,
++          "detail": "The sink executes the SQL assembled above, which remains a fixed read query against the WooCommerce customer lookup table with optional integer pagination."
++        }
++      ],
++      "missing_evidence": [
++        "A file:line callback trace from the claimed `entry_point_id` `ep_rest__import___P_integration__a_z0_9____` or any other chosen caller to `src/Integrations/WooCommerce/WooCommerceIntegration.php:217`.",
++        "File:line evidence that user-controlled data, rather than `$wpdb->prefix` plus the literal `wc_customer_lookup`, reaches `$table` or changes the SQL template at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224-225`.",
++        "File:line evidence that any attacker-controlled value bypasses the `%d` placeholder handling at `src/Integrations/WooCommerce/WooCommerceIntegration.php:228` and `src/Integrations/WooCommerce/WooCommerceIntegration.php:232` to alter SQL structure."
++      ],
++      "expansion_attempts": [],
++      "suggested_field_corrections": {
++        "verdict": "FP",
++        "confidence": 0.97,
++        "entry_point_id": null,
++        "auth_required": null,
++        "source_anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:224",
++        "sink_anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:248",
++        "claimed_impact": "No packet-local SQL injection is shown. The reviewed method executes a fixed SELECT against the WooCommerce customer lookup table with optional integer `LIMIT` and `OFFSET` clauses.",
++        "fp_reason": "The query shape is fixed: the table name comes from `$wpdb->prefix` plus a literal suffix, and the only variable clauses are appended through `%d` placeholders.",
++        "question_answers": {
++          "reachability": "Not established. The packet does not show a caller from `ep_rest__import___P_integration__a_z0_9____` to `src/Integrations/WooCommerce/WooCommerceIntegration.php:217`.",
++          "authorization": "Unresolved for the same reason; no packet-local caller or permission callback is shown for `get_contacts()`.",
++          "dataflow": "No attacker-controlled string reaches SQL syntax. `$form_id` is unused, the table name is fixed at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224`, and `LIMIT` and `OFFSET` are appended via `%d` placeholders at `src/Integrations/WooCommerce/WooCommerceIntegration.php:228` and `src/Integrations/WooCommerce/WooCommerceIntegration.php:232`.",
++          "impact": "No SQL injection primitive is demonstrated. The packet only shows a fixed read query ending at `src/Integrations/WooCommerce/WooCommerceIntegration.php:248`.",
++          "missing_evidence": "Still missing are a real caller trace and any file:line proof that untrusted data can modify the query structure."
++        }
++      }
++    }
++  ]
++}
+
+The critique JSON has been written and syntax-validated with jq.
+  ✓ Synthesize packet-local critique from the provided evidence and in-scope file lines
+  ✓ Write the Phase 2 core review JSON for batch b13
+  ✓ Validate the written JSON against basic syntax/schema expectations
+diff --git a/reports/phase2/hostinger-reach-phase2.review.r1.core.b13.json b/reports/phase2/hostinger-reach-phase2.review.r1.core.b13.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..6aefd937648427362b05461f35aacd8ba7a3c261
+--- /dev/null
++++ b/reports/phase2/hostinger-reach-phase2.review.r1.core.b13.json
+@@ -0,0 +1,94 @@
++{
++  "plugin_slug": "hostinger-reach",
++  "review_round": 1,
++  "review_mode": "core",
++  "review_status": "needs_revision",
++  "summary": {
++    "worker_findings_reviewed": 1,
++    "material_issues_found": true,
++    "new_candidate_count": 0,
++    "notes": "Packet-local evidence supports the false-positive direction for HR-FP-006, but the packet should stop tying `get_contacts()` to an unproven REST entry point and should anchor the refutation on the fixed table name plus prepared integer pagination."
++  },
++  "finding_reviews": [
++    {
++      "finding_id": "HR-FP-006",
++      "packet_id": "HR-FP-006",
++      "parent_finding_id": "HR-FP-006",
++      "assessment": "field_fix",
++      "reason": "Reachability: the packet does not packet-locally connect `entry_point_id` `ep_rest__import___P_integration__a_z0_9____` to `WooCommerceIntegration::get_contacts()`; in the scoped file, `src/Integrations/WooCommerce/WooCommerceIntegration.php:217` is only the method declaration and no caller or route registration for this method is shown. Authorization: because no packet-local caller is established, the auth boundary remains unknown rather than proven REST-reachable. Dataflow: the SQL injection claim is still refuted on the code actually shown. `get_contacts()` builds `$table` as `$wpdb->prefix . 'wc_customer_lookup'` at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224`, uses it in the fixed `SELECT email, first_name FROM {$table}` template at line 225, and only appends `LIMIT` and `OFFSET` via `%d` placeholders at lines 228 and 232 before executing `$wpdb->get_results( $sql )` at line 248; `$form_id` is not used in the SQL-building block. Impact: packet-local evidence supports no SQL injection primitive, only a fixed read query against the WooCommerce lookup table. Missing evidence: the worker has not shown any file:line caller into line 217 or any user-controlled string reaching the table name or SQL syntax.",
++      "required_changes": [
++        "Remove or null out the packet's `entry_point_id` unless a packet-local caller trace to `src/Integrations/WooCommerce/WooCommerceIntegration.php:217` is provided; the current packet does not establish reachability from the cited REST surface.",
++        "Move the query-construction/source anchor from the method signature at `src/Integrations/WooCommerce/WooCommerceIntegration.php:217` to the actual SQL assembly at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224-225` if the packet continues to discuss query dataflow.",
++        "Rewrite the FP rationale to mention both refuting facts in scope: the table name is fixed at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224` and `src/Integrations/WooCommerce/WooCommerceIntegration.php:291`, and the only variable clauses are appended through `%d` placeholders at `src/Integrations/WooCommerce/WooCommerceIntegration.php:228` and `src/Integrations/WooCommerce/WooCommerceIntegration.php:232`.",
++        "Keep `auth_required` unresolved or null unless a caller file:line is supplied; this packet does not itself prove any REST permission model."
++      ],
++      "counter_evidence": [
++        {
++          "type": "scope",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 217,
++          "detail": "This anchor is only the `get_contacts()` declaration. The packet does not provide a packet-local caller from the claimed REST surface, and the SQL-building block does not consume the `$form_id` parameter."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 224,
++          "detail": "The interpolated table name is constructed only from `$wpdb->prefix` and the hardcoded suffix `wc_customer_lookup`, not from request data."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 225,
++          "detail": "The base query template is a fixed `SELECT email, first_name FROM {$table}` string that only incorporates the fixed table value from line 224."
++        },
++        {
++          "type": "sanitizer",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 228,
++          "detail": "The optional `LIMIT` clause is appended with `$wpdb->prepare( ' LIMIT %d', $limit )`, constraining this hop to an integer placeholder rather than raw SQL."
++        },
++        {
++          "type": "sanitizer",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 232,
++          "detail": "The optional `OFFSET` clause is likewise appended through `%d`, so the packet does not show a user-controlled SQL fragment entering query structure here either."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 291,
++          "detail": "The helper `get_woocommerce_customer_table()` returns the same fixed `{$wpdb->prefix}wc_customer_lookup` string, reinforcing that the table name is configuration-derived rather than attacker-controlled."
++        },
++        {
++          "type": "impact",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 248,
++          "detail": "The sink executes the SQL assembled above, which remains a fixed read query against the WooCommerce customer lookup table with optional integer pagination."
++        }
++      ],
++      "missing_evidence": [
++        "A file:line callback trace from the claimed `entry_point_id` `ep_rest__import___P_integration__a_z0_9____` or any other chosen caller to `src/Integrations/WooCommerce/WooCommerceIntegration.php:217`.",
++        "File:line evidence that user-controlled data, rather than `$wpdb->prefix` plus the literal `wc_customer_lookup`, reaches `$table` or changes the SQL template at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224-225`.",
++        "File:line evidence that any attacker-controlled value bypasses the `%d` placeholder handling at `src/Integrations/WooCommerce/WooCommerceIntegration.php:228` and `src/Integrations/WooCommerce/WooCommerceIntegration.php:232` to alter SQL structure."
++      ],
++      "expansion_attempts": [],
++      "suggested_field_corrections": {
++        "verdict": "FP",
++        "confidence": 0.97,
++        "entry_point_id": null,
++        "auth_required": null,
++        "source_anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:224",
++        "sink_anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:248",
++        "claimed_impact": "No packet-local SQL injection is shown. The reviewed method executes a fixed SELECT against the WooCommerce customer lookup table with optional integer `LIMIT` and `OFFSET` clauses.",
++        "fp_reason": "The query shape is fixed: the table name comes from `$wpdb->prefix` plus a literal suffix, and the only variable clauses are appended through `%d` placeholders.",
++        "question_answers": {
++          "reachability": "Not established. The packet does not show a caller from `ep_rest__import___P_integration__a_z0_9____` to `src/Integrations/WooCommerce/WooCommerceIntegration.php:217`.",
++          "authorization": "Unresolved for the same reason; no packet-local caller or permission callback is shown for `get_contacts()`.",
++          "dataflow": "No attacker-controlled string reaches SQL syntax. `$form_id` is unused, the table name is fixed at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224`, and `LIMIT` and `OFFSET` are appended via `%d` placeholders at `src/Integrations/WooCommerce/WooCommerceIntegration.php:228` and `src/Integrations/WooCommerce/WooCommerceIntegration.php:232`.",
++          "impact": "No SQL injection primitive is demonstrated. The packet only shows a fixed read query ending at `src/Integrations/WooCommerce/WooCommerceIntegration.php:248`.",
++          "missing_evidence": "Still missing are a real caller trace and any file:line proof that untrusted data can modify the query structure."
++        }
++      }
++    }
++  ]
++}
+
+codex
+Da ghi critique JSON vao [hostinger-reach-phase2.review.r1.core.b13.json](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase2/hostinger-reach-phase2.review.r1.core.b13.json).
+
+Ket luan packet-local: giu huong `FP` cho `HR-FP-006`, nhung ha ve `field_fix` vi packet khong chung minh duoc REST entry point/caller vao `get_contacts()`, va ly do phan bien dung nen neo vao query shape co dinh tai [WooCommerceIntegration.php:224](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/WooCommerce/WooCommerceIntegration.php#L224), `%d` placeholders tai [WooCommerceIntegration.php:228](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/WooCommerce/WooCommerceIntegration.php#L228) va [WooCommerceIntegration.php:232](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/WooCommerce/WooCommerceIntegration.php#L232), va sink tai [WooCommerceIntegration.php:248](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/plugins/hostinger-reach/src/Integrations/WooCommerce/WooCommerceIntegration.php#L248).
+
+Da validate cu phap JSON bang `jq empty`.
+diff --git a/reports/phase2/hostinger-reach-phase2.review.r1.core.b13.json b/reports/phase2/hostinger-reach-phase2.review.r1.core.b13.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..6aefd937648427362b05461f35aacd8ba7a3c261
+--- /dev/null
++++ b/reports/phase2/hostinger-reach-phase2.review.r1.core.b13.json
+@@ -0,0 +1,94 @@
++{
++  "plugin_slug": "hostinger-reach",
++  "review_round": 1,
++  "review_mode": "core",
++  "review_status": "needs_revision",
++  "summary": {
++    "worker_findings_reviewed": 1,
++    "material_issues_found": true,
++    "new_candidate_count": 0,
++    "notes": "Packet-local evidence supports the false-positive direction for HR-FP-006, but the packet should stop tying `get_contacts()` to an unproven REST entry point and should anchor the refutation on the fixed table name plus prepared integer pagination."
++  },
++  "finding_reviews": [
++    {
++      "finding_id": "HR-FP-006",
++      "packet_id": "HR-FP-006",
++      "parent_finding_id": "HR-FP-006",
++      "assessment": "field_fix",
++      "reason": "Reachability: the packet does not packet-locally connect `entry_point_id` `ep_rest__import___P_integration__a_z0_9____` to `WooCommerceIntegration::get_contacts()`; in the scoped file, `src/Integrations/WooCommerce/WooCommerceIntegration.php:217` is only the method declaration and no caller or route registration for this method is shown. Authorization: because no packet-local caller is established, the auth boundary remains unknown rather than proven REST-reachable. Dataflow: the SQL injection claim is still refuted on the code actually shown. `get_contacts()` builds `$table` as `$wpdb->prefix . 'wc_customer_lookup'` at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224`, uses it in the fixed `SELECT email, first_name FROM {$table}` template at line 225, and only appends `LIMIT` and `OFFSET` via `%d` placeholders at lines 228 and 232 before executing `$wpdb->get_results( $sql )` at line 248; `$form_id` is not used in the SQL-building block. Impact: packet-local evidence supports no SQL injection primitive, only a fixed read query against the WooCommerce lookup table. Missing evidence: the worker has not shown any file:line caller into line 217 or any user-controlled string reaching the table name or SQL syntax.",
++      "required_changes": [
++        "Remove or null out the packet's `entry_point_id` unless a packet-local caller trace to `src/Integrations/WooCommerce/WooCommerceIntegration.php:217` is provided; the current packet does not establish reachability from the cited REST surface.",
++        "Move the query-construction/source anchor from the method signature at `src/Integrations/WooCommerce/WooCommerceIntegration.php:217` to the actual SQL assembly at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224-225` if the packet continues to discuss query dataflow.",
++        "Rewrite the FP rationale to mention both refuting facts in scope: the table name is fixed at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224` and `src/Integrations/WooCommerce/WooCommerceIntegration.php:291`, and the only variable clauses are appended through `%d` placeholders at `src/Integrations/WooCommerce/WooCommerceIntegration.php:228` and `src/Integrations/WooCommerce/WooCommerceIntegration.php:232`.",
++        "Keep `auth_required` unresolved or null unless a caller file:line is supplied; this packet does not itself prove any REST permission model."
++      ],
++      "counter_evidence": [
++        {
++          "type": "scope",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 217,
++          "detail": "This anchor is only the `get_contacts()` declaration. The packet does not provide a packet-local caller from the claimed REST surface, and the SQL-building block does not consume the `$form_id` parameter."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 224,
++          "detail": "The interpolated table name is constructed only from `$wpdb->prefix` and the hardcoded suffix `wc_customer_lookup`, not from request data."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 225,
++          "detail": "The base query template is a fixed `SELECT email, first_name FROM {$table}` string that only incorporates the fixed table value from line 224."
++        },
++        {
++          "type": "sanitizer",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 228,
++          "detail": "The optional `LIMIT` clause is appended with `$wpdb->prepare( ' LIMIT %d', $limit )`, constraining this hop to an integer placeholder rather than raw SQL."
++        },
++        {
++          "type": "sanitizer",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 232,
++          "detail": "The optional `OFFSET` clause is likewise appended through `%d`, so the packet does not show a user-controlled SQL fragment entering query structure here either."
++        },
++        {
++          "type": "other",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 291,
++          "detail": "The helper `get_woocommerce_customer_table()` returns the same fixed `{$wpdb->prefix}wc_customer_lookup` string, reinforcing that the table name is configuration-derived rather than attacker-controlled."
++        },
++        {
++          "type": "impact",
++          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
++          "line": 248,
++          "detail": "The sink executes the SQL assembled above, which remains a fixed read query against the WooCommerce customer lookup table with optional integer pagination."
++        }
++      ],
++      "missing_evidence": [
++        "A file:line callback trace from the claimed `entry_point_id` `ep_rest__import___P_integration__a_z0_9____` or any other chosen caller to `src/Integrations/WooCommerce/WooCommerceIntegration.php:217`.",
++        "File:line evidence that user-controlled data, rather than `$wpdb->prefix` plus the literal `wc_customer_lookup`, reaches `$table` or changes the SQL template at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224-225`.",
++        "File:line evidence that any attacker-controlled value bypasses the `%d` placeholder handling at `src/Integrations/WooCommerce/WooCommerceIntegration.php:228` and `src/Integrations/WooCommerce/WooCommerceIntegration.php:232` to alter SQL structure."
++      ],
++      "expansion_attempts": [],
++      "suggested_field_corrections": {
++        "verdict": "FP",
++        "confidence": 0.97,
++        "entry_point_id": null,
++        "auth_required": null,
++        "source_anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:224",
++        "sink_anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:248",
++        "claimed_impact": "No packet-local SQL injection is shown. The reviewed method executes a fixed SELECT against the WooCommerce customer lookup table with optional integer `LIMIT` and `OFFSET` clauses.",
++        "fp_reason": "The query shape is fixed: the table name comes from `$wpdb->prefix` plus a literal suffix, and the only variable clauses are appended through `%d` placeholders.",
++        "question_answers": {
++          "reachability": "Not established. The packet does not show a caller from `ep_rest__import___P_integration__a_z0_9____` to `src/Integrations/WooCommerce/WooCommerceIntegration.php:217`.",
++          "authorization": "Unresolved for the same reason; no packet-local caller or permission callback is shown for `get_contacts()`.",
++          "dataflow": "No attacker-controlled string reaches SQL syntax. `$form_id` is unused, the table name is fixed at `src/Integrations/WooCommerce/WooCommerceIntegration.php:224`, and `LIMIT` and `OFFSET` are appended via `%d` placeholders at `src/Integrations/WooCommerce/WooCommerceIntegration.php:228` and `src/Integrations/WooCommerce/WooCommerceIntegration.php:232`.",
++          "impact": "No SQL injection primitive is demonstrated. The packet only shows a fixed read query ending at `src/Integrations/WooCommerce/WooCommerceIntegration.php:248`.",
++          "missing_evidence": "Still missing are a real caller trace and any file:line proof that untrusted data can modify the query structure."
++        }
++      }
++    }
++  ]
++}
+
+tokens used
+81,540

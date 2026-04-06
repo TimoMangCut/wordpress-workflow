@@ -1,0 +1,139 @@
+{
+  "plugin_slug": "hostinger-reach",
+  "cluster_id": "cluster-c01",
+  "cluster_strategy": "cross_bundle_cluster_v1",
+  "bug_family": "authorization",
+  "dominant_vuln_types": [
+    "Broken Access Control \u2014 Unauthenticated REST endpoint accepts contact injection via guest-obtainable wp_rest nonce (OptInMonster integration)",
+    "Missing capability check on authenticated AJAX notice-dismiss action (AddFormNotice)"
+  ],
+  "auth_boundary": "unknown",
+  "entry_point_ids": [
+    "ep_rest_hostinger_reach_v1__optinmonster",
+    "ep_wp_ajax_hostinger_reach_add_form_notice_action"
+  ],
+  "supporting_files": [
+    "src/Admin/Notices/AddFormNotice.php",
+    "src/Api/Handlers/ReachApiHandler.php",
+    "src/Integrations/OptInMonster/OptInMonsterIntegration.php"
+  ],
+  "source_agents": [
+    "worker-r02-claude"
+  ],
+  "member_finding_ids": [
+    "HR-001",
+    "HR-002"
+  ],
+  "member_findings": [
+    {
+      "finding_id": "HR-001",
+      "verdict": "TP",
+      "vuln_type": "Broken Access Control \u2014 Unauthenticated REST endpoint accepts contact injection via guest-obtainable wp_rest nonce (OptInMonster integration)",
+      "cwe_id": "CWE-862",
+      "severity": "medium",
+      "auth_required": "unknown",
+      "confidence": 0.82,
+      "entry_point_id": "ep_rest_hostinger_reach_v1__optinmonster",
+      "source_function": "OptInMonsterIntegration::submit_optinmonster",
+      "sink_function": "ReachApiHandler::post_contact (via do_action('hostinger_reach_submit'))",
+      "source_file_path": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+      "source_line_number": 62,
+      "sink_file_path": "src/Api/Handlers/ReachApiHandler.php",
+      "sink_line_number": 100,
+      "file_path": "src/Api/Handlers/ReachApiHandler.php",
+      "line_number": 100,
+      "reasoning": {
+        "hypothesis": "An unauthenticated attacker can inject arbitrary email addresses into the Hostinger Reach contact list by POSTing to /wp-json/hostinger-reach/v1/optinmonster because (1) permission_callback is __return_true, (2) the in-handler nonce check uses wp_rest nonce which WordPress generates for all visitors including logged-out users since WP 5.3, and (3) this nonce is exposed on every frontend page when the OptInMonster integration is active via wp_localize_script, and (4) the hook dispatch has a concrete state-changing consumer.",
+        "trace": "IntegrationsApiHandler::trigger_active_integrations() fires on add_action('init') at src/Api/Handlers/IntegrationsApiHandler.php:37 \u2192 do_action('hostinger_reach_integrations_loaded') at line 41 \u2192 Integration::init_active_integration() at src/Integrations/Integration.php:135 \u2192 when OptInMonster integration is active, calls active_integration_hooks() at line 140 \u2192 OptInMonsterIntegration::active_integration_hooks() at src/Integrations/OptInMonster/OptInMonsterIntegration.php:31 calls enqueue_assets() at line 32 \u2192 enqueue_assets() at line 227 calls wp_enqueue_script() and wp_localize_script() at lines 240-247, embedding 'nonce' => wp_create_nonce('wp_rest') in the hostinger_reach_optinmonster_data JS object on every frontend page \u2192 guest visitor reads nonce from page source \u2192 POST /wp-json/hostinger-reach/v1/optinmonster (registered with permission_callback='__return_true' at line 220) \u2192 submit_optinmonster() at line 62 \u2192 is_authorized() at line 63 \u2192 wp_verify_nonce($nonce, 'wp_rest') at line 203 succeeds for guest nonce \u2192 find_email() at line 73 extracts attacker-chosen email \u2192 do_action('hostinger_reach_submit', [...]) at line 78 \u2192 ReachApiHandler::post_contact() hooked at src/Api/Handlers/ReachApiHandler.php:100 \u2192 outbound POST to Hostinger Reach API adding email as subscriber",
+        "conclusion": "Confirmed TP. Reviewer objection addressed: (1) guest nonce exposure is now proven by tracing the init hook chain from trigger_active_integrations() through active_integration_hooks() to enqueue_assets() which runs unconditionally on every page load when the integration is active; (2) concrete state-changing consumer is proven by ReachApiHandler::post_contact() being hooked to 'hostinger_reach_submit' at src/Api/Handlers/ReachApiHandler.php:100 during init_hooks() registration. The endpoint effectively allows any visitor to add a valid email to the site owner's contact list.",
+        "defenses": [
+          "permission_callback = '__return_true' at src/Integrations/OptInMonster/OptInMonsterIntegration.php:220: no WP REST layer restriction",
+          "is_authorized() at line 201-208: checks wp_verify_nonce($nonce, 'wp_rest') only \u2014 WordPress creates valid wp_rest nonces for user_id=0 (unauthenticated users) since WP 5.3, so this does not restrict unauthenticated callers who can read the nonce from the page",
+          "find_email() at line 251-260: constrains input to valid email format via sanitize_email + FILTER_VALIDATE_EMAIL \u2014 limits payload to email-like strings but does not restrict who can call the endpoint or prevent contact list injection"
+        ],
+        "refutation": [
+          "REFUTATION ATTEMPT: Is the nonce only delivered to authenticated users? RESULT: Not refuted. The nonce is localized via wp_localize_script() at src/Integrations/OptInMonster/OptInMonsterIntegration.php:240-247 inside enqueue_assets() which is called from active_integration_hooks() at line 31-34. active_integration_hooks() is triggered by the WordPress 'init' action via IntegrationsApiHandler::trigger_active_integrations() at src/Api/Handlers/IntegrationsApiHandler.php:37-41 \u2014 this fires on every page request, frontend and admin. The wp_enqueue_script/wp_localize_script output then renders to all page visitors including logged-out users. No is_admin() or capability check gates enqueue_assets() or active_integration_hooks().",
+          "REFUTATION ATTEMPT: Does the hook dispatch have a concrete state-changing consumer? RESULT: Not refuted. ReachApiHandler::init() at src/Api/Handlers/ReachApiHandler.php:99-101 calls add_action('hostinger_reach_submit', array($this, 'post_contact')) when no existing action is registered. post_contact() performs an outbound POST to the Hostinger Reach contacts API. This confirms the email is added to the site owner's contact list.",
+          "REFUTATION ATTEMPT: Is the impact scoped to email-like input only? RESULT: Partially. find_email() at line 251-260 validates the email format, so the attacker cannot inject arbitrary strings. The concrete impact is: adding arbitrary valid email addresses to the site owner's Hostinger Reach contact list, which constitutes unauthorized contact injection (potential GDPR/CAN-SPAM violation, contact list pollution, reputational harm)."
+        ]
+      },
+      "poc_description": "Prerequisites: OptInMonster integration must be active in Hostinger Reach settings. 1. Visit any public page on the target site. 2. In browser devtools (Network tab or page source), locate the JS object hostinger_reach_optinmonster_data and extract the 'nonce' field value. 3. Send: POST /wp-json/hostinger-reach/v1/optinmonster with headers X-WP-Nonce: <extracted_nonce> and Content-Type: application/json and body: {\"formId\":\"\",\"fields\":[\"victim@example.com\"],\"tags\":{\"campaign_name\":\"injected\",\"form_name\":\"test\"}}. 4. Observe a 200 response indicating the email was processed and added to the Hostinger Reach contact list.",
+      "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N",
+      "remediation": "Change permission_callback in OptInMonsterIntegration::register_routes() from '__return_true' to a callback that requires the user to be logged in (is_user_logged_in()), or replace the wp_rest nonce with a specific nonce action that cannot be obtained by unauthenticated page visitors.",
+      "patchstack_eligible": true,
+      "anchors": {
+        "source_anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:62",
+        "sink_anchor": "src/Api/Handlers/ReachApiHandler.php:100",
+        "entry_point_anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:220",
+        "nonce_exposure_anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:240",
+        "hook_consumer_anchor": "src/Api/Handlers/ReachApiHandler.php:100"
+      },
+      "sink_snippet": "   95           * @fires hostinger_reach_contact_failed when the contact submission fails\n   96           * @since 1.1.0\n   97           *\n   98           */\n   99          if ( ! has_action( 'hostinger_reach_submit' ) ) {\n  100              add_action( 'hostinger_reach_submit', array( $this, 'post_contact' ) );\n  101          }\n  102      }\n  103  \n  104      public function get_default_headers(): array {\n  105          return array(\n",
+      "source_snippet": "   57                  'import_enabled' => true,\n   58              )\n   59          );\n   60      }\n   61  \n   62      public function submit_optinmonster( WP_REST_Request $request ): WP_REST_Response {\n   63          if ( ! $this->is_authorized( $request ) ) {\n   64              return $this->handle_response( 403, array( 'errors' => 'You cannot perform this action' ) );\n   65          }\n   66  \n   67          try {\n",
+      "plugin_slug": "hostinger-reach",
+      "source_agents": [
+        "worker-r02-claude"
+      ]
+    },
+    {
+      "finding_id": "HR-002",
+      "verdict": "REVIEW",
+      "vuln_type": "Missing capability check on authenticated AJAX notice-dismiss action (AddFormNotice)",
+      "cwe_id": "CWE-862",
+      "severity": "low",
+      "auth_required": "unknown",
+      "confidence": 0.5,
+      "entry_point_id": "ep_wp_ajax_hostinger_reach_add_form_notice_action",
+      "source_function": "AddFormNotice::handle_ajax_action",
+      "sink_function": "set_transient (dismiss) / wp_send_json_success with fixed redirect URL (success)",
+      "source_file_path": "src/Admin/Notices/AddFormNotice.php",
+      "source_line_number": 43,
+      "sink_file_path": "src/Admin/Notices/AddFormNotice.php",
+      "sink_line_number": 59,
+      "file_path": "src/Admin/Notices/AddFormNotice.php",
+      "line_number": 59,
+      "reasoning": {
+        "hypothesis": "An authenticated user who can obtain the AddFormNotice nonce from a whitelisted admin screen can call the AJAX handler without a capability check, allowing them to globally dismiss the Add Form notice or retrieve a fixed redirect URL. Unlike the sibling ConnectionNotice handler, AddFormNotice::handle_ajax_action() performs no current_user_can() check.",
+        "trace": "AddFormNotice::init() registers add_action('wp_ajax_hostinger_reach_add_form_notice_action', ...) at src/Admin/Notices/AddFormNotice.php:28 \u2014 authenticated-only (wp_ajax_, not wp_ajax_nopriv_) \u2192 handle_ajax_action() at line 43 \u2192 check_ajax_referer(self::NOTICE_ACTION, 'nonce') at line 44 \u2192 no capability check \u2192 $choice from sanitize_text_field($_POST['choice']) \u2192 'dismiss' branch: set_transient(NOTICE_DISMISS_TRANSIENT, true, WEEK_IN_SECONDS) at line 59 and wp_send_json_success(); 'success' branch: wp_send_json_success(array('redirect_url' => 'admin.php?page=hostinger-reach&addForm=1')) at line 66",
+        "conclusion": "REVIEW. The missing capability check is a real design inconsistency vs ConnectionNotice. However, exploitation requires an authenticated user to obtain the nonce from enqueue_notice_assets() \u2014 which only runs when should_render() is true, gated to specific admin screen IDs (dashboard, pages, posts, edit-page, edit-post). In default WordPress configurations, users with roles below editor/author cannot access these admin screens. The concrete impact is limited to: (a) globally dismissing the Add Form onboarding notice for one week, (b) returning a fixed admin redirect URL string. Neither affects credentials, user permissions, plugin configuration, or security settings. Retained as REVIEW because the design inconsistency is real, but escalation framing is removed \u2014 this is a notice management surface, not privilege escalation.",
+        "defenses": [
+          "wp_ajax_ hook (not wp_ajax_nopriv_) at src/Admin/Notices/AddFormNotice.php:28: handler only reachable by authenticated users",
+          "check_ajax_referer(self::NOTICE_ACTION, 'nonce') at line 44: requires a valid action-specific nonce",
+          "should_render() at line 100: nonce is only enqueued via enqueue_notice_assets() when the admin screen ID matches the whitelist (dashboard, pages, posts, edit-page, edit-post) AND the site is connected AND forms have not been added AND the notice is not dismissed \u2014 restricts nonce distribution to users who can access those screens"
+        ],
+        "refutation": [
+          "REFUTATION ATTEMPT: Can a subscriber-level user access the whitelisted admin screens to obtain the nonce? RESULT: Largely refuted in default WordPress. Subscribers can access their profile page (screen ID 'profile') but cannot access 'dashboard' (requires read capability) or 'pages'/'posts'/'edit-page'/'edit-post' (require edit_posts or edit_pages capabilities, which authors/editors have but subscribers do not). A subscriber-level attacker typically cannot obtain the nonce without an additional vulnerability.",
+          "REFUTATION ATTEMPT: What is the concrete impact of dismissal if exploited? RESULT: Exploitation would dismiss the Add Form onboarding notice site-wide for one week (set_transient at line 59) or return the fixed string 'admin.php?page=hostinger-reach&addForm=1' (line 66). This has no effect on credentials, plugin security configuration, stored user data, or access control. Not privilege escalation."
+        ],
+        "why_uncertain": "Exploitation depends on whether any authenticated role below editor can access the whitelisted admin screens on the target installation. Default WordPress restricts these, but custom role configurations or additional plugins may change this.",
+        "resolution_path": "Confirm whether any sub-editor role on a default WordPress installation can access admin screens matching screen IDs 'dashboard', 'pages', 'posts', 'edit-page', or 'edit-post' and thus receive the localized nonce at src/Admin/Notices/AddFormNotice.php:155."
+      },
+      "poc_description": "Requires authenticated access to a whitelisted admin screen (dashboard, pages, posts, edit-page, or edit-post). 1. Log in with a role that can access one of those screens. 2. Navigate to the qualifying screen. 3. Extract the nonce from the hostinger_reach_add_form_notice_data JS object (action key: 'hostinger_reach_add_form_notice_action'). 4. POST to admin-ajax.php with action=hostinger_reach_add_form_notice_action&nonce=<value>&choice=dismiss. 5. Observe the Add Form notice is globally suppressed for one week.",
+      "cvss_vector": null,
+      "remediation": "Add current_user_can('manage_options') check to AddFormNotice::handle_ajax_action() immediately after check_ajax_referer(), mirroring the pattern in ConnectionNotice::handle_ajax_action().",
+      "patchstack_eligible": false,
+      "anchors": {
+        "entry_point_anchor": "src/Admin/Notices/AddFormNotice.php:28",
+        "source_anchor": "src/Admin/Notices/AddFormNotice.php:43",
+        "sink_anchor": "src/Admin/Notices/AddFormNotice.php:59",
+        "nonce_delivery_anchor": "src/Admin/Notices/AddFormNotice.php:155"
+      },
+      "plugin_slug": "hostinger-reach",
+      "source_agents": [
+        "worker-r02-claude"
+      ]
+    }
+  ],
+  "priority_score": 15,
+  "synthesis_scope": "cross_bundle",
+  "recommended_models": {
+    "synthesizer": {
+      "provider": "codex",
+      "model": "gpt-5.4"
+    },
+    "challenger": {
+      "provider": "claude",
+      "model": "claude-sonnet-4.6"
+    }
+  }
+}

@@ -3,7 +3,7 @@
 # Freshness-aware: downstream stages decide when to skip.
 #
 # Modes:
-#   default      -> Phase 2 + Phase 3 using existing Phase 1 IR artifacts
+#   default      -> Phase 2 (+ cluster consensus) + Phase 3 using existing Phase 1 IR artifacts
 #   --multi-agent
 #                -> specific slug: Phase 1 -> Prep -> Orchestrate -> Phase 3
 #                -> no slug: Prep -> Orchestrate -> Phase 3 for existing Phase 1 IR artifacts
@@ -53,7 +53,7 @@ Options:
   -h, --help               Show this help message.
 
 Notes:
-  - Default mode uses existing Phase 1 IR files and runs Phase 2 + Phase 3.
+  - Default mode uses existing Phase 1 IR files and runs Phase 2 + cluster consensus + Phase 3.
   - In multi-agent mode, a specific slug triggers scan-all.sh first so threat
     context and Phase 1 artifacts are refreshed before prep/orchestration.
   - Multi-agent mode without --slug uses existing Phase 1 IR files and refreshes
@@ -146,9 +146,12 @@ agent_inputs_are_fresh() {
     local ir_file="${PHASE1_DIR}/${slug}-ir.json"
     local semgrep_file="${PHASE1_DIR}/${slug}-semgrep.json"
     local prep_script="${TOOLS_DIR}/bin/prepare_agent_inputs.py"
+    local dispatch_file="${REPORTS_DIR}/${slug}-dispatch.json"
+    local candidate_inventory="${REPORTS_DIR}/${slug}-candidate-inventory.json"
     local -a inputs=("$ir_file" "$prep_script")
     local -a outputs=(
-        "${REPORTS_DIR}/${slug}-dispatch.json"
+        "$dispatch_file"
+        "$candidate_inventory"
         "${REPORTS_DIR}/${slug}-ir-slice-ajax-unauth.json"
         "${REPORTS_DIR}/${slug}-ir-slice-ajax-auth.json"
         "${REPORTS_DIR}/${slug}-ir-slice-rest.json"
@@ -165,6 +168,17 @@ agent_inputs_are_fresh() {
     if [ -f "$semgrep_file" ]; then
         inputs+=("$semgrep_file")
     fi
+
+    local -a candidate_bundles=()
+    local bundle
+    for bundle in "${REPORTS_DIR}/${slug}"-candidate-bundle-agent-w*.json; do
+        [ -e "$bundle" ] || continue
+        candidate_bundles+=("$bundle")
+    done
+    if [ ${#candidate_bundles[@]} -eq 0 ]; then
+        return 1
+    fi
+    outputs+=("${candidate_bundles[@]}")
 
     for output in "${outputs[@]}"; do
         if ! freshness_is_fresh "$output" "${inputs[@]}"; then

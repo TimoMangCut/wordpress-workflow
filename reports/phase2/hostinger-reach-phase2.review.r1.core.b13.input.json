@@ -1,0 +1,273 @@
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "core",
+  "task": {
+    "role": "phase2_reviewer_core",
+    "goal": "Challenge the worker output packet-by-packet with concrete counter-evidence, field corrections, and explicit missing-evidence notes.",
+    "output_schema": "contracts/phase2-review-core-output.schema.json",
+    "output_path": "reports/phase2/hostinger-reach-phase2.review.r1.core.b13.json",
+    "packet_schema": "contracts/phase2-reviewer-packet.schema.json",
+    "allow_missed_findings": false,
+    "constraints": [
+      "Treat each finding packet as the unit of review; do not restart whole-plugin auditing.",
+      "Answer reachability, authorization, dataflow, impact, and missing-evidence questions for each packet before finalizing finding_reviews.",
+      "Start from finding_packets, worker_findings, and phase1_context before opening other artifacts.",
+      "Refute before confirm; keep objections evidence-bound with file:line anchors.",
+      "Do not rewrite the full findings set; produce critique JSON only.",
+      "Default to packet-local critique only. Focus on finding_reviews plus field corrections for the existing finding packets.",
+      "Treat finding_packets as the reviewer core evidence pack. If packet-local evidence is insufficient, prefer needs_more_evidence over broad exploration."
+    ],
+    "max_candidates": null
+  },
+  "artifacts": {
+    "worker_output_path": null,
+    "ir_path": null,
+    "semgrep_path": null,
+    "psalm_path": null,
+    "threat_context_path": null,
+    "source_root": "plugins/hostinger-reach"
+  },
+  "worker_summary": {
+    "total_findings": 1,
+    "true_positive_count": 0,
+    "false_positive_count": 1,
+    "needs_review_count": 0,
+    "negative_findings_count": 0,
+    "overall_risk": "low",
+    "analysis_summary": "Reviewer core batch scoped to 1 packet(s)."
+  },
+  "worker_findings": [
+    {
+      "finding_id": "HR-FP-006",
+      "verdict": "FP",
+      "vuln_type": "SQL Injection \u2014 WooCommerce get_contacts() uses interpolated table name",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 1.0,
+      "entry_point_id": "ep_rest__import___P_integration__a_z0_9____",
+      "source_anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:217",
+      "sink_anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:248",
+      "patchstack_eligible": false
+    }
+  ],
+  "finding_packets": [
+    {
+      "packet_id": "HR-FP-006",
+      "parent_finding_id": "HR-FP-006",
+      "packet_kind": "base",
+      "focus_anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:217",
+      "finding_id": "HR-FP-006",
+      "verdict": "FP",
+      "vuln_type": "SQL Injection \u2014 WooCommerce get_contacts() uses interpolated table name",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 1.0,
+      "entry_point_id": "ep_rest__import___P_integration__a_z0_9____",
+      "patchstack_eligible": false,
+      "claimed_impact": "Worker claims SQL Injection \u2014 WooCommerce get_contacts() uses interpolated table name is materially exploitable with auth boundary `unknown` and impact reachable at src/Integrations/WooCommerce/WooCommerceIntegration.php:248.",
+      "worker_context": {
+        "source_function": "WooCommerceIntegration::get_contacts",
+        "sink_function": "wpdb::get_results",
+        "fp_reason": "Packet-local reviewer scope: WooCommerceIntegration at src/Integrations/WooCommerce/WooCommerceIntegration.php:217. Primary files: src/Integrations/WooCommerce/WooCommerceIntegration.php.",
+        "original_fp_reason": "The table name is assembled from $wpdb->prefix concatenated with the hardcoded string 'wc_customer_lookup' in get_woocommerce_customer_table() \u2014 no user input flows into the table name.",
+        "reasoning_excerpt": {
+          "hypothesis": "Validate only the packet-local claim for WooCommerceIntegration. Determine whether anchors src/Integrations/WooCommerce/WooCommerceIntegration.php:217, src/Integrations/WooCommerce/WooCommerceIntegration.php:248, src/Integrations/WooCommerce/WooCommerceIntegration.php:291 actually support the worker's claim without widening to other surfaces.",
+          "trace": "Packet-local review only. Focus file: src/Integrations/WooCommerce/WooCommerceIntegration.php. Focus anchors: src/Integrations/WooCommerce/WooCommerceIntegration.php:217, src/Integrations/WooCommerce/WooCommerceIntegration.php:248, src/Integrations/WooCommerce/WooCommerceIntegration.php:291. Primary files: src/Integrations/WooCommerce/WooCommerceIntegration.php. Entry point: <unknown>. Treat unrelated callers, consumers, and sibling surfaces as out of scope unless an explicit expansion attempt is justified.",
+          "defenses": [
+            "get_woocommerce_customer_table() at line 289-292 returns a hardcoded concatenation of $wpdb->prefix and 'wc_customer_lookup' \u2014 neither component is user-controlled",
+            "$wpdb->prefix is set by WordPress from configuration and cannot be influenced via HTTP request",
+            "Keep critique packet-local; do not reuse sibling-surface defenses or conclusions without code evidence in this packet."
+          ],
+          "refutation": [
+            "Refute or keep this packet on WooCommerceIntegration alone. Do not carry over conclusions from plugin-wide traces without packet-local code evidence."
+          ],
+          "conclusion": "Keep, downgrade, retract, or mark needs_more_evidence based only on packet-local evidence for WooCommerceIntegration."
+        },
+        "original_reasoning_excerpt": {
+          "hypothesis": "Interpolated table name in raw SQL query could allow SQL injection.",
+          "trace": "$table = $this->get_woocommerce_customer_table() (line 224) \u2192 get_woocommerce_customer_table() returns '{$wpdb->prefix}wc_customer_lookup' (line 291) \u2192 used as \"{$table}\" in SQL at line 225",
+          "defenses": [
+            "get_woocommerce_customer_table() at line 289-292 returns a hardcoded concatenation of $wpdb->prefix and 'wc_customer_lookup' \u2014 neither component is user-controlled",
+            "$wpdb->prefix is set by WordPress from configuration and cannot be influenced via HTTP request"
+          ],
+          "refutation": [
+            "REFUTATION ATTEMPT: Is any portion of the table name derived from user input? RESULT: Refuted. The table name is entirely derived from $wpdb->prefix (server-side configuration) and the string literal 'wc_customer_lookup'."
+          ],
+          "conclusion": "FP \u2014 hardcoded table name, no user input reachable."
+        }
+      },
+      "review_focus": {
+        "scope_statement": "Review only the packet-local claim centered on src/Integrations/WooCommerce/WooCommerceIntegration.php:217 in src/Integrations/WooCommerce/WooCommerceIntegration.php. Start from the listed packet evidence, not from a plugin-wide hypothesis.",
+        "sink_semantics": "unknown",
+        "default_resolution_on_missing_terminal_evidence": "needs_more_evidence",
+        "stop_conditions": [
+          "Once packet-local reachability, authorization, dataflow, impact, and missing evidence are answered with file:line support, stop and write critique JSON.",
+          "Do not reopen unrelated plugin surfaces just because the parent finding or worker narrative mentions them."
+        ],
+        "disallowed_drift": [
+          "whole_plugin_reaudit",
+          "translation_or_asset_search",
+          "sibling_surface_expansion_without_evidence"
+        ],
+        "primary_scope_files": [
+          "src/Integrations/WooCommerce/WooCommerceIntegration.php"
+        ],
+        "optional_scope_files": [
+          "src/Integrations/WooCommerce/WooCommerceIntegration.php"
+        ],
+        "entry_point_anchor": null
+      },
+      "scope_policy": {
+        "allowed_primary_files": [
+          "src/Integrations/WooCommerce/WooCommerceIntegration.php"
+        ],
+        "allowed_optional_files": [
+          "src/Integrations/WooCommerce/WooCommerceIntegration.php"
+        ],
+        "max_out_of_band_files": 1
+      },
+      "anchors": {
+        "entry_point_anchor": null,
+        "source_anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:217",
+        "sink_anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:248",
+        "review_anchor_candidates": [
+          {
+            "kind": "finding_source",
+            "anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:217",
+            "note": "SQL Injection \u2014 WooCommerce get_contacts() uses interpolated table name"
+          },
+          {
+            "kind": "finding_sink",
+            "anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:248",
+            "note": "SQL Injection \u2014 WooCommerce get_contacts() uses interpolated table name"
+          },
+          {
+            "kind": "fp_evidence",
+            "anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:291",
+            "note": "hardcoded_value"
+          }
+        ]
+      },
+      "primary_files": [
+        "src/Integrations/WooCommerce/WooCommerceIntegration.php"
+      ],
+      "primary_snippets": [
+        {
+          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+          "anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:217",
+          "focus_line": 217,
+          "line_start": 211,
+          "line_end": 223,
+          "kind": "finding_source",
+          "code": "   211\t                'title'    => __( 'WooCommerce Customers', 'hostinger-reach' ),\n   212\t                'contacts' => $this->get_contacts_count(),\n   213\t            ),\n   214\t        );\n   215\t    }\n   216\t\n   217\t    public function get_contacts( mixed $form_id = null, ?int $limit = 100, ?int $offset = 0 ): array {\n   218\t        if ( ! $this->is_woo_customer_data_available() ) {\n   219\t            return array();\n   220\t        }\n   221\t\n   222\t        global $wpdb;\n   223\t        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared"
+        },
+        {
+          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+          "anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:248",
+          "focus_line": 248,
+          "line_start": 242,
+          "line_end": 254,
+          "kind": "finding_sink",
+          "code": "   242\t                        'plugin'  => self::INTEGRATION_NAME,\n   243\t                        'group'   => self::INTEGRATION_NAME,\n   244\t                    ),\n   245\t                );\n   246\t            },\n   247\t            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared\n   248\t            $wpdb->get_results( $sql )\n   249\t        );\n   250\t    }\n   251\t\n   252\t    public function get_contacts_count(): int {\n   253\t        global $wpdb;\n   254\t        if ( ! $this->is_woo_customer_data_available() ) {"
+        }
+      ],
+      "optional_files": [
+        "src/Integrations/WooCommerce/WooCommerceIntegration.php"
+      ],
+      "optional_snippets": [
+        {
+          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+          "anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:217",
+          "focus_line": 217,
+          "line_start": 211,
+          "line_end": 223,
+          "kind": "finding_source",
+          "code": "   211\t                'title'    => __( 'WooCommerce Customers', 'hostinger-reach' ),\n   212\t                'contacts' => $this->get_contacts_count(),\n   213\t            ),\n   214\t        );\n   215\t    }\n   216\t\n   217\t    public function get_contacts( mixed $form_id = null, ?int $limit = 100, ?int $offset = 0 ): array {\n   218\t        if ( ! $this->is_woo_customer_data_available() ) {\n   219\t            return array();\n   220\t        }\n   221\t\n   222\t        global $wpdb;\n   223\t        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared"
+        },
+        {
+          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+          "anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:248",
+          "focus_line": 248,
+          "line_start": 242,
+          "line_end": 254,
+          "kind": "finding_sink",
+          "code": "   242\t                        'plugin'  => self::INTEGRATION_NAME,\n   243\t                        'group'   => self::INTEGRATION_NAME,\n   244\t                    ),\n   245\t                );\n   246\t            },\n   247\t            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared\n   248\t            $wpdb->get_results( $sql )\n   249\t        );\n   250\t    }\n   251\t\n   252\t    public function get_contacts_count(): int {\n   253\t        global $wpdb;\n   254\t        if ( ! $this->is_woo_customer_data_available() ) {"
+        },
+        {
+          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+          "anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:291",
+          "focus_line": 291,
+          "line_start": 285,
+          "line_end": 297,
+          "kind": "fp_evidence",
+          "code": "   285\t\n   286\t        return $is_opted_in === 'yes';\n   287\t    }\n   288\t\n   289\t    private function get_woocommerce_customer_table(): string {\n   290\t        global $wpdb;\n   291\t        return \"{$wpdb->prefix}wc_customer_lookup\";\n   292\t    }\n   293\t\n   294\t    private function is_woo_customer_data_available(): bool {\n   295\t        global $wpdb;\n   296\t        $table = $this->get_woocommerce_customer_table();\n   297\t        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared"
+        }
+      ],
+      "review_questions": {
+        "reachability": "Can an attacker really reach the claimed path from ep_rest__import___P_integration__a_z0_9____ without hidden preconditions or workflow assumptions?",
+        "authorization": "Does the path have a stronger guard than the worker claims, including capability, permission_callback, nonce semantics, or trust-boundary limits for auth `unknown`?",
+        "dataflow": "Does attacker-controlled data actually flow from src/Integrations/WooCommerce/WooCommerceIntegration.php:217 to src/Integrations/WooCommerce/WooCommerceIntegration.php:248 for the claimed SQL Injection \u2014 WooCommerce get_contacts() uses interpolated table name, without a refuting guard, sanitizer, or broken hop?",
+        "impact": "Assuming the path reaches src/Integrations/WooCommerce/WooCommerceIntegration.php:248, is the worker's claimed impact concrete and not overstated for this plugin context?",
+        "missing_evidence": "What exact file:line evidence is still missing before this finding can be kept, downgraded, or retracted with confidence?"
+      }
+    }
+  ],
+  "phase1_context": {
+    "entry_point_count": 25,
+    "anomaly_count": 3,
+    "unresolved_hook_count": 8,
+    "related_entry_points": [],
+    "top_anomalies": [],
+    "unresolved_hooks": []
+  },
+  "evidence": {
+    "primary_anchors": [
+      {
+        "kind": "finding_source",
+        "anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:217",
+        "packet_id": "HR-FP-006",
+        "finding_id": "HR-FP-006",
+        "entry_point_id": "ep_rest__import___P_integration__a_z0_9____",
+        "note": "SQL Injection \u2014 WooCommerce get_contacts() uses interpolated table name"
+      },
+      {
+        "kind": "finding_sink",
+        "anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:248",
+        "packet_id": "HR-FP-006",
+        "finding_id": "HR-FP-006",
+        "entry_point_id": "ep_rest__import___P_integration__a_z0_9____",
+        "note": "SQL Injection \u2014 WooCommerce get_contacts() uses interpolated table name"
+      }
+    ],
+    "primary_files": [
+      "src/Integrations/WooCommerce/WooCommerceIntegration.php"
+    ],
+    "primary_snippets": [
+      {
+        "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+        "anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:217",
+        "focus_line": 217,
+        "line_start": 211,
+        "line_end": 223,
+        "kind": "finding_source",
+        "code": "   211\t                'title'    => __( 'WooCommerce Customers', 'hostinger-reach' ),\n   212\t                'contacts' => $this->get_contacts_count(),\n   213\t            ),\n   214\t        );\n   215\t    }\n   216\t\n   217\t    public function get_contacts( mixed $form_id = null, ?int $limit = 100, ?int $offset = 0 ): array {\n   218\t        if ( ! $this->is_woo_customer_data_available() ) {\n   219\t            return array();\n   220\t        }\n   221\t\n   222\t        global $wpdb;\n   223\t        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared"
+      },
+      {
+        "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+        "anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:248",
+        "focus_line": 248,
+        "line_start": 242,
+        "line_end": 254,
+        "kind": "finding_sink",
+        "code": "   242\t                        'plugin'  => self::INTEGRATION_NAME,\n   243\t                        'group'   => self::INTEGRATION_NAME,\n   244\t                    ),\n   245\t                );\n   246\t            },\n   247\t            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared\n   248\t            $wpdb->get_results( $sql )\n   249\t        );\n   250\t    }\n   251\t\n   252\t    public function get_contacts_count(): int {\n   253\t        global $wpdb;\n   254\t        if ( ! $this->is_woo_customer_data_available() ) {"
+      }
+    ],
+    "optional_evidence": {
+      "anchors": [],
+      "files": [],
+      "snippets": []
+    }
+  },
+  "threat_context_summary": null
+}

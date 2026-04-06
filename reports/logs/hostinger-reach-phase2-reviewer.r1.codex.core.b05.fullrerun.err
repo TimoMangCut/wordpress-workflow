@@ -1,0 +1,2134 @@
+
+=== attempt 1 ===
+Reading additional input from stdin...
+OpenAI Codex v0.118.0 (research preview)
+--------
+workdir: /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+model: gpt-5.4
+provider: codex-lb
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR, /Users/timomangcut/.codex/memories]
+reasoning effort: xhigh
+reasoning summaries: none
+session id: 019d633e-4bc7-75d2-9394-3c0d0e9a22bf
+--------
+user
+# System Prompt - Phase 2 Reviewer Core (Project Local)
+
+Ban la reviewer core cho Phase 2 WordPress plugin audit.
+Hay ap dung truc tiep quy tac AppSec duoc neu trong prompt va project docs.
+Khong duoc phu thuoc vao skill auto-load hay provider-specific helpers.
+
+Vai tro cua ban:
+- KHONG duoc lam lai worker output tu dau.
+- Nhiem vu chinh: phan bien tung finding packet worker da dua ra bang counter-evidence, field corrections, va missing-evidence notes.
+- Round nay CHI duoc lam packet-local critique. Khong duoc bien thanh explorer hay broad re-audit ca plugin.
+- Uu tien refute-first. Neu worker khang dinh qua muc, ban phai ha muc do tin cay.
+
+Quy tac bat buoc:
+- Khong invent nonce/capability/route/option key.
+- Moi counter-evidence phai co file:line cu the.
+- Khong xoa finding mot cach cam tinh. Neu muon retract/downgrade, phai neu ly do testable.
+- `missed_findings[]` phai de trong, tru khi input round nay noi ro rang la duoc phep de xuat finding bi bo sot.
+- Neu input packet da duoc atomize, moi critique phai giu `packet_id` rieng va `finding_id` cua finding goc.
+- Neu `packet_kind = atomic_surface`, hay coi `worker_context` da duoc localized cho surface do; khong duoc mo lai sibling surfaces chi vi parent finding ban dau la aggregate.
+- Hay uu tien `review_focus.scope_statement`, `review_focus.stop_conditions`, va `review_focus.disallowed_drift` de giu reviewer dung vai packet-local critic.
+- `worker_context.reasoning_excerpt` la packet-local brief da duoc normalize; `worker_context.original_*` chi dung de tham chieu y worker ban dau, khong phai de mo rong audit.
+- Dung `worker_context`, `primary_snippets`, va `optional_snippets` lam ho so phan bien chinh; khong duoc mo rong workspace mot cach mac dinh.
+- Neu can mo them file, uu tien file trong `scope_policy.allowed_optional_files`; file ngoai scope chi duoc phep o muc rat it va phai ghi vao `expansion_attempts`.
+- Neu `review_focus.sink_semantics` la `hook_dispatch`, `json_response`, hoac `boolean_guard`, hay phan bien theo stop conditions cua packet thay vi trace lai ca plugin de tim terminal sink moi.
+- Neu evidence chua du, uu tien `needs_more_evidence` thay vi khang dinh sai/chac chan.
+- Khong grep rong ca plugin, khong audit lai translation/assets/vendor, va khong doi packet critique thanh omitted-path hunting.
+
+Yeu cau output:
+- Ghi JSON critique vao `reports/phase2/<slug>-phase2.review.rN.json`
+- Output cua ban la critique co cau truc, KHONG phai final Phase 2 findings
+- Muc tieu: dua worker ve mot artifact evidence-bound hon cho round tiep theo
+
+
+# Phase 2 Reviewer Core Loop - `hostinger-reach` - Round `1`
+
+Read reviewer input JSON first:
+- Reviewer input: `reports/phase2/hostinger-reach-phase2.review.r1.core.b05.input.json`
+
+Execution rules:
+1. Follow `task.role`, `task.goal`, and `task.constraints` from the input JSON.
+2. Treat each item in `finding_packets` as one claim packet. Review packet-by-packet, not plugin-wide.
+3. For each packet, explicitly answer its `review_questions.reachability`, `authorization`, `dataflow`, `impact`, and `missing_evidence` before writing the corresponding `finding_reviews[]` item.
+4. Start from the packet's `review_focus`, `worker_context`, `anchors`, `primary_snippets`, and `optional_snippets` before opening any file. Treat `worker_context.reasoning_excerpt` as the packet-local reviewer brief; only consult `worker_context.original_*` if you need to understand the worker's original claim wording.
+5. Treat `scope_policy.allowed_primary_files` as the default scope, `scope_policy.allowed_optional_files` as the only preferred expansion scope, and `scope_policy.max_out_of_band_files` as a hard cap for any out-of-band file opens.
+6. If packet-local evidence is still insufficient, return `needs_more_evidence` instead of exploring for new findings.
+7. Do not reopen `artifacts.worker_output_path` during core review unless the packet data is internally inconsistent and the path is present.
+8. Do not use `artifacts.ir_path`, `artifacts.semgrep_path`, `artifacts.psalm_path`, or `artifacts.threat_context_path` to restart whole-plugin hunting.
+9. Do not inspect translation files, asset bundles, vendor-style dependency trees, or unrelated plugin surfaces during core review.
+10. Keep review bounded and evidence-first. Prefer refutation, field fixes, precise counter-evidence, and explicit missing-evidence notes over rewriting the findings set.
+11. Obey `review_focus.stop_conditions` and `review_focus.disallowed_drift`. If `review_focus.sink_semantics` says the packet ends at hook dispatch, JSON response handling, or guard logic, do not compensate by expanding into whole-plugin tracing.
+12. `missed_findings[]` is not part of the core output contract. Do not invent or emit it in this round.
+13. Emit exactly one `finding_reviews[]` item per packet. Copy the packet's `packet_id`, keep `finding_id` aligned to the packet's `parent_finding_id`, and populate both `missing_evidence[]` and `expansion_attempts[]` even when they are empty.
+
+Output rules:
+- Write raw JSON only.
+- Output path: `reports/phase2/hostinger-reach-phase2.review.r1.core.b05.json`
+- Match the schema referenced by `task.output_schema`.
+- `summary` must be an object, never a string.
+- Keep all plugin file paths relative to the plugin root.
+
+2026-04-06T14:42:00.394400Z  WARN codex_core::shell_snapshot: Failed to delete shell snapshot at "/Users/timomangcut/.codex/shell_snapshots/019d633e-4bc7-75d2-9394-3c0d0e9a22bf.tmp-1775486520265812000": Os { code: 2, kind: NotFound, message: "No such file or directory" }
+codex
+Toi se doc project docs bat buoc va reviewer input JSON truoc, sau do critique tung packet trong pham vi packet-local va ghi JSON output vao duong dan yeu cau.
+exec
+/bin/zsh -lc "sed -n '1,220p' docs/wp-context.md" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "sed -n '1,220p' docs/bug-bounty-rules-summary.md" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+# Tóm tắt Bug Bounty Rules - Patchstack & Wordfence
+
+> Tài liệu này được viết lại theo bố cục gần giống file mẫu đính kèm, nhưng đã rút gọn để tập trung vào **quy tắc cốt lõi**, đặc biệt là **in-scope / out-of-scope**, điều kiện hợp lệ của report, tính duy nhất, và các lý do thường bị từ chối.
+>
+> Nguồn tham chiếu:
+> - Patchstack: https://patchstack.com/articles/bug-bounty-guidelines-rules/
+> - Wordfence: https://www.wordfence.com/threat-intel/bug-bounty-program/#scope
+
+---
+
+## Table of Contents
+- Introduction
+- Patchstack
+  - Reporting Protocol
+  - Scope
+  - Uniqueness Requirement
+  - Quality Assurance
+  - Rejection Criteria
+  - Disclosure / CVE
+- Wordfence
+  - Program Overview
+  - In-Scope Assets
+  - Out-of-Scope Assets
+  - Explicitly In-Scope Vulnerabilities
+  - Explicitly Out-of-Scope Vulnerabilities
+  - Submission Rules & Key Notes
+- Quick Comparison
+
+---
+
+# Introduction
+
+Tài liệu này tổng hợp hai chương trình bug bounty trong hệ sinh thái WordPress:
+
+1. **Patchstack Bug Bounty Program**
+2. **Wordfence Intelligence Bug Bounty Program**
+
+Mục tiêu của bản tóm tắt là giúp nhanh chóng xác định:
+- Report nào có khả năng **được chấp nhận**
+- Thành phần nào **in scope / out of scope**
+- Điều kiện nào khiến report **không đủ bounty** hoặc chỉ được **CVE / disclosure**
+- Những yêu cầu tối thiểu để report được xem là **valid**
+
+---
+
+# Patchstack
+
+## Reporting Protocol
+
+### Kênh gửi report
+- Chỉ chấp nhận report qua form chính thức: `https://patchstack.com/database/report`
+- Không chấp nhận qua email hoặc kênh khác.
+
+### Tài khoản & tư cách tham gia
+- Tài khoản researcher được tạo sau khi có ít nhất một report hợp lệ và in-scope.
+- Mỗi researcher chỉ được dùng **một account**.
+- Cá nhân và công ty đều có thể tham gia, nhưng **không hỗ trợ team submissions**.
+
+---
+
+## Scope
+
+### In scope
+Patchstack chấp nhận các thành phần trong hệ sinh thái WordPress, bao gồm:
+- **WordPress core**
+- **WordPress plugins**
+- **WordPress themes**
+
+Cả **free** và **premium** đều có thể được chấp nhận.
+- Với sản phẩm premium, cần cung cấp **bản archive gốc, không chỉnh sửa** để xác minh.
+- Nếu theme phụ thuộc plugin cụ thể, cần cung cấp cả plugin phụ thuộc đó.
+
+Một report chỉ được coi là hợp lệ nếu có **security impact rõ ràng và đo lường được**.
+
+### Out of scope / không được chấp nhận
+Các trường hợp sau thường bị loại:
+
+#### 1) Severity / CVSS quá thấp
+- Vulnerability có **CVSS v3.1 < 6.5** không được chấp nhận trực tiếp theo rules hiện tại.
+
+#### 2) Active installs quá thấp
+- Component có **< 1,000 active installs** nhìn chung là out of scope.
+- Ngoại lệ: có thể được xem xét nếu:
+  - có **CVSS >= 8.5**,
+  - yêu cầu quyền không vượt quá **Unauthenticated / Subscriber / Customer**,
+  - và component có **ít nhất 100 active installs**.
+
+#### 3) Quyền khai thác quá cao
+- Chỉ ưu tiên lỗ hổng khai thác được bởi:
+  - **Unauthenticated**
+  - **Subscriber / Customer**
+- **Contributor** chỉ được chấp nhận nếu severity đủ cao.
+- Các lỗ hổng yêu cầu **Admin / quyền cao hơn** là out of scope.
+- Với **custom roles**, chỉ chấp nhận nếu capability tương đương gần với Subscriber/Customer; nếu mạnh hơn thì không chấp nhận.
+
+#### 4) Các loại issue thường không được chấp nhận
+- **CSV Injection**
+- **IP spoofing** (trừ khi trực tiếp phá vỡ một cơ chế bảo vệ phụ thuộc vào IP)
+- **Race condition** có tác động không rõ ràng hoặc severity thấp
+- **CAPTCHA / Turing test bypass**
+- **Arbitrary user registration** nếu không dẫn đến tạo được **admin account**
+- **Authenticated shortcode preview issues** ở mức Contributor trở lên, trừ khi lộ dữ liệu nhạy cảm có tác động rõ ràng
+- **CSRF / Broken Access Control** chỉ dùng để dismiss notice mà không có security impact thực tế
+- **IP bypass** cho các thao tác không quan trọng như likes/views/counters
+
+#### 5) Thành phần không đủ điều kiện
+- Phiên bản cuối cùng phát hành đã quá **3 năm**
+- Lỗ hổng **không còn tồn tại ở phiên bản mới nhất**
+- Component **không public**
+- Component là hàng **custom / modified / private**, không được phân phối công khai qua:
+  - WordPress.org
+  - website chính thức của vendor
+  - GitHub
+  - CodeCanyon / ThemeForest
+  - hoặc nguồn public tương đương
+
+---
+
+## Uniqueness Requirement
+
+- Report phải là **mới**, **unique**, chưa từng được public hoặc báo trước đó.
+- Nếu nhiều người báo cùng một issue, **người gửi valid report đầu tiên** sẽ được tính.
+- Nếu issue đã được báo trực tiếp cho vendor trước đó, Patchstack chỉ chấp nhận nếu:
+  - vendor xác nhận issue,
+  - và vendor có ý định vá.
+- Với sản phẩm của **Automattic**, phải report qua **HackerOne của Automattic** trước.
+- Incomplete patch đã public thường **không được xem là issue mới**, trừ khi tạo ra attack vector mới.
+
+---
+
+## Quality Assurance
+
+Một report Patchstack cần có tối thiểu:
+- PoC dạng text, từng bước rõ ràng
+- Các bước từ lúc cài plugin/theme cho đến khi exploit thành công
+- Raw HTTP request cần thiết
+- Payload chính xác đã dùng
+- Video screenshot là điểm cộng
+
+### Rủi ro khi gửi report kém chất lượng
+- Report không đầy đủ, không tái hiện được, hoặc sai sẽ bị reject.
+- Gửi lặp lại false positive / AI-generated false positive có thể dẫn tới:
+  - cooldown,
+  - bị khóa dashboard tạm thời,
+  - hoặc khóa vĩnh viễn.
+
+---
+
+## Rejection Criteria
+
+Các lý do reject phổ biến:
+- Thông tin không đầy đủ hoặc không chính xác
+- Claim không phải vulnerability hợp lệ
+- Dùng role không chuẩn / role đã chỉnh sửa
+- Plugin/theme đã đóng hoặc không truy cập được
+- Component không được phân phối công khai qua nguồn đáng tin cậy
+- Developer/vendor gửi issue cho chính sản phẩm của họ: có thể dùng cho disclosure nhưng **không đủ điều kiện bounty**
+
+---
+
+## Disclosure / CVE
+
+- Patchstack là **CNA**, nên issue hợp lệ có thể được cấp **CVE**.
+- Việc cấp CVE có thể bị trì hoãn để tránh trùng với CNA khác.
+- Tất cả valid in-scope reports sẽ được đưa vào **Patchstack Vulnerability Database**.
+- Researcher không được public vulnerability cho bên thứ ba trước khi Patchstack công bố chính thức.
+
+---
+
+# Wordfence
+
+## Program Overview
+
+Wordfence tập trung vào bug bounty cho **WordPress plugins và themes**. Chương trình phân scope khá mạnh dựa trên:
+- loại vulnerability,
+- mức quyền yêu cầu,
+- active installs,
+- và **researcher tier**.
+
+Wordfence cũng có thể cấp **CVE** cho cả một số report out of scope, nhưng **không phải report nào cũng đủ điều kiện nhận bounty**.
+
+---
+
+## In-Scope Assets
+
+### Nhóm 1: High Threat Vulnerabilities
+Tất cả plugin/theme WordPress (free và premium), trừ các asset bị liệt kê out of scope, sẽ in scope nếu có:
+- **>= 25 active installs**
+- khai thác được bởi **unauthenticated** hoặc **low-level authenticated** (Subscriber/Customer)
+- thuộc một trong các loại sau:
+  - Arbitrary PHP File Upload or Read
+  - Arbitrary PHP File Deletion
+  - Arbitrary Options Update
+  - Remote Code Execution
+  - Authentication Bypass to Admin
+  - Privilege Escalation to Admin
+
+Ghi chú:
+- Nếu plugin/theme có từ **25 đến 999 installs**, nó phải có trên **WordPress.org Plugin Repository** mới được tính in scope.
+
+### Nhóm 2: Common and Dangerous Vulnerabilities
+Tất cả plugin/theme WordPress (free và premium), trừ asset out of scope, sẽ in scope nếu có:
+- **>= 500 active installs**
+- khai thác được bởi **unauthenticated** hoặc **Subscriber/Customer**
+- thuộc một trong các loại:
+  - **Stored XSS**
+  - **SQL Injection**
+
+Ghi chú:
+- Với mốc **500 đến 999 installs**, component phải có trên **WordPress.org Plugin Repository**.
+- **Premium plugin/theme** bị loại khỏi nhóm này nếu **< 1,000 installs**.
+
+### Nhóm 3: All Other Vulnerabilities
+Các vulnerability khác có thể in scope, nhưng phụ thuộc vào **researcher tier**:
+- **Standard Researchers**: component cần **>= 50,000 installs**
+- **Resourceful Researchers**: component cần **>= 10,000 installs**
+- **1337 Researchers**: component cần **>= 500 installs**
+
+---
+
+
+ succeeded in 0ms:
+# WordPress plugin security audit knowledge base
+
+**This is a comprehensive, technically precise reference for auditing WordPress 6.x plugins**, synthesizing real CVE data from 2023–2025, official WordPress developer documentation, and research from Wordfence, Patchstack, and WPScan. The WordPress plugin ecosystem saw **7,966 new vulnerabilities in 2024 alone** (a 34% increase over 2023), with XSS accounting for 47.7% of all findings, broken access control at 14.2%, and CSRF at 11.4%. REST API and AJAX endpoints are the most critically exploited attack surfaces. What follows is every detail a professional security auditor needs.
+
+---
+
+## 1. Exhaustive plugin attack surface catalog
+
+### AJAX handlers (wp_ajax_*, wp_ajax_nopriv_*)
+
+WordPress routes all AJAX through `wp-admin/admin-ajax.php`. Plugins register handlers via `add_action('wp_ajax_{action}', 'callback')` for authenticated users, and `add_action('wp_ajax_nopriv_{action}', 'callback')` for unauthenticated users. **WordPress provides zero built-in authorization for AJAX handlers** — no automatic nonce check, no capability check. The plugin developer must implement both `wp_verify_nonce()` and `current_user_can()`.
+
+The `nopriv` variant is especially dangerous: it makes the endpoint accessible to anyone on the internet without authentication. Many plugins register `nopriv` variants unnecessarily, exposing admin-level functionality. The WPForms vulnerability CVE-2024-11205 (CVSS 8.5) exemplifies this: the `wpforms_is_admin_ajax()` function verified the nonce but never checked user capabilities, allowing **subscriber-level users to issue Stripe refunds and cancel subscriptions**. Similarly, Essential Addons for Elementor (CVE-2023-32243, CVSS 9.8) exposed password reset functionality via an AJAX handler that never validated the reset key.
+
+**Required security controls for every AJAX handler:**
+- `check_ajax_referer('action_name', 'security')` or `wp_verify_nonce()` for CSRF protection
+- `current_user_can('required_capability')` for authorization
+- Sanitization of all `$_POST`/`$_GET` parameters
+- `wp_send_json_success()`/`wp_send_json_error()` for safe responses
+
+### REST API routes (register_rest_route)
+
+The REST API is the **single most critically exploited attack surface** in WordPress plugins during 2023–2025. The most impactful CVEs of this period — Really Simple Security (CVE-2024-10924, CVSS 9.8), WooCommerce Payments (CVE-2023-28121, CVSS 9.8), LiteSpeed Cache (CVE-2024-28000, CVSS 9.8), and AIOSEO (CVE-2021-25036, CVSS 9.9) — all exploited REST API endpoints with broken permission callbacks.
+
+Routes are registered via `register_rest_route('namespace/v1', '/path', $args)`. Since **WordPress 5.5**, omitting `permission_callback` triggers a `_doing_it_wrong` notice, but the endpoint still functions as public. The notice is informational only. Using `'permission_callback' => '__return_true'` explicitly makes endpoints public — this was found in production plugins like Download Monitor.
+
+Permission callbacks execute after authentication is resolved. For cookie-based auth, the `wp_rest` nonce must be passed via `X-WP-Nonce` header or `_wpnonce` parameter — without it, the current user is set to ID 0 (unauthenticated), even if the user has valid cookies. Application Passwords authenticate via HTTP Basic Auth before permission callbacks run.
+
+**REST API namespace discovery** at `/wp-json/` exposes all registered namespaces, and `/wp-json/namespace/v1` lists all routes with their methods and argument schemas. This provides attackers a complete map of available endpoints.
+
+### Shortcodes
+
+Shortcodes (`add_shortcode('name', 'callback')`) are parsed from post content and executed server-side. Their primary attack surface is **attribute injection**: shortcode attributes are passed as an array to the callback without any automatic sanitization. The `shortcode_atts()` function provides default merging but no security filtering. Contributors can embed shortcodes in post content, making contributor-level Stored XSS the dominant vulnerability pattern.
+
+Common vulnerability: `extract(shortcode_atts(['style' => ''], $atts))` followed by `echo '<div style="' . $style . '">'` — the `$style` attribute reaches HTML output unescaped. Every shortcode attribute must be escaped with the context-appropriate function (`esc_attr()`, `esc_html()`, `esc_url()`).
+
+### Gutenberg blocks (detailed in Section 7)
+
+The block editor introduces multiple attack surfaces: `render_callback` functions that output unescaped attributes, **block comment delimiter JSON** that bypasses wp_kses filtering, the `/wp/v2/block-renderer/` REST endpoint accessible to contributors, and `ServerSideRender` which can trigger server-side execution of block rendering with attacker-controlled attributes.
+
+### Admin pages and menus
+
+`admin_menu`, `admin_init`, `admin_post_*`, and `admin_post_nopriv_*` hooks create admin-side attack surfaces. **Critical misconception**: `is_admin()` checks whether the request targets wp-admin, not whether the user is an administrator. All authenticated AJAX requests go through `admin-ajax.php` in wp-admin, so `is_admin()` returns `true` for any logged-in user making AJAX calls. Always use `current_user_can()` instead.
+
+`admin_init` fires on every admin page load — including `admin-ajax.php` and `admin-post.php` — making it a particularly broad attack surface if permission checks are absent. `admin_post_nopriv_*` actions are accessible to unauthenticated users, identical in risk to `wp_ajax_nopriv_*`.
+
+### XML-RPC, WP-CLI, and Cron
+
+**XML-RPC** (`xmlrpc.php`) exposes methods for remote content management and pingbacks. Plugins extend it via `xmlrpc_methods` filter. The pingback feature was exploited for **blind SSRF via DNS rebinding** (CVE-2022-3590). XML-RPC authentication uses username/password per request (no session), enabling brute-force attacks. Best practice is to disable it entirely unless required.
+
+**WP-CLI commands** registered by plugins execute with the filesystem permissions of the CLI user (typically root or www-data), which may exceed WordPress capabilities. Commands should still validate input and use WordPress API functions rather than direct database/file operations.
+
+**Cron jobs** (`wp_schedule_event`) execute via `wp-cron.php`, triggered by site visits. WP-Cron requests are internal HTTP requests that may bypass authentication. If a cron callback performs privileged operations without validation, it could be exploited. LiteSpeed Cache's crawler simulation feature (CVE-2024-28000) demonstrates how cron/crawler functions can create critical attack surfaces.
+
+### Elementor and WooCommerce attack surfaces
+
+**Elementor** adds an extensive secondary attack surface: widget controls, template import/export, AJAX handlers for the editor, and custom CSS/JS fields. CVE-2023-48777 (CVSS 8.8) exploited the template import AJAX handler for arbitrary file upload → RCE, and CVE-2023-3124 (CVSS 8.8) exploited `update_page_option` AJAX handler for subscriber-level arbitrary options update.
+
+**WooCommerce** payment gateway integrations create critical surfaces: order status manipulation, price/quantity modification via checkout hooks, and payment callback endpoints. CVE-2023-28121 (CVSS 9.8) demonstrated that trusting a custom HTTP header (`X-WCPAY-PLATFORM-CHECKOUT-USER`) for authentication enabled unauthenticated admin access.
+
+### Multisite-specific attack surfaces
+
+In multisite, Site Admins have a restricted capability set compared to Super Admins. They lack `install_plugins`, `edit_plugins`, `edit_themes`, `unfiltered_html`, and all `manage_network_*` capabilities. Vulnerabilities that are "by design" for single-site admins become legitimate security issues in multisite because Site Admins should not be able to affect other sites or escalate to Super Admin. Cross-site data access and network-wide option modification are key multisite attack vectors.
+
+### Additional entry points
+
+- **Webhook/callback endpoints**: Payment gateways (Stripe, PayPal) require publicly accessible callback URLs. These must validate signatures/tokens from the payment provider, not just check for expected parameters.
+- **oEmbed providers**: Custom oEmbed endpoints registered via `wp_oembed_add_provider()` can introduce SSRF if they fetch user-controlled URLs server-side.
+- **Custom rewrite rules**: `add_rewrite_rule()` and `template_redirect` hook can create custom URL endpoints. Missing auth checks make these exploitable.
+- **wp_mail**: Email header injection via unsanitized `To`, `From`, `CC`, `BCC` headers. Carriage returns (`\r\n`) in header values inject additional headers.
+- **Filesystem API**: `WP_Filesystem` and direct PHP file functions. Path traversal via `../` sequences targets `wp-config.php`, `.htaccess`, and `wp-content/debug.log`.
+- **Transient API**: `set_transient()`/`get_transient()` stores data in `wp_options` (or object cache). Transients with user-controlled keys can be overwritten. If transient data is used unsanitized in output or queries, it becomes a stored attack vector.
+- **Object cache**: `wp_cache_set()`/`wp_cache_get()` data can be poisoned if cache keys are predictable and the caching backend (Redis, Memcached) is accessible.
+- **wp_options autoload**: Options with `autoload=yes` load on every page request. Plugins storing large serialized data with autoload enabled create performance issues; storing user-controlled serialized data creates object injection risks.
+- **Custom database tables**: Direct `$wpdb->query()` calls on custom tables bypass WordPress's built-in sanitization. Every variable in SQL must use `$wpdb->prepare()`.
+- **Import/Export**: File upload (ZIP, XML, CSV) combined with parsing creates surfaces for XXE, Zip Slip, CSV injection, and path traversal.
+- **Bulk action handlers**: `admin_action_*` hooks for bulk operations often lack per-item capability checks, enabling mass manipulation.
+
+---
+
+## 2. WordPress 6.x security mechanisms reference
+
+### Nonce system behavior and edge cases
+
+WordPress nonces are **HMAC hashes, not true one-time tokens**. They are generated from `$tick | $action | $user_id | $session_token` using `wp_hash()`. The default lifetime is **24 hours** (configurable via `nonce_life` filter), split into two 12-hour ticks. `wp_verify_nonce()` returns **1** for current tick (0–12h old), **2** for previous tick (12–24h old), or **false** for expired/invalid.
+
+**Critical limitations:**
+- **Not one-time-use**: The same nonce is generated for the same user+action during an entire tick period. This means nonces do not prevent replay attacks.
+- **Guest users (ID 0) all receive identical nonces** — providing zero CSRF protection for unauthenticated forms. The `nonce_user_logged_out` filter can mitigate this.
+- **Nonces verify intent, not authorization**. A valid nonce only proves the request originated from a page WordPress generated for that user. Any logged-in user can obtain valid nonces for any action. **Always pair `wp_verify_nonce()` with `current_user_can()`**.
+
+**Core nonce functions:**
+- `wp_create_nonce($action)` — Returns ~10-char alphanumeric hash
+- `wp_verify_nonce($nonce, $action)` — Returns 1, 2, or false; does NOT terminate execution
+- `check_admin_referer($action, $query_arg)` — Verifies nonce AND HTTP referer; calls `wp_die()` on failure
+- `check_ajax_referer($action, $query_arg, $stop)` — Checks nonce only (not referer); inspects `_wpnonce`, `_ajax_nonce` params and `X-WP-Nonce` header
+
+### REST API permission_callback enforcement (WP 5.5+)
+
+Since WordPress 5.5, `register_rest_route()` issues a `_doing_it_wrong` notice when `permission_callback` is omitted. **The endpoint still functions as public** — the notice is informational only. WordPress cannot distinguish intentional public endpoints from accidental omissions. Using `'permission_callback' => '__return_true'` explicitly documents public intent.
+
+Permission callbacks run **after** authentication is resolved. For cookie-based auth, the `wp_rest` nonce must be present, or the user is treated as unauthenticated (ID 0). Permission callbacks should use `current_user_can()`, not manual nonce verification — the REST API handles the `wp_rest` nonce automatically via `rest_cookie_check_errors()`.
+
+### $wpdb->prepare() in WordPress 6.x
+
+**Placeholders**: `%s` (string, auto-quoted), `%d` (integer), `%f` (float), **`%i` (identifier, backtick-quoted — added in WP 6.2)**. The `%i` placeholder allows safe table/column name parameterization: `$wpdb->prepare('SELECT * FROM %i WHERE %i = %s', $table, $column, $value)` produces `` SELECT * FROM `table` WHERE `column` = 'value' ``.
+
+**Validation rules**: placeholder count must match argument count; positional placeholders (`%1$s`) are supported but do not auto-quote; `%%` produces literal `%`; for LIKE: `'%' . $wpdb->esc_like($search) . '%'` inside `prepare()`; IN clauses require dynamic placeholder construction; **named placeholders are NOT supported**.
+
+### WordPress 6.x security changes
+
+- **WP 6.2** (March 2023): `%i` identifier placeholder in `$wpdb->prepare()`
+- **WP 6.4.3** (January 2024): POP chain vulnerability fix (potential RCE via WP_HTML_TOKEN deserialization)
+- **WP 6.5** (March 2024): Block Bindings API with `edit_block_binding` capability; Interactivity API
+- **WP 6.8** (April 2025): **Major password hashing overhaul** — phpass replaced by **bcrypt with SHA-384 pre-hashing** (prefix `$wp$2y$`). Application passwords and security keys use **BLAKE2b via Sodium**. Old `$P$` hashes remain valid and auto-rehash on login. Optional Argon2 support via `wp_hash_password_algorithm` filter.
+
+### wp_safe_redirect vs wp_redirect
+
+`wp_redirect($location)` sets the Location header with **no host validation** — vulnerable to open redirect with user-supplied URLs. `wp_safe_redirect($location)` validates the target host against an allowlist via `wp_validate_redirect()` (default: current site host only; extensible via `allowed_redirect_hosts` filter). If the host is not allowed, it falls back to `admin_url()`. **Neither function calls `exit`** — the developer must follow with `exit;` or `die;`.
+
+### REST API authentication methods
+
+- **Cookie + Nonce (built-in)**: Default for same-origin requests. Nonce action: `wp_rest`. Pass via `X-WP-Nonce` header or `_wpnonce` parameter. No valid nonce = user set to 0.
+- **Application Passwords (WP 5.6+, built-in)**: HTTP Basic Auth (`Authorization: Basic base64(username:app_password)`). HTTPS required by default. 24-character passwords (~142 bits entropy), stored hashed (BLAKE2b in WP 6.8). Cannot be used for wp-login.php. Individually revocable.
+- **OAuth (plugin-required)**: OAuth 1.0a or 2.0. Best for third-party integrations.
+- **JWT (plugin-required)**: Stateless token-based. Not native to WordPress.
+
+---
+
+## 3. Complete WordPress security functions reference
+
+### Sanitization functions
+
+| Function | Behavior | Use case | Does NOT protect against |
+|----------|----------|----------|-------------------------|
+| `sanitize_text_field($str)` | Strips tags, removes line breaks/tabs/extra whitespace, strips octets | Single-line text input | SQL injection |
+| `sanitize_textarea_field($str)` | Same as above but preserves line breaks | Multi-line text | SQL injection |
+| `sanitize_email($email)` | Strips disallowed chars; does NOT validate format (use `is_email()`) | Email addresses | Invalid emails |
+| `sanitize_file_name($filename)` | Removes special chars, replaces whitespace with dashes | File uploads | Path traversal (add `validate_file()`) |
+| `sanitize_html_class($class)` | Keeps only A-Za-z0-9_- | CSS class names | — |
+| `sanitize_key($key)` | Lowercases, keeps only a-z0-9_- | Option/meta keys | — |
+| `sanitize_mime_type($mime)` | Keeps only a-zA-Z0-9._+-/ | MIME type strings | Fake MIME types |
+| `sanitize_sql_orderby($orderby)` | Validates ORDER BY pattern; returns false if invalid | SQL ORDER BY | Complex injection patterns |
+| `sanitize_title($title)` | Generates URL slug; strips tags, converts accents | URL slugs | NOT for display |
+| `sanitize_url($url)` | Strips invalid chars, removes dangerous protocols | URL storage | Open redirects |
+| `sanitize_user($username, $strict)` | Strips tags; strict: a-zA-Z0-9 _.@- only | Usernames | — |
+| `absint($value)` | `abs(intval($value))` | Non-negative integers | Range validation |
+| `wp_kses($content, $allowed_html)` | HTML filter keeping only specified tags/attributes | Rich HTML input | — |
+| `wp_kses_post($data)` | wp_kses with 'post' context (extensive allowed tags) | Post content | XSS in allowed attributes |
+| `wp_filter_nohtml_kses($data)` | Strips ALL HTML | Plain text only | — |
+
+### Escaping functions
+
+| Function | Context | Behavior |
+|----------|---------|----------|
+| `esc_html($text)` | Text inside HTML elements | Converts `& < > " '` to HTML entities |
+| `esc_attr($text)` | HTML attribute values | Same entity conversion; does NOT double-encode |
+| `esc_url($url)` | `href`/`src` attributes | Validates URL, strips dangerous protocols (javascript:, data:), encodes entities |
+| `esc_url_raw($url)` | Database storage, API calls | Same as `esc_url` without entity encoding |
+| `esc_js($text)` | Inline JS string literals | Escapes `' " & < >`, adds slashes |
+| `esc_textarea($text)` | Inside `<textarea>` tags | `htmlspecialchars` with double-encoding |
+| `esc_sql($data)` | **DEPRECATED** — use `$wpdb->prepare()` | `mysqli_real_escape_string` wrapper; does NOT add quotes |
+| `esc_xml($text)` | XML content | Escapes for XML context |
+| `wp_json_encode($data)` | JavaScript data embedding | `json_encode` with `JSON_HEX_TAG\|JSON_HEX_AMP\|JSON_HEX_APOS\|JSON_HEX_QUOT` — safe for `<script>` blocks |
+| `tag_escape($tag_name)` | HTML tag names | Lowercases, strips non-alphanumeric chars except `_:` |
+
+### Database security ($wpdb methods)
+
+`$wpdb->prepare()` is the primary SQL injection defense. `$wpdb->insert()`, `$wpdb->update()`, `$wpdb->delete()`, and `$wpdb->replace()` use `prepare()` internally and are safe when used correctly. `$wpdb->query()`, `$wpdb->get_var()`, `$wpdb->get_row()`, `$wpdb->get_col()`, and `$wpdb->get_results()` require explicit `prepare()` for any variable data. `$wpdb->esc_like($text)` escapes `%` and `_` for LIKE queries — must be used inside `prepare()`.
+
+### File upload security
+
+- `wp_check_filetype($filename, $mimes)` — Extension-based only; does NOT examine file contents
+- `wp_check_filetype_and_ext($file, $filename, $mimes)` — Checks actual file content via `finfo`/`getimagesize` plus extension
+- `wp_handle_upload($file, $overrides)` — Complete upload handler: validates MIME type, moves to uploads dir, returns result array
+- `validate_file($file, $allowed_files)` — Returns 0 (valid), 1 (contains `..`), 2 (contains `:/` or starts with `/`), 3 (not in allowed list) — **critical for preventing directory traversal**
+
+### Cryptographic functions
+
+- `wp_hash_password($password)` — As of WP 6.8: **bcrypt with SHA-384 pre-hashing** (prefix `$wp$2y$`). Previously phpass (MD5-based). Password length limit: 4096 chars.
+- `wp_check_password($password, $hash, $user_id)` — Verifies password against hash; auto-rehashes old `$P$` format to bcrypt on verification
+- `wp_generate_password($length, $special_chars, $extra_special_chars)` — Uses `wp_rand()` (cryptographically secure via `random_int()`)
+- `wp_hash($data, $scheme)` — HMAC-MD5 using salts from wp-config.php
+- `wp_rand($min, $max)` — CSPRNG wrapper using `random_int()` (PHP 7+)
+- `wp_generate_uuid4()` — RFC 4122 UUID v4 using `random_bytes()`
+
+---
+
+## 4. Real CVEs and vulnerability patterns in major plugins (2023–2025)
+
+### The most dangerous vulnerabilities of this period
+
+**CVE-2024-10924 — Really Simple Security authentication bypass (CVSS 9.8)**. Affected 4 million installations. The `check_login_and_get_user()` function in the 2FA REST API returned a valid user object even on error conditions. Unauthenticated attackers could log in as any user, including admin, by sending crafted REST API requests with a `user_id` and invalid nonce. Wordfence called this "the most dangerous vulnerability they've seen in 12 years." WordPress.org forced an automatic security update.
+
+**CVE-2023-28121 — WooCommerce Payments authentication bypass (CVSS 9.8)**. The `determine_current_user_for_platform_checkout()` function hooked into WordPress's `determine_current_user` filter and returned the user ID from the `X-WCPAY-PLATFORM-CHECKOUT-USER` HTTP header **without any validation**. Adding `X-WCPAY-PLATFORM-CHECKOUT-USER: 1` to any request authenticated as user ID 1 (admin). Wordfence detected **1.3 million attacks against 157,000 sites** on July 16, 2023.
+
+**CVE-2024-28000 — LiteSpeed Cache privilege escalation (CVSS 9.8)**. The crawler simulation feature used `mt_rand()` seeded with microsecond time to generate security hashes — producing only ~1 million possible values. An unauthenticated AJAX endpoint (`async_litespeed`) had no capability or nonce checks, allowing anyone to trigger hash generation. The hash could then be brute-forced within hours to create admin accounts via the REST API.
+
+**CVE-2023-32243 — Essential Addons for Elementor privilege escalation (CVSS 9.8)**. The password reset function in the Login/Register Form widget never validated the `rp_key` (reset key). It directly changed the user's password without calling `check_password_reset_key()`. The nonce was obtainable from the frontend page source. Wordfence blocked 6,900+ exploit attempts within days; Sucuri observed mass infection campaigns.
+
+**CVE-2023-48777 — Elementor arbitrary file upload to RCE (CVSS 8.8)**. The template import AJAX handler allowed contributor-level users to upload files via base64-encoded `fileData`. A path traversal in the filename parameter (`/../../../../shell.php`) placed PHP webshells in web-accessible directories.
+
+### Recurring vulnerability patterns
+
+**Pattern 1: Missing/broken authorization on AJAX handlers** — The single most dangerous recurring pattern. Functions hooked to `wp_ajax_*` that check nonces but not capabilities. Affects WPForms, LiteSpeed Cache, Elementor Pro, and hundreds of smaller plugins.
+
+**Pattern 2: XSS via insufficient output escaping** — 47.7% of all vulnerabilities in 2024. Most commonly Stored XSS at contributor+ level via shortcode attributes, widget settings, custom field values, and block attributes. Direct concatenation of user input into HTML output without `esc_attr()`, `esc_html()`, or `wp_kses()`.
+
+**Pattern 3: Authentication bypass via REST API** — Improper `permission_callback` implementations, custom authentication hooks trusting user-supplied headers, error handling that falls through to success states, and case-sensitivity mismatches in route matching.
+
+**Pattern 4: Weak/predictable security tokens** — Using `mt_rand()` with predictable seeds, empty API key hash comparisons (CleanTalk CVE-2024-10781), and non-constant-time string comparison for tokens.
+
+**Pattern 5: PHP Object Injection** — Growing trend. UpdraftPlus (CVE-2024-10957), GiveWP (CVE-2024-9634), SEOPress (CVE-2024-5488). Using `unserialize()` or `maybe_unserialize()` on user-controlled data, combinable with POP chains in bundled libraries for RCE.
+
+### Vulnerability statistics
+
+| Metric | 2023 | 2024 | H1 2025 |
+|--------|------|------|---------|
+| Total new vulnerabilities | ~5,943 | 7,966 | ~6,700 |
+| XSS percentage | ~45% | 47.7% | — |
+
+exec
+/bin/zsh -lc "sed -n '1,260p' reports/phase2/hostinger-reach-phase2.review.r1.core.b05.input.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "core",
+  "task": {
+    "role": "phase2_reviewer_core",
+    "goal": "Challenge the worker output packet-by-packet with concrete counter-evidence, field corrections, and explicit missing-evidence notes.",
+    "output_schema": "contracts/phase2-review-core-output.schema.json",
+    "output_path": "reports/phase2/hostinger-reach-phase2.review.r1.core.b05.json",
+    "packet_schema": "contracts/phase2-reviewer-packet.schema.json",
+    "allow_missed_findings": false,
+    "constraints": [
+      "Treat each finding packet as the unit of review; do not restart whole-plugin auditing.",
+      "Answer reachability, authorization, dataflow, impact, and missing-evidence questions for each packet before finalizing finding_reviews.",
+      "Start from finding_packets, worker_findings, and phase1_context before opening other artifacts.",
+      "Refute before confirm; keep objections evidence-bound with file:line anchors.",
+      "Do not rewrite the full findings set; produce critique JSON only.",
+      "Default to packet-local critique only. Focus on finding_reviews plus field corrections for the existing finding packets.",
+      "Treat finding_packets as the reviewer core evidence pack. If packet-local evidence is insufficient, prefer needs_more_evidence over broad exploration."
+    ],
+    "max_candidates": null
+  },
+  "artifacts": {
+    "worker_output_path": null,
+    "ir_path": null,
+    "semgrep_path": null,
+    "psalm_path": null,
+    "threat_context_path": null,
+    "source_root": "plugins/hostinger-reach"
+  },
+  "worker_summary": {
+    "total_findings": 1,
+    "true_positive_count": 0,
+    "false_positive_count": 1,
+    "needs_review_count": 0,
+    "negative_findings_count": 0,
+    "overall_risk": "low",
+    "analysis_summary": "Reviewer core batch scoped to 1 packet(s)."
+  },
+  "worker_findings": [
+    {
+      "finding_id": "HR-FP-002",
+      "verdict": "FP",
+      "vuln_type": "Broken Access Control \u2014 Public REST endpoint (POST /contact)",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 0.85,
+      "entry_point_id": "ep_rest__contact",
+      "source_anchor": "src/Api/Routes/ReachRoutes.php:27",
+      "sink_anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+      "patchstack_eligible": false
+    }
+  ],
+  "finding_packets": [
+    {
+      "packet_id": "HR-FP-002",
+      "parent_finding_id": "HR-FP-002",
+      "packet_kind": "base",
+      "focus_anchor": "src/Api/Routes/ReachRoutes.php:27",
+      "finding_id": "HR-FP-002",
+      "verdict": "FP",
+      "vuln_type": "Broken Access Control \u2014 Public REST endpoint (POST /contact)",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 0.85,
+      "entry_point_id": "ep_rest__contact",
+      "patchstack_eligible": false,
+      "claimed_impact": "Worker claims Broken Access Control \u2014 Public REST endpoint (POST /contact) is materially exploitable with auth boundary `unknown` and impact reachable at src/Api/Handlers/ReachApiHandler.php:152.",
+      "worker_context": {
+        "source_function": "ReachApiHandler::post_contact_handler",
+        "sink_function": "do_action('hostinger_reach_submit')",
+        "fp_reason": "Packet-local reviewer scope: ReachRoutes at src/Api/Routes/ReachRoutes.php:27. Primary files: src/Api/Handlers/ReachApiHandler.php, src/Api/Routes/ReachRoutes.php.",
+        "original_fp_reason": "The POST /contact endpoint's in-handler is_authorized() check requires both a valid wp_rest nonce AND get_connection_status_handler() to succeed; the nonce is only embedded in the SubscriptionFormBlock HTML which renders on specific posts/pages, and the connection check makes an outbound API call that requires a stored API key \u2014 the combination significantly raises the exploitation bar compared to the OptInMonster case.",
+        "reasoning_excerpt": {
+          "hypothesis": "Validate only the packet-local claim for ReachRoutes. Determine whether anchors src/Api/Routes/ReachRoutes.php:27, src/Api/Handlers/ReachApiHandler.php:152, src/Api/Handlers/ReachApiHandler.php:165, ReachRoutes.php:27 actually support the worker's claim without widening to other surfaces.",
+          "trace": "Packet-local review only. Focus file: src/Api/Routes/ReachRoutes.php. Focus anchors: src/Api/Routes/ReachRoutes.php:27, src/Api/Handlers/ReachApiHandler.php:152, src/Api/Handlers/ReachApiHandler.php:165, ReachRoutes.php:27. Primary files: src/Api/Handlers/ReachApiHandler.php, src/Api/Routes/ReachRoutes.php. Entry point: src/Api/Routes/ReachRoutes.php:27. Treat unrelated callers, consumers, and sibling surfaces as out of scope unless an explicit expansion attempt is justified.",
+          "defenses": [
+            "is_authorized() at line 165: requires valid wp_rest nonce AND the site must be connected (get_connection_status_handler() makes a live API call to verify the stored API key)",
+            "The wp_rest nonce is only embedded via SubscriptionFormBlock::data() which outputs nonce in the block render \u2014 this is a legitimate public form, and the endpoint is specifically designed to accept public form submissions from site visitors",
+            "Treat downstream hook consumers as missing evidence unless a concrete consumer is already shown in the packet."
+          ],
+          "refutation": [
+            "Refute or keep this packet on ReachRoutes alone. Do not carry over conclusions from plugin-wide traces without packet-local code evidence."
+          ],
+          "conclusion": "Keep, downgrade, retract, or mark needs_more_evidence based only on packet-local evidence for ReachRoutes."
+        },
+        "original_reasoning_excerpt": {
+          "hypothesis": "An unauthenticated attacker can inject arbitrary contact via POST /contact.",
+          "trace": "POST /contact (ReachRoutes.php line 27, __return_true) \u2192 post_contact_handler() (ReachApiHandler.php line 139) \u2192 is_authorized() (line 165) \u2192 wp_verify_nonce + get_connection_status_handler()",
+          "defenses": [
+            "is_authorized() at line 165: requires valid wp_rest nonce AND the site must be connected (get_connection_status_handler() makes a live API call to verify the stored API key)",
+            "The wp_rest nonce is only embedded via SubscriptionFormBlock::data() which outputs nonce in the block render \u2014 this is a legitimate public form, and the endpoint is specifically designed to accept public form submissions from site visitors",
+            "The /contact endpoint's intended use is for frontend subscription form submissions from public visitors \u2014 this is by design"
+          ],
+          "refutation": [
+            "REFUTATION ATTEMPT: Is the POST /contact endpoint intended to be public? RESULT: Yes \u2014 it is the backend for the frontend subscription form block (SubscriptionFormBlock.php line 17 exposes the endpoint URL and nonce to any visitor who views a page with the subscription block). This is the intended flow: visitors submit their email through the public form.",
+            "REFUTATION ATTEMPT: Does this constitute unauthorized contact injection? RESULT: Partially. A visitor can submit any email address, but the contact endpoint is specifically designed for public subscription \u2014 the site owner published a subscription form. This is the same abuse vector as any public form submission endpoint.",
+            "CONCLUSION: The design intent of this endpoint is public. Treating it as a vulnerability would mean flagging all public subscription forms. FP for the purposes of unauthorized access control bypass."
+          ],
+          "conclusion": "FP. The POST /contact endpoint is a public subscription form endpoint by design. The nonce provides CSRF protection for form submissions. Note that compared to OptInMonster, this endpoint only exposes the nonce on pages where the subscription block is published, making it a more controlled surface."
+        }
+      },
+      "review_focus": {
+        "scope_statement": "Review only the packet-local claim centered on src/Api/Routes/ReachRoutes.php:27 in src/Api/Routes/ReachRoutes.php. Start from the listed packet evidence, not from a plugin-wide hypothesis.",
+        "sink_semantics": "hook_dispatch",
+        "default_resolution_on_missing_terminal_evidence": "needs_more_evidence",
+        "stop_conditions": [
+          "Once packet-local reachability, authorization, dataflow, impact, and missing evidence are answered with file:line support, stop and write critique JSON.",
+          "Do not reopen unrelated plugin surfaces just because the parent finding or worker narrative mentions them.",
+          "If the packet ends at a hook dispatch and no downstream consumer is already evidenced in this packet, mark the missing downstream consumer explicitly instead of tracing every consumer in the plugin."
+        ],
+        "disallowed_drift": [
+          "whole_plugin_reaudit",
+          "translation_or_asset_search",
+          "sibling_surface_expansion_without_evidence",
+          "shared_hook_consumer_enumeration"
+        ],
+        "primary_scope_files": [
+          "src/Api/Handlers/ReachApiHandler.php",
+          "src/Api/Routes/ReachRoutes.php"
+        ],
+        "optional_scope_files": [
+          "src/Api/Handlers/ReachApiHandler.php",
+          "src/Api/Routes/ReachRoutes.php"
+        ],
+        "entry_point_anchor": "src/Api/Routes/ReachRoutes.php:27"
+      },
+      "scope_policy": {
+        "allowed_primary_files": [
+          "src/Api/Handlers/ReachApiHandler.php",
+          "src/Api/Routes/ReachRoutes.php"
+        ],
+        "allowed_optional_files": [
+          "src/Api/Handlers/ReachApiHandler.php",
+          "src/Api/Routes/ReachRoutes.php"
+        ],
+        "max_out_of_band_files": 1
+      },
+      "anchors": {
+        "entry_point_anchor": "src/Api/Routes/ReachRoutes.php:27",
+        "source_anchor": "src/Api/Routes/ReachRoutes.php:27",
+        "sink_anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+        "review_anchor_candidates": [
+          {
+            "kind": "entry_point",
+            "anchor": "src/Api/Routes/ReachRoutes.php:27",
+            "note": null
+          },
+          {
+            "kind": "finding_source",
+            "anchor": "src/Api/Routes/ReachRoutes.php:27",
+            "note": "Broken Access Control \u2014 Public REST endpoint (POST /contact)"
+          },
+          {
+            "kind": "finding_sink",
+            "anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+            "note": "Broken Access Control \u2014 Public REST endpoint (POST /contact)"
+          },
+          {
+            "kind": "fp_evidence",
+            "anchor": "src/Api/Handlers/ReachApiHandler.php:165",
+            "note": "nonce_enforced"
+          },
+          {
+            "kind": "anomaly",
+            "anchor": "src/Api/Routes/ReachRoutes.php:27",
+            "note": "rest_return_true"
+          },
+          {
+            "kind": "aggregate_reference",
+            "anchor": "ReachRoutes.php:27",
+            "note": null
+          },
+          {
+            "kind": "aggregate_reference",
+            "anchor": "ReachApiHandler.php:139",
+            "note": null
+          },
+          {
+            "kind": "aggregate_reference",
+            "anchor": "SubscriptionFormBlock.php:17",
+            "note": null
+          }
+        ]
+      },
+      "primary_files": [
+        "src/Api/Handlers/ReachApiHandler.php",
+        "src/Api/Routes/ReachRoutes.php"
+      ],
+      "primary_snippets": [
+        {
+          "file": "src/Api/Routes/ReachRoutes.php",
+          "anchor": "src/Api/Routes/ReachRoutes.php:27",
+          "focus_line": 27,
+          "line_start": 21,
+          "line_end": 33,
+          "kind": "finding_source",
+          "code": "    21\t        $this->handler                 = $handler;\n    22\t        $this->api_key_manager         = $api_key_manager;\n    23\t        $this->contact_list_repository = $contact_list_repository;\n    24\t    }\n    25\t\n    26\t    public function register_routes(): void {\n    27\t        register_rest_route(\n    28\t            HOSTINGER_REACH_PLUGIN_REST_API_BASE,\n    29\t            'contact',\n    30\t            array(\n    31\t                'methods'             => 'POST',\n    32\t                'callback'            => array( $this->handler, 'post_contact_handler' ),\n    33\t                'permission_callback' => '__return_true',"
+        },
+        {
+          "file": "src/Api/Handlers/ReachApiHandler.php",
+          "anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+          "focus_line": 152,
+          "line_start": 146,
+          "line_end": 158,
+          "kind": "finding_sink",
+          "code": "   146\t        $surname  = $request->get_param( 'surname' );\n   147\t        $form_id  = $request->get_param( 'id' );\n   148\t        $metadata = $request->get_param( 'metadata' );\n   149\t        $tags     = $request->get_param( 'tags' );\n   150\t        $group    = apply_filters( 'hostinger_reach_get_group', $request->get_param( 'group' ), $form_id );\n   151\t\n   152\t        return $this->post_contact(\n   153\t            array(\n   154\t                'form_id'  => $form_id,\n   155\t                'group'    => $group,\n   156\t                'tags'     => $tags,\n   157\t                'email'    => $email,\n   158\t                'name'     => $name,"
+        }
+      ],
+      "optional_files": [
+        "src/Api/Handlers/ReachApiHandler.php",
+        "src/Api/Routes/ReachRoutes.php"
+      ],
+      "optional_snippets": [
+        {
+          "file": "src/Api/Routes/ReachRoutes.php",
+          "anchor": "src/Api/Routes/ReachRoutes.php:27",
+          "focus_line": 27,
+          "line_start": 21,
+          "line_end": 33,
+          "kind": "entry_point",
+          "code": "    21\t        $this->handler                 = $handler;\n    22\t        $this->api_key_manager         = $api_key_manager;\n    23\t        $this->contact_list_repository = $contact_list_repository;\n    24\t    }\n    25\t\n    26\t    public function register_routes(): void {\n    27\t        register_rest_route(\n    28\t            HOSTINGER_REACH_PLUGIN_REST_API_BASE,\n    29\t            'contact',\n    30\t            array(\n    31\t                'methods'             => 'POST',\n    32\t                'callback'            => array( $this->handler, 'post_contact_handler' ),\n    33\t                'permission_callback' => '__return_true',"
+        },
+        {
+          "file": "src/Api/Handlers/ReachApiHandler.php",
+          "anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+          "focus_line": 152,
+          "line_start": 146,
+          "line_end": 158,
+          "kind": "finding_sink",
+          "code": "   146\t        $surname  = $request->get_param( 'surname' );\n   147\t        $form_id  = $request->get_param( 'id' );\n   148\t        $metadata = $request->get_param( 'metadata' );\n   149\t        $tags     = $request->get_param( 'tags' );\n   150\t        $group    = apply_filters( 'hostinger_reach_get_group', $request->get_param( 'group' ), $form_id );\n   151\t\n   152\t        return $this->post_contact(\n   153\t            array(\n   154\t                'form_id'  => $form_id,\n   155\t                'group'    => $group,\n   156\t                'tags'     => $tags,\n   157\t                'email'    => $email,\n   158\t                'name'     => $name,"
+        },
+        {
+          "file": "src/Api/Handlers/ReachApiHandler.php",
+          "anchor": "src/Api/Handlers/ReachApiHandler.php:165",
+          "focus_line": 165,
+          "line_start": 159,
+          "line_end": 171,
+          "kind": "fp_evidence",
+          "code": "   159\t                'surname'  => $surname,\n   160\t                'metadata' => $metadata,\n   161\t            )\n   162\t        );\n   163\t    }\n   164\t\n   165\t    public function is_authorized( WP_REST_Request $request ): bool {\n   166\t        $nonce = $request->get_header( 'X-WP-Nonce' );\n   167\t\n   168\t        return wp_verify_nonce( $nonce, 'wp_rest' ) && $this->get_connection_status_handler();\n   169\t    }\n   170\t\n   171\t    public function post_generate_auth_url(): WP_REST_Response {"
+        }
+      ],
+      "review_questions": {
+        "reachability": "Can an attacker really reach the claimed path from src/Api/Routes/ReachRoutes.php:27 without hidden preconditions or workflow assumptions?",
+        "authorization": "Does the path have a stronger guard than the worker claims, including capability, permission_callback, nonce semantics, or trust-boundary limits for auth `unknown`?",
+        "dataflow": "Does attacker-controlled data actually flow from src/Api/Routes/ReachRoutes.php:27 to src/Api/Handlers/ReachApiHandler.php:152 for the claimed Broken Access Control \u2014 Public REST endpoint (POST /contact), without a refuting guard, sanitizer, or broken hop?",
+        "impact": "Assuming the path reaches src/Api/Handlers/ReachApiHandler.php:152, is the worker's claimed impact concrete and not overstated for this plugin context?",
+        "missing_evidence": "What exact file:line evidence is still missing before this finding can be kept, downgraded, or retracted with confidence?"
+      }
+    }
+  ],
+  "phase1_context": {
+    "entry_point_count": 25,
+    "anomaly_count": 3,
+    "unresolved_hook_count": 8,
+    "related_entry_points": [
+      {
+        "id": "ep_rest__contact",
+        "type": "rest_route",
+        "hook_name": "?contact",
+
+codex
+Toi da co packet va pham vi review. Buoc tiep theo la doc schema output va mo dung hai file trong scope de kiem tra counter-evidence tai cac anchor worker da dua.
+exec
+/bin/zsh -lc "sed -n '1,260p' plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "sed -n '1,260p' contracts/phase2-review-core-output.schema.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "sed -n '1,280p' plugins/hostinger-reach/src/Api/Handlers/ReachApiHandler.php" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+<?php
+
+namespace Hostinger\Reach\Api\Routes;
+
+use Hostinger\Reach\Api\ApiKeyManager;
+use Hostinger\Reach\Api\Handlers\ReachApiHandler;
+use Hostinger\Reach\Repositories\ContactListRepository;
+use WP_REST_Request;
+
+if ( ! defined( 'ABSPATH' ) ) {
+    die;
+}
+
+class ReachRoutes extends Routes {
+    private ReachApiHandler $handler;
+    private ApiKeyManager $api_key_manager;
+
+    private ContactListRepository $contact_list_repository;
+
+    public function __construct( ReachApiHandler $handler, ApiKeyManager $api_key_manager, ContactListRepository $contact_list_repository ) {
+        $this->handler                 = $handler;
+        $this->api_key_manager         = $api_key_manager;
+        $this->contact_list_repository = $contact_list_repository;
+    }
+
+    public function register_routes(): void {
+        register_rest_route(
+            HOSTINGER_REACH_PLUGIN_REST_API_BASE,
+            'contact',
+            array(
+                'methods'             => 'POST',
+                'callback'            => array( $this->handler, 'post_contact_handler' ),
+                'permission_callback' => '__return_true',
+                'args'                => array(
+                    'id'       => array(
+                        'required' => true,
+                        'type'     => 'string',
+                    ),
+                    'group'    => array(
+                        'required'          => false,
+                        'default'           => HOSTINGER_REACH_DEFAULT_CONTACT_LIST,
+                        'type'              => 'string',
+                        'validate_callback' => array( $this, 'is_valid_contact_list' ),
+                    ),
+                    'tags'     => array(
+                        'required' => false,
+                        'default'  => HOSTINGER_REACH_DEFAULT_CONTACT_LIST,
+                        'type'     => 'string',
+                    ),
+                    'email'    => array(
+                        'required'          => true,
+                        'type'              => 'string',
+                        'validate_callback' => function ( $param ) {
+                            return filter_var( $param, FILTER_VALIDATE_EMAIL );
+                        },
+                    ),
+                    'name'     => array(
+                        'required' => false,
+                        'default'  => '',
+                        'type'     => 'string',
+                    ),
+                    'surname'  => array(
+                        'required' => false,
+                        'default'  => '',
+                        'type'     => 'string',
+                    ),
+                    'metadata' => array(
+                        'required'   => false,
+                        'type'       => 'object',
+                        'properties' => array(
+                            'plugin' => array(
+                                'type' => 'string',
+                            ),
+                        ),
+                    ),
+                ),
+            )
+        );
+
+        register_rest_route(
+            HOSTINGER_REACH_PLUGIN_REST_API_BASE,
+            'token',
+            array(
+                'methods'             => 'POST',
+                'callback'            => array( $this->handler, 'post_token_handler' ),
+                'permission_callback' => function ( WP_REST_Request $request ) {
+                    $csrf = $request->get_param( 'csrf_field' );
+
+                    return $csrf && $this->api_key_manager->validate_csrf( $csrf );
+                },
+                'args'                => array(
+                    'csrf_field' => array(
+                        'required' => true,
+                        'type'     => 'string',
+                    ),
+                    'token'      => array(
+                        'required' => true,
+                        'type'     => 'string',
+                    ),
+                ),
+            )
+        );
+
+        register_rest_route(
+            HOSTINGER_REACH_PLUGIN_REST_API_BASE,
+            'generate-auth-url',
+            array(
+                'methods'             => 'POST',
+                'callback'            => array( $this->handler, 'post_generate_auth_url' ),
+                'permission_callback' => array( $this, 'permission_check' ),
+            )
+        );
+
+        register_rest_route(
+            HOSTINGER_REACH_PLUGIN_REST_API_BASE,
+            'overview',
+            array(
+                'methods'             => 'GET',
+                'callback'            => array( $this->handler, 'get_overview_handler' ),
+                'permission_callback' => array( $this, 'permission_check' ),
+            )
+        );
+
+        register_rest_route(
+            HOSTINGER_REACH_PLUGIN_REST_API_BASE,
+            'tags',
+            array(
+                array(
+                    'methods'             => 'GET',
+                    'callback'            => array( $this->handler, 'get_tags_handler' ),
+                    'permission_callback' => array( $this, 'permission_check' ),
+                ),
+                array(
+                    'methods'             => 'POST',
+                    'callback'            => array( $this->handler, 'post_tags_handler' ),
+                    'permission_callback' => array( $this, 'permission_check' ),
+                    'args'                => array(
+                        'names' => array(
+                            'type'     => 'array',
+                            'required' => true,
+                            'default'  => array( HOSTINGER_REACH_DEFAULT_CONTACT_LIST ),
+                            'items'    => array(
+                                'type' => 'string',
+                            ),
+                        ),
+                    ),
+                ),
+
+            )
+        );
+    }
+
+    public function is_valid_contact_list( string $param ): bool {
+        return $param === '' || $this->contact_list_repository->exists( $param );
+    }
+}
+
+ succeeded in 0ms:
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "phase2-review-core-output.schema.json",
+  "version": "1.0.0",
+  "title": "Phase 2 Review Core Output Schema",
+  "description": "Structured packet-by-packet critique from the Phase 2 reviewer core loop. Core review is limited to claim validation and field corrections; it must not propose missed findings.",
+  "type": "object",
+  "required": ["plugin_slug", "review_round", "review_status", "summary", "finding_reviews"],
+  "properties": {
+    "plugin_slug": { "type": "string" },
+    "review_round": { "type": "integer", "minimum": 1 },
+    "review_mode": { "enum": ["core", "skeptical"] },
+    "review_status": { "enum": ["stable", "needs_revision"] },
+    "summary": {
+      "type": "object",
+      "required": ["worker_findings_reviewed", "material_issues_found"],
+      "properties": {
+        "worker_findings_reviewed": { "type": "integer", "minimum": 0 },
+        "material_issues_found": { "type": "boolean" },
+        "new_candidate_count": { "type": "integer", "minimum": 0, "maximum": 0 },
+        "notes": { "type": ["string", "null"] }
+      }
+    },
+    "finding_reviews": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["finding_id", "packet_id", "assessment", "reason", "required_changes", "counter_evidence", "missing_evidence", "expansion_attempts"],
+        "properties": {
+          "finding_id": { "type": "string" },
+          "packet_id": { "type": "string" },
+          "parent_finding_id": { "type": ["string", "null"] },
+          "assessment": { "enum": ["keep", "needs_more_evidence", "downgrade", "retract", "field_fix"] },
+          "reason": { "type": "string" },
+          "required_changes": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "counter_evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["type", "file", "line", "detail"],
+              "properties": {
+                "type": { "enum": ["guard", "sanitizer", "unreachable", "scope", "impact", "other"] },
+                "file": { "type": "string" },
+                "line": { "type": "integer", "minimum": 1 },
+                "detail": { "type": "string" }
+              }
+            }
+          },
+          "missing_evidence": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "expansion_attempts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["type", "target", "reason", "outcome"],
+              "properties": {
+                "type": { "enum": ["optional_file", "out_of_band_file"] },
+                "target": { "type": "string" },
+                "reason": { "type": "string" },
+                "outcome": { "type": "string" }
+              }
+            }
+          },
+          "suggested_field_corrections": {
+            "type": ["object", "null"]
+          }
+        }
+      }
+    },
+    "missed_findings": false
+  }
+}
+
+ succeeded in 0ms:
+<?php
+
+namespace Hostinger\Reach\Api\Handlers;
+
+use Hostinger\Reach\Api\ApiKeyManager;
+use Hostinger\Reach\Api\ResourceIdManager;
+use Hostinger\Reach\Functions;
+use Hostinger\Reach\Integrations\Reach\ReachFormIntegration;
+use WP_Error;
+use WP_REST_Request;
+use WP_REST_Response;
+
+if ( ! defined( 'ABSPATH' ) ) {
+    die;
+}
+
+class ReachApiHandler extends ApiHandler {
+    protected string $hostinger_auth_url;
+    protected string $reach_domain;
+    public ApiKeyManager $api_key_manager;
+    public ResourceIdManager $resource_id_manager;
+
+    public function __construct( Functions $functions, ApiKeyManager $api_key_manager, ResourceIdManager $resource_id_manager ) {
+        parent::__construct( $functions );
+        $this->api_key_manager     = $api_key_manager;
+        $this->resource_id_manager = $resource_id_manager;
+        $this->set_api_base_name();
+        $this->init_hooks();
+    }
+
+
+    public function get_not_connected_error_message(): string {
+        return __( 'Your site is not connected to Reach. Connect to Reach and try again.', 'hostinger-reach' );
+    }
+
+    public function init_hooks(): void {
+
+        add_filter(
+            'allowed_http_origins',
+            function ( $origins ) {
+                $origins[] = HOSTINGER_REACH_REST_URI;
+
+                return $origins;
+            }
+        );
+
+        add_filter(
+            'rest_exposed_cors_headers',
+            function ( array $exposed_headers ): array {
+                $exposed_headers[] = 'X-WP-Total';
+                $exposed_headers[] = 'X-WP-TotalPages';
+                $exposed_headers[] = 'Link';
+
+                return array_values( array_unique( $exposed_headers ) );
+            }
+        );
+
+        add_filter(
+            'rest_allowed_cors_headers',
+            function ( array $allowed_headers, WP_REST_Request $request ): array {
+                $allowed_headers[] = 'Authorization';
+                $allowed_headers[] = 'Content-Type';
+                $allowed_headers[] = 'X-WP-Nonce';
+
+                return array_values( array_unique( $allowed_headers ) );
+            },
+            10,
+            2
+        );
+
+        /**
+         * Submits a contact to Reach
+         *
+         * @param array $data The data to be sent
+         * email: string - - Contact email
+         * name: string (optional) - Contact name
+         * surname: string (optional) - Contact surname
+         * group: string (optional) - The group to which the contact belongs WordPress by default
+         * metadata: array (optional) - Additional metadata to be sent with the contact
+         *    - plugin: string - The name of the plugin sending the contact
+         *
+         * example of usage:
+         *
+         * do_action( 'hostinger_reach_submit', array(
+         *     'email' => 'john.doe@example.com',
+         *     'name' => 'John',
+         *     'surname' => 'Doe',
+         *     'group' => 'your plugin name',
+         *     'metadata' => array(
+         *         'plugin' => 'your plugin name',
+         *     )
+         * ))
+         *
+         * @fires hostinger_reach_contact_submitted when the contact is submitted successfully
+         * @fires hostinger_reach_contact_failed when the contact submission fails
+         * @since 1.1.0
+         *
+         */
+        if ( ! has_action( 'hostinger_reach_submit' ) ) {
+            add_action( 'hostinger_reach_submit', array( $this, 'post_contact' ) );
+        }
+    }
+
+    public function get_default_headers(): array {
+        return array(
+            'Authorization' => 'Bearer ' . $this->api_key_manager->get_token(),
+        );
+    }
+
+    public function is_connected(): bool {
+        return ! empty( $this->api_key_manager->get_token() );
+    }
+
+    public function get_resource_id(): string {
+        if ( ! $this->is_connected() ) {
+            return ResourceIdManager::NON_EXISTENT_RESOURCE_ID;
+        }
+
+        $resource_id = $this->resource_id_manager->get_resource_id();
+
+        if ( ! empty( $resource_id ) ) {
+            return $resource_id;
+        }
+
+        return $this->generate_resource_id();
+    }
+
+    public function generate_resource_id(): string {
+        $overview_data = $this->get_overview_handler()->get_data();
+        if ( isset( $overview_data['data']['resourceId'] ) ) {
+            $this->resource_id_manager->store_resource_id( $overview_data['data']['resourceId'] );
+        } else {
+            $this->resource_id_manager->store_resource_id( ResourceIdManager::NON_EXISTENT_RESOURCE_ID );
+        }
+
+        return $this->resource_id_manager->get_resource_id();
+    }
+
+    public function post_contact_handler( WP_REST_Request $request ): WP_REST_Response {
+        if ( ! $this->is_authorized( $request ) ) {
+            return $this->handle_wp_error( new WP_Error( $this->get_not_connected_error_message(), 'You cannot perform this action' ) );
+        }
+
+        $email    = $request->get_param( 'email' );
+        $name     = $request->get_param( 'name' );
+        $surname  = $request->get_param( 'surname' );
+        $form_id  = $request->get_param( 'id' );
+        $metadata = $request->get_param( 'metadata' );
+        $tags     = $request->get_param( 'tags' );
+        $group    = apply_filters( 'hostinger_reach_get_group', $request->get_param( 'group' ), $form_id );
+
+        return $this->post_contact(
+            array(
+                'form_id'  => $form_id,
+                'group'    => $group,
+                'tags'     => $tags,
+                'email'    => $email,
+                'name'     => $name,
+                'surname'  => $surname,
+                'metadata' => $metadata,
+            )
+        );
+    }
+
+    public function is_authorized( WP_REST_Request $request ): bool {
+        $nonce = $request->get_header( 'X-WP-Nonce' );
+
+        return wp_verify_nonce( $nonce, 'wp_rest' ) && $this->get_connection_status_handler();
+    }
+
+    public function post_generate_auth_url(): WP_REST_Response {
+        $this->api_key_manager->generate_csrf();
+
+        $query_params = array(
+            'fromPlugin' => true,
+            'type'       => 'wordpress',
+            'userType'   => $this->get_functions()->is_hostinger_user() ? 'internal' : 'external',
+            'token'      => urlencode( $this->api_key_manager->get_csrf() ),
+            'domain'     => $this->get_functions()->get_host_info(),
+        );
+
+        $reach_url = add_query_arg( $query_params, $this->reach_domain . 'settings/connect-site' );
+        $auth_url  = add_query_arg(
+            array(
+                'redirectUrl' => urlencode( $reach_url ),
+            ),
+            $this->hostinger_auth_url
+        );
+
+        return new WP_REST_Response(
+            array(
+                'auth_url' => $auth_url,
+                'success'  => true,
+            ),
+            200
+        );
+    }
+
+    public function get_connection_status_handler(): bool {
+        if ( ! $this->is_connected() ) {
+            return false;
+        }
+
+        $status = $this->get( 'connection/status' );
+        if ( is_wp_error( $status ) || wp_remote_retrieve_response_code( $status ) >= 400 ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function post_token_handler( WP_REST_Request $request ): WP_REST_Response {
+        $csrf_field = $request->get_param( 'csrf_field' );
+        $token      = $request->get_param( 'token' );
+        if ( ! $this->api_key_manager->validate_csrf( $csrf_field ) ) {
+            return $this->handle_wp_error( new WP_Error( $this->get_not_connected_error_message(), 'You cannot perform this action' ) );
+        }
+
+        $this->api_key_manager->store_token( $token );
+        $this->api_key_manager->clear_csrf();
+
+        return new WP_REST_Response( array( 'success' => true ) );
+    }
+
+    public function get_overview_handler(): WP_REST_Response {
+        if ( ! $this->get_connection_status_handler() ) {
+            $this->api_key_manager->clear_token();
+            $this->resource_id_manager->clear_resource_id();
+
+            return $this->handle_wp_error( new WP_Error( $this->get_not_connected_error_message(), 'You cannot perform this action', array( 'status' => 403 ) ) );
+        }
+
+        $response = $this->get( 'overview' );
+
+        if ( is_wp_error( $response ) ) {
+            return $this->handle_wp_error( $response );
+        }
+
+        return $this->handle_response( $response );
+    }
+
+    public function post_contact( array $data ): WP_REST_Response {
+        if ( ! $this->get_connection_status_handler() ) {
+            $this->api_key_manager->clear_token();
+
+            return $this->handle_wp_error( new WP_Error( $this->get_not_connected_error_message(), 'You cannot perform this action' ) );
+        }
+
+        $contact    = $this->parse_contact( $data );
+        $group_name = $data['group'] ? $data['group'] : HOSTINGER_REACH_DEFAULT_CONTACT_LIST;
+        $tag_ids    = $this->get_tag_ids( $data['tags'] ?? '', $group_name );
+
+        if ( empty( $tag_ids ) ) {
+            $group_tag = $this->create_tag_from_group( $group_name );
+            if ( ! empty( $group_tag ) ) {
+                $tag_ids[] = $group_tag;
+            }
+        }
+
+        $args = array(
+            'tagUuids'  => $tag_ids,
+            'groupName' => $group_name,
+            'contacts'  => array( $contact ),
+        );
+
+        $response = $this->post(
+            'contacts',
+            $args
+        );
+
+        if ( is_wp_error( $response ) ) {
+            do_action( 'hostinger_reach_contact_failed', $data );
+
+            return $this->handle_wp_error( $response );
+        }
+
+        do_action( 'hostinger_reach_contact_submitted', $data );
+
+        return $this->handle_response( $response );
+    }
+
+exec
+/bin/zsh -lc "sed -n '261,380p' reports/phase2/hostinger-reach-phase2.review.r1.core.b05.input.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+        "auth_level": "none",
+        "file": "src/Api/Routes/ReachRoutes.php",
+        "line": 27,
+        "callback_name": null,
+        "callback_class": null
+      }
+    ],
+    "top_anomalies": [],
+    "unresolved_hooks": []
+  },
+  "evidence": {
+    "primary_anchors": [
+      {
+        "kind": "entry_point",
+        "anchor": "src/Api/Routes/ReachRoutes.php:27",
+        "packet_id": "HR-FP-002",
+        "finding_id": "HR-FP-002",
+        "entry_point_id": "ep_rest__contact",
+        "note": "Broken Access Control \u2014 Public REST endpoint (POST /contact)"
+      },
+      {
+        "kind": "finding_source",
+        "anchor": "src/Api/Routes/ReachRoutes.php:27",
+        "packet_id": "HR-FP-002",
+        "finding_id": "HR-FP-002",
+        "entry_point_id": "ep_rest__contact",
+        "note": "Broken Access Control \u2014 Public REST endpoint (POST /contact)"
+      },
+      {
+        "kind": "finding_sink",
+        "anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+        "packet_id": "HR-FP-002",
+        "finding_id": "HR-FP-002",
+        "entry_point_id": "ep_rest__contact",
+        "note": "Broken Access Control \u2014 Public REST endpoint (POST /contact)"
+      }
+    ],
+    "primary_files": [
+      "src/Api/Handlers/ReachApiHandler.php",
+      "src/Api/Routes/ReachRoutes.php"
+    ],
+    "primary_snippets": [
+      {
+        "file": "src/Api/Routes/ReachRoutes.php",
+        "anchor": "src/Api/Routes/ReachRoutes.php:27",
+        "focus_line": 27,
+        "line_start": 21,
+        "line_end": 33,
+        "kind": "finding_source",
+        "code": "    21\t        $this->handler                 = $handler;\n    22\t        $this->api_key_manager         = $api_key_manager;\n    23\t        $this->contact_list_repository = $contact_list_repository;\n    24\t    }\n    25\t\n    26\t    public function register_routes(): void {\n    27\t        register_rest_route(\n    28\t            HOSTINGER_REACH_PLUGIN_REST_API_BASE,\n    29\t            'contact',\n    30\t            array(\n    31\t                'methods'             => 'POST',\n    32\t                'callback'            => array( $this->handler, 'post_contact_handler' ),\n    33\t                'permission_callback' => '__return_true',"
+      },
+      {
+        "file": "src/Api/Handlers/ReachApiHandler.php",
+        "anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+        "focus_line": 152,
+        "line_start": 146,
+        "line_end": 158,
+        "kind": "finding_sink",
+        "code": "   146\t        $surname  = $request->get_param( 'surname' );\n   147\t        $form_id  = $request->get_param( 'id' );\n   148\t        $metadata = $request->get_param( 'metadata' );\n   149\t        $tags     = $request->get_param( 'tags' );\n   150\t        $group    = apply_filters( 'hostinger_reach_get_group', $request->get_param( 'group' ), $form_id );\n   151\t\n   152\t        return $this->post_contact(\n   153\t            array(\n   154\t                'form_id'  => $form_id,\n   155\t                'group'    => $group,\n   156\t                'tags'     => $tags,\n   157\t                'email'    => $email,\n   158\t                'name'     => $name,"
+      }
+    ],
+    "optional_evidence": {
+      "anchors": [],
+      "files": [],
+      "snippets": []
+    }
+  },
+  "threat_context_summary": null
+}
+
+codex
+Packet nay dang thieu mot mat xich: worker dua ly do FP dua vao `SubscriptionFormBlock.php`, nhung packet evidence chua kem file do. Toi se mo duy nhat file nay nhu mot lan expansion out-of-band de kiem tra xem nonce co thuc su bi expose cho visitor va ket luan FP co dung packet-local hay khong.
+exec
+/bin/zsh -lc "nl -ba plugins/hostinger-reach/src/Api/Routes/ReachRoutes.php | sed -n '24,80p'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "nl -ba plugins/hostinger-reach/src/Api/Handlers/ReachApiHandler.php | sed -n '126,270p'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+    24	    }
+    25	
+    26	    public function register_routes(): void {
+    27	        register_rest_route(
+    28	            HOSTINGER_REACH_PLUGIN_REST_API_BASE,
+    29	            'contact',
+    30	            array(
+    31	                'methods'             => 'POST',
+    32	                'callback'            => array( $this->handler, 'post_contact_handler' ),
+    33	                'permission_callback' => '__return_true',
+    34	                'args'                => array(
+    35	                    'id'       => array(
+    36	                        'required' => true,
+    37	                        'type'     => 'string',
+    38	                    ),
+    39	                    'group'    => array(
+    40	                        'required'          => false,
+    41	                        'default'           => HOSTINGER_REACH_DEFAULT_CONTACT_LIST,
+    42	                        'type'              => 'string',
+    43	                        'validate_callback' => array( $this, 'is_valid_contact_list' ),
+    44	                    ),
+    45	                    'tags'     => array(
+    46	                        'required' => false,
+    47	                        'default'  => HOSTINGER_REACH_DEFAULT_CONTACT_LIST,
+    48	                        'type'     => 'string',
+    49	                    ),
+    50	                    'email'    => array(
+    51	                        'required'          => true,
+    52	                        'type'              => 'string',
+    53	                        'validate_callback' => function ( $param ) {
+    54	                            return filter_var( $param, FILTER_VALIDATE_EMAIL );
+    55	                        },
+    56	                    ),
+    57	                    'name'     => array(
+    58	                        'required' => false,
+    59	                        'default'  => '',
+    60	                        'type'     => 'string',
+    61	                    ),
+    62	                    'surname'  => array(
+    63	                        'required' => false,
+    64	                        'default'  => '',
+    65	                        'type'     => 'string',
+    66	                    ),
+    67	                    'metadata' => array(
+    68	                        'required'   => false,
+    69	                        'type'       => 'object',
+    70	                        'properties' => array(
+    71	                            'plugin' => array(
+    72	                                'type' => 'string',
+    73	                            ),
+    74	                        ),
+    75	                    ),
+    76	                ),
+    77	            )
+    78	        );
+    79	
+    80	        register_rest_route(
+
+ succeeded in 0ms:
+   126	    }
+   127	
+   128	    public function generate_resource_id(): string {
+   129	        $overview_data = $this->get_overview_handler()->get_data();
+   130	        if ( isset( $overview_data['data']['resourceId'] ) ) {
+   131	            $this->resource_id_manager->store_resource_id( $overview_data['data']['resourceId'] );
+   132	        } else {
+   133	            $this->resource_id_manager->store_resource_id( ResourceIdManager::NON_EXISTENT_RESOURCE_ID );
+   134	        }
+   135	
+   136	        return $this->resource_id_manager->get_resource_id();
+   137	    }
+   138	
+   139	    public function post_contact_handler( WP_REST_Request $request ): WP_REST_Response {
+   140	        if ( ! $this->is_authorized( $request ) ) {
+   141	            return $this->handle_wp_error( new WP_Error( $this->get_not_connected_error_message(), 'You cannot perform this action' ) );
+   142	        }
+   143	
+   144	        $email    = $request->get_param( 'email' );
+   145	        $name     = $request->get_param( 'name' );
+   146	        $surname  = $request->get_param( 'surname' );
+   147	        $form_id  = $request->get_param( 'id' );
+   148	        $metadata = $request->get_param( 'metadata' );
+   149	        $tags     = $request->get_param( 'tags' );
+   150	        $group    = apply_filters( 'hostinger_reach_get_group', $request->get_param( 'group' ), $form_id );
+   151	
+   152	        return $this->post_contact(
+   153	            array(
+   154	                'form_id'  => $form_id,
+   155	                'group'    => $group,
+   156	                'tags'     => $tags,
+   157	                'email'    => $email,
+   158	                'name'     => $name,
+   159	                'surname'  => $surname,
+   160	                'metadata' => $metadata,
+   161	            )
+   162	        );
+   163	    }
+   164	
+   165	    public function is_authorized( WP_REST_Request $request ): bool {
+   166	        $nonce = $request->get_header( 'X-WP-Nonce' );
+   167	
+   168	        return wp_verify_nonce( $nonce, 'wp_rest' ) && $this->get_connection_status_handler();
+   169	    }
+   170	
+   171	    public function post_generate_auth_url(): WP_REST_Response {
+   172	        $this->api_key_manager->generate_csrf();
+   173	
+   174	        $query_params = array(
+   175	            'fromPlugin' => true,
+   176	            'type'       => 'wordpress',
+   177	            'userType'   => $this->get_functions()->is_hostinger_user() ? 'internal' : 'external',
+   178	            'token'      => urlencode( $this->api_key_manager->get_csrf() ),
+   179	            'domain'     => $this->get_functions()->get_host_info(),
+   180	        );
+   181	
+   182	        $reach_url = add_query_arg( $query_params, $this->reach_domain . 'settings/connect-site' );
+   183	        $auth_url  = add_query_arg(
+   184	            array(
+   185	                'redirectUrl' => urlencode( $reach_url ),
+   186	            ),
+   187	            $this->hostinger_auth_url
+   188	        );
+   189	
+   190	        return new WP_REST_Response(
+   191	            array(
+   192	                'auth_url' => $auth_url,
+   193	                'success'  => true,
+   194	            ),
+   195	            200
+   196	        );
+   197	    }
+   198	
+   199	    public function get_connection_status_handler(): bool {
+   200	        if ( ! $this->is_connected() ) {
+   201	            return false;
+   202	        }
+   203	
+   204	        $status = $this->get( 'connection/status' );
+   205	        if ( is_wp_error( $status ) || wp_remote_retrieve_response_code( $status ) >= 400 ) {
+   206	            return false;
+   207	        }
+   208	
+   209	        return true;
+   210	    }
+   211	
+   212	    public function post_token_handler( WP_REST_Request $request ): WP_REST_Response {
+   213	        $csrf_field = $request->get_param( 'csrf_field' );
+   214	        $token      = $request->get_param( 'token' );
+   215	        if ( ! $this->api_key_manager->validate_csrf( $csrf_field ) ) {
+   216	            return $this->handle_wp_error( new WP_Error( $this->get_not_connected_error_message(), 'You cannot perform this action' ) );
+   217	        }
+   218	
+   219	        $this->api_key_manager->store_token( $token );
+   220	        $this->api_key_manager->clear_csrf();
+   221	
+   222	        return new WP_REST_Response( array( 'success' => true ) );
+   223	    }
+   224	
+   225	    public function get_overview_handler(): WP_REST_Response {
+   226	        if ( ! $this->get_connection_status_handler() ) {
+   227	            $this->api_key_manager->clear_token();
+   228	            $this->resource_id_manager->clear_resource_id();
+   229	
+   230	            return $this->handle_wp_error( new WP_Error( $this->get_not_connected_error_message(), 'You cannot perform this action', array( 'status' => 403 ) ) );
+   231	        }
+   232	
+   233	        $response = $this->get( 'overview' );
+   234	
+   235	        if ( is_wp_error( $response ) ) {
+   236	            return $this->handle_wp_error( $response );
+   237	        }
+   238	
+   239	        return $this->handle_response( $response );
+   240	    }
+   241	
+   242	    public function post_contact( array $data ): WP_REST_Response {
+   243	        if ( ! $this->get_connection_status_handler() ) {
+   244	            $this->api_key_manager->clear_token();
+   245	
+   246	            return $this->handle_wp_error( new WP_Error( $this->get_not_connected_error_message(), 'You cannot perform this action' ) );
+   247	        }
+   248	
+   249	        $contact    = $this->parse_contact( $data );
+   250	        $group_name = $data['group'] ? $data['group'] : HOSTINGER_REACH_DEFAULT_CONTACT_LIST;
+   251	        $tag_ids    = $this->get_tag_ids( $data['tags'] ?? '', $group_name );
+   252	
+   253	        if ( empty( $tag_ids ) ) {
+   254	            $group_tag = $this->create_tag_from_group( $group_name );
+   255	            if ( ! empty( $group_tag ) ) {
+   256	                $tag_ids[] = $group_tag;
+   257	            }
+   258	        }
+   259	
+   260	        $args = array(
+   261	            'tagUuids'  => $tag_ids,
+   262	            'groupName' => $group_name,
+   263	            'contacts'  => array( $contact ),
+   264	        );
+   265	
+   266	        $response = $this->post(
+   267	            'contacts',
+   268	            $args
+   269	        );
+   270	
+
+exec
+/bin/zsh -lc "rg --files plugins/hostinger-reach | rg 'SubscriptionFormBlock\\.php"'$'"'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+plugins/hostinger-reach/src/Blocks/SubscriptionFormBlock.php
+
+exec
+/bin/zsh -lc "nl -ba plugins/hostinger-reach/src/Blocks/SubscriptionFormBlock.php | sed -n '1,220p'" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+     1	<?php
+     2	
+     3	namespace Hostinger\Reach\Blocks;
+     4	
+     5	
+     6	use Hostinger\Reach\Integrations\Reach\ReachFormIntegration;
+     7	
+     8	if ( ! defined( 'ABSPATH' ) ) {
+     9	    die;
+    10	}
+    11	
+    12	class SubscriptionFormBlock extends Block {
+    13	    public string $name = 'subscription';
+    14	
+    15	    public function data(): array {
+    16	        return array(
+    17	            'endpoint'     => esc_url_raw( rest_url() ) . 'hostinger-reach/v1/contact',
+    18	            'nonce'        => wp_create_nonce( 'wp_rest' ),
+    19	            'translations' => array(
+    20	                'thanks' => __( 'Thanks for subscribing.', 'hostinger-reach' ),
+    21	                'error'  => __( 'Something went wrong. Please try again.', 'hostinger-reach' ),
+    22	            ),
+    23	        );
+    24	    }
+    25	
+    26	    public function autoloader(): void {
+    27	        if ( ! is_admin() || empty( $_GET['hostinger_reach_add_block'] ) ) {
+    28	            return;
+    29	        }
+    30	
+    31	        if ( $this->functions->block_file_exists( "$this->name-autoloader.js" ) === false ) {
+    32	            return;
+    33	        }
+    34	
+    35	        $handler = parent::get_block_name() . '-autoloader';
+    36	
+    37	        wp_enqueue_script(
+    38	            $handler,
+    39	            $this->functions->get_blocks_url() . "$this->name-autoloader.js",
+    40	            array( parent::get_block_name() . '-editor' ),
+    41	            filemtime( $this->functions->get_block_file_name( "$this->name-autoloader.js" ) ),
+    42	            array( 'in_footer' => true )
+    43	        );
+    44	    }
+    45	
+    46	    public function render( array $attributes ): bool|string {
+    47	        ob_start();
+    48	        $this->render_block_html( $attributes );
+    49	
+    50	        return ob_get_clean();
+    51	    }
+    52	
+    53	    public static function render_block_html( array $attributes, ?string $plugin = null ): void {
+    54	        $form_id      = $attributes['formId'] ?? '';
+    55	        $show_name    = $attributes['showName'] ?? false;
+    56	        $show_surname = $attributes['showSurname'] ?? false;
+    57	        $contact_list = $attributes['contactList'] ?? '';
+    58	        $tags         = $attributes['tags'] ?? array();
+    59	        $layout       = $attributes['layout'] ?? 'default';
+    60	        $is_inline    = $layout === 'inline';
+    61	        $plugin       = $plugin ?? ReachFormIntegration::INTEGRATION_NAME;
+    62	        ?>
+    63	        <div class="hostinger-reach-block-subscription-form-wrapper">
+    64	
+    65	            <form id="<?php echo esc_attr( $form_id ); ?>" class="hostinger-reach-block-subscription-form">
+    66	                <input type="hidden" name="group" value="<?php echo esc_attr( $contact_list ); ?>">
+    67	                <input type="hidden" name="id" value="<?php echo esc_attr( $form_id ); ?>">
+    68	                <input type="hidden" name="tags" value="<?php echo esc_attr( implode( ',', $tags ) ); ?>">
+    69	                <input type="hidden" name="metadata.plugin" value="<?php echo esc_attr( $plugin ); ?>">
+    70	
+    71	                <div
+    72	                    class="hostinger-reach-block-form-fields <?php echo esc_attr( $is_inline ? 'hostinger-reach-block-form-fields--inline' : '' ); ?>">
+    73	                    <div class="hostinger-reach-block-form-field">
+    74	                        <label
+    75	                            for="<?php echo esc_attr( $form_id ); ?>-email"><?php esc_html_e( 'Email', 'hostinger-reach' ); ?>
+    76	                            <span class="required">*</span></label>
+    77	                        <input type="email" id="<?php echo esc_attr( $form_id ); ?>-email" name="email" required>
+    78	                    </div>
+    79	
+    80	                    <?php if ( $show_name ) : ?>
+    81	                        <div class="hostinger-reach-block-form-field">
+    82	                            <label
+    83	                                for="<?php echo esc_attr( $form_id ); ?>-name"><?php esc_html_e( 'Name', 'hostinger-reach' ); ?></label>
+    84	                            <input type="text" id="<?php echo esc_attr( $form_id ); ?>-name" name="name">
+    85	                        </div>
+    86	                    <?php endif; ?>
+    87	
+    88	                    <?php if ( $show_surname ) : ?>
+    89	                        <div class="hostinger-reach-block-form-field">
+    90	                            <label
+    91	                                for="<?php echo esc_attr( $form_id ); ?>-surname"><?php esc_html_e( 'Surname', 'hostinger-reach' ); ?></label>
+    92	                            <input type="text" id="<?php echo esc_attr( $form_id ); ?>-surname" name="surname">
+    93	                        </div>
+    94	                    <?php endif; ?>
+    95	
+    96	                    <button
+    97	                        type="submit"
+    98	                        class="hostinger-reach-block-submit has-light-color has-color-3-background-color has-text-color has-background has-link-color">
+    99	                        <?php esc_html_e( 'Subscribe', 'hostinger-reach' ); ?>
+   100	                    </button>
+   101	                </div>
+   102	
+   103	                <div class="reach-subscription-message" style="display: none;">
+   104	                    <div class="reach-subscription-message__icon" style="display: none;">
+   105	                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+   106	                            <path d="M21.0455 5.95463C21.4848 6.39397 21.4848 7.10628 21.0455 7.54562L11.5076 17.0835C10.9511 17.64 10.0489 17.64 9.49237 17.0835L5.2045 12.7956C4.76517 12.3563 4.76517 11.644 5.2045 11.2046C5.64384 10.7653 6.35616 10.7653 6.7955 11.2046L10.5 14.9091L19.4545 5.95463C19.8938 5.51529 20.6062 5.51529 21.0455 5.95463Z" fill="#18181A"/>
+   107	                        </svg>
+   108	                    </div>
+   109	                    <div class="reach-subscription-message__text"></div>
+   110	                </div>
+   111	            </form>
+   112	        </div>
+   113	        <?php
+   114	    }
+   115	}
+
+codex
+Ke hoach ghi output:
+1. Ha ket luan FP xuong `needs_more_evidence` vi worker dang dua qua nhieu vao mot nonce gate khong phai capability gate.
+2. Giu critique packet-local: route public, guard trong handler, dataflow den `post('contacts', ...)`, va lo hong bang chung nam o cho nonce exposure/design intent.
+3. Ghi JSON theo schema vao `reports/phase2/hostinger-reach-phase2.review.r1.core.b05.json`, sau do kiem tra syntax.
+codex
+Toi se tao file JSON critique voi mot packet review duy nhat va giu tat ca file path o dang relative theo yeu cau.
+apply patch
+patch: completed
+/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase2/hostinger-reach-phase2.review.r1.core.b05.json
+diff --git a/reports/phase2/hostinger-reach-phase2.review.r1.core.b05.json b/reports/phase2/hostinger-reach-phase2.review.r1.core.b05.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..c449f16b73b7da2921e8412af39e021c8d12820b
+--- /dev/null
++++ b/reports/phase2/hostinger-reach-phase2.review.r1.core.b05.json
+@@ -0,0 +1,71 @@
++{
++  "plugin_slug": "hostinger-reach",
++  "review_round": 1,
++  "review_mode": "core",
++  "review_status": "needs_revision",
++  "summary": {
++    "worker_findings_reviewed": 1,
++    "material_issues_found": true,
++    "new_candidate_count": 0,
++    "notes": "The worker FP rationale overstates the in-handler nonce check and does not prove packet-local nonce exposure to the stated attacker."
++  },
++  "finding_reviews": [
++    {
++      "finding_id": "HR-FP-002",
++      "packet_id": "HR-FP-002",
++      "parent_finding_id": "HR-FP-002",
++      "assessment": "needs_more_evidence",
++      "reason": "reachability: the route is publicly registered because `permission_callback` is `__return_true` at src/Api/Routes/ReachRoutes.php:27-33, but the handler stops unless `is_authorized()` passes at src/Api/Handlers/ReachApiHandler.php:139-141 and 165-168. authorization: the only guard is `wp_verify_nonce( $nonce, 'wp_rest' ) && $this->get_connection_status_handler()` at src/Api/Handlers/ReachApiHandler.php:165-168; that is a nonce plus connection-status gate, not a capability or role check. dataflow: if that guard passes, attacker-controlled `email`, `name`, `surname`, `id`, `metadata`, `tags`, and `group` flow from the request into `post_contact()` at src/Api/Handlers/ReachApiHandler.php:144-160 and then into the outbound `post( 'contacts', $args )` call at src/Api/Handlers/ReachApiHandler.php:242-268. impact: the reachable behavior is concrete contact submission to the remote Reach service, so dismissing the packet as a harmless public route is overstated. missing_evidence: the current packet does not prove where a valid `X-WP-Nonce` is exposed to the relevant attacker model; the single expanded file only shows nonce creation in `SubscriptionFormBlock::data()` at src/Blocks/SubscriptionFormBlock.php:15-19, not the file:line call site that delivers it to anonymous visitors.",
++      "required_changes": [
++        "Downgrade the worker's stable FP conclusion to `needs_more_evidence` unless packet-local evidence proves the frontend nonce exposure and intended anonymous trust boundary with file:line support.",
++        "Correct the authorization analysis to state that `is_authorized()` at src/Api/Handlers/ReachApiHandler.php:165-168 is not a capability check; it is only a `wp_rest` nonce check plus a connection-status check.",
++        "If the packet is kept as FP, add the exact file:line call site that delivers `SubscriptionFormBlock::data()['nonce']` to unauthenticated visitors and explain why that makes arbitrary contact submission expected behavior rather than an access-control failure.",
++        "If the packet is upgraded toward a true issue, add file:line evidence showing how an attacker in scope can satisfy `wp_verify_nonce()` and reach `post_contact()`."
++      ],
++      "counter_evidence": [
++        {
++          "type": "scope",
++          "file": "src/Api/Routes/ReachRoutes.php",
++          "line": 33,
++          "detail": "The route itself is public because `permission_callback` is `__return_true`, so there is no route-level capability gate supporting a stable FP on authorization grounds."
++        },
++        {
++          "type": "guard",
++          "file": "src/Api/Handlers/ReachApiHandler.php",
++          "line": 168,
++          "detail": "The sink is not directly reachable from route registration alone; `post_contact_handler()` only proceeds after `wp_verify_nonce( $nonce, 'wp_rest' ) && $this->get_connection_status_handler()` succeeds."
++        },
++        {
++          "type": "impact",
++          "file": "src/Api/Handlers/ReachApiHandler.php",
++          "line": 266,
++          "detail": "If the guard passes, the handler performs a concrete outbound `post( 'contacts', $args )`, so the packet cannot be dismissed as a harmless registration artifact."
++        },
++        {
++          "type": "other",
++          "file": "src/Blocks/SubscriptionFormBlock.php",
++          "line": 18,
++          "detail": "The out-of-band block file proves only that `data()` creates a `wp_rest` nonce; it does not, by itself, prove that the nonce is rendered or otherwise disclosed to anonymous visitors."
++        }
++      ],
++      "missing_evidence": [
++        "Need the exact file:line call site that sends `SubscriptionFormBlock::data()` to frontend JavaScript or HTML for unauthenticated visitors; src/Blocks/SubscriptionFormBlock.php:15-19 only defines the array.",
++        "Need file:line evidence tying the reachable attacker model to a valid `X-WP-Nonce` for this endpoint, rather than assuming nonce availability from the existence of a public form block.",
++        "Need file:line evidence that the plugin intentionally treats anonymous `/contact` submissions as the expected trust boundary, not merely that the route exists and the block renders a form shell."
++      ],
++      "expansion_attempts": [
++        {
++          "type": "out_of_band_file",
++          "target": "src/Blocks/SubscriptionFormBlock.php",
++          "reason": "The worker FP rationale depended on alleged frontend nonce exposure that was not present in the packet's primary evidence.",
++          "outcome": "Opened the file and confirmed that `data()` creates an endpoint URL and `wp_rest` nonce at lines 15-19, but did not find a packet-local call site proving that data is delivered to anonymous visitors."
++        }
++      ],
++      "suggested_field_corrections": {
++        "recommended_assessment": "needs_more_evidence",
++        "confidence": 0.58,
++        "authorization_model": "Public REST route with an in-handler `wp_rest` nonce check and connection-status check; no capability gate evidenced in the packet."
++      }
++    }
++  ]
++}
+
+diff --git a/reports/phase2/hostinger-reach-phase2.review.r1.core.b05.json b/reports/phase2/hostinger-reach-phase2.review.r1.core.b05.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..c449f16b73b7da2921e8412af39e021c8d12820b
+--- /dev/null
++++ b/reports/phase2/hostinger-reach-phase2.review.r1.core.b05.json
+@@ -0,0 +1,71 @@
++{
++  "plugin_slug": "hostinger-reach",
++  "review_round": 1,
++  "review_mode": "core",
++  "review_status": "needs_revision",
++  "summary": {
++    "worker_findings_reviewed": 1,
++    "material_issues_found": true,
++    "new_candidate_count": 0,
++    "notes": "The worker FP rationale overstates the in-handler nonce check and does not prove packet-local nonce exposure to the stated attacker."
++  },
++  "finding_reviews": [
++    {
++      "finding_id": "HR-FP-002",
++      "packet_id": "HR-FP-002",
++      "parent_finding_id": "HR-FP-002",
++      "assessment": "needs_more_evidence",
++      "reason": "reachability: the route is publicly registered because `permission_callback` is `__return_true` at src/Api/Routes/ReachRoutes.php:27-33, but the handler stops unless `is_authorized()` passes at src/Api/Handlers/ReachApiHandler.php:139-141 and 165-168. authorization: the only guard is `wp_verify_nonce( $nonce, 'wp_rest' ) && $this->get_connection_status_handler()` at src/Api/Handlers/ReachApiHandler.php:165-168; that is a nonce plus connection-status gate, not a capability or role check. dataflow: if that guard passes, attacker-controlled `email`, `name`, `surname`, `id`, `metadata`, `tags`, and `group` flow from the request into `post_contact()` at src/Api/Handlers/ReachApiHandler.php:144-160 and then into the outbound `post( 'contacts', $args )` call at src/Api/Handlers/ReachApiHandler.php:242-268. impact: the reachable behavior is concrete contact submission to the remote Reach service, so dismissing the packet as a harmless public route is overstated. missing_evidence: the current packet does not prove where a valid `X-WP-Nonce` is exposed to the relevant attacker model; the single expanded file only shows nonce creation in `SubscriptionFormBlock::data()` at src/Blocks/SubscriptionFormBlock.php:15-19, not the file:line call site that delivers it to anonymous visitors.",
++      "required_changes": [
++        "Downgrade the worker's stable FP conclusion to `needs_more_evidence` unless packet-local evidence proves the frontend nonce exposure and intended anonymous trust boundary with file:line support.",
++        "Correct the authorization analysis to state that `is_authorized()` at src/Api/Handlers/ReachApiHandler.php:165-168 is not a capability check; it is only a `wp_rest` nonce check plus a connection-status check.",
++        "If the packet is kept as FP, add the exact file:line call site that delivers `SubscriptionFormBlock::data()['nonce']` to unauthenticated visitors and explain why that makes arbitrary contact submission expected behavior rather than an access-control failure.",
++        "If the packet is upgraded toward a true issue, add file:line evidence showing how an attacker in scope can satisfy `wp_verify_nonce()` and reach `post_contact()`."
++      ],
++      "counter_evidence": [
++        {
++          "type": "scope",
++          "file": "src/Api/Routes/ReachRoutes.php",
++          "line": 33,
++          "detail": "The route itself is public because `permission_callback` is `__return_true`, so there is no route-level capability gate supporting a stable FP on authorization grounds."
++        },
++        {
++          "type": "guard",
++          "file": "src/Api/Handlers/ReachApiHandler.php",
++          "line": 168,
++          "detail": "The sink is not directly reachable from route registration alone; `post_contact_handler()` only proceeds after `wp_verify_nonce( $nonce, 'wp_rest' ) && $this->get_connection_status_handler()` succeeds."
++        },
++        {
++          "type": "impact",
++          "file": "src/Api/Handlers/ReachApiHandler.php",
++          "line": 266,
++          "detail": "If the guard passes, the handler performs a concrete outbound `post( 'contacts', $args )`, so the packet cannot be dismissed as a harmless registration artifact."
++        },
++        {
++          "type": "other",
++          "file": "src/Blocks/SubscriptionFormBlock.php",
++          "line": 18,
++          "detail": "The out-of-band block file proves only that `data()` creates a `wp_rest` nonce; it does not, by itself, prove that the nonce is rendered or otherwise disclosed to anonymous visitors."
++        }
++      ],
++      "missing_evidence": [
++        "Need the exact file:line call site that sends `SubscriptionFormBlock::data()` to frontend JavaScript or HTML for unauthenticated visitors; src/Blocks/SubscriptionFormBlock.php:15-19 only defines the array.",
++        "Need file:line evidence tying the reachable attacker model to a valid `X-WP-Nonce` for this endpoint, rather than assuming nonce availability from the existence of a public form block.",
++        "Need file:line evidence that the plugin intentionally treats anonymous `/contact` submissions as the expected trust boundary, not merely that the route exists and the block renders a form shell."
++      ],
++      "expansion_attempts": [
++        {
++          "type": "out_of_band_file",
++          "target": "src/Blocks/SubscriptionFormBlock.php",
++          "reason": "The worker FP rationale depended on alleged frontend nonce exposure that was not present in the packet's primary evidence.",
++          "outcome": "Opened the file and confirmed that `data()` creates an endpoint URL and `wp_rest` nonce at lines 15-19, but did not find a packet-local call site proving that data is delivered to anonymous visitors."
++        }
++      ],
++      "suggested_field_corrections": {
++        "recommended_assessment": "needs_more_evidence",
++        "confidence": 0.58,
++        "authorization_model": "Public REST route with an in-handler `wp_rest` nonce check and connection-status check; no capability gate evidenced in the packet."
++      }
++    }
++  ]
++}
+
+codex
+File critique da duoc ghi. Toi dang kiem tra syntax JSON va ra soat nhanh noi dung de chac chan cac field bat buoc khop schema va khong co drift ngoai packet.
+exec
+/bin/zsh -lc 'jq empty reports/phase2/hostinger-reach-phase2.review.r1.core.b05.json' in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+exec
+/bin/zsh -lc "sed -n '1,260p' reports/phase2/hostinger-reach-phase2.review.r1.core.b05.json" in /Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH
+ succeeded in 0ms:
+ succeeded in 0ms:
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "core",
+  "review_status": "needs_revision",
+  "summary": {
+    "worker_findings_reviewed": 1,
+    "material_issues_found": true,
+    "new_candidate_count": 0,
+    "notes": "The worker FP rationale overstates the in-handler nonce check and does not prove packet-local nonce exposure to the stated attacker."
+  },
+  "finding_reviews": [
+    {
+      "finding_id": "HR-FP-002",
+      "packet_id": "HR-FP-002",
+      "parent_finding_id": "HR-FP-002",
+      "assessment": "needs_more_evidence",
+      "reason": "reachability: the route is publicly registered because `permission_callback` is `__return_true` at src/Api/Routes/ReachRoutes.php:27-33, but the handler stops unless `is_authorized()` passes at src/Api/Handlers/ReachApiHandler.php:139-141 and 165-168. authorization: the only guard is `wp_verify_nonce( $nonce, 'wp_rest' ) && $this->get_connection_status_handler()` at src/Api/Handlers/ReachApiHandler.php:165-168; that is a nonce plus connection-status gate, not a capability or role check. dataflow: if that guard passes, attacker-controlled `email`, `name`, `surname`, `id`, `metadata`, `tags`, and `group` flow from the request into `post_contact()` at src/Api/Handlers/ReachApiHandler.php:144-160 and then into the outbound `post( 'contacts', $args )` call at src/Api/Handlers/ReachApiHandler.php:242-268. impact: the reachable behavior is concrete contact submission to the remote Reach service, so dismissing the packet as a harmless public route is overstated. missing_evidence: the current packet does not prove where a valid `X-WP-Nonce` is exposed to the relevant attacker model; the single expanded file only shows nonce creation in `SubscriptionFormBlock::data()` at src/Blocks/SubscriptionFormBlock.php:15-19, not the file:line call site that delivers it to anonymous visitors.",
+      "required_changes": [
+        "Downgrade the worker's stable FP conclusion to `needs_more_evidence` unless packet-local evidence proves the frontend nonce exposure and intended anonymous trust boundary with file:line support.",
+        "Correct the authorization analysis to state that `is_authorized()` at src/Api/Handlers/ReachApiHandler.php:165-168 is not a capability check; it is only a `wp_rest` nonce check plus a connection-status check.",
+        "If the packet is kept as FP, add the exact file:line call site that delivers `SubscriptionFormBlock::data()['nonce']` to unauthenticated visitors and explain why that makes arbitrary contact submission expected behavior rather than an access-control failure.",
+        "If the packet is upgraded toward a true issue, add file:line evidence showing how an attacker in scope can satisfy `wp_verify_nonce()` and reach `post_contact()`."
+      ],
+      "counter_evidence": [
+        {
+          "type": "scope",
+          "file": "src/Api/Routes/ReachRoutes.php",
+          "line": 33,
+          "detail": "The route itself is public because `permission_callback` is `__return_true`, so there is no route-level capability gate supporting a stable FP on authorization grounds."
+        },
+        {
+          "type": "guard",
+          "file": "src/Api/Handlers/ReachApiHandler.php",
+          "line": 168,
+          "detail": "The sink is not directly reachable from route registration alone; `post_contact_handler()` only proceeds after `wp_verify_nonce( $nonce, 'wp_rest' ) && $this->get_connection_status_handler()` succeeds."
+        },
+        {
+          "type": "impact",
+          "file": "src/Api/Handlers/ReachApiHandler.php",
+          "line": 266,
+          "detail": "If the guard passes, the handler performs a concrete outbound `post( 'contacts', $args )`, so the packet cannot be dismissed as a harmless registration artifact."
+        },
+        {
+          "type": "other",
+          "file": "src/Blocks/SubscriptionFormBlock.php",
+          "line": 18,
+          "detail": "The out-of-band block file proves only that `data()` creates a `wp_rest` nonce; it does not, by itself, prove that the nonce is rendered or otherwise disclosed to anonymous visitors."
+        }
+      ],
+      "missing_evidence": [
+        "Need the exact file:line call site that sends `SubscriptionFormBlock::data()` to frontend JavaScript or HTML for unauthenticated visitors; src/Blocks/SubscriptionFormBlock.php:15-19 only defines the array.",
+        "Need file:line evidence tying the reachable attacker model to a valid `X-WP-Nonce` for this endpoint, rather than assuming nonce availability from the existence of a public form block.",
+        "Need file:line evidence that the plugin intentionally treats anonymous `/contact` submissions as the expected trust boundary, not merely that the route exists and the block renders a form shell."
+      ],
+      "expansion_attempts": [
+        {
+          "type": "out_of_band_file",
+          "target": "src/Blocks/SubscriptionFormBlock.php",
+          "reason": "The worker FP rationale depended on alleged frontend nonce exposure that was not present in the packet's primary evidence.",
+          "outcome": "Opened the file and confirmed that `data()` creates an endpoint URL and `wp_rest` nonce at lines 15-19, but did not find a packet-local call site proving that data is delivered to anonymous visitors."
+        }
+      ],
+      "suggested_field_corrections": {
+        "recommended_assessment": "needs_more_evidence",
+        "confidence": 0.58,
+        "authorization_model": "Public REST route with an in-handler `wp_rest` nonce check and connection-status check; no capability gate evidenced in the packet."
+      }
+    }
+  ]
+}
+
+diff --git a/reports/phase2/hostinger-reach-phase2.review.r1.core.b05.json b/reports/phase2/hostinger-reach-phase2.review.r1.core.b05.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..c449f16b73b7da2921e8412af39e021c8d12820b
+--- /dev/null
++++ b/reports/phase2/hostinger-reach-phase2.review.r1.core.b05.json
+@@ -0,0 +1,71 @@
++{
++  "plugin_slug": "hostinger-reach",
++  "review_round": 1,
++  "review_mode": "core",
++  "review_status": "needs_revision",
++  "summary": {
++    "worker_findings_reviewed": 1,
++    "material_issues_found": true,
++    "new_candidate_count": 0,
++    "notes": "The worker FP rationale overstates the in-handler nonce check and does not prove packet-local nonce exposure to the stated attacker."
++  },
++  "finding_reviews": [
++    {
++      "finding_id": "HR-FP-002",
++      "packet_id": "HR-FP-002",
++      "parent_finding_id": "HR-FP-002",
++      "assessment": "needs_more_evidence",
++      "reason": "reachability: the route is publicly registered because `permission_callback` is `__return_true` at src/Api/Routes/ReachRoutes.php:27-33, but the handler stops unless `is_authorized()` passes at src/Api/Handlers/ReachApiHandler.php:139-141 and 165-168. authorization: the only guard is `wp_verify_nonce( $nonce, 'wp_rest' ) && $this->get_connection_status_handler()` at src/Api/Handlers/ReachApiHandler.php:165-168; that is a nonce plus connection-status gate, not a capability or role check. dataflow: if that guard passes, attacker-controlled `email`, `name`, `surname`, `id`, `metadata`, `tags`, and `group` flow from the request into `post_contact()` at src/Api/Handlers/ReachApiHandler.php:144-160 and then into the outbound `post( 'contacts', $args )` call at src/Api/Handlers/ReachApiHandler.php:242-268. impact: the reachable behavior is concrete contact submission to the remote Reach service, so dismissing the packet as a harmless public route is overstated. missing_evidence: the current packet does not prove where a valid `X-WP-Nonce` is exposed to the relevant attacker model; the single expanded file only shows nonce creation in `SubscriptionFormBlock::data()` at src/Blocks/SubscriptionFormBlock.php:15-19, not the file:line call site that delivers it to anonymous visitors.",
++      "required_changes": [
++        "Downgrade the worker's stable FP conclusion to `needs_more_evidence` unless packet-local evidence proves the frontend nonce exposure and intended anonymous trust boundary with file:line support.",
++        "Correct the authorization analysis to state that `is_authorized()` at src/Api/Handlers/ReachApiHandler.php:165-168 is not a capability check; it is only a `wp_rest` nonce check plus a connection-status check.",
++        "If the packet is kept as FP, add the exact file:line call site that delivers `SubscriptionFormBlock::data()['nonce']` to unauthenticated visitors and explain why that makes arbitrary contact submission expected behavior rather than an access-control failure.",
++        "If the packet is upgraded toward a true issue, add file:line evidence showing how an attacker in scope can satisfy `wp_verify_nonce()` and reach `post_contact()`."
++      ],
++      "counter_evidence": [
++        {
++          "type": "scope",
++          "file": "src/Api/Routes/ReachRoutes.php",
++          "line": 33,
++          "detail": "The route itself is public because `permission_callback` is `__return_true`, so there is no route-level capability gate supporting a stable FP on authorization grounds."
++        },
++        {
++          "type": "guard",
++          "file": "src/Api/Handlers/ReachApiHandler.php",
++          "line": 168,
++          "detail": "The sink is not directly reachable from route registration alone; `post_contact_handler()` only proceeds after `wp_verify_nonce( $nonce, 'wp_rest' ) && $this->get_connection_status_handler()` succeeds."
++        },
++        {
++          "type": "impact",
++          "file": "src/Api/Handlers/ReachApiHandler.php",
++          "line": 266,
++          "detail": "If the guard passes, the handler performs a concrete outbound `post( 'contacts', $args )`, so the packet cannot be dismissed as a harmless registration artifact."
++        },
++        {
++          "type": "other",
++          "file": "src/Blocks/SubscriptionFormBlock.php",
++          "line": 18,
++          "detail": "The out-of-band block file proves only that `data()` creates a `wp_rest` nonce; it does not, by itself, prove that the nonce is rendered or otherwise disclosed to anonymous visitors."
++        }
++      ],
++      "missing_evidence": [
++        "Need the exact file:line call site that sends `SubscriptionFormBlock::data()` to frontend JavaScript or HTML for unauthenticated visitors; src/Blocks/SubscriptionFormBlock.php:15-19 only defines the array.",
++        "Need file:line evidence tying the reachable attacker model to a valid `X-WP-Nonce` for this endpoint, rather than assuming nonce availability from the existence of a public form block.",
++        "Need file:line evidence that the plugin intentionally treats anonymous `/contact` submissions as the expected trust boundary, not merely that the route exists and the block renders a form shell."
++      ],
++      "expansion_attempts": [
++        {
++          "type": "out_of_band_file",
++          "target": "src/Blocks/SubscriptionFormBlock.php",
++          "reason": "The worker FP rationale depended on alleged frontend nonce exposure that was not present in the packet's primary evidence.",
++          "outcome": "Opened the file and confirmed that `data()` creates an endpoint URL and `wp_rest` nonce at lines 15-19, but did not find a packet-local call site proving that data is delivered to anonymous visitors."
++        }
++      ],
++      "suggested_field_corrections": {
++        "recommended_assessment": "needs_more_evidence",
++        "confidence": 0.58,
++        "authorization_model": "Public REST route with an in-handler `wp_rest` nonce check and connection-status check; no capability gate evidenced in the packet."
++      }
++    }
++  ]
++}
+
+codex
+Wrote the core-review JSON to [hostinger-reach-phase2.review.r1.core.b05.json](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase2/hostinger-reach-phase2.review.r1.core.b05.json).
+
+The packet was downgraded to `needs_more_evidence`: the route is public, the handler has only a `wp_rest` nonce plus connection-status guard, and the worker’s FP rationale did not prove packet-local nonce exposure to the claimed attacker. I kept the critique packet-local, recorded one out-of-band expansion to `src/Blocks/SubscriptionFormBlock.php`, and verified the JSON syntax with `jq empty`.
+diff --git a/reports/phase2/hostinger-reach-phase2.review.r1.core.b05.json b/reports/phase2/hostinger-reach-phase2.review.r1.core.b05.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..c449f16b73b7da2921e8412af39e021c8d12820b
+--- /dev/null
++++ b/reports/phase2/hostinger-reach-phase2.review.r1.core.b05.json
+@@ -0,0 +1,71 @@
++{
++  "plugin_slug": "hostinger-reach",
++  "review_round": 1,
++  "review_mode": "core",
++  "review_status": "needs_revision",
++  "summary": {
++    "worker_findings_reviewed": 1,
++    "material_issues_found": true,
++    "new_candidate_count": 0,
++    "notes": "The worker FP rationale overstates the in-handler nonce check and does not prove packet-local nonce exposure to the stated attacker."
++  },
++  "finding_reviews": [
++    {
++      "finding_id": "HR-FP-002",
++      "packet_id": "HR-FP-002",
++      "parent_finding_id": "HR-FP-002",
++      "assessment": "needs_more_evidence",
++      "reason": "reachability: the route is publicly registered because `permission_callback` is `__return_true` at src/Api/Routes/ReachRoutes.php:27-33, but the handler stops unless `is_authorized()` passes at src/Api/Handlers/ReachApiHandler.php:139-141 and 165-168. authorization: the only guard is `wp_verify_nonce( $nonce, 'wp_rest' ) && $this->get_connection_status_handler()` at src/Api/Handlers/ReachApiHandler.php:165-168; that is a nonce plus connection-status gate, not a capability or role check. dataflow: if that guard passes, attacker-controlled `email`, `name`, `surname`, `id`, `metadata`, `tags`, and `group` flow from the request into `post_contact()` at src/Api/Handlers/ReachApiHandler.php:144-160 and then into the outbound `post( 'contacts', $args )` call at src/Api/Handlers/ReachApiHandler.php:242-268. impact: the reachable behavior is concrete contact submission to the remote Reach service, so dismissing the packet as a harmless public route is overstated. missing_evidence: the current packet does not prove where a valid `X-WP-Nonce` is exposed to the relevant attacker model; the single expanded file only shows nonce creation in `SubscriptionFormBlock::data()` at src/Blocks/SubscriptionFormBlock.php:15-19, not the file:line call site that delivers it to anonymous visitors.",
++      "required_changes": [
++        "Downgrade the worker's stable FP conclusion to `needs_more_evidence` unless packet-local evidence proves the frontend nonce exposure and intended anonymous trust boundary with file:line support.",
++        "Correct the authorization analysis to state that `is_authorized()` at src/Api/Handlers/ReachApiHandler.php:165-168 is not a capability check; it is only a `wp_rest` nonce check plus a connection-status check.",
++        "If the packet is kept as FP, add the exact file:line call site that delivers `SubscriptionFormBlock::data()['nonce']` to unauthenticated visitors and explain why that makes arbitrary contact submission expected behavior rather than an access-control failure.",
++        "If the packet is upgraded toward a true issue, add file:line evidence showing how an attacker in scope can satisfy `wp_verify_nonce()` and reach `post_contact()`."
++      ],
++      "counter_evidence": [
++        {
++          "type": "scope",
++          "file": "src/Api/Routes/ReachRoutes.php",
++          "line": 33,
++          "detail": "The route itself is public because `permission_callback` is `__return_true`, so there is no route-level capability gate supporting a stable FP on authorization grounds."
++        },
++        {
++          "type": "guard",
++          "file": "src/Api/Handlers/ReachApiHandler.php",
++          "line": 168,
++          "detail": "The sink is not directly reachable from route registration alone; `post_contact_handler()` only proceeds after `wp_verify_nonce( $nonce, 'wp_rest' ) && $this->get_connection_status_handler()` succeeds."
++        },
++        {
++          "type": "impact",
++          "file": "src/Api/Handlers/ReachApiHandler.php",
++          "line": 266,
++          "detail": "If the guard passes, the handler performs a concrete outbound `post( 'contacts', $args )`, so the packet cannot be dismissed as a harmless registration artifact."
++        },
++        {
++          "type": "other",
++          "file": "src/Blocks/SubscriptionFormBlock.php",
++          "line": 18,
++          "detail": "The out-of-band block file proves only that `data()` creates a `wp_rest` nonce; it does not, by itself, prove that the nonce is rendered or otherwise disclosed to anonymous visitors."
++        }
++      ],
++      "missing_evidence": [
++        "Need the exact file:line call site that sends `SubscriptionFormBlock::data()` to frontend JavaScript or HTML for unauthenticated visitors; src/Blocks/SubscriptionFormBlock.php:15-19 only defines the array.",
++        "Need file:line evidence tying the reachable attacker model to a valid `X-WP-Nonce` for this endpoint, rather than assuming nonce availability from the existence of a public form block.",
++        "Need file:line evidence that the plugin intentionally treats anonymous `/contact` submissions as the expected trust boundary, not merely that the route exists and the block renders a form shell."
++      ],
++      "expansion_attempts": [
++        {
++          "type": "out_of_band_file",
++          "target": "src/Blocks/SubscriptionFormBlock.php",
++          "reason": "The worker FP rationale depended on alleged frontend nonce exposure that was not present in the packet's primary evidence.",
++          "outcome": "Opened the file and confirmed that `data()` creates an endpoint URL and `wp_rest` nonce at lines 15-19, but did not find a packet-local call site proving that data is delivered to anonymous visitors."
++        }
++      ],
++      "suggested_field_corrections": {
++        "recommended_assessment": "needs_more_evidence",
++        "confidence": 0.58,
++        "authorization_model": "Public REST route with an in-handler `wp_rest` nonce check and connection-status check; no capability gate evidenced in the packet."
++      }
++    }
++  ]
++}
+
+tokens used
+44,281

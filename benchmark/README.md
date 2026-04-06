@@ -12,8 +12,8 @@ benchmark/
 ├── README.md               # This file
 ├── ground-truth/           # Ground truth per plugin (semantics vary — see below)
 │   ├── cartflows.json      # verified_by: manual_review  (independent GT)
-│   ├── pretty-link.json    # verified_by: manual_review  (independent GT)
-│   └── backwpup.json       # verified_by: pipeline_derived  (self-consistency reference)
+│   ├── pretty-link.json    # verified_by: pipeline_derived  (regression reference)
+│   └── backwpup.json       # verified_by: pipeline_derived  (regression reference)
 └── results/
     ├── baseline.json       # Current baseline (auto-created on first run)
     └── run_<timestamp>.json
@@ -37,6 +37,14 @@ python3 benchmark/compare.py --all --save-baseline
 - **Quality Score** = TP / (TP + FP + FN)
 - **Decision Rate** = (TP + FP) / (TP + FP + REVIEW_HIT + REVIEW_MISS)
 
+Where:
+- `TP` = a `CONFIRMED` pipeline finding matching GT
+- `FP` = a `CONFIRMED` pipeline finding not matching GT
+- `FN` = a GT finding not matched by any `CONFIRMED` pipeline finding
+- `REVIEW_HIT` = an `UNCERTAIN` / `RISK_NOTE` pipeline finding that matches GT but remains unresolved
+- `REVIEW_MISS` = an `UNCERTAIN` / `RISK_NOTE` pipeline finding that does not match GT
+- `REJECTED` = closed findings excluded from QS and DR denominators
+
 See `skill-sets-framework.md:412-433` for full definitions and accept criteria.
 
 ## Ground Truth Schema
@@ -52,9 +60,9 @@ Fields: `plugin_slug`, `plugin_version`, `verified_by`, `verified_date`, `findin
 | `pipeline_derived` | Findings are the pipeline's own CONFIRMED output, promoted to reference data. Not independently verified. | QS measures pipeline self-consistency (regression detection). Does **not** measure independent accuracy. |
 
 **Current state (Wave 4):**
-- `cartflows.json` — `manual_review`, GT=0 (no real vulnerabilities found). QS=N/A. Independent evaluation.
-- `pretty-link.json` — `manual_review`, GT=0 (no real vulnerabilities found). QS=N/A. Independent evaluation.
-- `backwpup.json` — `pipeline_derived`, GT=9. **QS=1.0 is a self-consistency metric**, not independent validation. The 9 findings are the Session 30 gate CONFIRMED output; the benchmark confirms the pipeline produces the same findings on re-run. Independent verification (manual exploit attempt) is required before treating these as confirmed vulnerabilities.
+- `cartflows.json` — `manual_review`, GT=2. Independent evaluation anchored to two manually re-traced findings.
+- `pretty-link.json` — `pipeline_derived`, GT=0. Regression reference only; current clean state is not a full independent clean certification.
+- `backwpup.json` — `pipeline_derived`, GT=0. Regression reference only; current strict gate leaves the custom-cap REST BAC cluster unresolved rather than independently confirmed.
 
 The accept criteria below apply to all plugins, but QS comparisons are only meaningful as independent evaluations for `manual_review` GT files.
 

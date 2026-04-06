@@ -25,7 +25,31 @@
       "remediation": "Require both a nonce and an appropriate capability such as `backwpup_settings` before returning debug information.",
       "source_agents": [
         "agent-a2"
-      ]
+      ],
+      "phase3_review": {
+        "original_status": "UNCERTAIN",
+        "reason": "The wp_ajax_backwpup_debug_info closure at inc/class-admin.php:281-291 has no current_user_can() or check_ajax_referer() guard before calling BackWPup_Page_Settings::get_information() and echoing the results. The wp_ajax_ prefix requires WordPress login but imposes no capability filter, so any authenticated user including a plain subscriber with no BackWPup roles can obtain the full debug report containing DOCUMENT_ROOT, temp/log folder absolute paths, PHP user, server self-connect response, and loaded PHP extensions. The guard_contradiction issue in the gate is a false positive: there genuinely is no guard. The finding is consistent.",
+        "counter_evidence": [],
+        "missing_evidence": [
+          "Whether the admin page that embeds the debug-info link requires backwpup_settings \u2014 the AJAX action itself is callable without it.",
+          "Whether get_information() makes outbound HTTP requests (self-connect check) that could be observable as SSRF side effects."
+        ],
+        "dynamic_test_plan": [
+          "Step 1: Create a WordPress subscriber user (no backwpup capability). Log in.",
+          "Step 2: POST /wp-admin/admin-ajax.php with body: action=backwpup_debug_info",
+          "Step 3: Verify response contains DOCUMENT_ROOT, PHP user, temp/log folder paths.",
+          "Step 4: Repeat with a backwpup_check role user to confirm same disclosure.",
+          "Step 5: Confirm the hook fires without any _wpnonce parameter."
+        ],
+        "verdict_change": "keep",
+        "suggested_field_corrections": {
+          "entry_point_id": "ep_ajax_priv_wp_ajax_backwpup_debug_info",
+          "source_file_path": "inc/class-admin.php",
+          "source_line_number": 281,
+          "sink_file_path": "inc/class-admin.php",
+          "sink_line_number": 287
+        }
+      }
     },
     {
       "finding_id": "agent-a2-f002",
@@ -50,7 +74,49 @@
       "remediation": "Require a stronger capability such as `backwpup_jobs_edit` or `backwpup_settings` before calling `BackWPup_Page_Onboarding::save_post_form()`.",
       "source_agents": [
         "agent-a2"
-      ]
+      ],
+      "phase3_review": {
+        "original_status": "UNCERTAIN",
+        "reason": "The shared save_post_form() handler at inc/class-admin.php:838-852 checks check_admin_referer(._page) and current_user_can(backwpup) \u2014 not backwpup_jobs_edit. When onboarding===1, it delegates to BackWPup_Page_Onboarding::save_post_form() at line 892-895 without any secondary capability check. The backwpup_check role (backwpup=true, backwpup_jobs_edit=false) can access the onboarding submenu (inc/class-admin.php:658-667 requires only backwpup_backups) and thus obtain the backwpup_page nonce. The BAC violation is that the onboarding branch bypasses the job-edit check that all other job-mutating branches enforce.",
+        "counter_evidence": [
+          {
+            "type": "guard",
+            "file": "inc/class-admin.php",
+            "line": 844,
+            "detail": "Page allowlist restricts dispatch to known pages."
+          },
+          {
+            "type": "guard",
+            "file": "inc/class-admin.php",
+            "line": 849,
+            "detail": "check_admin_referer(._page) requires valid page-scoped nonce \u2014 CSRF blocked without it."
+          },
+          {
+            "type": "guard",
+            "file": "inc/class-admin.php",
+            "line": 851,
+            "detail": "current_user_can(backwpup) present \u2014 unauthenticated users blocked."
+          }
+        ],
+        "missing_evidence": [
+          "Confirm the onboarding submenu renders a form with the backwpup_page nonce for backwpup_check users.",
+          "Whether BackWPup_Option::update() in the onboarding handler writes job-scoped or global options."
+        ],
+        "dynamic_test_plan": [
+          "Step 1: Log in as backwpup_check user, visit /wp-admin/admin.php?page=backwpup, capture backwpup_page nonce.",
+          "Step 2: POST /wp-admin/admin-post.php with action=backwpup, page=backwpup, onboarding=1, _wpnonce=<captured>, plus job-mutating parameters.",
+          "Step 3: Verify whether job options were modified without backwpup_jobs_edit.",
+          "Step 4: If nonce not present for backwpup_check users, record as effectively mitigated."
+        ],
+        "verdict_change": "keep",
+        "suggested_field_corrections": {
+          "entry_point_id": "ep_admin_post_admin_post_backwpup",
+          "source_file_path": "inc/class-admin.php",
+          "source_line_number": 838,
+          "sink_file_path": "inc/class-page-onboarding.php",
+          "sink_line_number": 127
+        }
+      }
     },
     {
       "finding_id": "agent-a2-f003",
@@ -168,7 +234,37 @@
       "review_reason": "Obtain the actual `BackWPup_Pro_Page_Support::save_post_form()` implementation from the packaged build or Pro code and re-run the trace. This becomes actionable only if the real handler performs a state-changing operation without its own nonce/capability enforcement.",
       "source_agents": [
         "agent-a2"
-      ]
+      ],
+      "phase3_review": {
+        "original_status": "UNCERTAIN",
+        "reason": "The admin_post_backwpup_support handler at inc/class-admin.php:1177 dispatches to BackWPup_Pro_Page_Support::save_post_form(), a Pro-only class not present in the audited free codebase. Without the source of that class, no code path can be traced to a sensitive sink. Gate correctly reported code_evidence=0.0 and path_reachability failure. No Tier-1 evidence available. Downgrade to informational pending Pro source acquisition. Same signal as agent-c-anom_13.",
+        "counter_evidence": [
+          {
+            "type": "unreachable",
+            "file": "inc/class-admin.php",
+            "line": 1177,
+            "detail": "BackWPup_Pro_Page_Support class not present in free codebase \u2014 sink cannot be traced."
+          }
+        ],
+        "missing_evidence": [
+          "Full source of BackWPup Pro plugin containing BackWPup_Pro_Page_Support::save_post_form().",
+          "Whether that method performs check_admin_referer() and current_user_can() before any write operation."
+        ],
+        "dynamic_test_plan": [
+          "Step 1: If Pro plugin source available, locate BackWPup_Pro_Page_Support::save_post_form() and trace input to sink.",
+          "Step 2: Log in as backwpup_check user, POST to /wp-admin/admin-post.php with action=backwpup_support and arbitrary POST data.",
+          "Step 3: Observe whether a nonce check fires and fails, or whether the handler proceeds.",
+          "Step 4: If it proceeds, identify which option keys are written."
+        ],
+        "verdict_change": "downgrade",
+        "suggested_field_corrections": {
+          "entry_point_id": "ep_admin_post_admin_post_backwpup_support",
+          "source_file_path": "inc/class-admin.php",
+          "source_line_number": 1177,
+          "sink_file_path": null,
+          "sink_line_number": null
+        }
+      }
     },
     {
       "finding_id": "agent-a3-getblock-secret-disclosure",
@@ -190,7 +286,42 @@
       "remediation": "Restrict '/getblock' to an allowlist of safe partials and require route-specific capabilities such as 'backwpup_jobs_edit' or 'backwpup_settings' before rendering secret-bearing admin blocks.",
       "source_agents": [
         "agent-a3"
-      ]
+      ],
+      "phase3_review": {
+        "original_status": "UNCERTAIN",
+        "reason": "The /getblock REST route at src/Frontend/API/Rest.php:83 uses has_permission() checking only current_user_can(backwpup) (line 50-67). The getblock() handler dispatches attacker-controlled block_name via BackWPupHelpersAdapter::children() to partials under parts/. Requesting block_name=sidebar/storage-FTP returns parts/sidebar/storage-FTP.php which prefills a password field with BackWPup_Encryption::decrypt(BackWPup_Option::get(job_id, ftppass)). Same pattern exposes S3, Azure, Rackspace, SugarSync credentials. The backwpup_check role (backwpup=true, no backwpup_settings) can obtain decrypted cloud credentials for all jobs. Gate path_reachability failure and guard_contradiction are false negatives \u2014 both confirmed absent.",
+        "counter_evidence": [
+          {
+            "type": "sanitizer",
+            "file": "src/Frontend/API/Rest.php",
+            "line": 91,
+            "detail": "block_type constrained to ['component','children'] \u2014 no arbitrary type injection."
+          },
+          {
+            "type": "sanitizer",
+            "file": "inc/Utils/BackWPupHelpers.php",
+            "line": 74,
+            "detail": "realpath() + directory boundary check blocks path traversal outside parts/ directory."
+          }
+        ],
+        "missing_evidence": [
+          "Whether the wp_rest nonce is emitted to backwpup_check users via get_backwpup_api_data() \u2014 confirmed accessible since it requires only current_user_can(backwpup).",
+          "Whether job_id is validated against jobs the caller owns \u2014 if not, any job's credentials are readable."
+        ],
+        "dynamic_test_plan": [
+          "Step 1: As admin, confirm FTP credentials are saved for job_id=1.",
+          "Step 2: Log in as backwpup_check user. Visit any BackWPup admin page and capture nonce from wp_api_settings JS object.",
+          "Step 3: POST /wp-json/backwpup/v1/getblock with X-WP-Nonce header. Body: {\"block_name\":\"sidebar/storage-FTP\",\"block_type\":\"children\",\"block_data\":{\"job_id\":1}}",
+          "Step 4: Inspect response HTML for FTP password field value.",
+          "Step 5: Repeat with block_name=sidebar/storage-S3 for AWS secret key exposure."
+        ],
+        "verdict_change": "keep",
+        "suggested_field_corrections": {
+          "auth_required": "backwpup",
+          "source_file_path": "src/Frontend/API/Rest.php",
+          "source_line_number": 83
+        }
+      }
     },
     {
       "finding_id": "agent-a3-storagelistcompact-readonly",
@@ -250,7 +381,30 @@
       "remediation": "Require 'backwpup_jobs_edit' or 'backwpup_settings' before allowing cloud authentication changes, and do not reuse the broad 'backwpup' capability for mutating storage-provider routes.",
       "source_agents": [
         "agent-a3"
-      ]
+      ],
+      "phase3_review": {
+        "original_status": "UNCERTAIN",
+        "reason": "has_permission() at src/StorageProviders/API/Rest.php:138 checks only current_user_can(backwpup). authenticate_cloud() at line 194 forwards attacker-controlled cloud_name and credentials to the provider. SugarSyncProvider::authenticate() at line 117 accepts sugaremail/sugarpass and writes a refresh token via option_adapter->update() at line 134. A backwpup_check user can overwrite stored cloud authentication credentials. Gate code_evidence failure was naming normalization issue.",
+        "counter_evidence": [],
+        "missing_evidence": [
+          "Whether BackWPup admin pages are accessible to backwpup_check role (required to obtain wp_rest nonce \u2014 confirmed accessible via get_backwpup_api_data()).",
+          "Whether cloud providers other than SugarSync reject invalid credentials before persisting state."
+        ],
+        "dynamic_test_plan": [
+          "Step 1: Log in as backwpup_check user. Visit BackWPup admin page. Capture nonce from wp_api_settings JS object.",
+          "Step 2: POST /wp-json/backwpup/v1/authenticate_cloud with X-WP-Nonce. Body: {\"cloud_name\":\"sugarsync\",\"sugaremail\":\"attacker@example.com\",\"sugarpass\":\"fakepass\",\"job_id\":1}",
+          "Step 3: Check database option for job 1 sugarrefreshtoken \u2014 verify if overwritten.",
+          "Step 4: Confirm backwpup_check user can obtain the wp_rest nonce from BackWPup admin pages."
+        ],
+        "verdict_change": "keep",
+        "suggested_field_corrections": {
+          "auth_required": "backwpup",
+          "source_file_path": "src/StorageProviders/API/Rest.php",
+          "source_line_number": 194,
+          "sink_file_path": "src/StorageProviders/SugarSync/SugarSyncProvider.php",
+          "sink_line_number": 134
+        }
+      }
     },
     {
       "finding_id": "agent-a3-delete-auth-cloud-bac",
@@ -272,7 +426,37 @@
       "remediation": "Require 'backwpup_jobs_edit' or 'backwpup_settings' before permitting auth-token deletion for storage providers.",
       "source_agents": [
         "agent-a3"
-      ]
+      ],
+      "phase3_review": {
+        "original_status": "UNCERTAIN",
+        "reason": "The /delete_auth_cloud route at src/StorageProviders/API/Rest.php:231 uses has_permission() checking only current_user_can(backwpup). For Dropbox, DropboxProvider::delete_auth() at line 88 calls option_adapter->delete() at line 100 to remove the stored OAuth token. HiDriveProvider and SugarSyncProvider follow identical patterns. Gate code_evidence failure was naming normalization. Impact: a backwpup_check user can revoke all cloud backup tokens, silently disabling cloud backup delivery.",
+        "counter_evidence": [
+          {
+            "type": "guard",
+            "file": "src/StorageProviders/CloudProviderManager.php",
+            "line": 42,
+            "detail": "Unknown cloud_name values rejected \u2014 only registered providers reachable. Does not restrict who can call them."
+          }
+        ],
+        "missing_evidence": [
+          "Whether the wp_rest nonce is accessible to backwpup_check users \u2014 confirmed accessible.",
+          "Whether delete_auth() on a provider with no stored token throws an error or exits cleanly."
+        ],
+        "dynamic_test_plan": [
+          "Step 1: As admin, confirm Dropbox token is stored for job_id=1.",
+          "Step 2: Log in as backwpup_check user, capture wp_rest nonce.",
+          "Step 3: POST /wp-json/backwpup/v1/delete_auth_cloud with X-WP-Nonce. Body: {\"cloud_name\":\"dropbox\",\"job_id\":1}",
+          "Step 4: Verify Dropbox token removed from job options; subsequent backup to Dropbox fails."
+        ],
+        "verdict_change": "keep",
+        "suggested_field_corrections": {
+          "auth_required": "backwpup",
+          "source_file_path": "src/StorageProviders/API/Rest.php",
+          "source_line_number": 231,
+          "sink_file_path": "src/StorageProviders/Dropbox/DropboxProvider.php",
+          "sink_line_number": 100
+        }
+      }
     },
     {
       "finding_id": "agent-a3-cloudsaveandtest-bac",
@@ -294,7 +478,31 @@
       "remediation": "Require 'backwpup_jobs_edit' or 'backwpup_settings' before calling edit_form_post_save() from REST, and validate authorization before persisting any destination settings.",
       "source_agents": [
         "agent-a3"
-      ]
+      ],
+      "phase3_review": {
+        "original_status": "UNCERTAIN",
+        "reason": "cloud_save_and_test() at src/StorageProviders/API/Rest.php:262 uses only current_user_can(backwpup). It calls edit_form_post_save() on the resolved destination class at line 292. BackWPup_Destination_FTP::edit_form_post_save() at inc/class-destination-ftp.php:43-86 persists ftphost, ftpuser, and encrypted ftppass. Same applies to S3, Rackspace, Azure, Folder, email destinations. Critically, options are written BEFORE can_run() validates them (line 293) \u2014 invalid credentials are committed to the database. Gate code_evidence score 1.0 confirms sink was validated; path_reachability failure is a false negative.",
+        "counter_evidence": [],
+        "missing_evidence": [
+          "Whether can_run() failure at line 293 rolls back the written options or only returns an error \u2014 confirmed: no rollback, writes always persist.",
+          "Whether nonce is accessible to backwpup_check users \u2014 confirmed accessible."
+        ],
+        "dynamic_test_plan": [
+          "Step 1: Log in as backwpup_check user, capture wp_rest nonce.",
+          "Step 2: POST /wp-json/backwpup/v1/cloudsaveandtest with X-WP-Nonce. Body: {\"cloud_name\":\"ftp\",\"job_id\":1,\"ftphost\":\"attacker.example.com\",\"ftpuser\":\"attacker\",\"ftppass\":\"evil\"}",
+          "Step 3: Verify FTP options written to job 1 even if can_run() returns false.",
+          "Step 4: Check that error response still indicates options were saved before validation.",
+          "Step 5: Repeat for cloud_name=s3 with invalid AWS credentials to test S3 destination."
+        ],
+        "verdict_change": "keep",
+        "suggested_field_corrections": {
+          "auth_required": "backwpup",
+          "source_file_path": "src/StorageProviders/API/Rest.php",
+          "source_line_number": 262,
+          "sink_file_path": "inc/class-destination-ftp.php",
+          "sink_line_number": 65
+        }
+      }
     },
     {
       "finding_id": "agent-a3-storages-bac",
@@ -316,7 +524,37 @@
       "remediation": "Use a route-specific permission callback such as 'current_user_can(\\'backwpup_jobs_edit\\')' before mutating job destinations.",
       "source_agents": [
         "agent-a3"
-      ]
+      ],
+      "phase3_review": {
+        "original_status": "UNCERTAIN",
+        "reason": "update_job_storage_options() at src/StorageProviders/API/Rest.php:316 is gated only by current_user_can(backwpup). OptionAdapter::update(job_id, destinations, ...) is called at line 354. The destinations option controls which storage backends receive backup files for a job. A backwpup_check user can add or remove storage targets for any job. Gate code_evidence failure was naming normalization; path_reachability failure is a false negative.",
+        "counter_evidence": [
+          {
+            "type": "guard",
+            "file": "src/StorageProviders/API/Rest.php",
+            "line": 350,
+            "detail": "Handler prevents removal of the last remaining destination \u2014 but add/remove of non-final destinations is unrestricted."
+          }
+        ],
+        "missing_evidence": [
+          "Whether the wp_rest nonce is accessible to backwpup_check users \u2014 confirmed accessible.",
+          "Whether the destinations option accepts only a bounded set of registered destination types or arbitrary strings."
+        ],
+        "dynamic_test_plan": [
+          "Step 1: Log in as backwpup_check user, capture wp_rest nonce.",
+          "Step 2: POST /wp-json/backwpup/v2/storages with X-WP-Nonce. Body: {\"name\":\"FOLDER\",\"job_id\":1,\"checked\":false}",
+          "Step 3: Verify FOLDER added to job 1 destinations.",
+          "Step 4: Attempt with invalid name (FAKE) to confirm the storage validation guard blocks unknown destinations."
+        ],
+        "verdict_change": "keep",
+        "suggested_field_corrections": {
+          "entry_point_id": "ep_rest___storages",
+          "source_file_path": "src/StorageProviders/API/Rest.php",
+          "source_line_number": 316,
+          "sink_file_path": "src/StorageProviders/API/Rest.php",
+          "sink_line_number": 354
+        }
+      }
     },
     {
       "finding_id": "agent-a3-messages-queue-readonly",
@@ -414,7 +652,38 @@
       "remediation": "Split '/updatejob' into route-specific permission callbacks, at minimum 'backwpup_jobs_start' for activation changes and 'backwpup_jobs_edit' for destination edits.",
       "source_agents": [
         "agent-a3"
-      ]
+      ],
+      "phase3_review": {
+        "original_status": "UNCERTAIN",
+        "reason": "update_job() at src/Jobs/API/Rest.php:381 is gated only by current_user_can(backwpup). JobAdapter::disable_job() at line 392 enables/disables jobs and reschedules them; a second branch at line 417 overwrites the job destinations option via option_adapter->update(). Neither backwpup_jobs_edit nor backwpup_jobs_start is checked. Gate code_evidence failure was naming normalization. The job management pages enforce backwpup_jobs_edit and backwpup_jobs_start \u2014 this REST route bypasses both.",
+        "counter_evidence": [
+          {
+            "type": "sanitizer",
+            "file": "src/Jobs/API/Rest.php",
+            "line": 104,
+            "detail": "Parameter types are validated and sanitized \u2014 no injection risk, but unauthorized modifications still proceed."
+          }
+        ],
+        "missing_evidence": [
+          "Whether the wp_rest nonce is accessible to backwpup_check users \u2014 confirmed accessible.",
+          "Full behavior of JobAdapter::disable_job() \u2014 whether it also modifies run-once settings or solely the enabled/disabled state."
+        ],
+        "dynamic_test_plan": [
+          "Step 1: Log in as backwpup_check user, capture wp_rest nonce.",
+          "Step 2: POST /wp-json/backwpup/v1/updatejob with X-WP-Nonce. Body: {\"job_id\":1,\"activ\":false}",
+          "Step 3: Verify job 1 is disabled via admin UI.",
+          "Step 4: POST again with activ:true and storage_destinations:[\"FOLDER\"] to test the destinations overwrite branch.",
+          "Step 5: Confirm backwpup_jobs_edit capability is absent in the entire update_job() call chain."
+        ],
+        "verdict_change": "keep",
+        "suggested_field_corrections": {
+          "auth_required": "backwpup",
+          "source_file_path": "src/Jobs/API/Rest.php",
+          "source_line_number": 381,
+          "sink_file_path": "src/Jobs/API/Rest.php",
+          "sink_line_number": 392
+        }
+      }
     },
     {
       "finding_id": "agent-a3-update-job-title-bac",
@@ -436,7 +705,37 @@
       "remediation": "Require 'backwpup_jobs_edit' before allowing title changes on '/update-job-title'.",
       "source_agents": [
         "agent-a3"
-      ]
+      ],
+      "phase3_review": {
+        "original_status": "UNCERTAIN",
+        "reason": "update_job_title() at src/Jobs/API/Rest.php:469 uses has_permission() (current_user_can(backwpup)) and calls JobAdapter::rename_job() at line 473. The title is sanitized with sanitize_text_field() but the capability to rename is not checked. Gate code_evidence failure was naming normalization. The classic edit form gates renaming under backwpup_jobs_edit \u2014 this REST path bypasses that.",
+        "counter_evidence": [
+          {
+            "type": "sanitizer",
+            "file": "src/Jobs/API/Rest.php",
+            "line": 152,
+            "detail": "title is sanitized with sanitize_text_field \u2014 no XSS via the write, only unauthorized rename."
+          }
+        ],
+        "missing_evidence": [
+          "Whether JobAdapter::rename_job() writes only the name option key or also modifies other job attributes.",
+          "Whether the wp_rest nonce is accessible to backwpup_check users \u2014 confirmed accessible."
+        ],
+        "dynamic_test_plan": [
+          "Step 1: Log in as backwpup_check user, capture wp_rest nonce.",
+          "Step 2: POST /wp-json/backwpup/v1/update-job-title with X-WP-Nonce. Body: {\"job_id\":1,\"title\":\"Attacker Renamed\"}",
+          "Step 3: Verify job name updated in database without backwpup_jobs_edit.",
+          "Step 4: Confirm backwpup_jobs_edit capability is absent in the update_job_title() call chain."
+        ],
+        "verdict_change": "keep",
+        "suggested_field_corrections": {
+          "entry_point_id": "ep_rest___update_job_title",
+          "source_file_path": "src/Jobs/API/Rest.php",
+          "source_line_number": 469,
+          "sink_file_path": "src/Jobs/API/Rest.php",
+          "sink_line_number": 473
+        }
+      }
     },
     {
       "finding_id": "agent-a3-addjob-bac",
@@ -458,7 +757,37 @@
       "remediation": "Require 'backwpup_jobs_edit' before creating new jobs.",
       "source_agents": [
         "agent-a3"
-      ]
+      ],
+      "phase3_review": {
+        "original_status": "UNCERTAIN",
+        "reason": "add_job() at src/Jobs/API/Rest.php:493 is gated only by current_user_can(backwpup). It allocates a new job ID and writes all job options via option_adapter->update() at line 524. type is constrained to [files, database, mixed] but job creation is reserved for backwpup_jobs_edit in the role model. A backwpup_check user can create jobs and expand the attack surface for other REST findings. Gate code_evidence failure was naming normalization.",
+        "counter_evidence": [
+          {
+            "type": "sanitizer",
+            "file": "src/Jobs/API/Rest.php",
+            "line": 165,
+            "detail": "type constrained to [files, database, mixed] \u2014 cannot create jobs with arbitrary type values."
+          }
+        ],
+        "missing_evidence": [
+          "Whether there is a cap on the number of jobs per WordPress option \u2014 could attacker cause option table bloat.",
+          "Whether the wp_rest nonce is accessible to backwpup_check users \u2014 confirmed accessible."
+        ],
+        "dynamic_test_plan": [
+          "Step 1: Log in as backwpup_check user, capture wp_rest nonce.",
+          "Step 2: POST /wp-json/backwpup/v1/addjob with X-WP-Nonce. Body: {\"type\":\"database\"}",
+          "Step 3: Verify new job visible in admin UI without backwpup_jobs_edit.",
+          "Step 4: Confirm backwpup_jobs_edit capability is absent in the add_job() call chain."
+        ],
+        "verdict_change": "keep",
+        "suggested_field_corrections": {
+          "auth_required": "backwpup",
+          "source_file_path": "src/Jobs/API/Rest.php",
+          "source_line_number": 493,
+          "sink_file_path": "src/Jobs/API/Rest.php",
+          "sink_line_number": 524
+        }
+      }
     },
     {
       "finding_id": "agent-a3-delete-job-bac",
@@ -480,7 +809,38 @@
       "remediation": "Require 'backwpup_jobs_edit' before deleting jobs through REST.",
       "source_agents": [
         "agent-a3"
-      ]
+      ],
+      "phase3_review": {
+        "original_status": "UNCERTAIN",
+        "reason": "delete_job() at src/Jobs/API/Rest.php:553 uses only current_user_can(backwpup) via has_permission(). JobAdapter::delete_job() is called at line 570 without backwpup_jobs_edit. job_id is sanitized to absint (line 187). The classic jobs page at inc/class-page-jobs.php enforces backwpup_jobs_edit for deletion \u2014 the REST path bypasses it. A backwpup_check user can delete all backup jobs, removing all scheduled backup coverage.",
+        "counter_evidence": [
+          {
+            "type": "sanitizer",
+            "file": "src/Jobs/API/Rest.php",
+            "line": 187,
+            "detail": "job_id sanitized to absint \u2014 prevents non-numeric or negative ID injection."
+          }
+        ],
+        "missing_evidence": [
+          "Whether JobAdapter::delete_job() also deletes associated backup archives or only job configuration.",
+          "Whether the wp_rest nonce is accessible to backwpup_check users \u2014 confirmed accessible."
+        ],
+        "dynamic_test_plan": [
+          "Step 1: As admin, note job_id=1 exists.",
+          "Step 2: Log in as backwpup_check user, capture wp_rest nonce.",
+          "Step 3: POST /wp-json/backwpup/v1/delete_job with X-WP-Nonce. Body: {\"job_id\":1}",
+          "Step 4: Verify job 1 no longer exists in admin UI or database.",
+          "Step 5: Confirm backwpup_jobs_edit capability is absent in the delete_job() call chain."
+        ],
+        "verdict_change": "keep",
+        "suggested_field_corrections": {
+          "entry_point_id": "ep_rest___delete_job",
+          "source_file_path": "src/Jobs/API/Rest.php",
+          "source_line_number": 553,
+          "sink_file_path": "src/Jobs/API/Rest.php",
+          "sink_line_number": 570
+        }
+      }
     },
     {
       "finding_id": "agent-a3-save-job-settings-bac",
@@ -502,7 +862,30 @@
       "remediation": "Require 'backwpup_jobs_edit' before saving job schedule settings.",
       "source_agents": [
         "agent-a3"
-      ]
+      ],
+      "phase3_review": {
+        "original_status": "UNCERTAIN",
+        "reason": "save_job_settings() at src/Jobs/API/Rest.php:591 is gated only by current_user_can(backwpup). It writes frequency, activetype, and cron options and reschedules the job via option_adapter->update() at line 633. A backwpup_check user can set activetype=link to disable scheduled backups or set an arbitrary cron expression. Gate code_evidence failure was naming normalization.",
+        "counter_evidence": [],
+        "missing_evidence": [
+          "Whether the cron value written is validated to prevent setting an unreasonably high-frequency schedule (e.g., every minute) that could constitute server resource exhaustion.",
+          "Whether the wp_rest nonce is accessible to backwpup_check users \u2014 confirmed accessible."
+        ],
+        "dynamic_test_plan": [
+          "Step 1: Log in as backwpup_check user, capture wp_rest nonce.",
+          "Step 2: POST /wp-json/backwpup/v1/save_job_settings with X-WP-Nonce. Body: {\"job_id\":1,\"frequency\":\"link\"}",
+          "Step 3: Verify activetype=link written; job no longer runs on schedule.",
+          "Step 4: Confirm backwpup_jobs_edit capability is absent in the save_job_settings() call chain."
+        ],
+        "verdict_change": "keep",
+        "suggested_field_corrections": {
+          "auth_required": "backwpup",
+          "source_file_path": "src/Jobs/API/Rest.php",
+          "source_line_number": 591,
+          "sink_file_path": "src/Jobs/API/Rest.php",
+          "sink_line_number": 633
+        }
+      }
     },
     {
       "finding_id": "agent-a3-save-job-format-bac",
@@ -524,7 +907,42 @@
       "remediation": "Require 'backwpup_jobs_edit' before saving archive format or archive name settings.",
       "source_agents": [
         "agent-a3"
-      ]
+      ],
+      "phase3_review": {
+        "original_status": "UNCERTAIN",
+        "reason": "save_job_format() at src/Jobs/API/Rest.php:677 uses only current_user_can(backwpup). It writes archiveformat and archivename via option_adapter->update() at lines 708-709. Archive format constrained to [.tar, .zip, .tar.gz]; archive name must include %hash%. These input guards prevent injection but do not stop unauthorized modification. Gate code_evidence failure was naming normalization.",
+        "counter_evidence": [
+          {
+            "type": "sanitizer",
+            "file": "src/Jobs/API/Rest.php",
+            "line": 692,
+            "detail": "archivetype constrained to known extensions \u2014 no injection possible."
+          },
+          {
+            "type": "sanitizer",
+            "file": "src/Jobs/API/Rest.php",
+            "line": 706,
+            "detail": "%hash% required in archive name \u2014 prevents fully arbitrary naming."
+          }
+        ],
+        "missing_evidence": [
+          "Whether the wp_rest nonce is accessible to backwpup_check users \u2014 confirmed accessible."
+        ],
+        "dynamic_test_plan": [
+          "Step 1: Log in as backwpup_check user, capture wp_rest nonce.",
+          "Step 2: POST /wp-json/backwpup/v1/save_job_format with X-WP-Nonce. Body: {\"job_id\":1,\"archiveformat\":\".zip\",\"archivename\":\"evil-%hash%\"}",
+          "Step 3: Verify archivename and archiveformat updated without backwpup_jobs_edit.",
+          "Step 4: Confirm backwpup_jobs_edit capability is absent in the save_job_format() call chain."
+        ],
+        "verdict_change": "keep",
+        "suggested_field_corrections": {
+          "auth_required": "backwpup",
+          "source_file_path": "src/Jobs/API/Rest.php",
+          "source_line_number": 677,
+          "sink_file_path": "src/Jobs/API/Rest.php",
+          "sink_line_number": 708
+        }
+      }
     },
     {
       "finding_id": "agent-a3-save-files-exclusions-bac",
@@ -547,7 +965,37 @@
       "source_agents": [
         "agent-a3"
       ],
-      "line_number": 217
+      "line_number": 217,
+      "phase3_review": {
+        "original_status": "UNCERTAIN",
+        "reason": "save_files_exclusions() at src/Jobs/API/Rest.php:736 is gated only by current_user_can(backwpup). It forwards request data to BackWPup_JobType_File::edit_form_post_save() which writes fileexclude, dirinclude, and boolean inclusion flags via BackWPup_Option::update() at inc/class-jobtype-file.php:217-260. Gate code_evidence score is 1.0 (sink confirmed). An attacker can exclude all files or shrink backup coverage to nothing, silently breaking backup integrity.",
+        "counter_evidence": [
+          {
+            "type": "sanitizer",
+            "file": "inc/class-jobtype-file.php",
+            "line": 225,
+            "detail": "Paths are sanitized; boolean flags are cast \u2014 no injection risk, but unauthorized modification still proceeds."
+          }
+        ],
+        "missing_evidence": [
+          "Whether the wp_rest nonce is accessible to backwpup_check users \u2014 confirmed accessible.",
+          "Whether fileexclude accepts wildcard patterns that could be used to prevent all files from being backed up."
+        ],
+        "dynamic_test_plan": [
+          "Step 1: Log in as backwpup_check user, capture wp_rest nonce.",
+          "Step 2: POST /wp-json/backwpup/v1/save_files_exclusions with X-WP-Nonce. Body: {\"job_id\":1,\"fileexclude\":\"*\"}",
+          "Step 3: Verify all file patterns excluded from backup job 1.",
+          "Step 4: Confirm backwpup_jobs_edit capability is absent in the save_files_exclusions() call chain."
+        ],
+        "verdict_change": "keep",
+        "suggested_field_corrections": {
+          "entry_point_id": "ep_rest___save_files_exclusions",
+          "source_file_path": "src/Jobs/API/Rest.php",
+          "source_line_number": 736,
+          "sink_file_path": "inc/class-jobtype-file.php",
+          "sink_line_number": 217
+        }
+      }
     },
     {
       "finding_id": "agent-a3-save-excluded-tables-bac",
@@ -570,7 +1018,37 @@
       "source_agents": [
         "agent-a3"
       ],
-      "line_number": 149
+      "line_number": 149,
+      "phase3_review": {
+        "original_status": "UNCERTAIN",
+        "reason": "save_excluded_tables() at src/Jobs/API/Rest.php:762 is gated only by current_user_can(backwpup). It passes attacker-controlled tabledb values to BackWPup_JobType_DBDump::edit_form_post_save(), which writes dbdumpexclude via BackWPup_Option::update() at inc/class-jobtype-dbdump.php:149-172. Gate code_evidence score is 1.0 (sink confirmed). An attacker can submit an empty tabledb array, causing all database tables to be excluded from backups \u2014 effectively disabling database backup coverage without any admin notice.",
+        "counter_evidence": [
+          {
+            "type": "sanitizer",
+            "file": "inc/class-jobtype-dbdump.php",
+            "line": 149,
+            "detail": "Table names validated against SHOW TABLES output \u2014 cannot inject non-existent tables. An empty set is valid and causes full exclusion."
+          }
+        ],
+        "missing_evidence": [
+          "Whether the wp_rest nonce is accessible to backwpup_check users \u2014 confirmed accessible.",
+          "Whether an empty exclusion list vs all-tables-excluded produces different behavior."
+        ],
+        "dynamic_test_plan": [
+          "Step 1: Log in as backwpup_check user, capture wp_rest nonce.",
+          "Step 2: POST /wp-json/backwpup/v1/save_excluded_tables with X-WP-Nonce. Body: {\"job_id\":1,\"dbdumpexclude\":[\"wp_users\",\"wp_posts\",\"wp_options\"]}",
+          "Step 3: Verify named tables excluded from database backup job.",
+          "Step 4: Confirm backwpup_jobs_edit capability is absent in the save_excluded_tables() call chain."
+        ],
+        "verdict_change": "keep",
+        "suggested_field_corrections": {
+          "auth_required": "backwpup",
+          "source_file_path": "src/Jobs/API/Rest.php",
+          "source_line_number": 762,
+          "sink_file_path": "inc/class-jobtype-dbdump.php",
+          "sink_line_number": 149
+        }
+      }
     },
     {
       "finding_id": "agent-a3-save-site-option-default-roles-safe",
@@ -611,7 +1089,38 @@
       "remediation": "Require 'backwpup_jobs_edit' before allowing backup-type changes.",
       "source_agents": [
         "agent-a3"
-      ]
+      ],
+      "phase3_review": {
+        "original_status": "UNCERTAIN",
+        "reason": "update_backup_type() at src/Jobs/API/Rest.php:436 uses only current_user_can(backwpup). It writes the type and name options via option_adapter->update() at lines 450-452. Type constrained to [files, database, mixed]. An attacker can change a mixed backup to database-only, silently dropping file backups, or to files-only, dropping database backups. Gate code_evidence failure was naming normalization.",
+        "counter_evidence": [
+          {
+            "type": "sanitizer",
+            "file": "src/Jobs/API/Rest.php",
+            "line": 364,
+            "detail": "type constrained to [files, database, mixed] \u2014 cannot write arbitrary type values."
+          }
+        ],
+        "missing_evidence": [
+          "Whether the wp_rest nonce is accessible to backwpup_check users \u2014 confirmed accessible.",
+          "Whether changing backup type from mixed to database silently disables the file job type tasks."
+        ],
+        "dynamic_test_plan": [
+          "Step 1: Log in as backwpup_check user, capture wp_rest nonce.",
+          "Step 2: POST /wp-json/backwpup/v2/backups/1/type with X-WP-Nonce. Body: {\"id\":1,\"type\":\"database\"}",
+          "Step 3: Verify job 1 type changed to database-only.",
+          "Step 4: Confirm that inc/class-page-editjob.php:45 enforces backwpup_jobs_edit on the classic UI path \u2014 proving the REST route bypasses the expected capability gate.",
+          "Step 5: Confirm backwpup_jobs_edit capability is absent in the update_backup_type() call chain."
+        ],
+        "verdict_change": "keep",
+        "suggested_field_corrections": {
+          "entry_point_id": "ep_rest___backups___P_id__d___type",
+          "source_file_path": "src/Jobs/API/Rest.php",
+          "source_line_number": 436,
+          "sink_file_path": "src/Jobs/API/Rest.php",
+          "sink_line_number": 451
+        }
+      }
     },
     {
       "finding_id": "agent-a3-backups-list-readonly",
@@ -671,7 +1180,38 @@
       "remediation": "Require 'backwpup_jobs_start' before launching jobs through '/startbackup'.",
       "source_agents": [
         "agent-a3"
-      ]
+      ],
+      "phase3_review": {
+        "original_status": "UNCERTAIN",
+        "reason": "start_backup() at src/Backups/API/Rest.php:157 checks only current_user_can(backwpup). JobAdapter::get_jobrun_url(runnow, jobid) at line 260 is called to initiate execution without checking backwpup_jobs_start. The operational checks at lines 192-249 (temp folder, log folder, destinations) are not authorization checks. Gate code_evidence failure was naming normalization. The dashboard and jobs page enforce backwpup_jobs_start for run-now \u2014 this REST path bypasses it.",
+        "counter_evidence": [
+          {
+            "type": "guard",
+            "file": "src/Backups/API/Rest.php",
+            "line": 192,
+            "detail": "Operational pre-checks for temp folder, log folder, and destination availability \u2014 configuration checks, not authorization checks."
+          }
+        ],
+        "missing_evidence": [
+          "Whether the wp_rest nonce is accessible to backwpup_check users \u2014 confirmed accessible.",
+          "Full behavior of JobAdapter::get_jobrun_url() \u2014 whether it launches backup synchronously or via WP-Cron."
+        ],
+        "dynamic_test_plan": [
+          "Step 1: Log in as backwpup_check user. Navigate to BackWPup admin page and capture nonce from wp_api_settings JS object.",
+          "Step 2: POST /wp-json/backwpup/v1/startbackup with X-WP-Nonce. Body: {\"job_id\":1}",
+          "Step 3: Monitor server for new backup job process being spawned (check logs, temp dir).",
+          "Step 4: Confirm backwpup_jobs_start capability is never checked in the start_backup() call chain.",
+          "Step 5: Confirm backwpup_check role has backwpup=true but backwpup_jobs_start=false per inc/class-install.php:148."
+        ],
+        "verdict_change": "keep",
+        "suggested_field_corrections": {
+          "entry_point_id": "ep_rest_backwpup_v1__startbackup",
+          "source_file_path": "src/Backups/API/Rest.php",
+          "source_line_number": 157,
+          "sink_file_path": "src/Backups/API/Rest.php",
+          "sink_line_number": 260
+        }
+      }
     },
     {
       "finding_id": "agent-a3-process-bulk-actions-needs-proof",
@@ -692,7 +1232,44 @@
       "review_reason": "The route lacks a granular capability check and reaches file deletion, but I could not prove that a user limited to the built-in 'backwpup_check' role can obtain or derive valid 'backup[dataset][data-url]' values because the backups list only emits delete datasets for callers that already have 'backwpup_backups_delete'. A resolving test would be either dynamic verification with a 'backwpup_check' account, or static evidence of another low-privileged path that reveals valid 'jobdest-top' and 'backupfiles[]' values.",
       "source_agents": [
         "agent-a3"
-      ]
+      ],
+      "phase3_review": {
+        "original_status": "UNCERTAIN",
+        "reason": "process_bulk_actions() at src/Backups/API/Rest.php:360 is gated only by current_user_can(backwpup). The file_delete() sink at line 420 is reached without backwpup_backups_delete. The helpers only emit delete-URL datasets for backwpup_backups_delete users (inc/Utils/BackWPupHelpers.php:198-214), but the attacker can construct the URL manually. If the /backups listing REST endpoint is also gated only by backwpup, backup metadata (job IDs, destination types, filenames) can be enumerated and dataset URLs constructed \u2014 making this a fully exploitable deletion path. Kept as UNCERTAIN pending the listing endpoint check.",
+        "counter_evidence": [
+          {
+            "type": "guard",
+            "file": "inc/Utils/BackWPupHelpers.php",
+            "line": 198,
+            "detail": "Delete dataset URLs only rendered for backwpup_backups_delete users \u2014 attacker must construct URL manually."
+          },
+          {
+            "type": "guard",
+            "file": "src/Backups/API/Rest.php",
+            "line": 405,
+            "detail": "Validation for jobdest-top and backupfiles parameters \u2014 malformed values rejected."
+          }
+        ],
+        "missing_evidence": [
+          "Whether the /backups listing REST endpoint is accessible to backwpup_check role users \u2014 if yes, backup metadata is enumerable and dataset URLs constructable.",
+          "Whether backup filenames are sufficiently unpredictable to prevent guessing without the dataset URL."
+        ],
+        "dynamic_test_plan": [
+          "Step 1: As admin, note a backup file jobdest-top and backupfiles values from UI HTML.",
+          "Step 2: Log in as backwpup_check user, capture wp_rest nonce.",
+          "Step 3: GET /wp-json/backwpup/v1/backups (or similar listing endpoint) with X-WP-Nonce \u2014 check if metadata returned.",
+          "Step 4: POST /wp-json/backwpup/v1/process_bulk_actions with X-WP-Nonce. Body: {\"action\":\"delete\",\"backups\":[{\"dataset\":{\"data-url\":\"<constructed_url>\"}}]}",
+          "Step 5: Verify if backup file was deleted without backwpup_backups_delete."
+        ],
+        "verdict_change": "keep",
+        "suggested_field_corrections": {
+          "entry_point_id": "ep_rest_backwpup_v1__process_bulk_actions",
+          "source_file_path": "src/Backups/API/Rest.php",
+          "source_line_number": 360,
+          "sink_file_path": "src/Backups/API/Rest.php",
+          "sink_line_number": 420
+        }
+      }
     },
     {
       "finding_id": "agent-c-anom_2",
@@ -804,7 +1381,37 @@
       "sink_function": "BackWPup_Pro_Page_Support::save_post_form",
       "source_agents": [
         "agent-c"
-      ]
+      ],
+      "phase3_review": {
+        "original_status": "UNCERTAIN",
+        "reason": "This finding covers the same admin_post_backwpup_support handler as agent-a2-f008 \u2014 both blocked by the same root cause: BackWPup_Pro_Page_Support::save_post_form() source unavailable. Gate code_evidence score is 0.25; sink function not found near line 1177 (registration only, not implementation). No Tier-1 evidence path exists without the Pro source. Severity assigned (high) is unjustified without a traced sink. Downgrade to informational; merge treatment with agent-a2-f008.",
+        "counter_evidence": [
+          {
+            "type": "unreachable",
+            "file": "inc/class-admin.php",
+            "line": 1177,
+            "detail": "Only the add_action() registration point is visible \u2014 BackWPup_Pro_Page_Support and its save_post_form() method not present in the audited codebase."
+          }
+        ],
+        "missing_evidence": [
+          "BackWPup Pro plugin source containing BackWPup_Pro_Page_Support::save_post_form().",
+          "Whether the handler performs check_admin_referer() and current_user_can() before writing."
+        ],
+        "dynamic_test_plan": [
+          "Step 1: If Pro plugin source available, locate BackWPup_Pro_Page_Support::save_post_form() and trace input to sink.",
+          "Step 2: Log in as backwpup_check user, POST to /wp-admin/admin-post.php with action=backwpup_support and arbitrary POST data.",
+          "Step 3: Observe whether a nonce check fires and fails, or whether the handler proceeds.",
+          "Step 4: If it proceeds, identify which option keys are written."
+        ],
+        "verdict_change": "downgrade",
+        "suggested_field_corrections": {
+          "entry_point_id": "ep_admin_post_admin_post_backwpup_support",
+          "source_file_path": "inc/class-admin.php",
+          "source_line_number": 1177,
+          "sink_file_path": null,
+          "sink_line_number": null
+        }
+      }
     },
     {
       "finding_id": "agent-d-uh-001",
@@ -894,7 +1501,29 @@
       "review_reason": "Dynamic hook, resolution failed \u2014 manual trace required. inc/dependencies/wp-media/event-manager/EventManager.php:26 is add_filter($hook_name, $callback, ...) where $hook_name is a parameter passed from add_subscriber_callback(). The caller iterates $subscriber->get_subscribed_events() which returns a map of hook_name => parameters defined by each SubscriberInterface implementation. Resolution requires enumerating all classes that implement SubscriberInterface and their get_subscribed_events() return values \u2014 this is a subscriber pattern dispatcher that can register an arbitrary number of hooks depending on the subscriber implementations present. Attempted: searched for SubscriberInterface implementations in the codebase. The actual hook names are defined in individual subscriber classes not visible from this file. To fully resolve: enumerate all classes implementing SubscriberInterface and read their get_subscribed_events() method to extract concrete hook names. This dispatcher itself introduces no vulnerability \u2014 it is a standard subscriber dispatch wrapper around add_filter().",
       "source_agents": [
         "agent-d"
-      ]
+      ],
+      "phase3_review": {
+        "original_status": "UNCERTAIN",
+        "reason": "agent-d-uh-004 covers the EventManager subscriber-pattern dispatcher at inc/dependencies/wp-media/event-manager/EventManager.php:26, which is standard WordPress observer pattern. The phase2 finding itself states this dispatcher introduces no vulnerability. Gate scores: file_exists=0.0, code_evidence=0.0, reasoning_quality=0.0, no_hallucination=0.75 (file_not_found signal). The finding was never a security claim \u2014 it was a coverage gap note about unresolved dynamic hooks. No security impact. Downgrade to informational.",
+        "counter_evidence": [
+          {
+            "type": "design",
+            "file": "inc/dependencies/wp-media/event-manager/EventManager.php",
+            "line": 26,
+            "detail": "Standard WordPress subscriber/observer pattern. The dispatcher itself does not register privileged hooks \u2014 hook security depends on individual SubscriberInterface implementations, which are not flagged here."
+          }
+        ],
+        "missing_evidence": [
+          "Enumeration of all SubscriberInterface implementations and their get_subscribed_events() return values to determine if any registers a security-relevant hook without proper authorization."
+        ],
+        "dynamic_test_plan": [
+          "Step 1: Grep codebase for implements SubscriberInterface to enumerate all subscribers.",
+          "Step 2: For each subscriber, inspect get_subscribed_events() return value.",
+          "Step 3: For any subscriber that registers a hook handling untrusted input, trace the handler to confirm authorization check presence.",
+          "Step 4: If any hook handler lacks authorization, create a new targeted finding for that specific subscriber."
+        ],
+        "verdict_change": "downgrade"
+      }
     },
     {
       "finding_id": "agent-d-cg-001",
@@ -944,7 +1573,50 @@
       "remediation": "Add current_user_can(self::CAPABILITY) check and nonce verification at the start of download_by_ajax() before any processing, mirroring the ensure_user_can_download() guard in download_by_chunks().",
       "source_agents": [
         "agent-d"
-      ]
+      ],
+      "phase3_review": {
+        "original_status": "UNCERTAIN",
+        "reason": "The original finding incorrectly types this as missing_authentication_ajax_handler (CWE-306). The wp_ajax_download_backup_file action is registered without the nopriv_ variant at inc/class-admin.php:296 \u2014 WordPress enforces authentication. The actual violation is missing capability check: download_by_ajax() at inc/class-destination-downloader.php:58 does not call ensure_user_can_download(), while download_by_chunks() at line 109 does call it at line 110. Any logged-in WordPress user (plain subscriber, no BackWPup roles) can trigger this and download backup archives. Gate code_evidence=1.0 and file_exists=1.0 confirm the file and sink. Path_reachability failure (0.45) was because the finding had no entry_point_id.",
+        "counter_evidence": [
+          {
+            "type": "guard",
+            "file": "inc/class-admin.php",
+            "line": 296,
+            "detail": "Registered as wp_ajax_download_backup_file (not nopriv_) \u2014 WordPress enforces login; unauthenticated access impossible."
+          },
+          {
+            "type": "guard",
+            "file": "inc/class-destination-downloader.php",
+            "line": 110,
+            "detail": "download_by_chunks() calls ensure_user_can_download() at line 110 \u2014 the capability check exists in the codebase but is absent from download_by_ajax()."
+          }
+        ],
+        "missing_evidence": [
+          "Full implementation of file_download() in each destination class (FILE, FTP, S3, etc.) \u2014 does any destination class check the caller capability internally?",
+          "Whether destination, file, and local_file parameters after sanitize_text_field() can still contain path traversal sequences (e.g., ../../wp-config.php) used in path construction.",
+          "Whether a plain subscriber WordPress user (no BackWPup roles, backwpup=false) can trigger this action \u2014 if so, impact extends beyond BackWPup role holders."
+        ],
+        "dynamic_test_plan": [
+          "Step 1: Create a plain WordPress subscriber user (no BackWPup roles).",
+          "Step 2: GET /wp-admin/admin-ajax.php?action=download_backup_file&destination=FILE&jobid=1&file=backwpup_job1_2026-01-01.tar&local_file=backup.tar (subscriber session cookie)",
+          "Step 3: Observe whether download begins (event-stream or file response) or 403/404.",
+          "Step 4: Try destination=FILE&file=../../wp-config.php to probe path traversal in file_download().",
+          "Step 5: Log in as backwpup_check user (has backwpup but not backwpup_backups_download) and repeat step 2.",
+          "Step 6: Confirm ensure_user_can_download() is absent from download_by_ajax() call chain."
+        ],
+        "verdict_change": "keep",
+        "suggested_field_corrections": {
+          "vuln_type": "broken_access_control",
+          "cwe_id": "CWE-862",
+          "severity": "medium",
+          "auth_required": "subscriber",
+          "entry_point_id": "ep_ajax_priv_wp_ajax_download_backup_file",
+          "source_file_path": "inc/class-destination-downloader.php",
+          "source_line_number": 58,
+          "sink_file_path": "inc/class-destination-downloader.php",
+          "sink_line_number": 95
+        }
+      }
     }
   ],
   "merge_stats": {
@@ -970,7 +1642,14 @@
   },
   "postprocess": {
     "phase3_review_applied": {
-      "applied_edits": 0
+      "applied_edits": 0,
+      "reviewed_findings": 22,
+      "review_counts": {
+        "reject": 0,
+        "downgrade": 3,
+        "keep": 19,
+        "upgrade": 0
+      }
     }
   }
 }

@@ -68,7 +68,7 @@ Notes:
 
 Flags:
   --apply-review   Optional feedback loop. Apply phase3-review corrections to phase2 and re-run gate.
-  --llm-mode       auto: only when gate has plausible/uncertain (default)
+  --llm-mode       auto: only when gate has uncertain/risk_note findings (default)
                    off: never run phase3 LLM reviewer
                    force: always run phase3 LLM reviewer
   --with-claude    Convenience flag: run both codex and claude
@@ -614,7 +614,7 @@ run_one() {
 import json
 d = json.load(open('${gate_output}'))
 p3 = d.get('phase3_summary', {})
-print(int(p3.get('plausible', 0)) + int(p3.get('uncertain', 0)))
+print(int(p3.get('uncertain', 0)) + int(p3.get('risk_note', 0)))
 " 2>/dev/null || echo "0")
 
     confirmed=$(python3 -c "
@@ -643,20 +643,20 @@ print(int(d.get('phase3_summary', {}).get('confirmed', 0)))
         else
             log_info "Reuse ${slug}: phase3 review artifacts are fresh"
         fi
-
-        if [ "$APPLY_REVIEW" = true ] && [ -f "${BIN_DIR}/phase3_apply_review.py" ] && [ -f "$canonical_review_json" ]; then
-            if [ "$FORCE" = true ] || ! phase3_final_is_fresh "$slug"; then
-                log_stage "Applying review corrections (optional)"
-                python3 "${BIN_DIR}/phase3_apply_review.py" "$slug" \
-                    --reports-dir "$REPORTS_DIR" \
-                    --plugins-dir "$PLUGINS_DIR" || true
-                did_work=true
-            else
-                log_info "Reuse ${slug}: phase3 final snapshot is fresh"
-            fi
-        fi
     else
         log_stage "Phase 3b: SKIPPED (llm-mode=${LLM_MODE}, needs_llm=${needs_llm})"
+    fi
+
+    if [ "$APPLY_REVIEW" = true ] && [ -f "${BIN_DIR}/phase3_apply_review.py" ] && [ -f "$canonical_review_json" ]; then
+        if [ "$FORCE" = true ] || ! phase3_final_is_fresh "$slug"; then
+            log_stage "Applying review corrections (optional)"
+            python3 "${BIN_DIR}/phase3_apply_review.py" "$slug" \
+                --reports-dir "$REPORTS_DIR" \
+                --plugins-dir "$PLUGINS_DIR" || true
+            did_work=true
+        else
+            log_info "Reuse ${slug}: phase3 final snapshot is fresh"
+        fi
     fi
 
     local canonical_path

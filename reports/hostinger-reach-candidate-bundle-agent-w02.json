@@ -1,0 +1,335 @@
+{
+  "metadata": {
+    "plugin_slug": "hostinger-reach",
+    "plugin_name": "Hostinger Reach",
+    "version": "1.4.4",
+    "active_installs": null,
+    "files_analyzed": 123,
+    "total_loc": 9691,
+    "extraction_time_ms": 307,
+    "extractor_version": "1.0.0"
+  },
+  "bundle": {
+    "bundle_id": "bundle-w02",
+    "agent_id": "agent-w02",
+    "worker_strategy": "candidate_chunk_v2",
+    "bug_family": "authorization",
+    "primary_surface": "rest_route",
+    "auth_boundary": "unknown",
+    "candidate_count": 5,
+    "complexity_budget": 16,
+    "max_candidate_complexity": 4
+  },
+  "candidate_hypotheses": [
+    {
+      "candidate_id": "cand-ep-rest-integrations-src-api-routes-integrationsroutes-php-anomaly",
+      "kind": "ir_anomaly",
+      "bug_family": "authorization",
+      "sink_family": "rest_return_true",
+      "surface": "rest_route",
+      "auth_boundary": "unknown",
+      "complexity_score": 4,
+      "priority_score": 14,
+      "entry_point_ids": [
+        "ep_rest__integrations"
+      ],
+      "sink_ids": [],
+      "anomaly_ids": [
+        "anom_3"
+      ],
+      "semgrep_keys": [
+        "fae65d9f4a68538564c5f3142b05dfbf475bd20ba4a6435fda88c6920a19e40ebc010b91430fca8a55a133f64c856ea0d1fbc7a9f4aded3a40838154910e7b73_0"
+      ],
+      "psalm_keys": [],
+      "source_focus_files": [
+        "src/Api/Routes/IntegrationsRoutes.php"
+      ],
+      "rationale": "High-signal IR anomaly without direct sink mapping."
+    },
+    {
+      "candidate_id": "cand-ep-rest-generate-auth-url-src-api-routes-reachroutes-php-recon",
+      "kind": "entry_point_recon",
+      "bug_family": "authorization",
+      "sink_family": "tools-config-semgrep-wp-rules-wp-bac-rest-return-true",
+      "surface": "rest_route",
+      "auth_boundary": "unknown",
+      "complexity_score": 3,
+      "priority_score": 13,
+      "entry_point_ids": [
+        "ep_rest__generate_auth_url"
+      ],
+      "sink_ids": [],
+      "anomaly_ids": [],
+      "semgrep_keys": [
+        "bf041d11e2611cb878f769bb3a10c1d89a0a215b9aa071a18161dea7021f761da408f52cc58b5ecc03612a8ffd915f8f0ccc1070ed0b62e11534dd23f4624dd6_0",
+        "6db0d7d4e7f5a83599024663214052db364d0919a74ca44c2ed83d3ce3af3781374fc7a72d3f2136cc695d2b10e229052449ca3cda3cab674d59c13c66aafc4b_0",
+        "b796a369d3ec9cd7acd1095c232cc3b7d722cf281ad005d080f0b802c2b7130151dcf496b53d61d51b1d0ba474582d0ee68589e0814eb3ce0bb62da7677dbd35_0"
+      ],
+      "psalm_keys": [],
+      "source_focus_files": [
+        "src/Api/Routes/ReachRoutes.php"
+      ],
+      "rationale": "Low-signal entry point kept for coverage to avoid blind spots."
+    },
+    {
+      "candidate_id": "cand-ep-rest-overview-src-api-routes-reachroutes-php-recon",
+      "kind": "entry_point_recon",
+      "bug_family": "authorization",
+      "sink_family": "tools-config-semgrep-wp-rules-wp-bac-rest-return-true",
+      "surface": "rest_route",
+      "auth_boundary": "unknown",
+      "complexity_score": 3,
+      "priority_score": 13,
+      "entry_point_ids": [
+        "ep_rest__overview"
+      ],
+      "sink_ids": [],
+      "anomaly_ids": [],
+      "semgrep_keys": [
+        "bf041d11e2611cb878f769bb3a10c1d89a0a215b9aa071a18161dea7021f761da408f52cc58b5ecc03612a8ffd915f8f0ccc1070ed0b62e11534dd23f4624dd6_0",
+        "6db0d7d4e7f5a83599024663214052db364d0919a74ca44c2ed83d3ce3af3781374fc7a72d3f2136cc695d2b10e229052449ca3cda3cab674d59c13c66aafc4b_0",
+        "b796a369d3ec9cd7acd1095c232cc3b7d722cf281ad005d080f0b802c2b7130151dcf496b53d61d51b1d0ba474582d0ee68589e0814eb3ce0bb62da7677dbd35_0"
+      ],
+      "psalm_keys": [],
+      "source_focus_files": [
+        "src/Api/Routes/ReachRoutes.php"
+      ],
+      "rationale": "Low-signal entry point kept for coverage to avoid blind spots."
+    },
+    {
+      "candidate_id": "cand-ep-rest-tags-0-src-api-routes-reachroutes-php-recon",
+      "kind": "entry_point_recon",
+      "bug_family": "authorization",
+      "sink_family": "tools-config-semgrep-wp-rules-wp-bac-rest-return-true",
+      "surface": "rest_route",
+      "auth_boundary": "unknown",
+      "complexity_score": 3,
+      "priority_score": 13,
+      "entry_point_ids": [
+        "ep_rest__tags_0"
+      ],
+      "sink_ids": [],
+      "anomaly_ids": [],
+      "semgrep_keys": [
+        "bf041d11e2611cb878f769bb3a10c1d89a0a215b9aa071a18161dea7021f761da408f52cc58b5ecc03612a8ffd915f8f0ccc1070ed0b62e11534dd23f4624dd6_0",
+        "6db0d7d4e7f5a83599024663214052db364d0919a74ca44c2ed83d3ce3af3781374fc7a72d3f2136cc695d2b10e229052449ca3cda3cab674d59c13c66aafc4b_0",
+        "b796a369d3ec9cd7acd1095c232cc3b7d722cf281ad005d080f0b802c2b7130151dcf496b53d61d51b1d0ba474582d0ee68589e0814eb3ce0bb62da7677dbd35_0"
+      ],
+      "psalm_keys": [],
+      "source_focus_files": [
+        "src/Api/Routes/ReachRoutes.php"
+      ],
+      "rationale": "Low-signal entry point kept for coverage to avoid blind spots."
+    },
+    {
+      "candidate_id": "cand-ep-rest-tags-1-src-api-routes-reachroutes-php-recon",
+      "kind": "entry_point_recon",
+      "bug_family": "authorization",
+      "sink_family": "tools-config-semgrep-wp-rules-wp-bac-rest-return-true",
+      "surface": "rest_route",
+      "auth_boundary": "unknown",
+      "complexity_score": 3,
+      "priority_score": 13,
+      "entry_point_ids": [
+        "ep_rest__tags_1"
+      ],
+      "sink_ids": [],
+      "anomaly_ids": [],
+      "semgrep_keys": [
+        "bf041d11e2611cb878f769bb3a10c1d89a0a215b9aa071a18161dea7021f761da408f52cc58b5ecc03612a8ffd915f8f0ccc1070ed0b62e11534dd23f4624dd6_0",
+        "6db0d7d4e7f5a83599024663214052db364d0919a74ca44c2ed83d3ce3af3781374fc7a72d3f2136cc695d2b10e229052449ca3cda3cab674d59c13c66aafc4b_0",
+        "b796a369d3ec9cd7acd1095c232cc3b7d722cf281ad005d080f0b802c2b7130151dcf496b53d61d51b1d0ba474582d0ee68589e0814eb3ce0bb62da7677dbd35_0"
+      ],
+      "psalm_keys": [],
+      "source_focus_files": [
+        "src/Api/Routes/ReachRoutes.php"
+      ],
+      "rationale": "Low-signal entry point kept for coverage to avoid blind spots."
+    }
+  ],
+  "entry_points": [
+    {
+      "id": "ep_rest__generate_auth_url",
+      "type": "rest_route",
+      "hook_name": "?generate-auth-url",
+      "callback": {
+        "type": "unresolved",
+        "name": null,
+        "class": null,
+        "file": null,
+        "line_start": null,
+        "line_end": null
+      },
+      "auth_level": "unknown",
+      "rest_namespace": null,
+      "rest_route": "generate-auth-url",
+      "rest_methods": "POST",
+      "permission_callback": "__array_callable__",
+      "file": "src/Api/Routes/ReachRoutes.php",
+      "line": 104
+    },
+    {
+      "id": "ep_rest__overview",
+      "type": "rest_route",
+      "hook_name": "?overview",
+      "callback": {
+        "type": "unresolved",
+        "name": null,
+        "class": null,
+        "file": null,
+        "line_start": null,
+        "line_end": null
+      },
+      "auth_level": "unknown",
+      "rest_namespace": null,
+      "rest_route": "overview",
+      "rest_methods": "GET",
+      "permission_callback": "__array_callable__",
+      "file": "src/Api/Routes/ReachRoutes.php",
+      "line": 114
+    },
+    {
+      "id": "ep_rest__tags_0",
+      "type": "rest_route",
+      "hook_name": "?tags",
+      "callback": {
+        "type": "unresolved",
+        "name": null,
+        "class": null,
+        "file": null,
+        "line_start": null,
+        "line_end": null
+      },
+      "auth_level": "unknown",
+      "rest_namespace": null,
+      "rest_route": "tags",
+      "rest_methods": "GET",
+      "permission_callback": "__array_callable__",
+      "file": "src/Api/Routes/ReachRoutes.php",
+      "line": 124
+    },
+    {
+      "id": "ep_rest__tags_1",
+      "type": "rest_route",
+      "hook_name": "?tags",
+      "callback": {
+        "type": "unresolved",
+        "name": null,
+        "class": null,
+        "file": null,
+        "line_start": null,
+        "line_end": null
+      },
+      "auth_level": "unknown",
+      "rest_namespace": null,
+      "rest_route": "tags",
+      "rest_methods": "POST",
+      "permission_callback": "__array_callable__",
+      "file": "src/Api/Routes/ReachRoutes.php",
+      "line": 124
+    },
+    {
+      "id": "ep_rest__integrations",
+      "type": "rest_route",
+      "hook_name": "?integrations",
+      "callback": {
+        "type": "unresolved",
+        "name": null,
+        "class": null,
+        "file": null,
+        "line_start": null,
+        "line_end": null
+      },
+      "auth_level": "none",
+      "rest_namespace": null,
+      "rest_route": "integrations",
+      "rest_methods": "GET",
+      "permission_callback": "__return_true",
+      "file": "src/Api/Routes/IntegrationsRoutes.php",
+      "line": 21
+    },
+    {
+      "id": "ep_rest__integrations",
+      "type": "rest_route",
+      "hook_name": "?integrations",
+      "callback": {
+        "type": "unresolved",
+        "name": null,
+        "class": null,
+        "file": null,
+        "line_start": null,
+        "line_end": null
+      },
+      "auth_level": "unknown",
+      "rest_namespace": null,
+      "rest_route": "integrations",
+      "rest_methods": "POST",
+      "permission_callback": "__array_callable__",
+      "file": "src/Api/Routes/IntegrationsRoutes.php",
+      "line": 31
+    }
+  ],
+  "sources": [],
+  "sinks": [],
+  "guards": [],
+  "anomalies": [
+    {
+      "id": "anom_3",
+      "rule_id": "rule_07",
+      "type": "rest_return_true",
+      "severity": "high",
+      "cwe_id": "CWE-862",
+      "entry_point_id": "ep_rest__integrations",
+      "description": "REST route '?integrations' has permission_callback = __return_true \u2014 publicly accessible",
+      "evidence": {
+        "file": "src/Api/Routes/IntegrationsRoutes.php",
+        "line": 21
+      }
+    }
+  ],
+  "unresolved_hooks": [],
+  "coverage_gaps": [],
+  "semgrep_results": [
+    {
+      "key": "6db0d7d4e7f5a83599024663214052db364d0919a74ca44c2ed83d3ce3af3781374fc7a72d3f2136cc695d2b10e229052449ca3cda3cab674d59c13c66aafc4b_0",
+      "path": "src/Api/Routes/ReachRoutes.php",
+      "line": 89,
+      "check_id": "tools.config.semgrep-wp-rules.wp-xss-echo-no-escape",
+      "message": "Cross-Site Scripting: User input flows into HTML output without context-appropriate escaping. Use esc_html() for HTML body, esc_attr() for attributes, esc_url() for URLs.",
+      "severity": "WARNING",
+      "bug_family": "xss"
+    },
+    {
+      "key": "b796a369d3ec9cd7acd1095c232cc3b7d722cf281ad005d080f0b802c2b7130151dcf496b53d61d51b1d0ba474582d0ee68589e0814eb3ce0bb62da7677dbd35_0",
+      "path": "src/Api/Routes/ReachRoutes.php",
+      "line": 124,
+      "check_id": "tools.config.semgrep-wp-rules.wp-rest-missing-permission-callback",
+      "message": "REST route registered without permission_callback. Since WP 5.5, this triggers a _doing_it_wrong notice but the route STILL WORKS and is publicly accessible.",
+      "severity": "WARNING",
+      "bug_family": "authorization"
+    },
+    {
+      "key": "bf041d11e2611cb878f769bb3a10c1d89a0a215b9aa071a18161dea7021f761da408f52cc58b5ecc03612a8ffd915f8f0ccc1070ed0b62e11534dd23f4624dd6_0",
+      "path": "src/Api/Routes/ReachRoutes.php",
+      "line": 27,
+      "check_id": "tools.config.semgrep-wp-rules.wp-bac-rest-return-true",
+      "message": "Broken Access Control: REST route with __return_true permission callback  is publicly accessible. Use current_user_can() in permission_callback.",
+      "severity": "WARNING",
+      "bug_family": "authorization"
+    },
+    {
+      "key": "fae65d9f4a68538564c5f3142b05dfbf475bd20ba4a6435fda88c6920a19e40ebc010b91430fca8a55a133f64c856ea0d1fbc7a9f4aded3a40838154910e7b73_0",
+      "path": "src/Api/Routes/IntegrationsRoutes.php",
+      "line": 21,
+      "check_id": "tools.config.semgrep-wp-rules.wp-bac-rest-return-true",
+      "message": "Broken Access Control: REST route with __return_true permission callback  is publicly accessible. Use current_user_can() in permission_callback.",
+      "severity": "WARNING",
+      "bug_family": "authorization"
+    }
+  ],
+  "psalm_results": [],
+  "source_focus_files": [
+    "src/Api/Routes/IntegrationsRoutes.php",
+    "src/Api/Routes/ReachRoutes.php"
+  ]
+}

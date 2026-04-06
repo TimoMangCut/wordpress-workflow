@@ -1,0 +1,73 @@
+{
+  "plugin_slug": "hostinger-reach",
+  "execution_status": "success",
+  "initial_mode": "deep",
+  "worker_provider": "claude",
+  "reviewer_provider": "codex",
+  "worker_model": "claude-sonnet-4.6",
+  "reviewer_model": "gpt-5.4",
+  "max_review_rounds": 1,
+  "forced_exploration_enabled": true,
+  "max_exploration_candidates": 1,
+  "completed_worker_rounds": 2,
+  "completed_review_rounds": 2,
+  "final_review_status": "stable",
+  "stop_reason": "forced_exploration_stable_no_new_candidates",
+  "runtime_seconds": 1,
+  "artifacts": {
+    "canonical_phase2": "reports/phase2/hostinger-reach-phase2.json",
+    "final_worker_output": "reports/phase2/hostinger-reach-phase2.worker.r2.json",
+    "final_review_output": "reports/phase2/hostinger-reach-phase2.review.r2.json"
+  },
+  "final_counts": {
+    "tp": 1,
+    "fp": 7,
+    "review": 1,
+    "total": 9,
+    "risk": "medium"
+  },
+  "rounds": [
+    {
+      "role": "worker",
+      "round": 2,
+      "mode": "deep",
+      "provider": "claude",
+      "model": "claude-sonnet-4.6",
+      "duration_seconds": 0,
+      "output_path": "reports/phase2/hostinger-reach-phase2.worker.r2.json",
+      "errlog_path": "",
+      "counts": {
+        "tp": 1,
+        "fp": 7,
+        "review": 1,
+        "total": 9,
+        "risk": "medium"
+      },
+      "delta_from_previous_worker": {
+        "added": 9,
+        "removed": 0,
+        "verdict_changed": 0,
+        "upgraded": 0,
+        "downgraded": 0,
+        "unchanged": 0,
+        "total_before": 0,
+        "total_after": 9,
+        "material_change": true
+      }
+    },
+    {
+      "role": "reviewer",
+      "round": 2,
+      "mode": "explore",
+      "provider": "codex",
+      "model": "gpt-5.4",
+      "duration_seconds": 0,
+      "output_path": "reports/phase2/hostinger-reach-phase2.review.r2.json",
+      "errlog_path": "",
+      "review_status": "stable",
+      "finding_reviews_count": 0,
+      "missed_findings_count": 0,
+      "material_feedback": false
+    }
+  ]
+}

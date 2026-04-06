@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "phase2-review-batch-plan.schema.json",
+  "version": "1.0.0",
+  "title": "Phase 2 Reviewer Core Batch Plan",
+  "description": "Deterministic batching plan for reviewer_core packet critique rounds.",
+  "type": "object",
+  "required": [
+    "plugin_slug",
+    "review_round",
+    "review_mode",
+    "total_packet_count",
+    "total_load_score",
+    "target_batch_count",
+    "target_batch_load",
+    "batches"
+  ],
+  "properties": {
+    "plugin_slug": { "type": "string" },
+    "review_round": { "type": "integer", "minimum": 1 },
+    "review_mode": { "enum": ["core"] },
+    "total_packet_count": { "type": "integer", "minimum": 1 },
+    "total_load_score": { "type": "integer", "minimum": 1 },
+    "target_batch_count": { "type": "integer", "minimum": 1 },
+    "target_batch_load": { "type": "integer", "minimum": 1 },
+    "batches": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "batch_id",
+          "packet_count",
+          "load_score",
+          "packet_ids",
+          "finding_ids",
+          "parent_finding_ids",
+          "entry_point_ids",
+          "primary_files",
+          "input_path",
+          "output_path"
+        ],
+        "properties": {
+          "batch_id": { "type": "string" },
+          "packet_count": { "type": "integer", "minimum": 1 },
+          "load_score": { "type": "integer", "minimum": 1 },
+          "packet_ids": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string" }
+          },
+          "finding_ids": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string" }
+          },
+          "parent_finding_ids": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string" }
+          },
+          "entry_point_ids": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "primary_files": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "input_path": { "type": "string" },
+          "output_path": { "type": "string" },
+          "reasons": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

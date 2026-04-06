@@ -1,0 +1,104 @@
+{
+  "metadata": {
+    "plugin_slug": "hostinger-reach",
+    "plugin_name": "Hostinger Reach",
+    "version": "1.4.4",
+    "active_installs": null,
+    "files_analyzed": 123,
+    "total_loc": 9691,
+    "extraction_time_ms": 307,
+    "extractor_version": "1.0.0"
+  },
+  "bundle": {
+    "bundle_id": "bundle-w10",
+    "agent_id": "agent-w10",
+    "worker_strategy": "candidate_chunk_v2",
+    "bug_family": "generic",
+    "primary_surface": "ajax_nopriv",
+    "auth_boundary": "none",
+    "candidate_count": 1,
+    "complexity_budget": 4,
+    "max_candidate_complexity": 4
+  },
+  "candidate_hypotheses": [
+    {
+      "candidate_id": "cand-ep-ajax-nopriv-wp-ajax-nopriv-abandoned-carts-src-tracking-abandonedcarts-php-recon",
+      "kind": "entry_point_recon",
+      "bug_family": "generic",
+      "sink_family": "recon",
+      "surface": "ajax_nopriv",
+      "auth_boundary": "none",
+      "complexity_score": 4,
+      "priority_score": 6,
+      "entry_point_ids": [
+        "ep_ajax_nopriv_wp_ajax_nopriv_abandoned_carts"
+      ],
+      "sink_ids": [],
+      "anomaly_ids": [],
+      "semgrep_keys": [],
+      "psalm_keys": [],
+      "source_focus_files": [
+        "src/Tracking/AbandonedCarts.php"
+      ],
+      "rationale": "Low-signal entry point kept for coverage to avoid blind spots."
+    }
+  ],
+  "entry_points": [
+    {
+      "id": "ep_ajax_nopriv_wp_ajax_nopriv_abandoned_carts",
+      "type": "ajax_nopriv",
+      "hook_name": "wp_ajax_nopriv_abandoned-carts",
+      "callback": {
+        "type": "method",
+        "name": "handle_ajax_action",
+        "class": "Hostinger\\Reach\\Tracking\\AbandonedCarts",
+        "file": "src/Tracking/AbandonedCarts.php",
+        "line_start": 40,
+        "line_end": 44
+      },
+      "auth_level": "none",
+      "file": "src/Tracking/AbandonedCarts.php",
+      "line": 37
+    }
+  ],
+  "sources": [
+    {
+      "id": "src_1",
+      "entry_point_id": "ep_ajax_nopriv_wp_ajax_nopriv_abandoned_carts",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": "email",
+      "file": "src/Tracking/AbandonedCarts.php",
+      "line": 42
+    },
+    {
+      "id": "src_2",
+      "entry_point_id": "ep_ajax_nopriv_wp_ajax_nopriv_abandoned_carts",
+      "type": "superglobal_post",
+      "variable": "$_POST",
+      "key": null,
+      "file": "src/Tracking/AbandonedCarts.php",
+      "line": 42
+    }
+  ],
+  "sinks": [],
+  "guards": [
+    {
+      "entry_point_id": "ep_ajax_nopriv_wp_ajax_nopriv_abandoned_carts",
+      "type": "nonce_check",
+      "function_called": "check_ajax_referer",
+      "file": "src/Tracking/AbandonedCarts.php",
+      "line": 41,
+      "is_effective": true,
+      "notes": null
+    }
+  ],
+  "anomalies": [],
+  "unresolved_hooks": [],
+  "coverage_gaps": [],
+  "semgrep_results": [],
+  "psalm_results": [],
+  "source_focus_files": [
+    "src/Tracking/AbandonedCarts.php"
+  ]
+}

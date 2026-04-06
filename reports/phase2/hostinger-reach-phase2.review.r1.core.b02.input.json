@@ -1,0 +1,325 @@
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "core",
+  "task": {
+    "role": "phase2_reviewer_core",
+    "goal": "Challenge the worker output packet-by-packet with concrete counter-evidence, field corrections, and explicit missing-evidence notes.",
+    "output_schema": "contracts/phase2-review-core-output.schema.json",
+    "output_path": "reports/phase2/hostinger-reach-phase2.review.r1.core.b02.json",
+    "packet_schema": "contracts/phase2-reviewer-packet.schema.json",
+    "allow_missed_findings": false,
+    "constraints": [
+      "Treat each finding packet as the unit of review; do not restart whole-plugin auditing.",
+      "Answer reachability, authorization, dataflow, impact, and missing-evidence questions for each packet before finalizing finding_reviews.",
+      "Start from finding_packets, worker_findings, and phase1_context before opening other artifacts.",
+      "Refute before confirm; keep objections evidence-bound with file:line anchors.",
+      "Do not rewrite the full findings set; produce critique JSON only.",
+      "Default to packet-local critique only. Focus on finding_reviews plus field corrections for the existing finding packets.",
+      "Treat finding_packets as the reviewer core evidence pack. If packet-local evidence is insufficient, prefer needs_more_evidence over broad exploration."
+    ],
+    "max_candidates": null
+  },
+  "artifacts": {
+    "worker_output_path": null,
+    "ir_path": null,
+    "semgrep_path": null,
+    "psalm_path": null,
+    "threat_context_path": null,
+    "source_root": "plugins/hostinger-reach"
+  },
+  "worker_summary": {
+    "total_findings": 1,
+    "true_positive_count": 1,
+    "false_positive_count": 0,
+    "needs_review_count": 0,
+    "negative_findings_count": 0,
+    "overall_risk": "low",
+    "analysis_summary": "Reviewer core batch scoped to 1 packet(s)."
+  },
+  "worker_findings": [
+    {
+      "finding_id": "HR-001",
+      "verdict": "TP",
+      "vuln_type": "Broken Access Control \u2014 Unauthenticated REST Endpoint (subscriber contact injection via obtainable nonce)",
+      "severity": "medium",
+      "auth_required": null,
+      "confidence": 0.72,
+      "entry_point_id": "ep_rest_hostinger_reach_v1__optinmonster",
+      "source_anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:62",
+      "sink_anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:78",
+      "patchstack_eligible": true
+    }
+  ],
+  "finding_packets": [
+    {
+      "packet_id": "HR-001",
+      "parent_finding_id": "HR-001",
+      "packet_kind": "base",
+      "focus_anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:62",
+      "finding_id": "HR-001",
+      "verdict": "TP",
+      "vuln_type": "Broken Access Control \u2014 Unauthenticated REST Endpoint (subscriber contact injection via obtainable nonce)",
+      "severity": "medium",
+      "auth_required": null,
+      "confidence": 0.72,
+      "entry_point_id": "ep_rest_hostinger_reach_v1__optinmonster",
+      "patchstack_eligible": true,
+      "claimed_impact": "Worker claims Broken Access Control \u2014 Unauthenticated REST Endpoint (subscriber contact injection via obtainable nonce) is materially exploitable with auth boundary `unknown` and impact reachable at src/Integrations/OptInMonster/OptInMonsterIntegration.php:78.",
+      "worker_context": {
+        "source_function": "submit_optinmonster",
+        "sink_function": "do_action('hostinger_reach_submit', ...)",
+        "fp_reason": "Packet-local reviewer scope: OptInMonsterIntegration at src/Integrations/OptInMonster/OptInMonsterIntegration.php:62. Primary files: src/Integrations/OptInMonster/OptInMonsterIntegration.php.",
+        "original_fp_reason": null,
+        "reasoning_excerpt": {
+          "hypothesis": "Validate only the packet-local claim for OptInMonsterIntegration. Determine whether anchors src/Integrations/OptInMonster/OptInMonsterIntegration.php:214, src/Integrations/OptInMonster/OptInMonsterIntegration.php:62, src/Integrations/OptInMonster/OptInMonsterIntegration.php:78, <unknown> actually support the worker's claim without widening to other surfaces.",
+          "trace": "Packet-local review only. Focus file: src/Integrations/OptInMonster/OptInMonsterIntegration.php. Focus anchors: src/Integrations/OptInMonster/OptInMonsterIntegration.php:214, src/Integrations/OptInMonster/OptInMonsterIntegration.php:62, src/Integrations/OptInMonster/OptInMonsterIntegration.php:78, <unknown>. Primary files: src/Integrations/OptInMonster/OptInMonsterIntegration.php. Entry point: src/Integrations/OptInMonster/OptInMonsterIntegration.php:214. Treat unrelated callers, consumers, and sibling surfaces as out of scope unless an explicit expansion attempt is justified.",
+          "defenses": [
+            "permission_callback = __return_true: no restriction at WP REST layer",
+            "is_authorized() at line 63: checks wp_verify_nonce($nonce, 'wp_rest') \u2014 wp_rest nonces are issued to guest users in WP 5.3+, so this is not an effective barrier against unauthenticated callers who can obtain the nonce from any page",
+            "Treat downstream hook consumers as missing evidence unless a concrete consumer is already shown in the packet."
+          ],
+          "refutation": [
+            "Refute or keep this packet on OptInMonsterIntegration alone. Do not carry over conclusions from plugin-wide traces without packet-local code evidence."
+          ],
+          "conclusion": "Keep, downgrade, retract, or mark needs_more_evidence based only on packet-local evidence for OptInMonsterIntegration."
+        },
+        "original_reasoning_excerpt": {
+          "hypothesis": "An unauthenticated attacker can inject arbitrary email addresses into the Hostinger Reach contact list by POSTing to /wp-json/hostinger-reach/v1/optinmonster because (1) permission_callback is __return_true, and (2) the in-handler nonce check uses the wp_rest nonce which WordPress generates for ALL visitors (including logged-out users) since WP 5.3, and (3) this nonce is embedded in every frontend page load when the OptInMonster integration is active via wp_localize_script.",
+          "trace": "Attacker visits any page on the target site where OptInMonster is active \u2192 JavaScript bundle contains wp_localize_script data including 'nonce' (wp_create_nonce('wp_rest')) \u2192 Attacker reads nonce from page source or XHR response \u2192 POST /wp-json/hostinger-reach/v1/optinmonster with X-WP-Nonce header and crafted JSON body containing 'fields' array with attacker-chosen email \u2192 OptInMonsterIntegration::submit_optinmonster() (line 62) calls is_authorized() (line 201) which calls wp_verify_nonce($nonce, 'wp_rest') (line 203) \u2014 this succeeds because wp_rest nonces are valid for non-logged-in users \u2192 find_email() extracts the email from $data['fields'] (line 73) \u2192 do_action('hostinger_reach_submit') fires with attacker-controlled email (line 78) \u2192 email is sent to Hostinger Reach API as a subscriber",
+          "defenses": [
+            "permission_callback = __return_true: no restriction at WP REST layer",
+            "is_authorized() at line 63: checks wp_verify_nonce($nonce, 'wp_rest') \u2014 wp_rest nonces are issued to guest users in WP 5.3+, so this is not an effective barrier against unauthenticated callers who can obtain the nonce from any page",
+            "find_email() validates email format via sanitize_email + FILTER_VALIDATE_EMAIL at line 253-254 \u2014 this constrains the value to valid email format but does not restrict who can call the endpoint"
+          ],
+          "refutation": [
+            "REFUTATION ATTEMPT: Does wp_rest nonce restrict to logged-in users only? RESULT: Not refuted. Since WordPress 5.3, wp_create_nonce('wp_rest') generates valid nonces for non-logged-in users (nonce tied to user_id=0). wp_verify_nonce succeeds for any request that presents the nonce obtained from a page view within the 12-24 hour nonce lifetime.",
+            "REFUTATION ATTEMPT: Is the nonce exposed only to authenticated users? RESULT: Not refuted. The nonce is embedded via wp_localize_script in enqueue_assets() (line 228-249 of OptInMonsterIntegration.php), which fires on the frontend when the integration is active \u2014 i.e., on every public page load.",
+            "REFUTATION ATTEMPT: Does the endpoint have meaningful impact? RESULT: Not refuted. The endpoint triggers do_action('hostinger_reach_submit') which calls the Hostinger Reach API to add the supplied email as a subscriber. This allows an unauthenticated actor to inject arbitrary valid email addresses into the site owner's contact list, causing reputational harm and potentially violating GDPR/CAN-SPAM (adding contacts without consent)."
+          ],
+          "conclusion": "Confirmed TP. The combination of __return_true permission_callback and reliance on a guest-accessible wp_rest nonce for authentication means any user who can fetch a page where OptInMonster is active can submit arbitrary email addresses to the contact list. The fix is to either (a) restrict the permission_callback to is_user_logged_in() or current_user_can('read'), or (b) use a site-specific nonce action that cannot be obtained from the frontend."
+        }
+      },
+      "review_focus": {
+        "scope_statement": "Review only the packet-local claim centered on src/Integrations/OptInMonster/OptInMonsterIntegration.php:62 in src/Integrations/OptInMonster/OptInMonsterIntegration.php. Start from the listed packet evidence, not from a plugin-wide hypothesis.",
+        "sink_semantics": "hook_dispatch",
+        "default_resolution_on_missing_terminal_evidence": "needs_more_evidence",
+        "stop_conditions": [
+          "Once packet-local reachability, authorization, dataflow, impact, and missing evidence are answered with file:line support, stop and write critique JSON.",
+          "Do not reopen unrelated plugin surfaces just because the parent finding or worker narrative mentions them.",
+          "If the packet ends at a hook dispatch and no downstream consumer is already evidenced in this packet, mark the missing downstream consumer explicitly instead of tracing every consumer in the plugin."
+        ],
+        "disallowed_drift": [
+          "whole_plugin_reaudit",
+          "translation_or_asset_search",
+          "sibling_surface_expansion_without_evidence",
+          "shared_hook_consumer_enumeration"
+        ],
+        "primary_scope_files": [
+          "src/Integrations/OptInMonster/OptInMonsterIntegration.php"
+        ],
+        "optional_scope_files": [
+          "src/Integrations/OptInMonster/OptInMonsterIntegration.php"
+        ],
+        "entry_point_anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:214"
+      },
+      "scope_policy": {
+        "allowed_primary_files": [
+          "src/Integrations/OptInMonster/OptInMonsterIntegration.php"
+        ],
+        "allowed_optional_files": [
+          "src/Integrations/OptInMonster/OptInMonsterIntegration.php"
+        ],
+        "max_out_of_band_files": 1
+      },
+      "anchors": {
+        "entry_point_anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:214",
+        "source_anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:62",
+        "sink_anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:78",
+        "review_anchor_candidates": [
+          {
+            "kind": "entry_point",
+            "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:214",
+            "note": null
+          },
+          {
+            "kind": "finding_source",
+            "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:62",
+            "note": "Broken Access Control \u2014 Unauthenticated REST Endpoint (subscriber contact injection via obtainable nonce)"
+          },
+          {
+            "kind": "finding_sink",
+            "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:78",
+            "note": "Broken Access Control \u2014 Unauthenticated REST Endpoint (subscriber contact injection via obtainable nonce)"
+          },
+          {
+            "kind": "fp_evidence",
+            "anchor": "<unknown>",
+            "note": null
+          },
+          {
+            "kind": "anomaly",
+            "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:214",
+            "note": "rest_return_true"
+          }
+        ]
+      },
+      "primary_files": [
+        "src/Integrations/OptInMonster/OptInMonsterIntegration.php"
+      ],
+      "primary_snippets": [
+        {
+          "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+          "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:62",
+          "focus_line": 62,
+          "line_start": 56,
+          "line_end": 68,
+          "kind": "finding_source",
+          "code": "    56\t                'icon'           => 'https://ps.w.org/optinmonster/assets/icon-256x256.png',\n    57\t                'import_enabled' => true,\n    58\t            )\n    59\t        );\n    60\t    }\n    61\t\n    62\t    public function submit_optinmonster( WP_REST_Request $request ): WP_REST_Response {\n    63\t        if ( ! $this->is_authorized( $request ) ) {\n    64\t            return $this->handle_response( 403, array( 'errors' => 'You cannot perform this action' ) );\n    65\t        }\n    66\t\n    67\t        try {\n    68\t            $data    = json_decode( $request->get_body() ?? '', true );"
+        },
+        {
+          "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+          "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:78",
+          "focus_line": 78,
+          "line_start": 72,
+          "line_end": 84,
+          "kind": "finding_sink",
+          "code": "    72\t            }\n    73\t            $email = $this->find_email( $data['fields'] ?? array() );\n    74\t            if ( $email ) {\n    75\t                $campaign_name = $data['tags']['campaign_name'] ?? '';\n    76\t                $form_name     = $data['tags']['form_name'] ?? '';\n    77\t                $group         = $campaign_name . ' - ' . $form_name;\n    78\t                do_action(\n    79\t                    'hostinger_reach_submit',\n    80\t                    array(\n    81\t                        'email'    => $email,\n    82\t                        'group'    => empty( $group ) ? self::INTEGRATION_NAME : $group,\n    83\t                        'metadata' => array(\n    84\t                            'plugin' => self::INTEGRATION_NAME,"
+        },
+        {
+          "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+          "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:214",
+          "focus_line": 214,
+          "line_start": 208,
+          "line_end": 220,
+          "kind": "entry_point",
+          "code": "   208\t    }\n   209\t\n   210\t    private function register_routes(): void {\n   211\t        add_action(\n   212\t            'rest_api_init',\n   213\t            function (): void {\n   214\t                register_rest_route(\n   215\t                    'hostinger-reach/v1',\n   216\t                    '/optinmonster',\n   217\t                    array(\n   218\t                        'methods'             => 'POST',\n   219\t                        'callback'            => array( $this, 'submit_optinmonster' ),\n   220\t                        'permission_callback' => '__return_true',"
+        }
+      ],
+      "optional_files": [
+        "src/Integrations/OptInMonster/OptInMonsterIntegration.php"
+      ],
+      "optional_snippets": [
+        {
+          "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+          "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:214",
+          "focus_line": 214,
+          "line_start": 208,
+          "line_end": 220,
+          "kind": "entry_point",
+          "code": "   208\t    }\n   209\t\n   210\t    private function register_routes(): void {\n   211\t        add_action(\n   212\t            'rest_api_init',\n   213\t            function (): void {\n   214\t                register_rest_route(\n   215\t                    'hostinger-reach/v1',\n   216\t                    '/optinmonster',\n   217\t                    array(\n   218\t                        'methods'             => 'POST',\n   219\t                        'callback'            => array( $this, 'submit_optinmonster' ),\n   220\t                        'permission_callback' => '__return_true',"
+        },
+        {
+          "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+          "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:62",
+          "focus_line": 62,
+          "line_start": 56,
+          "line_end": 68,
+          "kind": "finding_source",
+          "code": "    56\t                'icon'           => 'https://ps.w.org/optinmonster/assets/icon-256x256.png',\n    57\t                'import_enabled' => true,\n    58\t            )\n    59\t        );\n    60\t    }\n    61\t\n    62\t    public function submit_optinmonster( WP_REST_Request $request ): WP_REST_Response {\n    63\t        if ( ! $this->is_authorized( $request ) ) {\n    64\t            return $this->handle_response( 403, array( 'errors' => 'You cannot perform this action' ) );\n    65\t        }\n    66\t\n    67\t        try {\n    68\t            $data    = json_decode( $request->get_body() ?? '', true );"
+        },
+        {
+          "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+          "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:78",
+          "focus_line": 78,
+          "line_start": 72,
+          "line_end": 84,
+          "kind": "finding_sink",
+          "code": "    72\t            }\n    73\t            $email = $this->find_email( $data['fields'] ?? array() );\n    74\t            if ( $email ) {\n    75\t                $campaign_name = $data['tags']['campaign_name'] ?? '';\n    76\t                $form_name     = $data['tags']['form_name'] ?? '';\n    77\t                $group         = $campaign_name . ' - ' . $form_name;\n    78\t                do_action(\n    79\t                    'hostinger_reach_submit',\n    80\t                    array(\n    81\t                        'email'    => $email,\n    82\t                        'group'    => empty( $group ) ? self::INTEGRATION_NAME : $group,\n    83\t                        'metadata' => array(\n    84\t                            'plugin' => self::INTEGRATION_NAME,"
+        }
+      ],
+      "review_questions": {
+        "reachability": "Can an attacker really reach the claimed path from src/Integrations/OptInMonster/OptInMonsterIntegration.php:214 without hidden preconditions or workflow assumptions?",
+        "authorization": "Does the path have a stronger guard than the worker claims, including capability, permission_callback, nonce semantics, or trust-boundary limits for auth `unknown`?",
+        "dataflow": "Does attacker-controlled data actually flow from src/Integrations/OptInMonster/OptInMonsterIntegration.php:62 to src/Integrations/OptInMonster/OptInMonsterIntegration.php:78 for the claimed Broken Access Control \u2014 Unauthenticated REST Endpoint (subscriber contact injection via obtainable nonce), without a refuting guard, sanitizer, or broken hop?",
+        "impact": "Assuming the path reaches src/Integrations/OptInMonster/OptInMonsterIntegration.php:78, is the worker's claimed impact concrete and not overstated for this plugin context?",
+        "missing_evidence": "What exact file:line evidence is still missing before this finding can be kept, downgraded, or retracted with confidence?"
+      }
+    }
+  ],
+  "phase1_context": {
+    "entry_point_count": 25,
+    "anomaly_count": 3,
+    "unresolved_hook_count": 8,
+    "related_entry_points": [
+      {
+        "id": "ep_rest_hostinger_reach_v1__optinmonster",
+        "type": "rest_route",
+        "hook_name": "hostinger-reach/v1/optinmonster",
+        "auth_level": "none",
+        "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+        "line": 214,
+        "callback_name": "submit_optinmonster",
+        "callback_class": "Hostinger\\Reach\\Integrations\\OptInMonster\\OptInMonsterIntegration"
+      }
+    ],
+    "top_anomalies": [],
+    "unresolved_hooks": []
+  },
+  "evidence": {
+    "primary_anchors": [
+      {
+        "kind": "entry_point",
+        "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:214",
+        "packet_id": "HR-001",
+        "finding_id": "HR-001",
+        "entry_point_id": "ep_rest_hostinger_reach_v1__optinmonster",
+        "note": "Broken Access Control \u2014 Unauthenticated REST Endpoint (subscriber contact injection via obtainable nonce)"
+      },
+      {
+        "kind": "finding_source",
+        "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:62",
+        "packet_id": "HR-001",
+        "finding_id": "HR-001",
+        "entry_point_id": "ep_rest_hostinger_reach_v1__optinmonster",
+        "note": "Broken Access Control \u2014 Unauthenticated REST Endpoint (subscriber contact injection via obtainable nonce)"
+      },
+      {
+        "kind": "finding_sink",
+        "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:78",
+        "packet_id": "HR-001",
+        "finding_id": "HR-001",
+        "entry_point_id": "ep_rest_hostinger_reach_v1__optinmonster",
+        "note": "Broken Access Control \u2014 Unauthenticated REST Endpoint (subscriber contact injection via obtainable nonce)"
+      }
+    ],
+    "primary_files": [
+      "src/Integrations/OptInMonster/OptInMonsterIntegration.php"
+    ],
+    "primary_snippets": [
+      {
+        "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+        "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:62",
+        "focus_line": 62,
+        "line_start": 56,
+        "line_end": 68,
+        "kind": "finding_source",
+        "code": "    56\t                'icon'           => 'https://ps.w.org/optinmonster/assets/icon-256x256.png',\n    57\t                'import_enabled' => true,\n    58\t            )\n    59\t        );\n    60\t    }\n    61\t\n    62\t    public function submit_optinmonster( WP_REST_Request $request ): WP_REST_Response {\n    63\t        if ( ! $this->is_authorized( $request ) ) {\n    64\t            return $this->handle_response( 403, array( 'errors' => 'You cannot perform this action' ) );\n    65\t        }\n    66\t\n    67\t        try {\n    68\t            $data    = json_decode( $request->get_body() ?? '', true );"
+      },
+      {
+        "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+        "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:78",
+        "focus_line": 78,
+        "line_start": 72,
+        "line_end": 84,
+        "kind": "finding_sink",
+        "code": "    72\t            }\n    73\t            $email = $this->find_email( $data['fields'] ?? array() );\n    74\t            if ( $email ) {\n    75\t                $campaign_name = $data['tags']['campaign_name'] ?? '';\n    76\t                $form_name     = $data['tags']['form_name'] ?? '';\n    77\t                $group         = $campaign_name . ' - ' . $form_name;\n    78\t                do_action(\n    79\t                    'hostinger_reach_submit',\n    80\t                    array(\n    81\t                        'email'    => $email,\n    82\t                        'group'    => empty( $group ) ? self::INTEGRATION_NAME : $group,\n    83\t                        'metadata' => array(\n    84\t                            'plugin' => self::INTEGRATION_NAME,"
+      },
+      {
+        "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+        "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:214",
+        "focus_line": 214,
+        "line_start": 208,
+        "line_end": 220,
+        "kind": "entry_point",
+        "code": "   208\t    }\n   209\t\n   210\t    private function register_routes(): void {\n   211\t        add_action(\n   212\t            'rest_api_init',\n   213\t            function (): void {\n   214\t                register_rest_route(\n   215\t                    'hostinger-reach/v1',\n   216\t                    '/optinmonster',\n   217\t                    array(\n   218\t                        'methods'             => 'POST',\n   219\t                        'callback'            => array( $this, 'submit_optinmonster' ),\n   220\t                        'permission_callback' => '__return_true',"
+      }
+    ],
+    "optional_evidence": {
+      "anchors": [],
+      "files": [],
+      "snippets": []
+    }
+  },
+  "threat_context_summary": null
+}

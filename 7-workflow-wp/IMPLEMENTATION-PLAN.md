@@ -1,7 +1,7 @@
 # IMPLEMENTATION-PLAN.md — WordPress Audit Pipeline Upgrade
 
-> **Trạng thái:** 🟡 WAVE 3 IN PROGRESS — Wave 1 ✅ Wave 2 ✅ Wave 3 pending
-> **Last updated:** 2026-04-04
+> **Trạng thái:** 🟡 BATCH 5 ROLLOUT IN PROGRESS — Waves 1-3 ✅, Batch 4.5 stabilization ✅, Batch 5 canonical rollout in progress
+> **Last updated:** 2026-04-07
 > **Nguồn sự thật canonical:** `git log` + `change_manifest_session_N.json` + file này. Session cards = planning queue only, status trong đó KHÔNG canonical.
 > **Nguồn tham chiếu:**
 > - `gap-analysis-final.md` — 31 gaps với code evidence
@@ -120,7 +120,41 @@ SKILL SETS [ ] Session 20 — SKILL SETs Agents A-D
            [ ] Session 21 — SKILL SET Claude Code Verify
 DEPLOY     [ ] Session 22 — Step 4 Benchmark → USER REVIEW ④
            [x] Session 23 — First multi-agent pipeline run (Wave 4, S1+S2)   ← 2026-04-05
+           [x] Batch 4.5 — Phase 2 stabilization: worker chunking + reviewer core/explore + cluster evidence packs + consensus writer   ← 2026-04-06
+           [ ] Batch 5 — Canonical rollout: wire cluster/consensus into default Phase 2 + rerun validation matrix + sync docs/benchmark   ← 2026-04-07
 ```
+
+### 1.2. Current Batch 4.5 / Batch 5 snapshot
+
+Batch 4.5 is considered complete at the architecture/stabilization layer:
+
+- `hostinger-reach` now completes the Phase 2 local loop end-to-end with:
+  - `reviewer_core` packetization + batching
+  - `reviewer_explore` split from `reviewer_core`
+  - `worker revision` fed from review artifacts
+- Cluster stages are no longer prompt-heavy only:
+  - deterministic `cluster-plan`
+  - `cluster-cNN.input.json`
+  - `cluster-cNN.pack.json`
+  - `cluster-cNN.synth.json`
+  - `cluster-cNN.challenge.json`
+  - `phase2.consensus.json`
+- `cartflows` already has real cluster artifacts and consensus written.
+
+Batch 5 scope is intentionally narrower:
+
+1. Make the canonical runners (`run-phase2.sh`, `run-single-plugin.sh`, `run-pipeline.sh`) execute:
+   - local Phase 2 loop
+   - cluster synth/challenge
+   - consensus writer
+   - then hand off to Phase 3
+2. Validate this canonical path on anchor plugins:
+   - `hostinger-reach`
+   - `cartflows`
+   - `duplicator`
+3. Sync implementation docs/benchmarks to the delivered workflow.
+
+Batch 5 is **not** a new topology wave. It is the rollout/wiring/validation wave for the stabilized Phase 2 architecture from Batch 4.5.
 
 ### Dependency graph (PHẢI đọc trước khi bắt đầu session)
 
@@ -731,7 +765,7 @@ python3 benchmark/compare.py --all > benchmark/results/wave1_results.json
 - Không có regression trên bất kỳ plugin nào
 - Note: QS is only an independent accuracy metric for GT files with `verified_by: manual_review`.
   GT files with `verified_by: pipeline_derived` produce self-consistency metrics (regression detection),
-  not independent evaluation. Currently: cartflows + pretty-link = manual_review; backwpup = pipeline_derived.
+  not independent evaluation. Currently: cartflows = manual_review; pretty-link + backwpup = pipeline_derived.
 
 **Output cho user review:**
 ```

@@ -1,0 +1,84 @@
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "core",
+  "review_status": "needs_revision",
+  "summary": {
+    "worker_findings_reviewed": 1,
+    "material_issues_found": true,
+    "new_candidate_count": 0,
+    "notes": "The FP direction for HR-FP-007__p05 is supportable packet-locally, but the packet misanchors reachability to `src/Api/Routes/Routes.php:22` and overstates a generic JSON-response rationale even though the reviewed value is forwarded to a hook payload rather than the REST body."
+  },
+  "finding_reviews": [
+    {
+      "finding_id": "HR-FP-007",
+      "packet_id": "HR-FP-007__p05",
+      "parent_finding_id": "HR-FP-007",
+      "assessment": "field_fix",
+      "reason": "Reachability: the reviewed path is packet-locally reachable through `register_rest_route()` in `src/Integrations/OptInMonster/OptInMonsterIntegration.php:214`, not through `src/Api/Routes/Routes.php:22`; the callback is `submit_optinmonster()` at `src/Integrations/OptInMonster/OptInMonsterIntegration.php:219`, which decodes the request body at line 68 and passes `fields` into `find_email()` at line 73. Authorization: there is no stronger capability gate on this surface; the route is public via `permission_callback => '__return_true'` at `src/Integrations/OptInMonster/OptInMonsterIntegration.php:220`, and `is_authorized()` only checks an `X-WP-Nonce` at line 203 while the same `wp_rest` nonce is localized into frontend JavaScript at line 244. Dataflow: attacker-controlled data does reach `find_email()`, and line 255 returns the original array value once a sanitized copy validates as an email, but the next packet-local use is the `hostinger_reach_submit` hook payload at `src/Integrations/OptInMonster/OptInMonsterIntegration.php:81`, not HTML output. Impact: the worker is directionally right that this packet does not show XSS, but not because tainted HTML is merely JSON-encoded in the REST response; the success body is the fixed array at `src/Integrations/OptInMonster/OptInMonsterIntegration.php:93`, and `handle_response()` only wraps the supplied array into `WP_REST_Response` at line 277. Missing evidence: if the worker wants to keep a stronger FP claim than 'no packet-local XSS sink shown,' it still needs downstream consumer evidence for `hostinger_reach_submit`, and it should correct the entry-point and sink fields away from line 255.",
+      "required_changes": [
+        "Keep the false-positive disposition, but replace the mismapped entry-point anchor `src/Api/Routes/Routes.php:22` with the packet-local OptInMonster route registration at `src/Integrations/OptInMonster/OptInMonsterIntegration.php:214` or the public permission line at `src/Integrations/OptInMonster/OptInMonsterIntegration.php:220`.",
+        "Do not use a generic 'REST responses are JSON-encoded' rationale as the primary refutation for this packet; state the packet-local reason instead: line 255 is only a return, the returned value is forwarded to `do_action()` at `src/Integrations/OptInMonster/OptInMonsterIntegration.php:81`, and the response body itself is the fixed success/error payloads at lines 64, 71, 90, and 93.",
+        "Describe the authorization boundary precisely as a public POST route with `permission_callback => '__return_true'` and a frontend-localized `wp_rest` nonce, not as the `manage_options` check in `src/Api/Routes/Routes.php:33`.",
+        "Move the packet fields away from treating `src/Integrations/OptInMonster/OptInMonsterIntegration.php:255` as both source and sink; the request enters through the decoded REST body at lines 68 and 73, and the last packet-local use of the returned value is the hook payload at line 81."
+      ],
+      "counter_evidence": [
+        {
+          "type": "scope",
+          "file": "src/Api/Routes/Routes.php",
+          "line": 22,
+          "detail": "This generic route bootstrap is not the operative packet-local registration for the OptInMonster `/optinmonster` endpoint under review."
+        },
+        {
+          "type": "guard",
+          "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+          "line": 220,
+          "detail": "The reviewed route is explicitly public because its `permission_callback` is `__return_true`."
+        },
+        {
+          "type": "guard",
+          "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+          "line": 244,
+          "detail": "The same `wp_rest` nonce checked by `is_authorized()` is localized into frontend script data, so the packet-local gate is not a capability check."
+        },
+        {
+          "type": "scope",
+          "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+          "line": 255,
+          "detail": "The flagged line only returns `$value`; it does not echo, print, or render HTML at this location."
+        },
+        {
+          "type": "scope",
+          "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+          "line": 81,
+          "detail": "The returned value is inserted into the `hostinger_reach_submit` action payload, so the next packet-local hop is hook dispatch rather than browser output."
+        },
+        {
+          "type": "impact",
+          "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+          "line": 93,
+          "detail": "The successful REST response is a fixed `message => success` array; the email candidate from line 255 is not returned to the client in this packet."
+        }
+      ],
+      "missing_evidence": [
+        "If the worker wants to keep `src/Api/Routes/Routes.php:22` as the entry point, the packet still needs file:line evidence connecting that class's route registration to the OptInMonster `/optinmonster` callback rather than to a different REST surface.",
+        "If the worker wants to refute broader output risk after hook dispatch, the packet still needs file:line evidence for a `hostinger_reach_submit` consumer showing how the `email` value is ultimately handled.",
+        "If the worker wants to keep a JSON-response-based FP rationale, the packet still needs file:line evidence that the tainted value from `src/Integrations/OptInMonster/OptInMonsterIntegration.php:255` reaches the REST response body; the reviewed code only shows fixed response arrays at lines 64, 71, 90, and 93."
+      ],
+      "expansion_attempts": [],
+      "suggested_field_corrections": {
+        "verdict": "FP",
+        "vuln_type": "False positive: `find_email()` returns a validated email candidate and forwards it to a hook payload; no packet-local HTML output sink is shown",
+        "severity": "info",
+        "confidence": 0.9,
+        "auth_required": "public visitor who can obtain the frontend-localized `wp_rest` nonce for `/hostinger-reach/v1/optinmonster`",
+        "entry_point_anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:214",
+        "source_anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:73",
+        "sink_anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:81",
+        "patchstack_eligible": false,
+        "fp_reason": "The flagged line at `src/Integrations/OptInMonster/OptInMonsterIntegration.php:255` is a pure return inside `find_email()`. Packet-local code shows the returned email candidate is forwarded into `do_action( 'hostinger_reach_submit', ... )` at line 81, while the REST response itself is limited to fixed success/error payloads at lines 64, 71, 90, and 93. No packet-local echo, template rendering, or browser-execution sink is shown.",
+        "claimed_impact": "Packet-local evidence shows, at most, delivery of a validated email string to the `hostinger_reach_submit` hook from a public form-submission route; no packet-local HTML rendering or script execution sink is demonstrated."
+      }
+    }
+  ]
+}

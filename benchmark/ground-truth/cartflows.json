@@ -2,11 +2,32 @@
   "plugin_slug": "cartflows",
   "plugin_version": "unknown",
   "verified_by": "manual_review",
-  "verified_date": "2026-04-03",
-  "findings": [],
-  "confirmed_clean_areas": [
-    "Phase2 produced 0 findings — pipeline found no data flows from entry points to sinks",
-    "119 entry points scanned, 0 paths confirmed exploitable"
+  "verified_date": "2026-04-05",
+  "_benchmark_semantics": "INDEPENDENT MANUAL GROUND TRUTH for two benchmark anchor findings. This file does not claim that the plugin has only two issues overall; it records the findings that were independently re-traced and are suitable for accuracy benchmarking.",
+  "findings": [
+    {
+      "vuln_type": "arbitrary_file_upload",
+      "entry_point_type": "ajax_nopriv",
+      "hook_name": "ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file",
+      "sink_file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "sink_line_approx": 425,
+      "severity": "medium",
+      "description": "Public checkout upload endpoint allows unauthenticated visitors who can fetch a public checkout page to obtain a guest nonce and upload attacker-controlled allowed media/document files into the WordPress uploads workflow, even when no checkout file field is configured.",
+      "_ground_truth_confidence": "HIGH — manually re-traced source to sink and refuted the main counter-arguments. This is not RCE because the allowlist blocks script/PHP extensions, but it is still a real unauthorized upload primitive.",
+      "_review_scope_note": "Independent manual review covered the nopriv hook registration, public nonce exposure, restriction fallback behavior, allowlist scope, and upload sink."
+    },
+    {
+      "vuln_type": "user_enumeration",
+      "entry_point_type": "ajax_nopriv",
+      "hook_name": "ep_ajax_nopriv_wp_ajax_nopriv_wcf_check_email_exists",
+      "sink_file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "sink_line_approx": 219,
+      "severity": "low",
+      "description": "Public checkout email-check endpoint reveals whether an email address belongs to a registered account through distinct JSON responses consumed directly by the frontend.",
+      "_ground_truth_confidence": "HIGH — manually re-traced the public hook, response distinction, and frontend usage. Public nonce exposure does not provide meaningful access control here.",
+      "_review_scope_note": "Independent manual review covered the public AJAX registration, nonce emission to checkout pages, email_exists call, response body, and frontend consumption."
+    }
   ],
-  "_notes": "Ground truth seeded from pipeline phase2 output (total=0, tp=0, fp=0, review=0). No manual source review performed yet. Suitable for FP-rate benchmarking only until manual review is done."
+  "confirmed_clean_areas": [],
+  "_notes": "This GT is intentionally narrow. It is suitable for independent benchmark scoring on the two manually reviewed anchor findings above. Other CartFlows signals may still exist outside this benchmark set and should not be inferred clean from this file."
 }

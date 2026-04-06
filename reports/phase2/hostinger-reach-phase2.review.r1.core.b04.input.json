@@ -1,0 +1,323 @@
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "core",
+  "task": {
+    "role": "phase2_reviewer_core",
+    "goal": "Challenge the worker output packet-by-packet with concrete counter-evidence, field corrections, and explicit missing-evidence notes.",
+    "output_schema": "contracts/phase2-review-core-output.schema.json",
+    "output_path": "reports/phase2/hostinger-reach-phase2.review.r1.core.b04.json",
+    "packet_schema": "contracts/phase2-reviewer-packet.schema.json",
+    "allow_missed_findings": false,
+    "constraints": [
+      "Treat each finding packet as the unit of review; do not restart whole-plugin auditing.",
+      "Answer reachability, authorization, dataflow, impact, and missing-evidence questions for each packet before finalizing finding_reviews.",
+      "Start from finding_packets, worker_findings, and phase1_context before opening other artifacts.",
+      "Refute before confirm; keep objections evidence-bound with file:line anchors.",
+      "Do not rewrite the full findings set; produce critique JSON only.",
+      "Default to packet-local critique only. Focus on finding_reviews plus field corrections for the existing finding packets.",
+      "Treat finding_packets as the reviewer core evidence pack. If packet-local evidence is insufficient, prefer needs_more_evidence over broad exploration."
+    ],
+    "max_candidates": null
+  },
+  "artifacts": {
+    "worker_output_path": null,
+    "ir_path": null,
+    "semgrep_path": null,
+    "psalm_path": null,
+    "threat_context_path": null,
+    "source_root": "plugins/hostinger-reach"
+  },
+  "worker_summary": {
+    "total_findings": 1,
+    "true_positive_count": 0,
+    "false_positive_count": 1,
+    "needs_review_count": 0,
+    "negative_findings_count": 0,
+    "overall_risk": "low",
+    "analysis_summary": "Reviewer core batch scoped to 1 packet(s)."
+  },
+  "worker_findings": [
+    {
+      "finding_id": "HR-FP-004",
+      "verdict": "FP",
+      "vuln_type": "XSS \u2014 Functions.php is_hostinger_user()/is_staging() read unescaped server vars",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 1.0,
+      "entry_point_id": "ep_init_init",
+      "source_anchor": "src/Functions.php:119",
+      "sink_anchor": "src/Functions.php:123",
+      "patchstack_eligible": false
+    }
+  ],
+  "finding_packets": [
+    {
+      "packet_id": "HR-FP-004",
+      "parent_finding_id": "HR-FP-004",
+      "packet_kind": "base",
+      "focus_anchor": "src/Functions.php:119",
+      "finding_id": "HR-FP-004",
+      "verdict": "FP",
+      "vuln_type": "XSS \u2014 Functions.php is_hostinger_user()/is_staging() read unescaped server vars",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 1.0,
+      "entry_point_id": "ep_init_init",
+      "patchstack_eligible": false,
+      "claimed_impact": "Worker claims XSS \u2014 Functions.php is_hostinger_user()/is_staging() read unescaped server vars is materially exploitable with auth boundary `unknown` and impact reachable at src/Functions.php:123.",
+      "worker_context": {
+        "source_function": "Functions::is_hostinger_user / is_staging",
+        "sink_function": "str_contains / filter_var",
+        "fp_reason": "Packet-local reviewer scope: Functions at src/Functions.php:119. Primary files: src/Api/Webhooks/Handlers/WebhookHandler.php, src/Functions.php.",
+        "original_fp_reason": "Both methods return booleans from server environment variable checks; H_PLATFORM and H_STAGING are server-level environment variables that are not attacker-controllable via HTTP, and neither value is reflected into HTML output.",
+        "reasoning_excerpt": {
+          "hypothesis": "Validate only the packet-local claim for Functions. Determine whether anchors src/Api/Webhooks/Handlers/WebhookHandler.php:19, src/Functions.php:119, src/Functions.php:123 actually support the worker's claim without widening to other surfaces.",
+          "trace": "Packet-local review only. Focus file: src/Functions.php. Focus anchors: src/Api/Webhooks/Handlers/WebhookHandler.php:19, src/Functions.php:119, src/Functions.php:123. Primary files: src/Api/Webhooks/Handlers/WebhookHandler.php, src/Functions.php. Entry point: src/Api/Webhooks/Handlers/WebhookHandler.php:19. Treat unrelated callers, consumers, and sibling surfaces as out of scope unless an explicit expansion attempt is justified.",
+          "defenses": [
+            "H_PLATFORM and H_STAGING are server-side environment variables, not HTTP request headers. They cannot be set by an attacker via the network. Both methods return booleans.",
+            "The values are used to conditionally set a 'userType' query parameter in post_generate_auth_url() \u2014 but that function is only callable by authenticated admin users and the value is 'internal' vs 'external' string literal, not the env var itself.",
+            "Boolean/guard logic is not a terminal impact sink by itself; prefer field fixes or missing-evidence notes over caller hunts."
+          ],
+          "refutation": [
+            "Refute or keep this packet on Functions alone. Do not carry over conclusions from plugin-wide traces without packet-local code evidence."
+          ],
+          "conclusion": "Keep, downgrade, retract, or mark needs_more_evidence based only on packet-local evidence for Functions."
+        },
+        "original_reasoning_excerpt": {
+          "hypothesis": "Semgrep flagged $_SERVER access at lines 119 and 123 as XSS risk.",
+          "trace": "is_hostinger_user() at line 119 returns !empty($_SERVER['H_PLATFORM']) \u2014 a boolean. is_staging() at line 123 uses filter_var(wp_unslash($_SERVER['H_STAGING']), FILTER_VALIDATE_BOOLEAN) \u2014 returns boolean. Neither value reaches HTML output.",
+          "defenses": [
+            "H_PLATFORM and H_STAGING are server-side environment variables, not HTTP request headers. They cannot be set by an attacker via the network. Both methods return booleans.",
+            "The values are used to conditionally set a 'userType' query parameter in post_generate_auth_url() \u2014 but that function is only callable by authenticated admin users and the value is 'internal' vs 'external' string literal, not the env var itself."
+          ],
+          "refutation": [
+            "REFUTATION ATTEMPT: Can H_PLATFORM or H_STAGING be set by attacker HTTP request? RESULT: Refuted. PHP populates $_SERVER with server environment variables. H_PLATFORM and H_STAGING are Hostinger-specific server environment variables, not headers (headers would appear as HTTP_H_PLATFORM etc). An attacker cannot set server environment variables via HTTP."
+          ],
+          "conclusion": "FP \u2014 semgrep false positive. Server environment variables consumed as booleans, not reflected in output."
+        }
+      },
+      "review_focus": {
+        "scope_statement": "Review only the packet-local claim centered on src/Functions.php:119 in src/Functions.php. Start from the listed packet evidence, not from a plugin-wide hypothesis.",
+        "sink_semantics": "boolean_guard",
+        "default_resolution_on_missing_terminal_evidence": "field_fix_or_retract",
+        "stop_conditions": [
+          "Once packet-local reachability, authorization, dataflow, impact, and missing evidence are answered with file:line support, stop and write critique JSON.",
+          "Do not reopen unrelated plugin surfaces just because the parent finding or worker narrative mentions them.",
+          "If the packet-local code resolves to boolean/guard logic rather than a concrete impact sink, keep the critique local and do not expand into unrelated callers unless required by one explicit expansion attempt."
+        ],
+        "disallowed_drift": [
+          "whole_plugin_reaudit",
+          "translation_or_asset_search",
+          "sibling_surface_expansion_without_evidence"
+        ],
+        "primary_scope_files": [
+          "src/Api/Webhooks/Handlers/WebhookHandler.php",
+          "src/Functions.php"
+        ],
+        "optional_scope_files": [
+          "src/Api/Webhooks/Handlers/WebhookHandler.php",
+          "src/Functions.php"
+        ],
+        "entry_point_anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19"
+      },
+      "scope_policy": {
+        "allowed_primary_files": [
+          "src/Api/Webhooks/Handlers/WebhookHandler.php",
+          "src/Functions.php"
+        ],
+        "allowed_optional_files": [
+          "src/Api/Webhooks/Handlers/WebhookHandler.php",
+          "src/Functions.php"
+        ],
+        "max_out_of_band_files": 1
+      },
+      "anchors": {
+        "entry_point_anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+        "source_anchor": "src/Functions.php:119",
+        "sink_anchor": "src/Functions.php:123",
+        "review_anchor_candidates": [
+          {
+            "kind": "entry_point",
+            "anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+            "note": null
+          },
+          {
+            "kind": "finding_source",
+            "anchor": "src/Functions.php:119",
+            "note": "XSS \u2014 Functions.php is_hostinger_user()/is_staging() read unescaped server vars"
+          },
+          {
+            "kind": "finding_sink",
+            "anchor": "src/Functions.php:123",
+            "note": "XSS \u2014 Functions.php is_hostinger_user()/is_staging() read unescaped server vars"
+          },
+          {
+            "kind": "fp_evidence",
+            "anchor": "src/Functions.php:119",
+            "note": "no_user_input_reachable"
+          }
+        ]
+      },
+      "primary_files": [
+        "src/Api/Webhooks/Handlers/WebhookHandler.php",
+        "src/Functions.php"
+      ],
+      "primary_snippets": [
+        {
+          "file": "src/Functions.php",
+          "anchor": "src/Functions.php:119",
+          "focus_line": 119,
+          "line_start": 113,
+          "line_end": 125,
+          "kind": "finding_source",
+          "code": "   113\t        }\n   114\t\n   115\t        return $host;\n   116\t    }\n   117\t\n   118\t    public function is_hostinger_user(): bool {\n   119\t        return ! empty( $_SERVER['H_PLATFORM'] );\n   120\t    }\n   121\t\n   122\t    public function is_staging(): bool {\n   123\t        return isset( $_SERVER['H_STAGING'] ) && filter_var( wp_unslash( $_SERVER['H_STAGING'] ), FILTER_VALIDATE_BOOLEAN ) === true;\n   124\t    }\n   125\t"
+        },
+        {
+          "file": "src/Functions.php",
+          "anchor": "src/Functions.php:123",
+          "focus_line": 123,
+          "line_start": 117,
+          "line_end": 129,
+          "kind": "finding_sink",
+          "code": "   117\t\n   118\t    public function is_hostinger_user(): bool {\n   119\t        return ! empty( $_SERVER['H_PLATFORM'] );\n   120\t    }\n   121\t\n   122\t    public function is_staging(): bool {\n   123\t        return isset( $_SERVER['H_STAGING'] ) && filter_var( wp_unslash( $_SERVER['H_STAGING'] ), FILTER_VALIDATE_BOOLEAN ) === true;\n   124\t    }\n   125\t\n   126\t    public function has_reach_subscription_block( int $post_id ): bool {\n   127\t        $content = get_post_field( 'post_content', $post_id );\n   128\t\n   129\t        return str_contains( $content, '<!-- wp:hostinger-reach/subscription' );"
+        },
+        {
+          "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
+          "anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+          "focus_line": 19,
+          "line_start": 13,
+          "line_end": 25,
+          "kind": "entry_point",
+          "code": "    13\t    public function __construct( ReachApiHandler $reach_api_handler, FormRepository $form_repository ) {\n    14\t        $this->reach_api_handler = $reach_api_handler;\n    15\t        $this->form_repository   = $form_repository;\n    16\t    }\n    17\t\n    18\t    public function init(): void {\n    19\t        add_action( 'init', array( $this, 'init_hooks' ) );\n    20\t    }\n    21\t\n    22\t    public function is_enabled(): bool {\n    23\t        return $this->reach_api_handler->is_connected() && $this->is_automation_active();\n    24\t    }\n    25\t"
+        }
+      ],
+      "optional_files": [
+        "src/Api/Webhooks/Handlers/WebhookHandler.php",
+        "src/Functions.php"
+      ],
+      "optional_snippets": [
+        {
+          "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
+          "anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+          "focus_line": 19,
+          "line_start": 13,
+          "line_end": 25,
+          "kind": "entry_point",
+          "code": "    13\t    public function __construct( ReachApiHandler $reach_api_handler, FormRepository $form_repository ) {\n    14\t        $this->reach_api_handler = $reach_api_handler;\n    15\t        $this->form_repository   = $form_repository;\n    16\t    }\n    17\t\n    18\t    public function init(): void {\n    19\t        add_action( 'init', array( $this, 'init_hooks' ) );\n    20\t    }\n    21\t\n    22\t    public function is_enabled(): bool {\n    23\t        return $this->reach_api_handler->is_connected() && $this->is_automation_active();\n    24\t    }\n    25\t"
+        },
+        {
+          "file": "src/Functions.php",
+          "anchor": "src/Functions.php:119",
+          "focus_line": 119,
+          "line_start": 113,
+          "line_end": 125,
+          "kind": "finding_source",
+          "code": "   113\t        }\n   114\t\n   115\t        return $host;\n   116\t    }\n   117\t\n   118\t    public function is_hostinger_user(): bool {\n   119\t        return ! empty( $_SERVER['H_PLATFORM'] );\n   120\t    }\n   121\t\n   122\t    public function is_staging(): bool {\n   123\t        return isset( $_SERVER['H_STAGING'] ) && filter_var( wp_unslash( $_SERVER['H_STAGING'] ), FILTER_VALIDATE_BOOLEAN ) === true;\n   124\t    }\n   125\t"
+        },
+        {
+          "file": "src/Functions.php",
+          "anchor": "src/Functions.php:123",
+          "focus_line": 123,
+          "line_start": 117,
+          "line_end": 129,
+          "kind": "finding_sink",
+          "code": "   117\t\n   118\t    public function is_hostinger_user(): bool {\n   119\t        return ! empty( $_SERVER['H_PLATFORM'] );\n   120\t    }\n   121\t\n   122\t    public function is_staging(): bool {\n   123\t        return isset( $_SERVER['H_STAGING'] ) && filter_var( wp_unslash( $_SERVER['H_STAGING'] ), FILTER_VALIDATE_BOOLEAN ) === true;\n   124\t    }\n   125\t\n   126\t    public function has_reach_subscription_block( int $post_id ): bool {\n   127\t        $content = get_post_field( 'post_content', $post_id );\n   128\t\n   129\t        return str_contains( $content, '<!-- wp:hostinger-reach/subscription' );"
+        }
+      ],
+      "review_questions": {
+        "reachability": "Can an attacker really reach the claimed path from src/Api/Webhooks/Handlers/WebhookHandler.php:19 without hidden preconditions or workflow assumptions?",
+        "authorization": "Does the path have a stronger guard than the worker claims, including capability, permission_callback, nonce semantics, or trust-boundary limits for auth `unknown`?",
+        "dataflow": "Does attacker-controlled data actually flow from src/Functions.php:119 to src/Functions.php:123 for the claimed XSS \u2014 Functions.php is_hostinger_user()/is_staging() read unescaped server vars, without a refuting guard, sanitizer, or broken hop?",
+        "impact": "Assuming the path reaches src/Functions.php:123, is the worker's claimed impact concrete and not overstated for this plugin context?",
+        "missing_evidence": "What exact file:line evidence is still missing before this finding can be kept, downgraded, or retracted with confidence?"
+      }
+    }
+  ],
+  "phase1_context": {
+    "entry_point_count": 25,
+    "anomaly_count": 3,
+    "unresolved_hook_count": 8,
+    "related_entry_points": [
+      {
+        "id": "ep_init_init",
+        "type": "init",
+        "hook_name": "init",
+        "auth_level": "none",
+        "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
+        "line": 19,
+        "callback_name": "init_hooks",
+        "callback_class": "Hostinger\\Reach\\Api\\Webhooks\\Handlers\\WebhookHandler"
+      }
+    ],
+    "top_anomalies": [],
+    "unresolved_hooks": []
+  },
+  "evidence": {
+    "primary_anchors": [
+      {
+        "kind": "entry_point",
+        "anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+        "packet_id": "HR-FP-004",
+        "finding_id": "HR-FP-004",
+        "entry_point_id": "ep_init_init",
+        "note": "XSS \u2014 Functions.php is_hostinger_user()/is_staging() read unescaped server vars"
+      },
+      {
+        "kind": "finding_source",
+        "anchor": "src/Functions.php:119",
+        "packet_id": "HR-FP-004",
+        "finding_id": "HR-FP-004",
+        "entry_point_id": "ep_init_init",
+        "note": "XSS \u2014 Functions.php is_hostinger_user()/is_staging() read unescaped server vars"
+      },
+      {
+        "kind": "finding_sink",
+        "anchor": "src/Functions.php:123",
+        "packet_id": "HR-FP-004",
+        "finding_id": "HR-FP-004",
+        "entry_point_id": "ep_init_init",
+        "note": "XSS \u2014 Functions.php is_hostinger_user()/is_staging() read unescaped server vars"
+      }
+    ],
+    "primary_files": [
+      "src/Api/Webhooks/Handlers/WebhookHandler.php",
+      "src/Functions.php"
+    ],
+    "primary_snippets": [
+      {
+        "file": "src/Functions.php",
+        "anchor": "src/Functions.php:119",
+        "focus_line": 119,
+        "line_start": 113,
+        "line_end": 125,
+        "kind": "finding_source",
+        "code": "   113\t        }\n   114\t\n   115\t        return $host;\n   116\t    }\n   117\t\n   118\t    public function is_hostinger_user(): bool {\n   119\t        return ! empty( $_SERVER['H_PLATFORM'] );\n   120\t    }\n   121\t\n   122\t    public function is_staging(): bool {\n   123\t        return isset( $_SERVER['H_STAGING'] ) && filter_var( wp_unslash( $_SERVER['H_STAGING'] ), FILTER_VALIDATE_BOOLEAN ) === true;\n   124\t    }\n   125\t"
+      },
+      {
+        "file": "src/Functions.php",
+        "anchor": "src/Functions.php:123",
+        "focus_line": 123,
+        "line_start": 117,
+        "line_end": 129,
+        "kind": "finding_sink",
+        "code": "   117\t\n   118\t    public function is_hostinger_user(): bool {\n   119\t        return ! empty( $_SERVER['H_PLATFORM'] );\n   120\t    }\n   121\t\n   122\t    public function is_staging(): bool {\n   123\t        return isset( $_SERVER['H_STAGING'] ) && filter_var( wp_unslash( $_SERVER['H_STAGING'] ), FILTER_VALIDATE_BOOLEAN ) === true;\n   124\t    }\n   125\t\n   126\t    public function has_reach_subscription_block( int $post_id ): bool {\n   127\t        $content = get_post_field( 'post_content', $post_id );\n   128\t\n   129\t        return str_contains( $content, '<!-- wp:hostinger-reach/subscription' );"
+      },
+      {
+        "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
+        "anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+        "focus_line": 19,
+        "line_start": 13,
+        "line_end": 25,
+        "kind": "entry_point",
+        "code": "    13\t    public function __construct( ReachApiHandler $reach_api_handler, FormRepository $form_repository ) {\n    14\t        $this->reach_api_handler = $reach_api_handler;\n    15\t        $this->form_repository   = $form_repository;\n    16\t    }\n    17\t\n    18\t    public function init(): void {\n    19\t        add_action( 'init', array( $this, 'init_hooks' ) );\n    20\t    }\n    21\t\n    22\t    public function is_enabled(): bool {\n    23\t        return $this->reach_api_handler->is_connected() && $this->is_automation_active();\n    24\t    }\n    25\t"
+      }
+    ],
+    "optional_evidence": {
+      "anchors": [],
+      "files": [],
+      "snippets": []
+    }
+  },
+  "threat_context_summary": null
+}

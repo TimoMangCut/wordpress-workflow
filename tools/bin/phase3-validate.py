@@ -176,8 +176,11 @@ def main() -> int:
     for key, value in replacements.items():
         template = template.replace(key, value)
 
-    skill_hint = "Khi thuc hien WP plugin security audit, LUON load skill `$application-security` truoc."
-    prompt = f"{skill_hint}\n\n{template}"
+    provider_hint = (
+        "Hay ap dung truc tiep WordPress AppSec workflow trong prompt va project docs. "
+        "Khong duoc phu thuoc vao skill auto-load."
+    )
+    prompt = f"{provider_hint}\n\n{template}"
 
     print(f"=== Phase 3: {args.slug} ===")
     print(f"  Reports dir: {reports_dir.as_posix()}")

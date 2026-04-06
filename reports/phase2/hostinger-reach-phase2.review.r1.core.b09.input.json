@@ -1,0 +1,325 @@
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "core",
+  "task": {
+    "role": "phase2_reviewer_core",
+    "goal": "Challenge the worker output packet-by-packet with concrete counter-evidence, field corrections, and explicit missing-evidence notes.",
+    "output_schema": "contracts/phase2-review-core-output.schema.json",
+    "output_path": "reports/phase2/hostinger-reach-phase2.review.r1.core.b09.json",
+    "packet_schema": "contracts/phase2-reviewer-packet.schema.json",
+    "allow_missed_findings": false,
+    "constraints": [
+      "Treat each finding packet as the unit of review; do not restart whole-plugin auditing.",
+      "Answer reachability, authorization, dataflow, impact, and missing-evidence questions for each packet before finalizing finding_reviews.",
+      "Start from finding_packets, worker_findings, and phase1_context before opening other artifacts.",
+      "Refute before confirm; keep objections evidence-bound with file:line anchors.",
+      "Do not rewrite the full findings set; produce critique JSON only.",
+      "Default to packet-local critique only. Focus on finding_reviews plus field corrections for the existing finding packets.",
+      "Treat finding_packets as the reviewer core evidence pack. If packet-local evidence is insufficient, prefer needs_more_evidence over broad exploration."
+    ],
+    "max_candidates": null
+  },
+  "artifacts": {
+    "worker_output_path": null,
+    "ir_path": null,
+    "semgrep_path": null,
+    "psalm_path": null,
+    "threat_context_path": null,
+    "source_root": "plugins/hostinger-reach"
+  },
+  "worker_summary": {
+    "total_findings": 1,
+    "true_positive_count": 0,
+    "false_positive_count": 1,
+    "needs_review_count": 0,
+    "negative_findings_count": 0,
+    "overall_risk": "low",
+    "analysis_summary": "Reviewer core batch scoped to 1 packet(s)."
+  },
+  "worker_findings": [
+    {
+      "finding_id": "HR-FP-007",
+      "verdict": "FP",
+      "vuln_type": "XSS \u2014 Multiple semgrep-flagged echo-without-escape in handler/integration files",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 1.0,
+      "entry_point_id": "ep_rest_api_init_rest_api_init",
+      "source_anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+      "sink_anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+      "patchstack_eligible": false
+    }
+  ],
+  "finding_packets": [
+    {
+      "packet_id": "HR-FP-007__p02",
+      "parent_finding_id": "HR-FP-007",
+      "packet_kind": "atomic_surface",
+      "focus_anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+      "finding_id": "HR-FP-007",
+      "verdict": "FP",
+      "vuln_type": "XSS \u2014 Multiple semgrep-flagged echo-without-escape in handler/integration files [src/Api/Handlers/ReachApiHandler.php]",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 1.0,
+      "entry_point_id": "ep_rest_api_init_rest_api_init",
+      "patchstack_eligible": false,
+      "claimed_impact": "Review only the ReachApiHandler surface for XSS \u2014 Multiple semgrep-flagged echo-without-escape in handler/integration files. Confirm whether the path around src/Api/Handlers/ReachApiHandler.php:152 has concrete impact for auth boundary `unknown` without inheriting conclusions from sibling surfaces.",
+      "worker_context": {
+        "source_function": "ReachApiHandler",
+        "sink_function": "Various boolean/method returns",
+        "fp_reason": "Aggregate worker finding was atomized for reviewer_core. This packet is limited to ReachApiHandler and anchors src/Api/Handlers/ReachApiHandler.php:152, src/Api/Handlers/ReachApiHandler.php:168, src/Api/Handlers/ReachApiHandler.php:383, src/Api/Handlers/ReachApiHandler.php:386.",
+        "original_fp_reason": "All semgrep XSS hits in handler PHP files are in methods that return arrays/objects or booleans (not HTML) \u2014 these methods are called in REST API response contexts where JSON encoding is applied, not direct HTML output.",
+        "reasoning_excerpt": {
+          "hypothesis": "Validate only the packet-local claim for ReachApiHandler. Determine whether anchors src/Api/Handlers/ReachApiHandler.php:152, src/Api/Handlers/ReachApiHandler.php:168, src/Api/Handlers/ReachApiHandler.php:383, src/Api/Handlers/ReachApiHandler.php:386 actually support the worker's claim without widening to other surfaces.",
+          "trace": "Packet-local review only. Focus file: src/Api/Handlers/ReachApiHandler.php. Focus anchors: src/Api/Handlers/ReachApiHandler.php:152, src/Api/Handlers/ReachApiHandler.php:168, src/Api/Handlers/ReachApiHandler.php:383, src/Api/Handlers/ReachApiHandler.php:386. Primary files: src/Api/Handlers/ReachApiHandler.php, src/Api/Routes/Routes.php. Entry point: src/Api/Routes/Routes.php:22. Treat unrelated callers, consumers, and sibling surfaces as out of scope unless an explicit expansion attempt is justified.",
+          "defenses": [
+            "REST API callbacks return WP_REST_Response objects \u2014 all output goes through WP_REST_Server which JSON-encodes the data",
+            "JSON encoding inherently prevents HTML injection in the API response context",
+            "Keep critique packet-local; do not reuse sibling-surface defenses or conclusions without code evidence in this packet."
+          ],
+          "refutation": [
+            "Refute or keep this packet on ReachApiHandler alone. Do not carry over conclusions from plugin-wide traces without packet-local code evidence."
+          ],
+          "conclusion": "Keep, downgrade, retract, or mark needs_more_evidence based only on packet-local evidence for ReachApiHandler."
+        },
+        "original_reasoning_excerpt": {
+          "hypothesis": "Semgrep flagged multiple XSS patterns across handler and integration files.",
+          "trace": "All flagged lines in ReachApiHandler (152, 168, 383, 386), IntegrationsApiHandler (56, 153, 205, 210), ElementorIntegration (88, 390, 406), ForminatorIntegration (173), OptInMonsterIntegration (255, 268) are either: (a) return statements returning PHP arrays/strings that are subsequently JSON-encoded by wp_json_encode before output, or (b) boolean return values, or (c) parts of methods that are never directly echoed.",
+          "defenses": [
+            "REST API callbacks return WP_REST_Response objects \u2014 all output goes through WP_REST_Server which JSON-encodes the data",
+            "JSON encoding inherently prevents HTML injection in the API response context"
+          ],
+          "refutation": [
+            "REFUTATION ATTEMPT: Do any of these flagged lines produce direct HTML output? RESULT: Refuted upon review. ReachApiHandler lines 152/168 are in post_contact_handler and is_authorized \u2014 both return WP_REST_Response. IntegrationsApiHandler lines are in REST handler methods. No direct echo of user-controlled HTML was found."
+          ],
+          "conclusion": "FP batch \u2014 semgrep over-triggered on data flow patterns that terminate in JSON-encoded REST responses, not HTML output."
+        }
+      },
+      "review_focus": {
+        "scope_statement": "Review only the packet-local claim centered on src/Api/Handlers/ReachApiHandler.php:152 in src/Api/Handlers/ReachApiHandler.php. Start from the listed packet evidence, not from a plugin-wide hypothesis.",
+        "sink_semantics": "local_output",
+        "default_resolution_on_missing_terminal_evidence": "needs_more_evidence",
+        "stop_conditions": [
+          "Once packet-local reachability, authorization, dataflow, impact, and missing evidence are answered with file:line support, stop and write critique JSON.",
+          "Do not reopen unrelated plugin surfaces just because the parent finding or worker narrative mentions them."
+        ],
+        "disallowed_drift": [
+          "whole_plugin_reaudit",
+          "translation_or_asset_search",
+          "sibling_surface_expansion_without_evidence"
+        ],
+        "primary_scope_files": [
+          "src/Api/Handlers/ReachApiHandler.php",
+          "src/Api/Routes/Routes.php"
+        ],
+        "optional_scope_files": [
+          "src/Api/Handlers/ReachApiHandler.php"
+        ],
+        "entry_point_anchor": "src/Api/Routes/Routes.php:22"
+      },
+      "scope_policy": {
+        "allowed_primary_files": [
+          "src/Api/Handlers/ReachApiHandler.php",
+          "src/Api/Routes/Routes.php"
+        ],
+        "allowed_optional_files": [
+          "src/Api/Handlers/ReachApiHandler.php"
+        ],
+        "max_out_of_band_files": 1
+      },
+      "anchors": {
+        "entry_point_anchor": "src/Api/Routes/Routes.php:22",
+        "source_anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+        "sink_anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+        "review_anchor_candidates": [
+          {
+            "kind": "finding_source",
+            "anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+            "note": "XSS \u2014 Multiple semgrep-flagged echo-without-escape in handler/integration files"
+          },
+          {
+            "kind": "finding_sink",
+            "anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+            "note": "XSS \u2014 Multiple semgrep-flagged echo-without-escape in handler/integration files"
+          },
+          {
+            "kind": "fp_evidence",
+            "anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+            "note": "no_user_input_reachable"
+          },
+          {
+            "kind": "aggregate_reference",
+            "anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+            "note": "ReachApiHandler"
+          },
+          {
+            "kind": "aggregate_reference",
+            "anchor": "src/Api/Handlers/ReachApiHandler.php:168",
+            "note": "ReachApiHandler"
+          },
+          {
+            "kind": "aggregate_reference",
+            "anchor": "src/Api/Handlers/ReachApiHandler.php:383",
+            "note": "ReachApiHandler"
+          },
+          {
+            "kind": "aggregate_reference",
+            "anchor": "src/Api/Handlers/ReachApiHandler.php:386",
+            "note": "ReachApiHandler"
+          }
+        ]
+      },
+      "primary_files": [
+        "src/Api/Handlers/ReachApiHandler.php",
+        "src/Api/Routes/Routes.php"
+      ],
+      "primary_snippets": [
+        {
+          "file": "src/Api/Handlers/ReachApiHandler.php",
+          "anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+          "focus_line": 152,
+          "line_start": 146,
+          "line_end": 158,
+          "kind": "finding_source",
+          "code": "   146\t        $surname  = $request->get_param( 'surname' );\n   147\t        $form_id  = $request->get_param( 'id' );\n   148\t        $metadata = $request->get_param( 'metadata' );\n   149\t        $tags     = $request->get_param( 'tags' );\n   150\t        $group    = apply_filters( 'hostinger_reach_get_group', $request->get_param( 'group' ), $form_id );\n   151\t\n   152\t        return $this->post_contact(\n   153\t            array(\n   154\t                'form_id'  => $form_id,\n   155\t                'group'    => $group,\n   156\t                'tags'     => $tags,\n   157\t                'email'    => $email,\n   158\t                'name'     => $name,"
+        },
+        {
+          "file": "src/Api/Routes/Routes.php",
+          "anchor": "src/Api/Routes/Routes.php:22",
+          "focus_line": 22,
+          "line_start": 16,
+          "line_end": 28,
+          "kind": "entry_point",
+          "code": "    16\t    public function __construct( ApiHandler $handler, ApiKeyManager $api_key_manager ) {\n    17\t        $this->handler         = $handler;\n    18\t        $this->api_key_manager = $api_key_manager;\n    19\t    }\n    20\t\n    21\t    public function init(): void {\n    22\t        add_action( 'rest_api_init', array( $this, 'register_routes' ) );\n    23\t    }\n    24\t\n    25\t    public function permission_check(): bool {\n    26\t        if ( has_action( 'litespeed_control_set_nocache' ) ) {\n    27\t            do_action(\n    28\t                'litespeed_control_set_nocache',"
+        }
+      ],
+      "optional_files": [
+        "src/Api/Handlers/ReachApiHandler.php"
+      ],
+      "optional_snippets": [
+        {
+          "file": "src/Api/Handlers/ReachApiHandler.php",
+          "anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+          "focus_line": 152,
+          "line_start": 146,
+          "line_end": 158,
+          "kind": "finding_source",
+          "code": "   146\t        $surname  = $request->get_param( 'surname' );\n   147\t        $form_id  = $request->get_param( 'id' );\n   148\t        $metadata = $request->get_param( 'metadata' );\n   149\t        $tags     = $request->get_param( 'tags' );\n   150\t        $group    = apply_filters( 'hostinger_reach_get_group', $request->get_param( 'group' ), $form_id );\n   151\t\n   152\t        return $this->post_contact(\n   153\t            array(\n   154\t                'form_id'  => $form_id,\n   155\t                'group'    => $group,\n   156\t                'tags'     => $tags,\n   157\t                'email'    => $email,\n   158\t                'name'     => $name,"
+        },
+        {
+          "file": "src/Api/Handlers/ReachApiHandler.php",
+          "anchor": "src/Api/Handlers/ReachApiHandler.php:168",
+          "focus_line": 168,
+          "line_start": 162,
+          "line_end": 174,
+          "kind": "aggregate_reference",
+          "code": "   162\t        );\n   163\t    }\n   164\t\n   165\t    public function is_authorized( WP_REST_Request $request ): bool {\n   166\t        $nonce = $request->get_header( 'X-WP-Nonce' );\n   167\t\n   168\t        return wp_verify_nonce( $nonce, 'wp_rest' ) && $this->get_connection_status_handler();\n   169\t    }\n   170\t\n   171\t    public function post_generate_auth_url(): WP_REST_Response {\n   172\t        $this->api_key_manager->generate_csrf();\n   173\t\n   174\t        $query_params = array("
+        },
+        {
+          "file": "src/Api/Handlers/ReachApiHandler.php",
+          "anchor": "src/Api/Handlers/ReachApiHandler.php:383",
+          "focus_line": 383,
+          "line_start": 377,
+          "line_end": 389,
+          "kind": "aggregate_reference",
+          "code": "   377\t            array(\n   378\t                'names' => $names,\n   379\t            )\n   380\t        );\n   381\t\n   382\t        if ( is_wp_error( $response ) ) {\n   383\t            return $this->handle_wp_error( $response );\n   384\t        }\n   385\t\n   386\t        return $this->handle_response( $response );\n   387\t    }\n   388\t\n   389\t    private function parse_contact( array $data ): array {"
+        },
+        {
+          "file": "src/Api/Handlers/ReachApiHandler.php",
+          "anchor": "src/Api/Handlers/ReachApiHandler.php:386",
+          "focus_line": 386,
+          "line_start": 380,
+          "line_end": 392,
+          "kind": "aggregate_reference",
+          "code": "   380\t        );\n   381\t\n   382\t        if ( is_wp_error( $response ) ) {\n   383\t            return $this->handle_wp_error( $response );\n   384\t        }\n   385\t\n   386\t        return $this->handle_response( $response );\n   387\t    }\n   388\t\n   389\t    private function parse_contact( array $data ): array {\n   390\t        $contact = array(\n   391\t            'email' => sanitize_email( $data['email'] ),\n   392\t        );"
+        }
+      ],
+      "review_questions": {
+        "reachability": "Can an attacker really reach the claimed path from src/Api/Routes/Routes.php:22 without hidden preconditions or workflow assumptions?",
+        "authorization": "Does the path have a stronger guard than the worker claims, including capability, permission_callback, nonce semantics, or trust-boundary limits for auth `unknown`?",
+        "dataflow": "Does attacker-controlled data actually flow from src/Api/Handlers/ReachApiHandler.php:152 to src/Api/Handlers/ReachApiHandler.php:152 for the claimed XSS \u2014 Multiple semgrep-flagged echo-without-escape in handler/integration files [src/Api/Handlers/ReachApiHandler.php], without a refuting guard, sanitizer, or broken hop?",
+        "impact": "Assuming the path reaches src/Api/Handlers/ReachApiHandler.php:152, is the worker's claimed impact concrete and not overstated for this plugin context?",
+        "missing_evidence": "What exact file:line evidence is still missing before this finding can be kept, downgraded, or retracted with confidence?"
+      }
+    }
+  ],
+  "phase1_context": {
+    "entry_point_count": 25,
+    "anomaly_count": 3,
+    "unresolved_hook_count": 8,
+    "related_entry_points": [
+      {
+        "id": "ep_rest_api_init_rest_api_init",
+        "type": "rest_api_init",
+        "hook_name": "rest_api_init",
+        "auth_level": "none",
+        "file": "src/Api/Routes/Routes.php",
+        "line": 22,
+        "callback_name": "register_routes",
+        "callback_class": "Hostinger\\Reach\\Integrations\\OptInMonster\\OptInMonsterIntegration"
+      }
+    ],
+    "top_anomalies": [],
+    "unresolved_hooks": []
+  },
+  "evidence": {
+    "primary_anchors": [
+      {
+        "kind": "entry_point",
+        "anchor": "src/Api/Routes/Routes.php:22",
+        "packet_id": "HR-FP-007__p02",
+        "finding_id": "HR-FP-007",
+        "entry_point_id": "ep_rest_api_init_rest_api_init",
+        "note": "XSS \u2014 Multiple semgrep-flagged echo-without-escape in handler/integration files [src/Api/Handlers/ReachApiHandler.php]"
+      },
+      {
+        "kind": "finding_source",
+        "anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+        "packet_id": "HR-FP-007__p02",
+        "finding_id": "HR-FP-007",
+        "entry_point_id": "ep_rest_api_init_rest_api_init",
+        "note": "XSS \u2014 Multiple semgrep-flagged echo-without-escape in handler/integration files [src/Api/Handlers/ReachApiHandler.php]"
+      },
+      {
+        "kind": "finding_sink",
+        "anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+        "packet_id": "HR-FP-007__p02",
+        "finding_id": "HR-FP-007",
+        "entry_point_id": "ep_rest_api_init_rest_api_init",
+        "note": "XSS \u2014 Multiple semgrep-flagged echo-without-escape in handler/integration files [src/Api/Handlers/ReachApiHandler.php]"
+      }
+    ],
+    "primary_files": [
+      "src/Api/Handlers/ReachApiHandler.php",
+      "src/Api/Routes/Routes.php"
+    ],
+    "primary_snippets": [
+      {
+        "file": "src/Api/Handlers/ReachApiHandler.php",
+        "anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+        "focus_line": 152,
+        "line_start": 146,
+        "line_end": 158,
+        "kind": "finding_source",
+        "code": "   146\t        $surname  = $request->get_param( 'surname' );\n   147\t        $form_id  = $request->get_param( 'id' );\n   148\t        $metadata = $request->get_param( 'metadata' );\n   149\t        $tags     = $request->get_param( 'tags' );\n   150\t        $group    = apply_filters( 'hostinger_reach_get_group', $request->get_param( 'group' ), $form_id );\n   151\t\n   152\t        return $this->post_contact(\n   153\t            array(\n   154\t                'form_id'  => $form_id,\n   155\t                'group'    => $group,\n   156\t                'tags'     => $tags,\n   157\t                'email'    => $email,\n   158\t                'name'     => $name,"
+      },
+      {
+        "file": "src/Api/Routes/Routes.php",
+        "anchor": "src/Api/Routes/Routes.php:22",
+        "focus_line": 22,
+        "line_start": 16,
+        "line_end": 28,
+        "kind": "entry_point",
+        "code": "    16\t    public function __construct( ApiHandler $handler, ApiKeyManager $api_key_manager ) {\n    17\t        $this->handler         = $handler;\n    18\t        $this->api_key_manager = $api_key_manager;\n    19\t    }\n    20\t\n    21\t    public function init(): void {\n    22\t        add_action( 'rest_api_init', array( $this, 'register_routes' ) );\n    23\t    }\n    24\t\n    25\t    public function permission_check(): bool {\n    26\t        if ( has_action( 'litespeed_control_set_nocache' ) ) {\n    27\t            do_action(\n    28\t                'litespeed_control_set_nocache',"
+      }
+    ],
+    "optional_evidence": {
+      "anchors": [],
+      "files": [],
+      "snippets": []
+    }
+  },
+  "threat_context_summary": null
+}

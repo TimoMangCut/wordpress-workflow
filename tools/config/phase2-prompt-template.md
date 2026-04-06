@@ -57,7 +57,7 @@ Finding requirements:
   - cwe_id
   - severity
   - auth_required
-  - confidence
+  - confidence (numeric 0.0-1.0, not labels like low/medium/high)
   - entry_point_id
   - source_function
   - sink_function

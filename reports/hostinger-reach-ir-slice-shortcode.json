@@ -1,0 +1,46 @@
+{
+  "metadata": {
+    "plugin_slug": "hostinger-reach",
+    "plugin_name": "Hostinger Reach",
+    "version": "1.4.4",
+    "active_installs": null,
+    "files_analyzed": 123,
+    "total_loc": 9691,
+    "extraction_time_ms": 307,
+    "extractor_version": "1.0.0"
+  },
+  "entry_points": [
+    {
+      "id": "ep_block_unknown",
+      "type": "block",
+      "hook_name": "unknown",
+      "callback": {
+        "type": "method",
+        "name": "render",
+        "class": "Hostinger\\Reach\\Blocks\\Block",
+        "file": "src/Blocks/Block.php",
+        "line_start": 98,
+        "line_end": 98
+      },
+      "auth_level": "contributor",
+      "file": "src/Blocks/Block.php",
+      "line": 34
+    }
+  ],
+  "sources": [],
+  "sinks": [
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_block_unknown",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "file": "src/Blocks/Block.php",
+      "line": 25
+    }
+  ],
+  "guards": [],
+  "anomalies": [],
+  "unresolved_hooks": [],
+  "coverage_gaps": []
+}

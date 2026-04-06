@@ -1,0 +1,77 @@
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "core",
+  "review_status": "needs_revision",
+  "summary": {
+    "worker_findings_reviewed": 1,
+    "material_issues_found": true,
+    "new_candidate_count": 0,
+    "notes": "The FP verdict for HR-FP-003 is supportable, but the packet still needs field corrections: the `WebhookHandler::init()` anchor is not packet-locally tied to `SatisfactionSurvey`, and the cited `REQUEST_URI` line is boolean guard logic rather than an XSS sink."
+  },
+  "finding_reviews": [
+    {
+      "finding_id": "HR-FP-003",
+      "packet_id": "HR-FP-003",
+      "parent_finding_id": "HR-FP-003",
+      "assessment": "field_fix",
+      "reason": "Reachability: the packet does not show a packet-local path from `src/Api/Webhooks/Handlers/WebhookHandler.php:19` to `SatisfactionSurvey::is_hostinger_page()`; `WebhookHandler::init()` only registers `$this->init_hooks` on `init`, while the scoped survey file contains its own protected helpers and no packet-local link back to `WebhookHandler`. Authorization: no capability, nonce, permission_callback, or other request-boundary guard is evidenced packet-locally because the cited lines are not a request handler, so the worker's `auth_required: null` / `unknown` framing is unsupported and should be replaced with a narrower 'not applicable in packet-local code' statement. Dataflow: `is_hostinger_page()` is declared `: bool` at `src/Admin/Surveys/SatisfactionSurvey.php:50` and returns `str_contains( $_SERVER['REQUEST_URI'], 'hostinger' )` at line 51; `should_load_survey()` is also `: bool` at line 13 and uses that result only inside the boolean conjunction at line 18, so the packet does not show attacker-controlled string data reaching HTML, JavaScript, an attribute context, or another executable sink. Impact: packet-local evidence supports only survey-load guard logic, not XSS. Missing evidence: the worker has not shown a packet-local caller path from the `init` anchor, a terminal reflection site, or any file:line sink where the inspected `REQUEST_URI` value or its derived boolean becomes executable browser output.",
+      "required_changes": [
+        "Keep the FP verdict, but relabel the packet as a false positive caused by boolean guard logic around `$_SERVER['REQUEST_URI']`, not as a reachable XSS path.",
+        "Remove or replace `src/Api/Webhooks/Handlers/WebhookHandler.php:19` as the packet entry point unless a packet-local caller trace into `SatisfactionSurvey::is_hostinger_page()` is provided.",
+        "Do not keep `src/Admin/Surveys/SatisfactionSurvey.php:51` as an XSS sink; the reviewed line feeds a boolean check and no terminal output site is shown in scope.",
+        "Correct the auth/impact framing to reflect that the scoped code is protected survey helper logic with no packet-local request handler or browser-executable sink evidenced."
+      ],
+      "counter_evidence": [
+        {
+          "type": "unreachable",
+          "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
+          "line": 19,
+          "detail": "`WebhookHandler::init()` only registers `$this->init_hooks` on the `init` action; the scoped file contains no packet-local reference to `SatisfactionSurvey` or `is_hostinger_page()`."
+        },
+        {
+          "type": "other",
+          "file": "src/Admin/Surveys/SatisfactionSurvey.php",
+          "line": 13,
+          "detail": "`should_load_survey()` is declared with a `: bool` return type, so the immediate consumer shown in scope is a boolean decision point rather than an output routine."
+        },
+        {
+          "type": "impact",
+          "file": "src/Admin/Surveys/SatisfactionSurvey.php",
+          "line": 18,
+          "detail": "The only packet-local use shown for `is_hostinger_page()` is inside `return $this->is_hostinger_page() && ...`, which keeps the flow in boolean guard logic."
+        },
+        {
+          "type": "other",
+          "file": "src/Admin/Surveys/SatisfactionSurvey.php",
+          "line": 50,
+          "detail": "`is_hostinger_page()` is itself declared `: bool`, which refutes the notion that this method returns raw request data for direct browser reflection."
+        },
+        {
+          "type": "impact",
+          "file": "src/Admin/Surveys/SatisfactionSurvey.php",
+          "line": 51,
+          "detail": "The inspected line is `str_contains( $_SERVER['REQUEST_URI'], 'hostinger' )`; packet-locally this computes substring presence only, and no HTML/JS/attribute sink is shown for the original URI string."
+        }
+      ],
+      "missing_evidence": [
+        "A packet-local caller trace from `src/Api/Webhooks/Handlers/WebhookHandler.php:19` to `src/Admin/Surveys/SatisfactionSurvey.php:50-51` is missing.",
+        "A concrete terminal sink that reflects `$_SERVER['REQUEST_URI']` or the return value from `is_hostinger_page()` into HTML, JavaScript, an attribute, or another executable browser context is missing.",
+        "File:line evidence that the cited survey helper participates in a reachable request/render path relevant to the worker's XSS claim is missing."
+      ],
+      "expansion_attempts": [],
+      "suggested_field_corrections": {
+        "verdict": "FP",
+        "vuln_type": "False positive: `SatisfactionSurvey::is_hostinger_page()` inspects `$_SERVER['REQUEST_URI']` only to compute a boolean survey-load condition",
+        "severity": "info",
+        "confidence": 0.99,
+        "auth_required": "not applicable in packet-local code; the cited lines are protected survey helpers rather than a reachable request handler",
+        "source_anchor": "src/Admin/Surveys/SatisfactionSurvey.php:51",
+        "entry_point_anchor_note": "Do not keep `src/Api/Webhooks/Handlers/WebhookHandler.php:19` as the packet entry point without a packet-local caller trace into `SatisfactionSurvey`.",
+        "sink_anchor_note": "Do not keep `src/Admin/Surveys/SatisfactionSurvey.php:51` as an XSS sink; line 51 feeds boolean guard logic and no terminal output site is shown.",
+        "fp_reason": "`is_hostinger_page()` at `src/Admin/Surveys/SatisfactionSurvey.php:50-51` returns only the boolean result of `str_contains(...)`, and `should_load_survey()` at `src/Admin/Surveys/SatisfactionSurvey.php:13-18` uses that value only in a boolean conjunction. The scoped packet does not show a caller path from `src/Api/Webhooks/Handlers/WebhookHandler.php:19` or any browser-executable sink for the inspected URI value.",
+        "claimed_impact": "No packet-local XSS impact established; the reviewed code only decides whether the satisfaction survey should load."
+      }
+    }
+  ]
+}

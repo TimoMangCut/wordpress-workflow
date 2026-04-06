@@ -1,0 +1,50 @@
+{
+  "plugin_slug": "hostinger-reach",
+  "cluster_strategy": "cross_bundle_cluster_v1",
+  "generated_from": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase2/hostinger-reach-phase2.local.json",
+  "total_input_findings": 9,
+  "total_active_findings": 2,
+  "total_clusters": 1,
+  "recommended_models": {
+    "synthesizer": {
+      "provider": "codex",
+      "model": "gpt-5.4"
+    },
+    "challenger": {
+      "provider": "claude",
+      "model": "claude-sonnet-4.6"
+    }
+  },
+  "clusters": [
+    {
+      "cluster_id": "cluster-c01",
+      "bug_family": "authorization",
+      "auth_boundary": "unknown",
+      "member_count": 2,
+      "source_agents": [
+        "worker-r02-claude"
+      ],
+      "entry_point_ids": [
+        "ep_rest_hostinger_reach_v1__optinmonster",
+        "ep_wp_ajax_hostinger_reach_add_form_notice_action"
+      ],
+      "priority_score": 15,
+      "path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase2/hostinger-reach-cluster-c01.json",
+      "input_path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase2/hostinger-reach-cluster-c01.input.json",
+      "pack_path": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase2/hostinger-reach-cluster-c01.pack.json"
+    }
+  ],
+  "uncovered_worker_agents": [
+    "agent-w01",
+    "agent-w02",
+    "agent-w03",
+    "agent-w04",
+    "agent-w05",
+    "agent-w06",
+    "agent-w07",
+    "agent-w08",
+    "agent-w09",
+    "agent-w10",
+    "agent-w11"
+  ]
+}

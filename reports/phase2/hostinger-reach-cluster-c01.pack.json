@@ -1,0 +1,171 @@
+{
+  "plugin_slug": "hostinger-reach",
+  "cluster_id": "cluster-c01",
+  "cluster_strategy": "cross_bundle_cluster_v1",
+  "cluster_summary": {
+    "bug_family": "authorization",
+    "dominant_vuln_types": [
+      "Broken Access Control \u2014 Unauthenticated REST endpoint accepts contact injection via guest-obtainable wp_rest nonce (OptInMonster integration)",
+      "Missing capability check on authenticated AJAX notice-dismiss action (AddFormNotice)"
+    ],
+    "auth_boundary": "unknown",
+    "priority_score": 15,
+    "synthesis_scope": "cross_bundle",
+    "member_count": 2
+  },
+  "shared_context": {
+    "entry_point_ids": [
+      "ep_rest_hostinger_reach_v1__optinmonster",
+      "ep_wp_ajax_hostinger_reach_add_form_notice_action"
+    ],
+    "supporting_files": [
+      "src/Admin/Notices/AddFormNotice.php",
+      "src/Api/Handlers/ReachApiHandler.php",
+      "src/Integrations/OptInMonster/OptInMonsterIntegration.php"
+    ],
+    "primary_files": [
+      "src/Admin/Notices/AddFormNotice.php",
+      "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+      "src/Api/Handlers/ReachApiHandler.php"
+    ],
+    "optional_files": [],
+    "primary_anchors": [
+      "src/Integrations/OptInMonster/OptInMonsterIntegration.php:62",
+      "src/Api/Handlers/ReachApiHandler.php:100",
+      "src/Admin/Notices/AddFormNotice.php:43",
+      "src/Admin/Notices/AddFormNotice.php:59"
+    ],
+    "source_agents": [
+      "worker-r02-claude"
+    ],
+    "shared_signals": [
+      "shared_bug_family",
+      "shared_auth_boundary"
+    ]
+  },
+  "member_findings": [
+    {
+      "finding_id": "HR-001",
+      "verdict": "TP",
+      "vuln_type": "Broken Access Control \u2014 Unauthenticated REST endpoint accepts contact injection via guest-obtainable wp_rest nonce (OptInMonster integration)",
+      "confidence": 0.82,
+      "severity": "medium",
+      "auth_required": "unknown",
+      "entry_point_ids": [
+        "ep_rest_hostinger_reach_v1__optinmonster"
+      ],
+      "source_agents": [
+        "worker-r02-claude"
+      ],
+      "source_anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:62",
+      "sink_anchor": "src/Api/Handlers/ReachApiHandler.php:100",
+      "supporting_files": [
+        "src/Api/Handlers/ReachApiHandler.php",
+        "src/Integrations/OptInMonster/OptInMonsterIntegration.php"
+      ],
+      "guard_anchors": [],
+      "why_this_might_connect": "authorization; entry=ep_rest_hostinger_reach_v1__optinmonster; sink=src/Api/Handlers/ReachApiHandler.php:100"
+    },
+    {
+      "finding_id": "HR-002",
+      "verdict": "REVIEW",
+      "vuln_type": "Missing capability check on authenticated AJAX notice-dismiss action (AddFormNotice)",
+      "confidence": 0.5,
+      "severity": "low",
+      "auth_required": "unknown",
+      "entry_point_ids": [
+        "ep_wp_ajax_hostinger_reach_add_form_notice_action"
+      ],
+      "source_agents": [
+        "worker-r02-claude"
+      ],
+      "source_anchor": "src/Admin/Notices/AddFormNotice.php:43",
+      "sink_anchor": "src/Admin/Notices/AddFormNotice.php:59",
+      "supporting_files": [
+        "src/Admin/Notices/AddFormNotice.php"
+      ],
+      "guard_anchors": [],
+      "why_this_might_connect": "authorization; entry=ep_wp_ajax_hostinger_reach_add_form_notice_action; sink=src/Admin/Notices/AddFormNotice.php:59"
+    }
+  ],
+  "questions_to_answer": [
+    "Which member findings should remain separate because the chain between them is speculative?",
+    "Which links are justified by a shared trust boundary, entry point, guard model, or sink family?",
+    "What evidence is still missing before treating this cluster as one stronger claim?"
+  ],
+  "exploration_budget": {
+    "max_optional_files": 0,
+    "max_out_of_band_files": 1,
+    "max_new_links": 3,
+    "max_open_questions": 3
+  },
+  "constraints": [
+    "Start from primary_anchors and primary_files before expanding.",
+    "Use optional_files only when the primary set is insufficient.",
+    "If you inspect files outside primary_files and optional_files, record them in expansion_attempts.",
+    "Prefer refutation over inflation.",
+    "Use only CONFIRMED, UNCERTAIN, RISK_NOTE, or REJECTED when describing mature outcomes.",
+    "Do not restate the full worker reasoning prose."
+  ],
+  "recommended_models": {
+    "synthesizer": {
+      "provider": "codex",
+      "model": "gpt-5.4"
+    },
+    "challenger": {
+      "provider": "claude",
+      "model": "claude-sonnet-4.6"
+    }
+  },
+  "evidence_pack": {
+    "primary_files_covered": [
+      "src/Admin/Notices/AddFormNotice.php",
+      "src/Api/Handlers/ReachApiHandler.php",
+      "src/Integrations/OptInMonster/OptInMonsterIntegration.php"
+    ],
+    "optional_files_covered": [],
+    "primary_snippets": [
+      {
+        "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+        "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:62",
+        "focus_line": 62,
+        "line_start": 56,
+        "line_end": 68,
+        "kind": "primary_anchor",
+        "code": "    56\t                'icon'           => 'https://ps.w.org/optinmonster/assets/icon-256x256.png',\n    57\t                'import_enabled' => true,\n    58\t            )\n    59\t        );\n    60\t    }\n    61\t\n    62\t    public function submit_optinmonster( WP_REST_Request $request ): WP_REST_Response {\n    63\t        if ( ! $this->is_authorized( $request ) ) {\n    64\t            return $this->handle_response( 403, array( 'errors' => 'You cannot perform this action' ) );\n    65\t        }\n    66\t\n    67\t        try {\n    68\t            $data    = json_decode( $request->get_body() ?? '', true );"
+      },
+      {
+        "file": "src/Api/Handlers/ReachApiHandler.php",
+        "anchor": "src/Api/Handlers/ReachApiHandler.php:100",
+        "focus_line": 100,
+        "line_start": 94,
+        "line_end": 106,
+        "kind": "primary_anchor",
+        "code": "    94\t         * @fires hostinger_reach_contact_submitted when the contact is submitted successfully\n    95\t         * @fires hostinger_reach_contact_failed when the contact submission fails\n    96\t         * @since 1.1.0\n    97\t         *\n    98\t         */\n    99\t        if ( ! has_action( 'hostinger_reach_submit' ) ) {\n   100\t            add_action( 'hostinger_reach_submit', array( $this, 'post_contact' ) );\n   101\t        }\n   102\t    }\n   103\t\n   104\t    public function get_default_headers(): array {\n   105\t        return array(\n   106\t            'Authorization' => 'Bearer ' . $this->api_key_manager->get_token(),"
+      },
+      {
+        "file": "src/Admin/Notices/AddFormNotice.php",
+        "anchor": "src/Admin/Notices/AddFormNotice.php:43",
+        "focus_line": 43,
+        "line_start": 37,
+        "line_end": 49,
+        "kind": "primary_anchor",
+        "code": "    37\t    public function enqueue_admin_assets(): void {\n    38\t        if ( $this->should_render() ) {\n    39\t            $this->enqueue_notice_assets();\n    40\t        }\n    41\t    }\n    42\t\n    43\t    public function handle_ajax_action(): void {\n    44\t        check_ajax_referer( self::NOTICE_ACTION, 'nonce' );\n    45\t        $choice = sanitize_text_field( $_POST['choice'] );\n    46\t\n    47\t        switch ( $choice ) {\n    48\t            case 'success':\n    49\t                $this->handle_success();"
+      },
+      {
+        "file": "src/Admin/Notices/AddFormNotice.php",
+        "anchor": "src/Admin/Notices/AddFormNotice.php:59",
+        "focus_line": 59,
+        "line_start": 53,
+        "line_end": 65,
+        "kind": "primary_anchor",
+        "code": "    53\t                $this->handle_dismiss();\n    54\t                break;\n    55\t        }\n    56\t    }\n    57\t\n    58\t    private function handle_dismiss(): void {\n    59\t        set_transient( self::NOTICE_DISMISS_TRANSIENT, true, WEEK_IN_SECONDS );\n    60\t        wp_send_json_success();\n    61\t    }\n    62\t\n    63\t    private function handle_success(): void {\n    64\t        wp_send_json_success(\n    65\t            array("
+      }
+    ],
+    "optional_snippets": [],
+    "snippet_counts": {
+      "primary": 4,
+      "optional": 0
+    }
+  }
+}

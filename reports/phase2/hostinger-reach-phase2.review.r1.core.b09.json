@@ -1,0 +1,100 @@
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "core",
+  "review_status": "needs_revision",
+  "summary": {
+    "worker_findings_reviewed": 1,
+    "material_issues_found": true,
+    "new_candidate_count": 0,
+    "notes": "Packet-local evidence still supports the worker FP conclusion, but the packet needs field corrections: `/contact` is publicly registered yet handler-gated by a `wp_rest` nonce check, and all cited ReachApiHandler anchors are return/guard sites rather than packet-local HTML sinks."
+  },
+  "finding_reviews": [
+    {
+      "finding_id": "HR-FP-007",
+      "packet_id": "HR-FP-007__p02",
+      "parent_finding_id": "HR-FP-007",
+      "assessment": "field_fix",
+      "reason": "Reachability: `src/Api/Routes/Routes.php:22` only wires `register_routes()`, and the bounded route file shows that `POST /contact` reaches `ReachApiHandler::post_contact_handler()` through `callback => array( $this->handler, 'post_contact_handler' )` with `permission_callback => '__return_true'` (`src/Api/Routes/ReachRoutes.php:27-33`). Authorization: although the route is public at registration, the handler immediately rejects unless `is_authorized()` succeeds, and `is_authorized()` is only `wp_verify_nonce( $nonce, 'wp_rest' ) && $this->get_connection_status_handler()` (`src/Api/Handlers/ReachApiHandler.php:139-141`, `:165-168`), so the packet should not stay framed as an unknown/no-guard sink. Dataflow: the flagged line `src/Api/Handlers/ReachApiHandler.php:152` only forwards request parameters into `post_contact()`; line `:168` is a boolean return; lines `:383` and `:386` are return-delegation sites inside `post_tags_handler(): WP_REST_Response`, not output statements (`src/Api/Handlers/ReachApiHandler.php:152`, `:168`, `:362-386`). Impact: packet-local code shows request data being assembled for an outbound Reach API request and returned through REST response objects (`src/Api/Handlers/ReachApiHandler.php:242-279`), not reflected into HTML or JavaScript. Refutation attempt: I checked the bounded route mapping and the downstream handler methods for a packet-local browser sink and found none. Missing evidence: the worker should keep the FP result, but the artifact needs tighter packet-local wording instead of relying on the broader narrative that REST responses are JSON encoded.",
+      "required_changes": [
+        "Correct `auth_required` from `null` / `unknown` to a narrower boundary: public REST route with handler-level `wp_rest` nonce and connection-status checks; do not imply either `permission_check()` admin gating or a completely unguarded sink.",
+        "Replace the sink description for `src/Api/Handlers/ReachApiHandler.php:152`, `:168`, `:383`, and `:386`; these lines are request forwarding, boolean guard logic, and REST response delegation rather than echo/HTML output.",
+        "Tighten `fp_reason` and `claimed_impact` to packet-local evidence: no file:line in scope shows request-controlled data reaching a browser-executable sink, and the visible flow ends in `WP_REST_Response` returns plus an outbound API POST."
+      ],
+      "counter_evidence": [
+        {
+          "type": "scope",
+          "file": "src/Api/Routes/ReachRoutes.php",
+          "line": 32,
+          "detail": "The packet-local route mapping sends `POST /contact` to `post_contact_handler()`, so reachability should be described via this callback rather than a generic semgrep sink label."
+        },
+        {
+          "type": "scope",
+          "file": "src/Api/Routes/ReachRoutes.php",
+          "line": 33,
+          "detail": "The route uses `permission_callback => '__return_true'`; `Routes::permission_check()` is not the governing boundary for this packet."
+        },
+        {
+          "type": "guard",
+          "file": "src/Api/Handlers/ReachApiHandler.php",
+          "line": 140,
+          "detail": "`post_contact_handler()` immediately returns an error response when `is_authorized( $request )` fails, so request processing is gated before the payload is forwarded."
+        },
+        {
+          "type": "guard",
+          "file": "src/Api/Handlers/ReachApiHandler.php",
+          "line": 168,
+          "detail": "`is_authorized()` is only `wp_verify_nonce( $nonce, 'wp_rest' ) && $this->get_connection_status_handler()`, which is boolean guard logic rather than output."
+        },
+        {
+          "type": "scope",
+          "file": "src/Api/Handlers/ReachApiHandler.php",
+          "line": 152,
+          "detail": "Line 152 is `return $this->post_contact( array( ... ) );`; it forwards parameters into another method and does not build or emit HTML."
+        },
+        {
+          "type": "impact",
+          "file": "src/Api/Handlers/ReachApiHandler.php",
+          "line": 266,
+          "detail": "`post_contact()` sends the assembled payload to the remote `contacts` endpoint via `$this->post( 'contacts', $args )`, so the visible sink in scope is an outbound API call rather than browser rendering."
+        },
+        {
+          "type": "scope",
+          "file": "src/Api/Handlers/ReachApiHandler.php",
+          "line": 383,
+          "detail": "Inside `post_tags_handler(): WP_REST_Response`, line 383 returns `$this->handle_wp_error( $response )`; it is a response delegation point, not an echo or DOM sink."
+        },
+        {
+          "type": "scope",
+          "file": "src/Api/Handlers/ReachApiHandler.php",
+          "line": 386,
+          "detail": "Line 386 likewise returns `$this->handle_response( $response )` from a method typed `WP_REST_Response`, which refutes the packet's local-output framing for this anchor."
+        }
+      ],
+      "missing_evidence": [
+        "No packet-local file:line shows `email`, `name`, `surname`, `group`, `tags`, or `metadata` from `src/Api/Handlers/ReachApiHandler.php:144-160` reaching an HTML, attribute, JavaScript, or DOM sink.",
+        "No packet-local file:line shows `handle_response()` or `handle_wp_error()` converting the response into direct HTML output rather than returning REST response data; without that terminal sink evidence, the XSS label remains unsupported."
+      ],
+      "expansion_attempts": [
+        {
+          "type": "out_of_band_file",
+          "target": "src/Api/Routes/ReachRoutes.php",
+          "reason": "Needed one bounded expansion because `src/Api/Routes/Routes.php` only wires `register_routes()` and does not show which route reaches `post_contact_handler()` or what permission callback it uses.",
+          "outcome": "Confirmed that `POST /contact` maps to `post_contact_handler()` and is publicly registered with `permission_callback => '__return_true'`, leaving the packet-local auth boundary to the handler's nonce/connection checks."
+        }
+      ],
+      "suggested_field_corrections": {
+        "verdict": "FP",
+        "vuln_type": "False positive: ReachApiHandler anchors are REST callback return/guard logic, not packet-local XSS sinks",
+        "severity": "info",
+        "confidence": 0.96,
+        "auth_required": "public REST route with handler-level `wp_rest` nonce and connection-status checks; no capability gate shown packet-locally",
+        "entry_point_anchor_note": "`src/Api/Routes/Routes.php:22` only registers `register_routes`; packet-local route-to-callback evidence for this finding is `src/Api/Routes/ReachRoutes.php:27-33`.",
+        "source_anchor_note": "`src/Api/Handlers/ReachApiHandler.php:152` forwards request parameters into `post_contact()`; it is not an output statement.",
+        "sink_anchor_note": "Do not keep `src/Api/Handlers/ReachApiHandler.php:152`, `:168`, `:383`, or `:386` as XSS sinks; they are return/boolean guard sites and response delegation points.",
+        "fp_reason": "Packet-local review found a public `/contact` REST route, but the handler still gates execution on `wp_verify_nonce( $nonce, 'wp_rest' ) && $this->get_connection_status_handler()` at `src/Api/Handlers/ReachApiHandler.php:168`. The cited anchors at `src/Api/Handlers/ReachApiHandler.php:152`, `:168`, `:383`, and `:386` are request forwarding, boolean guard logic, or `WP_REST_Response` return delegation, and no packet-local HTML/JS sink is shown.",
+        "claimed_impact": "No packet-local XSS impact established; the visible flow forwards request data to the Reach API and returns REST responses rather than browser-executable content."
+      }
+    }
+  ]
+}

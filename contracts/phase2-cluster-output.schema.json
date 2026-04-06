@@ -1,0 +1,250 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.local/contracts/phase2-cluster-output.schema.json",
+  "version": "1.0.0",
+  "title": "Phase 2 Cluster LLM Output",
+  "description": "Structured synthesis/challenge result for one deterministic cluster.",
+  "type": "object",
+  "required": [
+    "plugin_slug",
+    "cluster_id",
+    "stage",
+    "status",
+    "summary",
+    "suggested_actions",
+    "proposed_links",
+    "objections",
+    "open_questions",
+    "missing_evidence",
+    "expansion_attempts"
+  ],
+  "properties": {
+    "plugin_slug": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cluster_id": {
+      "type": "string",
+      "pattern": "^cluster-c[0-9]{2,}$"
+    },
+    "stage": {
+      "type": "string",
+      "enum": [
+        "synthesis",
+        "challenge"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "stable",
+        "joinable",
+        "split",
+        "needs_followup",
+        "refuted",
+        "mixed"
+      ]
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "member_findings_reviewed",
+        "material_links_found",
+        "objections_count",
+        "notes"
+      ],
+      "properties": {
+        "member_findings_reviewed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "material_links_found": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "objections_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "open_questions_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expansion_attempts_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "suggested_actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "action",
+          "reason"
+        ],
+        "properties": {
+          "finding_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "keep_separate",
+              "join_with_cluster",
+              "downgrade",
+              "retract",
+              "needs_more_evidence"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "proposed_links": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "finding_ids",
+          "relation",
+          "reason"
+        ],
+        "properties": {
+          "finding_ids": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          },
+          "relation": {
+            "type": "string",
+            "enum": [
+              "shared_entry_point",
+              "shared_guard_model",
+              "shared_sink_family",
+              "cross_bundle_chain",
+              "same_trust_boundary",
+              "other"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "objections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "target_finding_ids",
+          "reason"
+        ],
+        "properties": {
+          "target_finding_ids": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "open_questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "question",
+          "why_it_matters"
+        ],
+        "properties": {
+          "target_finding_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "question": {
+            "type": "string"
+          },
+          "why_it_matters": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "missing_evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "evidence_needed",
+          "reason"
+        ],
+        "properties": {
+          "target_finding_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "evidence_needed": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "expansion_attempts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "reason",
+          "result"
+        ],
+        "properties": {
+          "opened_files": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reason": {
+            "type": "string"
+          },
+          "result": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

@@ -10,7 +10,8 @@ Pipeline position (multi-agent-plan.md:431-437):
   1. prepare_agent_inputs.py  → per-agent IR slices
   2. Agents run               → reports/<slug>-agent-{id}.json
   3. THIS SCRIPT              → reports/<slug>-phase2-merged.json (archive)
-                                reports/<slug>-phase2.json         (canonical for gate)
+                                reports/phase2/<slug>-phase2.local.json
+                                reports/phase2/<slug>-phase2.json   (compat canonical until consensus)
 
 Usage:
   python3 tools/bin/merge_agent_outputs.py <slug> [--output-dir <dir>]
@@ -359,7 +360,7 @@ def _parse_args(argv=None) -> argparse.Namespace:
             "Phase 2.5 Deterministic Merge — merge per-agent findings outputs.\n\n"
             "Usage modes:\n"
             "  1. Positional slug:  merge_agent_outputs.py <slug> [--output-dir <dir>]\n"
-            "     Reads reports/<slug>-agent-{a1,a2,b,c,d}.json (present files only)\n\n"
+            "     Reads reports/<slug>-agent-*.json (present files only)\n\n"
             "  2. Glob pattern:     merge_agent_outputs.py --agents 'reports/<slug>-agent-*.json'\n\n"
             "  3. Explicit files:   merge_agent_outputs.py --agent-a1 <f> --agent-a2 <f> ...\n"
         ),
@@ -397,7 +398,7 @@ def _parse_args(argv=None) -> argparse.Namespace:
         "--expected-agents",
         nargs="*",
         default=None,
-        help="List of expected agent IDs (e.g. agent-a1 agent-b). Used to populate agents_missing.",
+        help="List of expected agent IDs (e.g. agent-w01 agent-b). Used to populate agents_missing.",
     )
     return parser.parse_args(argv)
 
@@ -431,11 +432,8 @@ def _collect_input_files(args: argparse.Namespace, project_root: Path) -> list[P
     slug = args.slug or args.slug_flag
     if slug and not files:
         reports_dir = project_root / "reports"
-        # Enumerate a1-a9 to cover all Agent A sub-agents, plus b, c, d
-        for agent_id in ("a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "a9", "b", "c", "d"):
-            candidate = reports_dir / f"{slug}-agent-{agent_id}.json"
-            if candidate.exists():
-                files.append(candidate)
+        matched = sorted(glob_module.glob(str(reports_dir / f"{slug}-agent-*.json")))
+        files.extend(Path(p) for p in matched)
 
     # Deduplicate while preserving order
     seen: set[Path] = set()
@@ -461,7 +459,7 @@ def main(argv=None) -> int:
     if not input_files:
         print(
             "[ERROR] No agent output files found. Provide a slug, --agents glob, "
-            "or --agent-a1/a2/b/c/d flags.",
+            "or explicit --agent-* flags.",
             file=sys.stderr,
         )
         return 1
@@ -542,7 +540,8 @@ def main(argv=None) -> int:
 
     # Write output files
     # archive: reports/<slug>-phase2-merged.json  (raw merge, for reference)
-    # canonical: reports/phase2/<slug>-phase2.json (gate reads this path via report_paths.py)
+    # local:   reports/phase2/<slug>-phase2.local.json
+    # canonical compatibility: reports/phase2/<slug>-phase2.json
     output_dir.mkdir(parents=True, exist_ok=True)
     archive_path = output_dir / f"{slug}-phase2-merged.json"
 
@@ -550,14 +549,18 @@ def main(argv=None) -> int:
     from report_paths import build_report_layout
     canonical_dir = build_report_layout(output_dir.parent if output_dir.name != "reports" else output_dir).phase2
     canonical_dir.mkdir(parents=True, exist_ok=True)
+    local_path = canonical_dir / f"{slug}-phase2.local.json"
     canonical_path = canonical_dir / f"{slug}-phase2.json"
 
     with open(archive_path, "w") as f:
         json.dump(merged, f, indent=2)
     print(f"[OK] Archive written: {archive_path}")
 
-    shutil.copy2(archive_path, canonical_path)
-    print(f"[OK] Canonical written: {canonical_path}  ← gate reads here")
+    shutil.copy2(archive_path, local_path)
+    print(f"[OK] Local Phase 2 written: {local_path}")
+
+    shutil.copy2(local_path, canonical_path)
+    print(f"[OK] Canonical compatibility written: {canonical_path}")
 
     # Summary
     stats = merged["merge_stats"]

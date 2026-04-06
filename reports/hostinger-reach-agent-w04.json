@@ -1,0 +1,27 @@
+{
+  "agent_id": "agent-w04",
+  "plugin_slug": "hostinger-reach",
+  "findings": [],
+  "negative_findings": [
+    {
+      "area": "cand-ep-init-init-src-api-handlers-integrationsapihandler-php-output-return-5 (XSS via init hook / output_return sinks in IntegrationsApiHandler.php)",
+      "reason": "FP. Semgrep flagged lines 56, 153, 205, 210 in IntegrationsApiHandler.php as XSS output sinks, but each is a `return` of a boolean value from an internal method (is_import_enabled→bool, activate_integration→bool, save_integration→bool, save_integrations_data→bool). None produces browser-rendered HTML. The `init` hook callback trigger_active_integrations() (line 40-42) fires do_action('hostinger_reach_integrations_loaded', ...) — an internal action with no HTML output path. The semgrep rule pattern-matched `return` statements generically without verifying the output context. No user-controlled data flows to any unescaped HTML output in this file."
+    },
+    {
+      "area": "cand-ep-init-init-src-admin-redirects-php-output-return-5 (XSS / redirect via init hook in Redirects.php)",
+      "reason": "FP. sink_1 in Redirects.php (line 27) is wp_safe_redirect(), which is a redirect function, not an XSS sink. The redirect URL is constructed entirely via admin_url('admin.php?page=hostinger-reach') — a WordPress-generated, trusted URL not derived from user input. The $_GET['platform'] input is only used in a strict equality check against a plugin constant (HOSTINGER_REACH_PLUGIN_SLUG, line 22) and sanitized via sanitize_text_field() (line 17), but never placed into the redirect URL itself. No XSS vector exists."
+    },
+    {
+      "area": "cand-ep-init-init-src-api-webhooks-handlers-webhookhandler-php-output-return-5 (XSS via init hook / output_return sinks in WebhookHandler.php)",
+      "reason": "FP. WebhookHandler is an abstract class. Its init() registers add_action('init', [$this, 'init_hooks']) which is abstract. The concrete return-sinks at lines 23, 27, 31 (is_enabled, is_automation_active, increase_automation_submission_counter) all return boolean values to internal callers. Lines 46 and 49 return true/false literals from handle(). None of these produce HTML output or interact with the browser rendering pipeline. The XSS classification is incorrect — these are control-flow returns, not output sinks."
+    },
+    {
+      "area": "cand-ep-init-init-src-providers-jobsprovider-php-output-return-5 (XSS via init hook in JobsProvider.php)",
+      "reason": "FP. JobsProvider.php registers init hooks that call $job->init() on background job classes (AbandonedCartsJob, ImportJob, CleanupCartsJob). None of these produce HTML output. The sink_ids reference WebhookHandler.php returns (boolean) and are the same misclassified sinks as in candidate 3. The init hook callback here is a job scheduler setup, not an output path. No XSS vector exists."
+    },
+    {
+      "area": "cand-ep-init-init-src-setup-blocks-php-output-return-5 (XSS via init hook in Blocks.php)",
+      "reason": "FP. Blocks.php registers add_action('init', [$this, 'register_blocks']) which calls $this->subscription_form_block->register(). This is a Gutenberg block registration call — it does not produce HTML output at this hook level. The shared sink_ids again reference WebhookHandler.php boolean returns. The XSS classification does not apply to block type registration."
+    }
+  ]
+}

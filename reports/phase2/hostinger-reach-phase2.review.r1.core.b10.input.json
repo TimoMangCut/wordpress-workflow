@@ -1,0 +1,296 @@
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "core",
+  "task": {
+    "role": "phase2_reviewer_core",
+    "goal": "Challenge the worker output packet-by-packet with concrete counter-evidence, field corrections, and explicit missing-evidence notes.",
+    "output_schema": "contracts/phase2-review-core-output.schema.json",
+    "output_path": "reports/phase2/hostinger-reach-phase2.review.r1.core.b10.json",
+    "packet_schema": "contracts/phase2-reviewer-packet.schema.json",
+    "allow_missed_findings": false,
+    "constraints": [
+      "Treat each finding packet as the unit of review; do not restart whole-plugin auditing.",
+      "Answer reachability, authorization, dataflow, impact, and missing-evidence questions for each packet before finalizing finding_reviews.",
+      "Start from finding_packets, worker_findings, and phase1_context before opening other artifacts.",
+      "Refute before confirm; keep objections evidence-bound with file:line anchors.",
+      "Do not rewrite the full findings set; produce critique JSON only.",
+      "Default to packet-local critique only. Focus on finding_reviews plus field corrections for the existing finding packets.",
+      "Treat finding_packets as the reviewer core evidence pack. If packet-local evidence is insufficient, prefer needs_more_evidence over broad exploration."
+    ],
+    "max_candidates": null
+  },
+  "artifacts": {
+    "worker_output_path": null,
+    "ir_path": null,
+    "semgrep_path": null,
+    "psalm_path": null,
+    "threat_context_path": null,
+    "source_root": "plugins/hostinger-reach"
+  },
+  "worker_summary": {
+    "total_findings": 1,
+    "true_positive_count": 0,
+    "false_positive_count": 1,
+    "needs_review_count": 0,
+    "negative_findings_count": 0,
+    "overall_risk": "low",
+    "analysis_summary": "Reviewer core batch scoped to 1 packet(s)."
+  },
+  "worker_findings": [
+    {
+      "finding_id": "HR-FP-007",
+      "verdict": "FP",
+      "vuln_type": "XSS \u2014 Multiple semgrep-flagged echo-without-escape in handler/integration files",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 1.0,
+      "entry_point_id": "ep_rest_api_init_rest_api_init",
+      "source_anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+      "sink_anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+      "patchstack_eligible": false
+    }
+  ],
+  "finding_packets": [
+    {
+      "packet_id": "HR-FP-007__p03",
+      "parent_finding_id": "HR-FP-007",
+      "packet_kind": "atomic_surface",
+      "focus_anchor": "src/Integrations/Elementor/ElementorIntegration.php:88",
+      "finding_id": "HR-FP-007",
+      "verdict": "FP",
+      "vuln_type": "XSS \u2014 Multiple semgrep-flagged echo-without-escape in handler/integration files [src/Integrations/Elementor/ElementorIntegration.php]",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 1.0,
+      "entry_point_id": "ep_rest_api_init_rest_api_init",
+      "patchstack_eligible": false,
+      "claimed_impact": "Review only the ElementorIntegration surface for XSS \u2014 Multiple semgrep-flagged echo-without-escape in handler/integration files. Confirm whether the path around src/Integrations/Elementor/ElementorIntegration.php:88 has concrete impact for auth boundary `unknown` without inheriting conclusions from sibling surfaces.",
+      "worker_context": {
+        "source_function": "ElementorIntegration",
+        "sink_function": "Various boolean/method returns",
+        "fp_reason": "Aggregate worker finding was atomized for reviewer_core. This packet is limited to ElementorIntegration and anchors src/Integrations/Elementor/ElementorIntegration.php:88, src/Integrations/Elementor/ElementorIntegration.php:390, src/Integrations/Elementor/ElementorIntegration.php:406.",
+        "original_fp_reason": "All semgrep XSS hits in handler PHP files are in methods that return arrays/objects or booleans (not HTML) \u2014 these methods are called in REST API response contexts where JSON encoding is applied, not direct HTML output.",
+        "reasoning_excerpt": {
+          "hypothesis": "Validate only the packet-local claim for ElementorIntegration. Determine whether anchors src/Integrations/Elementor/ElementorIntegration.php:88, src/Integrations/Elementor/ElementorIntegration.php:390, src/Integrations/Elementor/ElementorIntegration.php:406 actually support the worker's claim without widening to other surfaces.",
+          "trace": "Packet-local review only. Focus file: src/Integrations/Elementor/ElementorIntegration.php. Focus anchors: src/Integrations/Elementor/ElementorIntegration.php:88, src/Integrations/Elementor/ElementorIntegration.php:390, src/Integrations/Elementor/ElementorIntegration.php:406. Primary files: src/Api/Routes/Routes.php, src/Integrations/Elementor/ElementorIntegration.php. Entry point: src/Api/Routes/Routes.php:22. Treat unrelated callers, consumers, and sibling surfaces as out of scope unless an explicit expansion attempt is justified.",
+          "defenses": [
+            "REST API callbacks return WP_REST_Response objects \u2014 all output goes through WP_REST_Server which JSON-encodes the data",
+            "JSON encoding inherently prevents HTML injection in the API response context",
+            "Keep critique packet-local; do not reuse sibling-surface defenses or conclusions without code evidence in this packet."
+          ],
+          "refutation": [
+            "Refute or keep this packet on ElementorIntegration alone. Do not carry over conclusions from plugin-wide traces without packet-local code evidence."
+          ],
+          "conclusion": "Keep, downgrade, retract, or mark needs_more_evidence based only on packet-local evidence for ElementorIntegration."
+        },
+        "original_reasoning_excerpt": {
+          "hypothesis": "Semgrep flagged multiple XSS patterns across handler and integration files.",
+          "trace": "All flagged lines in ReachApiHandler (152, 168, 383, 386), IntegrationsApiHandler (56, 153, 205, 210), ElementorIntegration (88, 390, 406), ForminatorIntegration (173), OptInMonsterIntegration (255, 268) are either: (a) return statements returning PHP arrays/strings that are subsequently JSON-encoded by wp_json_encode before output, or (b) boolean return values, or (c) parts of methods that are never directly echoed.",
+          "defenses": [
+            "REST API callbacks return WP_REST_Response objects \u2014 all output goes through WP_REST_Server which JSON-encodes the data",
+            "JSON encoding inherently prevents HTML injection in the API response context"
+          ],
+          "refutation": [
+            "REFUTATION ATTEMPT: Do any of these flagged lines produce direct HTML output? RESULT: Refuted upon review. ReachApiHandler lines 152/168 are in post_contact_handler and is_authorized \u2014 both return WP_REST_Response. IntegrationsApiHandler lines are in REST handler methods. No direct echo of user-controlled HTML was found."
+          ],
+          "conclusion": "FP batch \u2014 semgrep over-triggered on data flow patterns that terminate in JSON-encoded REST responses, not HTML output."
+        }
+      },
+      "review_focus": {
+        "scope_statement": "Review only the packet-local claim centered on src/Integrations/Elementor/ElementorIntegration.php:88 in src/Integrations/Elementor/ElementorIntegration.php. Start from the listed packet evidence, not from a plugin-wide hypothesis.",
+        "sink_semantics": "local_output",
+        "default_resolution_on_missing_terminal_evidence": "needs_more_evidence",
+        "stop_conditions": [
+          "Once packet-local reachability, authorization, dataflow, impact, and missing evidence are answered with file:line support, stop and write critique JSON.",
+          "Do not reopen unrelated plugin surfaces just because the parent finding or worker narrative mentions them."
+        ],
+        "disallowed_drift": [
+          "whole_plugin_reaudit",
+          "translation_or_asset_search",
+          "sibling_surface_expansion_without_evidence"
+        ],
+        "primary_scope_files": [
+          "src/Api/Routes/Routes.php",
+          "src/Integrations/Elementor/ElementorIntegration.php"
+        ],
+        "optional_scope_files": [
+          "src/Integrations/Elementor/ElementorIntegration.php"
+        ],
+        "entry_point_anchor": "src/Api/Routes/Routes.php:22"
+      },
+      "scope_policy": {
+        "allowed_primary_files": [
+          "src/Api/Routes/Routes.php",
+          "src/Integrations/Elementor/ElementorIntegration.php"
+        ],
+        "allowed_optional_files": [
+          "src/Integrations/Elementor/ElementorIntegration.php"
+        ],
+        "max_out_of_band_files": 1
+      },
+      "anchors": {
+        "entry_point_anchor": "src/Api/Routes/Routes.php:22",
+        "source_anchor": "src/Integrations/Elementor/ElementorIntegration.php:88",
+        "sink_anchor": "src/Integrations/Elementor/ElementorIntegration.php:88",
+        "review_anchor_candidates": [
+          {
+            "kind": "aggregate_reference",
+            "anchor": "src/Integrations/Elementor/ElementorIntegration.php:88",
+            "note": "ElementorIntegration"
+          },
+          {
+            "kind": "aggregate_reference",
+            "anchor": "src/Integrations/Elementor/ElementorIntegration.php:390",
+            "note": "ElementorIntegration"
+          },
+          {
+            "kind": "aggregate_reference",
+            "anchor": "src/Integrations/Elementor/ElementorIntegration.php:406",
+            "note": "ElementorIntegration"
+          }
+        ]
+      },
+      "primary_files": [
+        "src/Api/Routes/Routes.php",
+        "src/Integrations/Elementor/ElementorIntegration.php"
+      ],
+      "primary_snippets": [
+        {
+          "file": "src/Integrations/Elementor/ElementorIntegration.php",
+          "anchor": "src/Integrations/Elementor/ElementorIntegration.php:88",
+          "focus_line": 88,
+          "line_start": 82,
+          "line_end": 94,
+          "kind": "finding_source",
+          "code": "    82\t\n    83\t    public static function get_name(): string {\n    84\t        return self::INTEGRATION_NAME;\n    85\t    }\n    86\t\n    87\t    public function get_form_ids( WP_Post $post ): array {\n    88\t        return array_merge( $this->get_elementor_form_ids_from_content( $post->post_content ), $this->get_elementor_form_ids_from_actions() );\n    89\t    }\n    90\t\n    91\t    public function get_plugin_data(): PluginData {\n    92\t        if ( class_exists( 'Elementor\\Core\\Documents_Manager' ) ) {\n    93\t            $add_form_url = add_query_arg(\n    94\t                array("
+        },
+        {
+          "file": "src/Api/Routes/Routes.php",
+          "anchor": "src/Api/Routes/Routes.php:22",
+          "focus_line": 22,
+          "line_start": 16,
+          "line_end": 28,
+          "kind": "entry_point",
+          "code": "    16\t    public function __construct( ApiHandler $handler, ApiKeyManager $api_key_manager ) {\n    17\t        $this->handler         = $handler;\n    18\t        $this->api_key_manager = $api_key_manager;\n    19\t    }\n    20\t\n    21\t    public function init(): void {\n    22\t        add_action( 'rest_api_init', array( $this, 'register_routes' ) );\n    23\t    }\n    24\t\n    25\t    public function permission_check(): bool {\n    26\t        if ( has_action( 'litespeed_control_set_nocache' ) ) {\n    27\t            do_action(\n    28\t                'litespeed_control_set_nocache',"
+        }
+      ],
+      "optional_files": [
+        "src/Integrations/Elementor/ElementorIntegration.php"
+      ],
+      "optional_snippets": [
+        {
+          "file": "src/Integrations/Elementor/ElementorIntegration.php",
+          "anchor": "src/Integrations/Elementor/ElementorIntegration.php:88",
+          "focus_line": 88,
+          "line_start": 82,
+          "line_end": 94,
+          "kind": "aggregate_reference",
+          "code": "    82\t\n    83\t    public static function get_name(): string {\n    84\t        return self::INTEGRATION_NAME;\n    85\t    }\n    86\t\n    87\t    public function get_form_ids( WP_Post $post ): array {\n    88\t        return array_merge( $this->get_elementor_form_ids_from_content( $post->post_content ), $this->get_elementor_form_ids_from_actions() );\n    89\t    }\n    90\t\n    91\t    public function get_plugin_data(): PluginData {\n    92\t        if ( class_exists( 'Elementor\\Core\\Documents_Manager' ) ) {\n    93\t            $add_form_url = add_query_arg(\n    94\t                array("
+        },
+        {
+          "file": "src/Integrations/Elementor/ElementorIntegration.php",
+          "anchor": "src/Integrations/Elementor/ElementorIntegration.php:390",
+          "focus_line": 390,
+          "line_start": 384,
+          "line_end": 396,
+          "kind": "aggregate_reference",
+          "code": "   384\t        if ( ! empty( $elements ) && $status === 'publish' ) {\n   385\t            foreach ( $elements as $element ) {\n   386\t                $form_ids = array_merge( $form_ids, $this->find_form_widget( $element ) );\n   387\t            }\n   388\t        }\n   389\t\n   390\t        return $form_ids;\n   391\t    }\n   392\t\n   393\t    private function find_form_widget( array $element ): array {\n   394\t        $form_ids = array();\n   395\t\n   396\t        if ( isset( $element['widgetType'] ) && $element['widgetType'] === 'form' && isset( $element['id'] ) ) {"
+        },
+        {
+          "file": "src/Integrations/Elementor/ElementorIntegration.php",
+          "anchor": "src/Integrations/Elementor/ElementorIntegration.php:406",
+          "focus_line": 406,
+          "line_start": 400,
+          "line_end": 412,
+          "kind": "aggregate_reference",
+          "code": "   400\t        if ( isset( $element['elements'] ) && is_array( $element['elements'] ) ) {\n   401\t            foreach ( $element['elements'] as $nested_element ) {\n   402\t                $form_ids = array_merge( $form_ids, $this->find_form_widget( $nested_element ) );\n   403\t            }\n   404\t        }\n   405\t\n   406\t        return $form_ids;\n   407\t    }\n   408\t\n   409\t    private function is_elementor_form_id( string $form_id ): bool {\n   410\t        return str_starts_with( $form_id, SubscriptionFormElementorWidget::FORM_ID_PREFIX );\n   411\t    }\n   412\t"
+        }
+      ],
+      "review_questions": {
+        "reachability": "Can an attacker really reach the claimed path from src/Api/Routes/Routes.php:22 without hidden preconditions or workflow assumptions?",
+        "authorization": "Does the path have a stronger guard than the worker claims, including capability, permission_callback, nonce semantics, or trust-boundary limits for auth `unknown`?",
+        "dataflow": "Does attacker-controlled data actually flow from src/Integrations/Elementor/ElementorIntegration.php:88 to src/Integrations/Elementor/ElementorIntegration.php:88 for the claimed XSS \u2014 Multiple semgrep-flagged echo-without-escape in handler/integration files [src/Integrations/Elementor/ElementorIntegration.php], without a refuting guard, sanitizer, or broken hop?",
+        "impact": "Assuming the path reaches src/Integrations/Elementor/ElementorIntegration.php:88, is the worker's claimed impact concrete and not overstated for this plugin context?",
+        "missing_evidence": "What exact file:line evidence is still missing before this finding can be kept, downgraded, or retracted with confidence?"
+      }
+    }
+  ],
+  "phase1_context": {
+    "entry_point_count": 25,
+    "anomaly_count": 3,
+    "unresolved_hook_count": 8,
+    "related_entry_points": [
+      {
+        "id": "ep_rest_api_init_rest_api_init",
+        "type": "rest_api_init",
+        "hook_name": "rest_api_init",
+        "auth_level": "none",
+        "file": "src/Api/Routes/Routes.php",
+        "line": 22,
+        "callback_name": "register_routes",
+        "callback_class": "Hostinger\\Reach\\Integrations\\OptInMonster\\OptInMonsterIntegration"
+      }
+    ],
+    "top_anomalies": [],
+    "unresolved_hooks": []
+  },
+  "evidence": {
+    "primary_anchors": [
+      {
+        "kind": "entry_point",
+        "anchor": "src/Api/Routes/Routes.php:22",
+        "packet_id": "HR-FP-007__p03",
+        "finding_id": "HR-FP-007",
+        "entry_point_id": "ep_rest_api_init_rest_api_init",
+        "note": "XSS \u2014 Multiple semgrep-flagged echo-without-escape in handler/integration files [src/Integrations/Elementor/ElementorIntegration.php]"
+      },
+      {
+        "kind": "finding_source",
+        "anchor": "src/Integrations/Elementor/ElementorIntegration.php:88",
+        "packet_id": "HR-FP-007__p03",
+        "finding_id": "HR-FP-007",
+        "entry_point_id": "ep_rest_api_init_rest_api_init",
+        "note": "XSS \u2014 Multiple semgrep-flagged echo-without-escape in handler/integration files [src/Integrations/Elementor/ElementorIntegration.php]"
+      },
+      {
+        "kind": "finding_sink",
+        "anchor": "src/Integrations/Elementor/ElementorIntegration.php:88",
+        "packet_id": "HR-FP-007__p03",
+        "finding_id": "HR-FP-007",
+        "entry_point_id": "ep_rest_api_init_rest_api_init",
+        "note": "XSS \u2014 Multiple semgrep-flagged echo-without-escape in handler/integration files [src/Integrations/Elementor/ElementorIntegration.php]"
+      }
+    ],
+    "primary_files": [
+      "src/Api/Routes/Routes.php",
+      "src/Integrations/Elementor/ElementorIntegration.php"
+    ],
+    "primary_snippets": [
+      {
+        "file": "src/Integrations/Elementor/ElementorIntegration.php",
+        "anchor": "src/Integrations/Elementor/ElementorIntegration.php:88",
+        "focus_line": 88,
+        "line_start": 82,
+        "line_end": 94,
+        "kind": "finding_source",
+        "code": "    82\t\n    83\t    public static function get_name(): string {\n    84\t        return self::INTEGRATION_NAME;\n    85\t    }\n    86\t\n    87\t    public function get_form_ids( WP_Post $post ): array {\n    88\t        return array_merge( $this->get_elementor_form_ids_from_content( $post->post_content ), $this->get_elementor_form_ids_from_actions() );\n    89\t    }\n    90\t\n    91\t    public function get_plugin_data(): PluginData {\n    92\t        if ( class_exists( 'Elementor\\Core\\Documents_Manager' ) ) {\n    93\t            $add_form_url = add_query_arg(\n    94\t                array("
+      },
+      {
+        "file": "src/Api/Routes/Routes.php",
+        "anchor": "src/Api/Routes/Routes.php:22",
+        "focus_line": 22,
+        "line_start": 16,
+        "line_end": 28,
+        "kind": "entry_point",
+        "code": "    16\t    public function __construct( ApiHandler $handler, ApiKeyManager $api_key_manager ) {\n    17\t        $this->handler         = $handler;\n    18\t        $this->api_key_manager = $api_key_manager;\n    19\t    }\n    20\t\n    21\t    public function init(): void {\n    22\t        add_action( 'rest_api_init', array( $this, 'register_routes' ) );\n    23\t    }\n    24\t\n    25\t    public function permission_check(): bool {\n    26\t        if ( has_action( 'litespeed_control_set_nocache' ) ) {\n    27\t            do_action(\n    28\t                'litespeed_control_set_nocache',"
+      }
+    ],
+    "optional_evidence": {
+      "anchors": [],
+      "files": [],
+      "snippets": []
+    }
+  },
+  "threat_context_summary": null
+}

@@ -1,0 +1,127 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.local/contracts/phase2-cluster-pack.schema.json",
+  "version": "1.0.0",
+  "title": "Phase 2 Cluster Evidence Pack",
+  "description": "Deterministic evidence pack for bounded cluster synthesis and challenge.",
+  "type": "object",
+  "required": [
+    "plugin_slug",
+    "cluster_id",
+    "cluster_strategy",
+    "cluster_summary",
+    "shared_context",
+    "member_findings",
+    "questions_to_answer",
+    "exploration_budget",
+    "constraints",
+    "recommended_models",
+    "evidence_pack"
+  ],
+  "properties": {
+    "plugin_slug": { "type": "string", "minLength": 1 },
+    "cluster_id": {
+      "type": "string",
+      "pattern": "^cluster-c[0-9]{2,}$"
+    },
+    "cluster_strategy": { "type": "string", "minLength": 1 },
+    "cluster_summary": { "type": "object" },
+    "shared_context": { "type": "object" },
+    "member_findings": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "object" }
+    },
+    "questions_to_answer": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "exploration_budget": { "type": "object" },
+    "constraints": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "recommended_models": { "type": "object" },
+    "evidence_pack": {
+      "type": "object",
+      "required": [
+        "primary_snippets",
+        "optional_snippets",
+        "primary_files_covered",
+        "optional_files_covered",
+        "snippet_counts"
+      ],
+      "properties": {
+        "primary_files_covered": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "optional_files_covered": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "primary_snippets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "file",
+              "anchor",
+              "focus_line",
+              "line_start",
+              "line_end",
+              "kind",
+              "code"
+            ],
+            "properties": {
+              "file": { "type": "string" },
+              "anchor": { "type": "string" },
+              "focus_line": { "type": "integer", "minimum": 1 },
+              "line_start": { "type": "integer", "minimum": 1 },
+              "line_end": { "type": "integer", "minimum": 1 },
+              "kind": { "type": "string" },
+              "code": { "type": "string" }
+            },
+            "additionalProperties": true
+          }
+        },
+        "optional_snippets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "file",
+              "anchor",
+              "focus_line",
+              "line_start",
+              "line_end",
+              "kind",
+              "code"
+            ],
+            "properties": {
+              "file": { "type": "string" },
+              "anchor": { "type": "string" },
+              "focus_line": { "type": "integer", "minimum": 1 },
+              "line_start": { "type": "integer", "minimum": 1 },
+              "line_end": { "type": "integer", "minimum": 1 },
+              "kind": { "type": "string" },
+              "code": { "type": "string" }
+            },
+            "additionalProperties": true
+          }
+        },
+        "snippet_counts": {
+          "type": "object",
+          "required": ["primary", "optional"],
+          "properties": {
+            "primary": { "type": "integer", "minimum": 0 },
+            "optional": { "type": "integer", "minimum": 0 }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

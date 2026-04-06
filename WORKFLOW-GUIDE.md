@@ -125,7 +125,18 @@ Ví dụ cấu hình dùng chung:
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "env": {
     "LLM_PROVIDERS": "codex",
-    "PHASE2_PRIMARY_PROVIDER": "codex",
+    "PHASE2_WORKER_PROVIDER": "claude",
+    "PHASE2_REVIEWER_PROVIDER": "codex",
+    "PHASE2_PROVIDER_TIMEOUT_SECONDS": "600",
+    "PHASE2_WORKER_TIMEOUT_SECONDS": "900",
+    "PHASE2_REVISION_TIMEOUT_SECONDS": "600",
+    "PHASE2_REVIEWER_TIMEOUT_SECONDS": "600",
+    "PHASE2_EXPLORATION_TIMEOUT_SECONDS": "240",
+    "PHASE2_WORKER_CLAUDE_MODEL": "claude-sonnet-4.6",
+    "PHASE2_REVIEWER_CODEX_MODEL": "gpt-5.4",
+    "PHASE2_REVIEWER_CLAUDE_MODEL": "claude-opus-4.6",
+    "PHASE2_ENABLE_FORCED_EXPLORATION": "true",
+    "PHASE2_MAX_EXPLORATION_CANDIDATES": "3",
     "PHASE3_PRIMARY_PROVIDER": "codex"
   }
 }
@@ -144,23 +155,43 @@ Ví dụ local override:
 ```
 
 Ý nghĩa:
-- `LLM_PROVIDERS=codex`: mặc định chỉ chạy Codex cho Phase 2/3.
-- `PHASE2_PRIMARY_PROVIDER` / `PHASE3_PRIMARY_PROVIDER`: chọn provider nào sẽ được copy về artifact canonical để downstream tiếp tục dùng.
+- `PHASE2_WORKER_PROVIDER=claude`: Phase 2 worker mặc định là Claude.
+- `PHASE2_REVIEWER_PROVIDER=codex`: reviewer mặc định của Phase 2 là Codex.
+- `PHASE2_WORKER_CLAUDE_MODEL=claude-sonnet-4.6`: model worker chính cho Claude ở Phase 2.
+- `PHASE2_REVIEWER_CODEX_MODEL=gpt-5.4`: model reviewer chính cho Codex ở Phase 2.
+- `PHASE2_REVIEWER_CLAUDE_MODEL=claude-opus-4.6`: model escalation/reviewer dự phòng cho Claude khi cần.
+- `PHASE2_PROVIDER_TIMEOUT_SECONDS=600`: fallback timeout tương thích ngược cho Phase 2 nếu timeout theo role chưa được set.
+- `PHASE2_WORKER_TIMEOUT_SECONDS=900`: timeout cho worker round 1 quick/deep.
+- `PHASE2_REVISION_TIMEOUT_SECONDS=600`: timeout cho worker revision/expansion rounds.
+- `PHASE2_REVIEWER_TIMEOUT_SECONDS=600`: timeout cho reviewer skeptical rounds.
+- `PHASE2_EXPLORATION_TIMEOUT_SECONDS=240`: timeout cho forced exploration round.
+- `PHASE2_ENABLE_FORCED_EXPLORATION=true`: trước khi kết thúc loop, reviewer chạy thêm một vòng ép worker tìm candidate mới ngoài tập finding hiện có.
+- `PHASE2_MAX_EXPLORATION_CANDIDATES=3`: giới hạn số candidate mới ở forced exploration round.
+- `LLM_PROVIDERS=codex`: mặc định Phase 3 chỉ gọi Codex trừ khi bạn override.
+- `PHASE3_PRIMARY_PROVIDER`: chọn provider canonical cho Phase 3 khi chạy multi-provider.
 - `CLAUDE_BIN`: cần thiết nếu shell batch không thấy `claude` trên `PATH`.
-- `CLAUDE_MODEL`: model mặc định cho Claude.
+- `CLAUDE_MODEL`: model Claude mặc định cho các path không pin riêng model, ví dụ worker fallback sau này.
 
 Có thể override tạm thời bằng CLI flag nếu cần:
 
 ```bash
-bash tools/bin/run-phase2.sh --with-claude --slug <slug>
+bash tools/bin/run-phase2.sh --slug <slug> \
+  --worker-provider claude \
+  --reviewer-provider codex \
+  --worker-claude-model claude-sonnet-4.6 \
+  --reviewer-codex-model gpt-5.4 \
+  --forced-exploration \
+  --max-exploration-candidates 3
 bash tools/bin/run-phase3.sh --with-claude --slug <slug> --llm-mode auto
 ```
 
 Ghi chú:
-- `--provider claude` vẫn dùng được như shorthand cho single-provider.
-- `--providers codex,claude` vẫn dùng được nếu muốn override đầy đủ; `--with-claude` chỉ là shorthand dễ nhớ.
-- `--model` set cùng một model cho cả hai provider; nếu cần tách riêng thì dùng `--codex-model` và `--claude-model`.
-- Artifact canonical vẫn giữ tên cũ để không phá pipeline. Artifact theo provider được lưu sidecar riêng.
+- Phase 2 mới là role-based loop: worker và reviewer là hai role tách biệt, không còn chọn canonical theo provider list nữa.
+- Default topology hiện tại là `Claude Sonnet worker -> Codex GPT-5.4 reviewer`.
+- Sau skeptical loop thông thường, Phase 2 còn có một forced-exploration round để reviewer ép worker rà candidate mới trước khi chốt.
+- `--provider` / `--providers` vẫn còn để tương thích ngược, nhưng abstraction đúng cho Phase 2 là `worker` và `reviewer`.
+- Artifact canonical vẫn giữ tên cũ để không phá pipeline. Phase 2 loop artifacts được lưu sidecar theo round.
+- Kiến trúc stabilization mục tiêu cho Phase 2 được chốt tại `7-workflow-wp/PHASE2-ARCHITECTURE-SPEC.md`.
 
 ## 3) Cách chạy chuẩn
 
@@ -186,8 +217,8 @@ bash tools/bin/run-single-plugin.sh <slug>
 
 Wrapper này:
 - chỉ dành cho một plugin mỗi lần chạy
-- mặc định chỉ gọi Codex
-- chỉ khi thêm `--with-claude` mới chạy thêm Claude
+- mặc định chạy `Claude Sonnet worker -> Codex GPT-5.4 reviewer` ở Phase 2
+- Phase 3 vẫn theo provider-list controls; `--with-claude` chủ yếu ảnh hưởng Phase 3
 - dừng lại nếu Phase 1 không sinh `reports/phase1/<slug>-ir.json` hoặc Phase 2 không sinh `reports/phase2/<slug>-phase2.json`
 
 Ví dụ chạy theo path plugin:
@@ -196,7 +227,7 @@ Ví dụ chạy theo path plugin:
 bash tools/bin/run-single-plugin.sh plugins/<slug>
 ```
 
-Ví dụ bật thêm Claude:
+Ví dụ ép Phase 2 theo role topology mặc định rồi cho Phase 3 chạy thêm Claude:
 
 ```bash
 bash tools/bin/run-single-plugin.sh <slug> --with-claude --llm-mode auto
@@ -212,7 +243,13 @@ Mode này sẽ:
 - refresh Phase 1 qua `scan-all.sh`
 - tự generate `reports/<slug>-threat-context.json` nếu cần
 - tự chạy `prepare_agent_inputs.py <slug>`
-- orchestrate agents rồi chuyển thẳng sang Phase 3
+- normalize IR + Semgrep + Psalm thành candidate inventory rồi chunk thành `agent-wNN` bundles
+- orchestrate agents, merge output vào `reports/phase2/<slug>-phase2.local.json`
+- build deterministic `cluster-plan` + `cluster-cNN.json` + `cluster-cNN.input.json`
+- build `cluster-cNN.pack.json` theo evidence-pack stage
+- rồi chạy thêm `cluster-cNN.synth.json` và `cluster-cNN.challenge.json`
+- cuối cùng viết `reports/phase2/<slug>-phase2.consensus.json` rồi sync lại canonical `phase2.json`
+- sau đó mới chuyển sang Phase 3
 
 Batch Psalm riêng (toàn bộ plugin mặc định):
 
@@ -325,12 +362,28 @@ bash tools/bin/run-phase2.sh --slug <slug>
 Ví dụ ép chạy cả Codex lẫn Claude bằng CLI:
 
 ```bash
-bash tools/bin/run-phase2.sh --with-claude --slug <slug>
+bash tools/bin/run-phase2.sh --slug <slug> \
+  --worker-provider claude \
+  --reviewer-provider codex \
+  --worker-claude-model claude-sonnet-4.6 \
+  --reviewer-codex-model gpt-5.4 \
+  --forced-exploration \
+  --max-exploration-candidates 3
 ```
 
 Option quan trọng:
 - `--force`: ghi đè output Phase 2 cũ.
 - `--force-deep`: luôn deep prompt, bỏ quick triage.
+- `--max-review-rounds`: số vòng reviewer critique + worker revision.
+- `--forced-exploration` / `--no-forced-exploration`: bật/tắt vòng ép tìm finding mới ở cuối loop.
+- `--max-exploration-candidates`: giới hạn số candidate mới trong forced exploration round.
+- `--clusters` / `--no-clusters`: bật/tắt deterministic cluster synth/challenge + consensus writer ở cuối Phase 2.
+- `--cluster-limit N`: chỉ chạy `N` cluster đầu tiên trong canonical Phase 2 path; hữu ích cho validation/quota-controlled reruns.
+
+Artifact canonical của `run-phase2.sh` hiện có 3 lớp:
+- `reports/phase2/<slug>-phase2.local.json`: kết quả local loop sau worker/reviewer/revision.
+- `reports/phase2/<slug>-phase2.consensus.json`: deterministic consensus sau cluster stage.
+- `reports/phase2/<slug>-phase2.json`: canonical output cuối cùng cho Phase 3.
 
 ### 3.3 Phase 3 - gate-first + LLM mode
 
@@ -352,11 +405,13 @@ Ví dụ ép chạy cả Codex lẫn Claude bằng CLI:
 bash tools/bin/run-phase3.sh --with-claude --slug <slug> --llm-mode auto
 ```
 
-Artifact sidecar khi chạy multi-provider:
+Artifact sidecar:
 - Phase 2:
   - canonical: `reports/phase2/<slug>-phase2.json`
-  - codex: `reports/phase2/<slug>-phase2.codex.json`
-  - claude: `reports/phase2/<slug>-phase2.claude.json`
+  - worker rounds: `reports/phase2/<slug>-phase2.worker.r<N>.json`
+  - worker raw snapshots: `reports/phase2/<slug>-phase2.worker.r<N>.raw.json`
+  - reviewer critiques: `reports/phase2/<slug>-phase2.review.r<N>.json`
+  - legacy compatibility sidecar: `reports/phase2/<slug>-phase2.codex.json` hoặc `reports/phase2/<slug>-phase2.claude.json` tùy worker provider cuối cùng
 - Phase 3b:
   - canonical review JSON: `reports/phase3/<slug>-phase3-review.json`
   - codex review JSON: `reports/phase3/<slug>-phase3-review.codex.json`
@@ -364,7 +419,7 @@ Artifact sidecar khi chạy multi-provider:
   - provider markdowns only: `reports/phase3/<index>-<slug>.codex.llm.md`, `reports/phase3/<index>-<slug>.claude.llm.md`
 
 LLM mode:
-- `auto`: chỉ gọi LLM nếu gate còn `plausible/uncertain`.
+- `auto`: chỉ gọi LLM nếu gate còn `uncertain/risk_note`.
 - `off`: không gọi LLM.
 - `force`: luôn gọi LLM skeptic.
 

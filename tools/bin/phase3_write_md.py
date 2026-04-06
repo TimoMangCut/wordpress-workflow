@@ -95,7 +95,7 @@ def short_description_two_sentences(fid: str, finding: dict, validation: dict) -
     sentence1 = f"Finding `{fid}` flags `{vuln_type}` at `{sink_fp}:{sink_ln}` via entry point `{ep}`."
     if status == "CONFIRMED":
         sentence2 = f"Gate validation currently marks it as confirmed with confidence `{conf:.2f}` based on available static evidence."
-    elif status in ("PLAUSIBLE", "UNCERTAIN"):
+    elif status in ("RISK_NOTE", "UNCERTAIN"):
         sentence2 = f"Gate validation currently keeps it as `{status}` (confidence `{conf:.2f}`), so dynamic verification is still required."
     else:
         sentence2 = f"Gate validation currently treats it as non-actionable (`{status}`) with no confirmed exploit path."
@@ -107,7 +107,7 @@ def infer_highest_impact(finding: dict, validation: dict) -> str:
     auth = _clean_text(finding.get("auth_required"), "unknown")
     vuln = _clean_text(finding.get("vuln_type"), "").lower()
 
-    if status in ("ACCEPTED_FP", "LIKELY_HALLUCINATION"):
+    if status == "REJECTED":
         return "No confirmed measurable security impact in current plugin-local evidence."
 
     if "sql" in vuln:
@@ -153,7 +153,7 @@ def build_poc_steps(slug: str, finding: dict, validation: dict) -> List[str]:
         )
     steps.append(f"Step 3 (Attack): {attack}")
 
-    if status in ("ACCEPTED_FP", "LIKELY_HALLUCINATION"):
+    if status == "REJECTED":
         verify = "Confirm the action is rejected or results in no unauthorized read/write/privilege change."
     else:
         verify = "Confirm measurable impact occurs (unauthorized data read/write, privilege effect, or persistent state change)."
@@ -233,8 +233,8 @@ def main() -> int:
 
     rows_confirmed: List[tuple[str, dict, dict]] = []
     rows_verify: List[tuple[str, dict, dict]] = []
-    rows_hallucinated: List[tuple[str, dict, dict]] = []
-    rows_fp: List[tuple[str, dict, dict]] = []
+    rows_risk: List[tuple[str, dict, dict]] = []
+    rows_rejected: List[tuple[str, dict, dict]] = []
     stored_rows: List[tuple[str, dict, dict]] = []
 
     for i, v in enumerate(validated):
@@ -243,12 +243,12 @@ def main() -> int:
         status = v.get("validation_status")
         if status == "CONFIRMED":
             rows_confirmed.append((fid, f, v))
-        elif status in ("PLAUSIBLE", "UNCERTAIN"):
+        elif status == "UNCERTAIN":
             rows_verify.append((fid, f, v))
-        elif status == "LIKELY_HALLUCINATION":
-            rows_hallucinated.append((fid, f, v))
-        elif status == "ACCEPTED_FP":
-            rows_fp.append((fid, f, v))
+        elif status == "RISK_NOTE":
+            rows_risk.append((fid, f, v))
+        elif status == "REJECTED":
+            rows_rejected.append((fid, f, v))
 
         vuln_type = str(f.get("vuln_type", "")).lower()
         if "stored" in vuln_type or "second" in vuln_type or f.get("storage_key"):
@@ -274,8 +274,8 @@ def main() -> int:
         f"- Phase 2: total `{p2.get('total', 0)}`, TP `{p2.get('tp', 0)}`, FP `{p2.get('fp', 0)}`, REVIEW `{p2.get('review', 0)}`"
     )
     lines.append(
-        f"- Phase 3: confirmed `{p3.get('confirmed', 0)}`, plausible `{p3.get('plausible', 0)}`, "
-        f"uncertain `{p3.get('uncertain', 0)}`, likely_hallucination `{p3.get('likely_hallucination', 0)}`"
+        f"- Phase 3: confirmed `{p3.get('confirmed', 0)}`, uncertain `{p3.get('uncertain', 0)}`, "
+        f"risk_note `{p3.get('risk_note', 0)}`, rejected `{p3.get('rejected', 0)}`"
     )
     lines.append("")
     lines.append("## Tool Signals")
@@ -284,13 +284,13 @@ def main() -> int:
     lines.append("")
     lines.extend(render_status_block("Confirmed Findings", rows_confirmed, slug))
     lines.extend(render_status_block("Needs Dynamic Verification", rows_verify, slug))
-    lines.extend(render_status_block("Likely Hallucinations", rows_hallucinated, slug))
-    lines.extend(render_status_block("Rejected Findings (Accepted FP)", rows_fp, slug))
+    lines.extend(render_status_block("Risk Notes", rows_risk, slug))
+    lines.extend(render_status_block("Rejected Findings", rows_rejected, slug))
     lines.append("## Why Not Confirmed")
-    if not rows_verify and not rows_hallucinated:
+    if not rows_verify and not rows_risk:
         lines.append("No unresolved findings.")
     else:
-        for fid, _f, v in rows_verify + rows_hallucinated:
+        for fid, _f, v in rows_verify + rows_risk:
             issues = v.get("issues", []) or []
             if not issues:
                 continue

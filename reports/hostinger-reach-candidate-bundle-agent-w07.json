@@ -1,0 +1,162 @@
+{
+  "metadata": {
+    "plugin_slug": "hostinger-reach",
+    "plugin_name": "Hostinger Reach",
+    "version": "1.4.4",
+    "active_installs": null,
+    "files_analyzed": 123,
+    "total_loc": 9691,
+    "extraction_time_ms": 307,
+    "extractor_version": "1.0.0"
+  },
+  "bundle": {
+    "bundle_id": "bundle-w07",
+    "agent_id": "agent-w07",
+    "worker_strategy": "candidate_chunk_v2",
+    "bug_family": "redirect",
+    "primary_surface": "init",
+    "auth_boundary": "none",
+    "candidate_count": 1,
+    "complexity_budget": 2,
+    "max_candidate_complexity": 2
+  },
+  "candidate_hypotheses": [
+    {
+      "candidate_id": "cand-ep-init-init-src-setup-blocks-php-redirect-1",
+      "kind": "ir_sink",
+      "bug_family": "redirect",
+      "sink_family": "redirect",
+      "surface": "init",
+      "auth_boundary": "none",
+      "complexity_score": 2,
+      "priority_score": 7,
+      "entry_point_ids": [
+        "ep_init_init"
+      ],
+      "sink_ids": [
+        "sink_1"
+      ],
+      "anomaly_ids": [],
+      "semgrep_keys": [],
+      "psalm_keys": [],
+      "source_focus_files": [
+        "src/Admin/Redirects.php",
+        "src/Setup/Blocks.php"
+      ],
+      "rationale": "IR sink-cluster hypothesis across 1 sink(s) in the same entry point/family."
+    }
+  ],
+  "entry_points": [
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "closure",
+        "name": null,
+        "class": null,
+        "file": "src/Providers/JobsProvider.php",
+        "line_start": 61,
+        "line_end": 63
+      },
+      "auth_level": "none",
+      "file": "src/Providers/JobsProvider.php",
+      "line": 59
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "register_blocks",
+        "class": "Hostinger\\Reach\\Setup\\Blocks",
+        "file": "src/Setup/Blocks.php",
+        "line_start": 27,
+        "line_end": 29
+      },
+      "auth_level": "none",
+      "file": "src/Setup/Blocks.php",
+      "line": 23
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "closure",
+        "name": null,
+        "class": null,
+        "file": "src/Admin/Redirects.php",
+        "line_start": 25,
+        "line_end": 29
+      },
+      "auth_level": "none",
+      "file": "src/Admin/Redirects.php",
+      "line": 23
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "init_hooks",
+        "class": "Hostinger\\Reach\\Api\\Webhooks\\Handlers\\WebhookHandler",
+        "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
+        "line_start": 52,
+        "line_end": 52
+      },
+      "auth_level": "none",
+      "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
+      "line": 19
+    },
+    {
+      "id": "ep_init_init",
+      "type": "init",
+      "hook_name": "init",
+      "callback": {
+        "type": "method",
+        "name": "trigger_active_integrations",
+        "class": "Hostinger\\Reach\\Api\\Handlers\\IntegrationsApiHandler",
+        "file": "src/Api/Handlers/IntegrationsApiHandler.php",
+        "line_start": 40,
+        "line_end": 42
+      },
+      "auth_level": "none",
+      "file": "src/Api/Handlers/IntegrationsApiHandler.php",
+      "line": 37
+    }
+  ],
+  "sources": [],
+  "sinks": [
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_init_init",
+      "category": "redirect",
+      "function_called": "wp_safe_redirect",
+      "uses_prepared_statement": null,
+      "file": "src/Admin/Redirects.php",
+      "line": 27
+    },
+    {
+      "id": "sink_1",
+      "entry_point_id": "ep_init_init",
+      "category": "output_return",
+      "function_called": "return",
+      "uses_prepared_statement": null,
+      "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
+      "line": 23
+    }
+  ],
+  "guards": [],
+  "anomalies": [],
+  "unresolved_hooks": [],
+  "coverage_gaps": [],
+  "semgrep_results": [],
+  "psalm_results": [],
+  "source_focus_files": [
+    "src/Admin/Redirects.php",
+    "src/Setup/Blocks.php"
+  ]
+}

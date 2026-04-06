@@ -1,31 +1,12 @@
 {
   "plugin_slug": "pretty-link",
-  "applied_edits": 4,
-  "changes": [
-    {
-      "finding_id": "agent-d-unresolved-001",
-      "field": "source_file_path",
-      "old": null,
-      "new": "app/lib/PrliAddonUpdates.php"
-    },
-    {
-      "finding_id": "agent-d-unresolved-001",
-      "field": "source_line_number",
-      "old": null,
-      "new": 17
-    },
-    {
-      "finding_id": "agent-d-unresolved-001",
-      "field": "sink_file_path",
-      "old": null,
-      "new": "app/lib/PrliAddonUpdates.php"
-    },
-    {
-      "finding_id": "agent-d-unresolved-001",
-      "field": "sink_line_number",
-      "old": null,
-      "new": 214
-    }
-  ],
+  "applied_edits": 0,
+  "review_counts": {
+    "reject": 1,
+    "downgrade": 0,
+    "keep": 0,
+    "upgrade": 0
+  },
+  "changes": [],
   "review_source": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/pretty-link-phase3-review.json"
 }

@@ -57,7 +57,7 @@
       "properties": {
         "total_raw":          { "type": "integer", "description": "Total findings across all agents before dedup" },
         "total_deduplicated": { "type": "integer", "description": "Findings after deduplication" },
-        "agents_included":    { "type": "array", "items": { "type": "string" }, "description": "agent_id values of all agents merged" },
+        "agents_included":    { "type": "array", "items": { "type": "string" }, "description": "agent_id values of all agents merged (dynamic worker IDs allowed)" },
         "agents_missing":     { "type": "array", "items": { "type": "string" }, "description": "Expected agents with no output file present" },
         "tp_count":           { "type": "integer" },
         "fp_count":           { "type": "integer" },

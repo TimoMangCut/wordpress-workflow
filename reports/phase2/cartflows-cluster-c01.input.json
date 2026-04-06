@@ -1,0 +1,251 @@
+{
+  "plugin_slug": "cartflows",
+  "cluster_id": "cluster-c01",
+  "cluster_strategy": "cross_bundle_cluster_v1",
+  "cluster_summary": {
+    "bug_family": "file_ops",
+    "dominant_vuln_types": [
+      "arbitrary_file_upload",
+      "nopriv_sensitive_op_missing_capability",
+      "missing_capability"
+    ],
+    "auth_boundary": "none",
+    "priority_score": 59,
+    "synthesis_scope": "cross_bundle",
+    "member_count": 6
+  },
+  "shared_context": {
+    "entry_point_ids": [
+      "ep_ajax_nopriv_wp_ajax_nopriv_wcf_check_email_exists",
+      "ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file",
+      "ep_ajax_priv_wp_ajax_wcf_upload_checkout_file",
+      "ep_block_wcfb_checkout_form"
+    ],
+    "supporting_files": [
+      "classes/class-cartflows-helper.php",
+      "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "modules/checkout/classes/class-cartflows-checkout-markup.php",
+      "modules/flow/classes/class-cartflows-step-post-type.php",
+      "modules/gutenberg/classes/class-cartflows-init-blocks.php",
+      "modules/gutenberg/dist/blocks/checkout-form/class-wcfb-checkout-form.php"
+    ],
+    "primary_files": [
+      "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+      "modules/checkout/classes/class-cartflows-checkout-markup.php",
+      "classes/class-cartflows-helper.php"
+    ],
+    "optional_files": [
+      "modules/flow/classes/class-cartflows-step-post-type.php",
+      "modules/gutenberg/classes/class-cartflows-init-blocks.php",
+      "modules/gutenberg/dist/blocks/checkout-form/class-wcfb-checkout-form.php"
+    ],
+    "primary_anchors": [
+      "modules/checkout/classes/class-cartflows-checkout-ajax.php:311",
+      "modules/checkout/classes/class-cartflows-checkout-ajax.php:425",
+      "modules/checkout/classes/class-cartflows-checkout-ajax.php:295",
+      "modules/checkout/classes/class-cartflows-checkout-ajax.php:331",
+      "modules/checkout/classes/class-cartflows-checkout-ajax.php:293",
+      "modules/checkout/classes/class-cartflows-checkout-ajax.php:325",
+      "classes/class-cartflows-helper.php:1934",
+      "modules/checkout/classes/class-cartflows-checkout-ajax.php:57",
+      "modules/checkout/classes/class-cartflows-checkout-ajax.php:308",
+      "modules/checkout/classes/class-cartflows-checkout-markup.php:533",
+      "modules/checkout/classes/class-cartflows-checkout-markup.php:532",
+      "modules/checkout/classes/class-cartflows-checkout-ajax.php:209"
+    ],
+    "source_agents": [
+      "agent-a1",
+      "agent-a2",
+      "agent-a4",
+      "agent-c"
+    ],
+    "shared_signals": [
+      "cross_bundle_proximity"
+    ]
+  },
+  "member_findings": [
+    {
+      "finding_id": "cartflows-a1-001",
+      "verdict": "TP",
+      "vuln_type": "arbitrary_file_upload",
+      "confidence": 0.94,
+      "severity": "medium",
+      "auth_required": "none",
+      "entry_point_ids": [
+        "ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file"
+      ],
+      "source_agents": [
+        "agent-a1"
+      ],
+      "source_anchor": "modules/checkout/classes/class-cartflows-checkout-ajax.php:311",
+      "sink_anchor": "modules/checkout/classes/class-cartflows-checkout-ajax.php:425",
+      "supporting_files": [
+        "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+        "modules/checkout/classes/class-cartflows-checkout-markup.php"
+      ],
+      "guard_anchors": [
+        "modules/checkout/classes/class-cartflows-checkout-ajax.php:295",
+        "modules/checkout/classes/class-cartflows-checkout-ajax.php:331",
+        "modules/checkout/classes/class-cartflows-checkout-markup.php:1804"
+      ],
+      "why_this_might_connect": "file_ops; entry=ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file; auth=none; sink=modules/checkout/classes/class-cartflows-checkout-ajax.php:425"
+    },
+    {
+      "finding_id": "cf-c-anom_35",
+      "verdict": "REVIEW",
+      "vuln_type": "nopriv_sensitive_op_missing_capability",
+      "confidence": 0.95,
+      "severity": "critical",
+      "auth_required": "none",
+      "entry_point_ids": [
+        "ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file"
+      ],
+      "source_agents": [
+        "agent-c"
+      ],
+      "source_anchor": "modules/checkout/classes/class-cartflows-checkout-ajax.php:293",
+      "sink_anchor": "modules/checkout/classes/class-cartflows-checkout-ajax.php:325",
+      "supporting_files": [
+        "classes/class-cartflows-helper.php",
+        "modules/checkout/classes/class-cartflows-checkout-ajax.php"
+      ],
+      "guard_anchors": [
+        "modules/checkout/classes/class-cartflows-checkout-ajax.php:325",
+        "classes/class-cartflows-helper.php:1934",
+        "modules/checkout/classes/class-cartflows-checkout-ajax.php:301"
+      ],
+      "why_this_might_connect": "file_ops; entry=ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file; auth=none; sink=modules/checkout/classes/class-cartflows-checkout-ajax.php:325"
+    },
+    {
+      "finding_id": "cf-c-anom_5",
+      "verdict": "REVIEW",
+      "vuln_type": "missing_capability",
+      "confidence": 0.9,
+      "severity": "critical",
+      "auth_required": "none",
+      "entry_point_ids": [
+        "ep_ajax_priv_wp_ajax_wcf_upload_checkout_file"
+      ],
+      "source_agents": [
+        "agent-c"
+      ],
+      "source_anchor": "modules/checkout/classes/class-cartflows-checkout-ajax.php:57",
+      "sink_anchor": "modules/checkout/classes/class-cartflows-checkout-ajax.php:308",
+      "supporting_files": [
+        "classes/class-cartflows-helper.php",
+        "modules/checkout/classes/class-cartflows-checkout-ajax.php"
+      ],
+      "guard_anchors": [
+        "modules/checkout/classes/class-cartflows-checkout-ajax.php:57",
+        "classes/class-cartflows-helper.php:1934",
+        "modules/checkout/classes/class-cartflows-checkout-ajax.php:295"
+      ],
+      "why_this_might_connect": "file_ops; entry=ep_ajax_priv_wp_ajax_wcf_upload_checkout_file; auth=none; sink=modules/checkout/classes/class-cartflows-checkout-ajax.php:308"
+    },
+    {
+      "finding_id": "agent-a4-review-checkout-block-layout-include",
+      "verdict": "REVIEW",
+      "vuln_type": "local_file_inclusion",
+      "confidence": 0.78,
+      "severity": "high",
+      "auth_required": "unknown",
+      "entry_point_ids": [
+        "ep_block_wcfb_checkout_form"
+      ],
+      "source_agents": [
+        "agent-a4"
+      ],
+      "source_anchor": "modules/gutenberg/dist/blocks/checkout-form/class-wcfb-checkout-form.php:856",
+      "sink_anchor": "modules/checkout/classes/class-cartflows-checkout-markup.php:533",
+      "supporting_files": [
+        "modules/checkout/classes/class-cartflows-checkout-markup.php",
+        "modules/flow/classes/class-cartflows-step-post-type.php",
+        "modules/gutenberg/classes/class-cartflows-init-blocks.php",
+        "modules/gutenberg/dist/blocks/checkout-form/class-wcfb-checkout-form.php"
+      ],
+      "guard_anchors": [
+        "modules/gutenberg/classes/class-cartflows-init-blocks.php:232",
+        "modules/checkout/classes/class-cartflows-checkout-markup.php:532",
+        "modules/flow/classes/class-cartflows-step-post-type.php:198"
+      ],
+      "why_this_might_connect": "file_ops; entry=ep_block_wcfb_checkout_form; auth=none; sink=modules/checkout/classes/class-cartflows-checkout-markup.php:533"
+    },
+    {
+      "finding_id": "agent-a2-f22-upload-checkout-file",
+      "verdict": "TP",
+      "vuln_type": "arbitrary_file_upload",
+      "confidence": 0.95,
+      "severity": "medium",
+      "auth_required": "none",
+      "entry_point_ids": [
+        "ep_ajax_priv_wp_ajax_wcf_upload_checkout_file"
+      ],
+      "source_agents": [
+        "agent-a2"
+      ],
+      "source_anchor": "modules/checkout/classes/class-cartflows-checkout-ajax.php:311",
+      "sink_anchor": "modules/checkout/classes/class-cartflows-checkout-ajax.php:425",
+      "supporting_files": [
+        "modules/checkout/classes/class-cartflows-checkout-ajax.php"
+      ],
+      "guard_anchors": [
+        "modules/checkout/classes/class-cartflows-checkout-ajax.php:295",
+        "modules/checkout/classes/class-cartflows-checkout-ajax.php:57"
+      ],
+      "why_this_might_connect": "file_ops; entry=ep_ajax_priv_wp_ajax_wcf_upload_checkout_file; auth=none; sink=modules/checkout/classes/class-cartflows-checkout-ajax.php:425"
+    },
+    {
+      "finding_id": "cartflows-a1-002",
+      "verdict": "TP",
+      "vuln_type": "user_enumeration",
+      "confidence": 0.9,
+      "severity": "low",
+      "auth_required": "none",
+      "entry_point_ids": [
+        "ep_ajax_nopriv_wp_ajax_nopriv_wcf_check_email_exists"
+      ],
+      "source_agents": [
+        "agent-a1"
+      ],
+      "source_anchor": "modules/checkout/classes/class-cartflows-checkout-ajax.php:209",
+      "sink_anchor": "modules/checkout/classes/class-cartflows-checkout-ajax.php:219",
+      "supporting_files": [
+        "modules/checkout/classes/class-cartflows-checkout-ajax.php"
+      ],
+      "guard_anchors": [
+        "modules/checkout/classes/class-cartflows-checkout-ajax.php:207",
+        "modules/checkout/classes/class-cartflows-checkout-ajax.php:209"
+      ],
+      "why_this_might_connect": "file_ops; entry=ep_ajax_nopriv_wp_ajax_nopriv_wcf_check_email_exists; auth=none; sink=modules/checkout/classes/class-cartflows-checkout-ajax.php:219"
+    }
+  ],
+  "questions_to_answer": [
+    "Which member findings should remain separate because the chain between them is speculative?",
+    "Which links are justified by a shared trust boundary, entry point, guard model, or sink family?",
+    "What evidence is still missing before treating this cluster as one stronger claim?"
+  ],
+  "exploration_budget": {
+    "max_optional_files": 2,
+    "max_out_of_band_files": 1,
+    "max_new_links": 3,
+    "max_open_questions": 3
+  },
+  "constraints": [
+    "Start from primary_anchors and primary_files before expanding.",
+    "Use optional_files only when the primary set is insufficient.",
+    "If you inspect files outside primary_files and optional_files, record them in expansion_attempts.",
+    "Prefer refutation over inflation.",
+    "Use only CONFIRMED, UNCERTAIN, RISK_NOTE, or REJECTED when describing mature outcomes.",
+    "Do not restate the full worker reasoning prose."
+  ],
+  "recommended_models": {
+    "synthesizer": {
+      "provider": "codex",
+      "model": "gpt-5.4"
+    },
+    "challenger": {
+      "provider": "claude",
+      "model": "claude-sonnet-4.6"
+    }
+  }
+}

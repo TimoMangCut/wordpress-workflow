@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.local/contracts/phase2-consensus.schema.json",
+  "version": "1.0.0",
+  "title": "Phase 2 Consensus Output",
+  "description": "Canonical Phase 2 artifact after deterministic consensus writing.",
+  "type": "object",
+  "required": [
+    "plugin_slug",
+    "findings",
+    "merge_stats",
+    "consensus"
+  ],
+  "properties": {
+    "plugin_slug": { "type": "string", "minLength": 1 },
+    "findings": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "merge_stats": { "type": "object" },
+    "consensus": {
+      "type": "object",
+      "required": [
+        "strategy",
+        "generated_timestamp",
+        "local_phase2_path",
+        "clusters_total",
+        "synth_ok_count",
+        "challenge_ok_count",
+        "unresolved_cluster_ids"
+      ],
+      "properties": {
+        "strategy": { "type": "string" },
+        "generated_timestamp": { "type": "string" },
+        "local_phase2_path": { "type": "string" },
+        "cluster_plan_path": { "type": ["string", "null"] },
+        "global_exploration_path": { "type": ["string", "null"] },
+        "clusters_total": { "type": "integer", "minimum": 0 },
+        "synth_ok_count": { "type": "integer", "minimum": 0 },
+        "challenge_ok_count": { "type": "integer", "minimum": 0 },
+        "open_questions_total": { "type": "integer", "minimum": 0 },
+        "missing_evidence_total": { "type": "integer", "minimum": 0 },
+        "unresolved_cluster_ids": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "clusters": {
+          "type": "array",
+          "items": { "type": "object" }
+        },
+        "notes": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

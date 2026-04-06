@@ -1,0 +1,413 @@
+{
+  "plugin_slug": "hostinger-reach",
+  "analysis_summary": "Phase 2 deep analysis of hostinger-reach v1.4.4. Three REST anomalies from IR were investigated: (1) GET /integrations with __return_true returns non-sensitive enumeration data with no secrets; (2) POST /contact with __return_true is protected by an in-handler wp_rest nonce check which, combined with the requirement that the site be connected, reduces exploitability; (3) POST /optinmonster with __return_true is similarly protected by an in-handler wp_rest nonce check. The wp_rest nonce IS generated for unauthenticated visitors on WordPress (since WP 5.3), making the nonce-only check on public REST routes a meaningful bypass opportunity but requiring the attacker to first obtain a valid nonce from a page where it is embedded. For /optinmonster, the nonce is localised to every page load when the integration is active, making it effectively public. This constitutes a finding. AddFormNotice AJAX handler is missing a capability check — any authenticated user can trigger it (nonce guards are present but no role check). Semgrep-flagged XSS signals in SatisfactionSurvey and Functions.php are all FP: the code paths use boolean/server-env values that are not reflected in HTML output. WooCommerce SQL patterns are FP due to hardcoded table names. Unresolved hooks resolved to hardcoded values or admin-only contexts.",
+  "overall_risk": "low",
+  "total_findings_analyzed": 9,
+  "true_positives": 1,
+  "false_positives": 7,
+  "needs_review": 1,
+  "findings": [
+    {
+      "finding_id": "HR-001",
+      "verdict": "TP",
+      "vuln_type": "Broken Access Control — Unauthenticated REST Endpoint (subscriber contact injection via obtainable nonce)",
+      "cwe_id": "CWE-862",
+      "severity": "medium",
+      "auth_required": false,
+      "confidence": 0.72,
+      "entry_point_id": "ep_rest_hostinger_reach_v1__optinmonster",
+      "source_function": "submit_optinmonster",
+      "sink_function": "do_action('hostinger_reach_submit', ...)",
+      "source_file_path": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+      "source_line_number": 62,
+      "sink_file_path": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+      "sink_line_number": 78,
+      "file_path": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+      "line_number": 78,
+      "reasoning": {
+        "hypothesis": "An unauthenticated attacker can inject arbitrary email addresses into the Hostinger Reach contact list by POSTing to /wp-json/hostinger-reach/v1/optinmonster because (1) permission_callback is __return_true, and (2) the in-handler nonce check uses the wp_rest nonce which WordPress generates for ALL visitors (including logged-out users) since WP 5.3, and (3) this nonce is embedded in every frontend page load when the OptInMonster integration is active via wp_localize_script.",
+        "trace": "Attacker visits any page on the target site where OptInMonster is active → JavaScript bundle contains wp_localize_script data including 'nonce' (wp_create_nonce('wp_rest')) → Attacker reads nonce from page source or XHR response → POST /wp-json/hostinger-reach/v1/optinmonster with X-WP-Nonce header and crafted JSON body containing 'fields' array with attacker-chosen email → OptInMonsterIntegration::submit_optinmonster() (line 62) calls is_authorized() (line 201) which calls wp_verify_nonce($nonce, 'wp_rest') (line 203) — this succeeds because wp_rest nonces are valid for non-logged-in users → find_email() extracts the email from $data['fields'] (line 73) → do_action('hostinger_reach_submit') fires with attacker-controlled email (line 78) → email is sent to Hostinger Reach API as a subscriber",
+        "defenses": [
+          "permission_callback = __return_true: no restriction at WP REST layer",
+          "is_authorized() at line 63: checks wp_verify_nonce($nonce, 'wp_rest') — wp_rest nonces are issued to guest users in WP 5.3+, so this is not an effective barrier against unauthenticated callers who can obtain the nonce from any page",
+          "find_email() validates email format via sanitize_email + FILTER_VALIDATE_EMAIL at line 253-254 — this constrains the value to valid email format but does not restrict who can call the endpoint"
+        ],
+        "refutation": [
+          "REFUTATION ATTEMPT: Does wp_rest nonce restrict to logged-in users only? RESULT: Not refuted. Since WordPress 5.3, wp_create_nonce('wp_rest') generates valid nonces for non-logged-in users (nonce tied to user_id=0). wp_verify_nonce succeeds for any request that presents the nonce obtained from a page view within the 12-24 hour nonce lifetime.",
+          "REFUTATION ATTEMPT: Is the nonce exposed only to authenticated users? RESULT: Not refuted. The nonce is embedded via wp_localize_script in enqueue_assets() (line 228-249 of OptInMonsterIntegration.php), which fires on the frontend when the integration is active — i.e., on every public page load.",
+          "REFUTATION ATTEMPT: Does the endpoint have meaningful impact? RESULT: Not refuted. The endpoint triggers do_action('hostinger_reach_submit') which calls the Hostinger Reach API to add the supplied email as a subscriber. This allows an unauthenticated actor to inject arbitrary valid email addresses into the site owner's contact list, causing reputational harm and potentially violating GDPR/CAN-SPAM (adding contacts without consent)."
+        ],
+        "conclusion": "Confirmed TP. The combination of __return_true permission_callback and reliance on a guest-accessible wp_rest nonce for authentication means any user who can fetch a page where OptInMonster is active can submit arbitrary email addresses to the contact list. The fix is to either (a) restrict the permission_callback to is_user_logged_in() or current_user_can('read'), or (b) use a site-specific nonce action that cannot be obtained from the frontend."
+      },
+      "poc_description": "1. With OptInMonster integration active, visit any page on the target site. 2. In browser devtools or page source, locate the hostinger_reach_optinmonster_data JS object and extract the 'nonce' value. 3. Send: POST /wp-json/hostinger-reach/v1/optinmonster with headers X-WP-Nonce: <extracted_nonce>, Content-Type: application/json and body: {\"formId\":\"\",\"fields\":[\"victim@example.com\"],\"tags\":{\"campaign_name\":\"injected\",\"form_name\":\"test\"}}. 4. Observe 200 response and that the email is added to the Hostinger Reach contact list.",
+      "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N",
+      "remediation": "Change permission_callback from __return_true to a callback that verifies the user is logged in (is_user_logged_in()), or use a nonce action that cannot be obtained by unauthenticated visitors. Consider rate-limiting the endpoint.",
+      "patchstack_eligible": true
+    },
+    {
+      "finding_id": "HR-002",
+      "verdict": "REVIEW",
+      "vuln_type": "Broken Access Control — AJAX handler missing capability check (subscriber privilege escalation via dismiss action)",
+      "cwe_id": "CWE-862",
+      "severity": "low",
+      "auth_required": true,
+      "confidence": 0.55,
+      "entry_point_id": "ep_init_init",
+      "source_function": "AddFormNotice::handle_ajax_action",
+      "sink_function": "set_transient / wp_send_json_success",
+      "source_file_path": "src/Admin/Notices/AddFormNotice.php",
+      "source_line_number": 43,
+      "sink_file_path": "src/Admin/Notices/AddFormNotice.php",
+      "sink_line_number": 59,
+      "file_path": "src/Admin/Notices/AddFormNotice.php",
+      "line_number": 59,
+      "reasoning": {
+        "hypothesis": "An authenticated subscriber-level user can dismiss the 'Add Form' admin notice or trigger the 'success' action by sending a valid nonce-protected AJAX request to wp_ajax_hostinger_reach_add_form_notice_action. Unlike ConnectionNotice (which checks current_user_can('manage_options')), AddFormNotice does not perform a capability check.",
+        "trace": "AddFormNotice::init() registers wp_ajax_hostinger_reach_add_form_notice_action (line 28) → handle_ajax_action() is called (line 43) → check_ajax_referer(self::NOTICE_ACTION, 'nonce') validates nonce (line 44) → no capability check follows → $choice from $_POST['choice'] is processed → 'dismiss' case sets transient at NOTICE_DISMISS_TRANSIENT, 'success' case returns a redirect URL",
+        "defenses": [
+          "check_ajax_referer() at line 44: requires a valid nonce for the specific action — limits exposure to users who have a valid nonce",
+          "The nonce is only generated and localised in enqueue_notice_assets() which fires inside should_render() → but should_render() does not check current_user_can() — it only checks screen->id (dashboard, pages, posts, edit-page, edit-post) and connection status"
+        ],
+        "refutation": [
+          "REFUTATION ATTEMPT: Is the nonce only delivered to admin users? RESULT: Partially refuted. The nonce is enqueued via admin_enqueue_scripts, which only fires in the admin area. WordPress admin area normally requires at least author-level access, not subscriber. Subscriber-level users cannot access admin screens that match the screen ID whitelist (dashboard requires capability 'read', but admin pages like pages/posts/edit-page/edit-post require higher capabilities). Therefore, a subscriber typically cannot obtain the nonce.",
+          "REFUTATION ATTEMPT: Can a subscriber reach an admin screen to obtain the nonce? RESULT: Depends on site configuration. In default WordPress, subscribers cannot access the admin dashboard beyond their profile page. The admin_notices hook only runs on admin pages that the subscriber can access — which by default is only their profile page (not in the whitelist). Therefore exploitation requires non-default configuration or another vulnerability to access the nonce.",
+          "REFUTATION ATTEMPT: What is the actual impact if exploited? RESULT: The impact is limited — 'dismiss' sets a transient that hides the notice for one week; 'success' returns a hardcoded redirect URL string. Neither action affects data integrity, credentials, or security settings. This is a design inconsistency (ConnectionNotice has the capability check, AddFormNotice does not) but exploitation in a default WordPress configuration is not straightforward."
+        ],
+        "conclusion": "REVIEW. There is a missing capability check compared to the sibling ConnectionNotice handler. In default WordPress configurations, a subscriber cannot obtain the nonce, limiting practical exploitability. However, in sites with custom roles or other misconfigurations, a lower-privileged user could trigger the dismiss/success actions. The impact is low (notice management only). Marking as REVIEW rather than TP because the exploitation path requires non-default conditions.",
+        "why_uncertain": "Exploitation requires a subscriber to be able to obtain the nonce, which depends on whether the subscriber can access any admin screen matched by the screen ID whitelist. This is configuration-dependent.",
+        "resolution_path": "Verify whether subscriber-level or author-level users on a default WordPress installation can access any admin screen that matches screen IDs 'dashboard', 'pages', 'posts', 'edit-page', or 'edit-post' and thus receive the enqueued nonce."
+      },
+      "poc_description": "If a lower-privileged user can access an admin screen in the whitelist (e.g., through a misconfiguration or as an author): 1. Navigate to a qualifying admin screen. 2. Extract the nonce from hostinger_reach_add_form_notice_data JS object. 3. POST to admin-ajax.php with action=hostinger_reach_add_form_notice_action, nonce=<value>, choice=dismiss.",
+      "cvss_vector": null,
+      "remediation": "Add current_user_can('manage_options') check to AddFormNotice::handle_ajax_action() immediately after check_ajax_referer(), mirroring the pattern in ConnectionNotice::handle_ajax_action().",
+      "patchstack_eligible": false
+    },
+    {
+      "finding_id": "HR-FP-001",
+      "verdict": "FP",
+      "vuln_type": "Broken Access Control — Public REST endpoint (GET /integrations)",
+      "cwe_id": "CWE-862",
+      "severity": "info",
+      "auth_required": false,
+      "confidence": 1.0,
+      "entry_point_id": "ep_rest__integrations",
+      "source_function": "IntegrationsApiHandler::get_integrations_handler",
+      "sink_function": "wp_json_encode",
+      "source_file_path": "src/Api/Routes/IntegrationsRoutes.php",
+      "source_line_number": 21,
+      "sink_file_path": "src/Api/Handlers/IntegrationsApiHandler.php",
+      "sink_line_number": 65,
+      "file_path": "src/Api/Handlers/IntegrationsApiHandler.php",
+      "line_number": 65,
+      "fp_reason": "The GET /integrations endpoint returns only non-sensitive plugin configuration metadata (plugin names, URLs, activation status, import status) hardcoded in IntegrationProvider::INTEGRATIONS — no credentials, tokens, or user PII are included in the response.",
+      "fp_evidence": {
+        "defense": "hardcoded_value",
+        "file": "src/Dto/PluginData.php",
+        "line": 200
+      },
+      "reasoning": {
+        "hypothesis": "Unauthenticated access to GET /wp-json/hostinger-reach/v1/integrations leaks sensitive data.",
+        "trace": "GET /integrations → get_integrations_handler() (line 59 IntegrationsApiHandler.php) → get_integrations_data() (line 162) → returns PluginData::to_array() (line 200 PluginData.php) + active/import status derived from plugin state",
+        "defenses": [
+          "Data returned is all public plugin configuration: integration names, admin URLs, download URLs, icons, active/inactive state. No authentication tokens, API keys, or user data are included.",
+          "The PluginData DTO explicitly only stores non-sensitive configuration fields."
+        ],
+        "refutation": [
+          "REFUTATION ATTEMPT: Does the response include the API key or any stored credentials? RESULT: Refuted. ApiKeyManager::get_token() is never called in the get_integrations_data path. The response is built entirely from PluginData objects and activation state from the integrations option.",
+          "REFUTATION ATTEMPT: Does knowing which plugins are active create meaningful attack surface? RESULT: This is reconnaissance information only and does not in itself constitute exploitability."
+        ],
+        "conclusion": "FP. The public endpoint discloses only plugin configuration metadata that presents no meaningful security risk."
+      },
+      "poc_description": "N/A",
+      "cvss_vector": null,
+      "remediation": "Consider restricting to authenticated users if integration state should be considered internal, but there is no security-critical data exposed.",
+      "patchstack_eligible": false
+    },
+    {
+      "finding_id": "HR-FP-002",
+      "verdict": "FP",
+      "vuln_type": "Broken Access Control — Public REST endpoint (POST /contact)",
+      "cwe_id": "CWE-862",
+      "severity": "info",
+      "auth_required": false,
+      "confidence": 0.85,
+      "entry_point_id": "ep_rest__contact",
+      "source_function": "ReachApiHandler::post_contact_handler",
+      "sink_function": "do_action('hostinger_reach_submit')",
+      "source_file_path": "src/Api/Routes/ReachRoutes.php",
+      "source_line_number": 27,
+      "sink_file_path": "src/Api/Handlers/ReachApiHandler.php",
+      "sink_line_number": 152,
+      "file_path": "src/Api/Handlers/ReachApiHandler.php",
+      "line_number": 152,
+      "fp_reason": "The POST /contact endpoint's in-handler is_authorized() check requires both a valid wp_rest nonce AND get_connection_status_handler() to succeed; the nonce is only embedded in the SubscriptionFormBlock HTML which renders on specific posts/pages, and the connection check makes an outbound API call that requires a stored API key — the combination significantly raises the exploitation bar compared to the OptInMonster case.",
+      "fp_evidence": {
+        "defense": "nonce_enforced",
+        "file": "src/Api/Handlers/ReachApiHandler.php",
+        "line": 165
+      },
+      "reasoning": {
+        "hypothesis": "An unauthenticated attacker can inject arbitrary contact via POST /contact.",
+        "trace": "POST /contact (ReachRoutes.php line 27, __return_true) → post_contact_handler() (ReachApiHandler.php line 139) → is_authorized() (line 165) → wp_verify_nonce + get_connection_status_handler()",
+        "defenses": [
+          "is_authorized() at line 165: requires valid wp_rest nonce AND the site must be connected (get_connection_status_handler() makes a live API call to verify the stored API key)",
+          "The wp_rest nonce is only embedded via SubscriptionFormBlock::data() which outputs nonce in the block render — this is a legitimate public form, and the endpoint is specifically designed to accept public form submissions from site visitors",
+          "The /contact endpoint's intended use is for frontend subscription form submissions from public visitors — this is by design"
+        ],
+        "refutation": [
+          "REFUTATION ATTEMPT: Is the POST /contact endpoint intended to be public? RESULT: Yes — it is the backend for the frontend subscription form block (SubscriptionFormBlock.php line 17 exposes the endpoint URL and nonce to any visitor who views a page with the subscription block). This is the intended flow: visitors submit their email through the public form.",
+          "REFUTATION ATTEMPT: Does this constitute unauthorized contact injection? RESULT: Partially. A visitor can submit any email address, but the contact endpoint is specifically designed for public subscription — the site owner published a subscription form. This is the same abuse vector as any public form submission endpoint.",
+          "CONCLUSION: The design intent of this endpoint is public. Treating it as a vulnerability would mean flagging all public subscription forms. FP for the purposes of unauthorized access control bypass."
+        ],
+        "conclusion": "FP. The POST /contact endpoint is a public subscription form endpoint by design. The nonce provides CSRF protection for form submissions. Note that compared to OptInMonster, this endpoint only exposes the nonce on pages where the subscription block is published, making it a more controlled surface."
+      },
+      "poc_description": "N/A",
+      "cvss_vector": null,
+      "remediation": "No action required for the access control concern. The form submission nonce could optionally be bound to a more specific action to reduce reuse potential.",
+      "patchstack_eligible": false
+    },
+    {
+      "finding_id": "HR-FP-003",
+      "verdict": "FP",
+      "vuln_type": "XSS — SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI']",
+      "cwe_id": "CWE-79",
+      "severity": "info",
+      "auth_required": true,
+      "confidence": 1.0,
+      "entry_point_id": "ep_init_init",
+      "source_function": "SatisfactionSurvey::is_hostinger_page",
+      "sink_function": "str_contains",
+      "source_file_path": "src/Admin/Surveys/SatisfactionSurvey.php",
+      "source_line_number": 51,
+      "sink_file_path": "src/Admin/Surveys/SatisfactionSurvey.php",
+      "sink_line_number": 51,
+      "file_path": "src/Admin/Surveys/SatisfactionSurvey.php",
+      "line_number": 51,
+      "fp_reason": "is_hostinger_page() only returns a boolean from str_contains() — the REQUEST_URI value is never reflected into HTML output; only the boolean result is used in a conditional.",
+      "fp_evidence": {
+        "defense": "no_user_input_reachable",
+        "file": "src/Admin/Surveys/SatisfactionSurvey.php",
+        "line": 51
+      },
+      "reasoning": {
+        "hypothesis": "Semgrep flagged $_SERVER['REQUEST_URI'] at line 51 as flowing to HTML output.",
+        "trace": "is_hostinger_page() returns str_contains($_SERVER['REQUEST_URI'], 'hostinger') → returns bool → used in should_load_survey() conditional → no HTML output of the REQUEST_URI value occurs",
+        "defenses": ["The REQUEST_URI is only used as input to str_contains which returns a boolean — the string itself is never echoed or passed to any HTML context"],
+        "refutation": ["REFUTATION ATTEMPT: Does REQUEST_URI flow into HTML anywhere in the call chain? RESULT: Refuted. The return value of is_hostinger_page() is a boolean that controls whether a survey is added to an array. No HTML output of REQUEST_URI occurs."],
+        "conclusion": "FP — semgrep false positive on data flow; the string is consumed by str_contains and only the boolean propagates."
+      },
+      "poc_description": "N/A",
+      "cvss_vector": null,
+      "remediation": "No fix required for XSS. Optionally use wp_unslash() on REQUEST_URI for defensive coding.",
+      "patchstack_eligible": false
+    },
+    {
+      "finding_id": "HR-FP-004",
+      "verdict": "FP",
+      "vuln_type": "XSS — Functions.php is_hostinger_user()/is_staging() read unescaped server vars",
+      "cwe_id": "CWE-79",
+      "severity": "info",
+      "auth_required": false,
+      "confidence": 1.0,
+      "entry_point_id": "ep_init_init",
+      "source_function": "Functions::is_hostinger_user / is_staging",
+      "sink_function": "str_contains / filter_var",
+      "source_file_path": "src/Functions.php",
+      "source_line_number": 119,
+      "sink_file_path": "src/Functions.php",
+      "sink_line_number": 123,
+      "file_path": "src/Functions.php",
+      "line_number": 119,
+      "fp_reason": "Both methods return booleans from server environment variable checks; H_PLATFORM and H_STAGING are server-level environment variables that are not attacker-controllable via HTTP, and neither value is reflected into HTML output.",
+      "fp_evidence": {
+        "defense": "no_user_input_reachable",
+        "file": "src/Functions.php",
+        "line": 119
+      },
+      "reasoning": {
+        "hypothesis": "Semgrep flagged $_SERVER access at lines 119 and 123 as XSS risk.",
+        "trace": "is_hostinger_user() at line 119 returns !empty($_SERVER['H_PLATFORM']) — a boolean. is_staging() at line 123 uses filter_var(wp_unslash($_SERVER['H_STAGING']), FILTER_VALIDATE_BOOLEAN) — returns boolean. Neither value reaches HTML output.",
+        "defenses": ["H_PLATFORM and H_STAGING are server-side environment variables, not HTTP request headers. They cannot be set by an attacker via the network. Both methods return booleans.", "The values are used to conditionally set a 'userType' query parameter in post_generate_auth_url() — but that function is only callable by authenticated admin users and the value is 'internal' vs 'external' string literal, not the env var itself."],
+        "refutation": ["REFUTATION ATTEMPT: Can H_PLATFORM or H_STAGING be set by attacker HTTP request? RESULT: Refuted. PHP populates $_SERVER with server environment variables. H_PLATFORM and H_STAGING are Hostinger-specific server environment variables, not headers (headers would appear as HTTP_H_PLATFORM etc). An attacker cannot set server environment variables via HTTP."],
+        "conclusion": "FP — semgrep false positive. Server environment variables consumed as booleans, not reflected in output."
+      },
+      "poc_description": "N/A",
+      "cvss_vector": null,
+      "remediation": "No action required.",
+      "patchstack_eligible": false
+    },
+    {
+      "finding_id": "HR-FP-005",
+      "verdict": "FP",
+      "vuln_type": "Privilege Escalation via Option Update — POST /integrations saves unsanitized input to options",
+      "cwe_id": "CWE-269",
+      "severity": "info",
+      "auth_required": true,
+      "confidence": 1.0,
+      "entry_point_id": "ep_rest__integrations",
+      "source_function": "IntegrationsApiHandler::post_integrations_handler",
+      "sink_function": "update_option",
+      "source_file_path": "src/Api/Routes/IntegrationsRoutes.php",
+      "source_line_number": 31,
+      "sink_file_path": "src/Api/Handlers/IntegrationsApiHandler.php",
+      "sink_line_number": 210,
+      "file_path": "src/Api/Handlers/IntegrationsApiHandler.php",
+      "line_number": 210,
+      "fp_reason": "The POST /integrations route has permission_callback bound to Routes::permission_check() (array callable, not __return_true), which requires authentication. The saved option key is the fixed constant 'hostinger_reach_integrations' and its value is an array constrained to known integration names from IntegrationsProvider::INTEGRATIONS — the option key itself cannot be set to an arbitrary string.",
+      "fp_evidence": {
+        "defense": "capability_required_enforced",
+        "file": "src/Api/Routes/IntegrationsRoutes.php",
+        "line": 31
+      },
+      "reasoning": {
+        "hypothesis": "Semgrep flagged update_option at line 210 as potentially controllable by user input for privilege escalation.",
+        "trace": "POST /integrations (IntegrationsRoutes.php line 31) → permission_check() (Routes::permission_check via __array_callable__) → post_integrations_handler() → save_integration($integration_name, $data) → save_integrations_data($integrations_data) → update_option('hostinger_reach_integrations', $data)",
+        "defenses": [
+          "The POST /integrations route has permission_callback set to an array callable (permission_check method of Routes class), not __return_true — it requires authentication",
+          "The option name is hardcoded as INTEGRATIONS_OPTION_NAME = 'hostinger_reach_integrations' (line 21) — cannot be set to 'users_can_register' or other sensitive option names",
+          "The $integration value is looked up in get_integrations_data() first (line 73-74) — if not in the known integrations whitelist, integration_data is an empty array and activate_integration() returns false at line 135-137"
+        ],
+        "refutation": [
+          "REFUTATION ATTEMPT: Can an attacker set the option key to an arbitrary value? RESULT: Refuted. The option name is the hardcoded constant 'hostinger_reach_integrations' at line 209-210. The $data stored is constrained to {is_active: bool} shape for a known integration name.",
+          "REFUTATION ATTEMPT: Does privilege escalation via option key injection apply? RESULT: Refuted. The classic wp_privesc-option-update path requires the attacker to control the option NAME (e.g., users_can_register). Here the option name is hardcoded and only the value (boolean is_active for a known integration) is influenced by user input."
+        ],
+        "conclusion": "FP — option name is hardcoded, value is constrained. Classic privilege escalation via option update does not apply here."
+      },
+      "poc_description": "N/A",
+      "cvss_vector": null,
+      "remediation": "No action required.",
+      "patchstack_eligible": false
+    },
+    {
+      "finding_id": "HR-FP-006",
+      "verdict": "FP",
+      "vuln_type": "SQL Injection — WooCommerce get_contacts() uses interpolated table name",
+      "cwe_id": "CWE-89",
+      "severity": "info",
+      "auth_required": true,
+      "confidence": 1.0,
+      "entry_point_id": "ep_rest__import___P_integration__a_z0_9____",
+      "source_function": "WooCommerceIntegration::get_contacts",
+      "sink_function": "wpdb::get_results",
+      "source_file_path": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+      "source_line_number": 217,
+      "sink_file_path": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+      "sink_line_number": 248,
+      "file_path": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+      "line_number": 248,
+      "fp_reason": "The table name is assembled from $wpdb->prefix concatenated with the hardcoded string 'wc_customer_lookup' in get_woocommerce_customer_table() — no user input flows into the table name.",
+      "fp_evidence": {
+        "defense": "hardcoded_value",
+        "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+        "line": 291
+      },
+      "reasoning": {
+        "hypothesis": "Interpolated table name in raw SQL query could allow SQL injection.",
+        "trace": "$table = $this->get_woocommerce_customer_table() (line 224) → get_woocommerce_customer_table() returns '{$wpdb->prefix}wc_customer_lookup' (line 291) → used as \"{$table}\" in SQL at line 225",
+        "defenses": ["get_woocommerce_customer_table() at line 289-292 returns a hardcoded concatenation of $wpdb->prefix and 'wc_customer_lookup' — neither component is user-controlled", "$wpdb->prefix is set by WordPress from configuration and cannot be influenced via HTTP request"],
+        "refutation": ["REFUTATION ATTEMPT: Is any portion of the table name derived from user input? RESULT: Refuted. The table name is entirely derived from $wpdb->prefix (server-side configuration) and the string literal 'wc_customer_lookup'."],
+        "conclusion": "FP — hardcoded table name, no user input reachable."
+      },
+      "poc_description": "N/A",
+      "cvss_vector": null,
+      "remediation": "Consider using $wpdb->prepare('%i', $table_name) for table name escaping as best practice, but no exploitable injection exists.",
+      "patchstack_eligible": false
+    },
+    {
+      "finding_id": "HR-FP-007",
+      "verdict": "FP",
+      "vuln_type": "XSS — Multiple semgrep-flagged echo-without-escape in handler/integration files",
+      "cwe_id": "CWE-79",
+      "severity": "info",
+      "auth_required": false,
+      "confidence": 1.0,
+      "entry_point_id": "ep_rest_api_init_rest_api_init",
+      "source_function": "Multiple (ReachApiHandler, IntegrationsApiHandler, ElementorIntegration, ForminatorIntegration, OptInMonsterIntegration)",
+      "sink_function": "Various boolean/method returns",
+      "source_file_path": "src/Api/Handlers/ReachApiHandler.php",
+      "source_line_number": 152,
+      "sink_file_path": "src/Api/Handlers/ReachApiHandler.php",
+      "sink_line_number": 152,
+      "file_path": "src/Api/Handlers/ReachApiHandler.php",
+      "line_number": 152,
+      "fp_reason": "All semgrep XSS hits in handler PHP files are in methods that return arrays/objects or booleans (not HTML) — these methods are called in REST API response contexts where JSON encoding is applied, not direct HTML output.",
+      "fp_evidence": {
+        "defense": "no_user_input_reachable",
+        "file": "src/Api/Handlers/ReachApiHandler.php",
+        "line": 152
+      },
+      "reasoning": {
+        "hypothesis": "Semgrep flagged multiple XSS patterns across handler and integration files.",
+        "trace": "All flagged lines in ReachApiHandler (152, 168, 383, 386), IntegrationsApiHandler (56, 153, 205, 210), ElementorIntegration (88, 390, 406), ForminatorIntegration (173), OptInMonsterIntegration (255, 268) are either: (a) return statements returning PHP arrays/strings that are subsequently JSON-encoded by wp_json_encode before output, or (b) boolean return values, or (c) parts of methods that are never directly echoed.",
+        "defenses": ["REST API callbacks return WP_REST_Response objects — all output goes through WP_REST_Server which JSON-encodes the data", "JSON encoding inherently prevents HTML injection in the API response context"],
+        "refutation": ["REFUTATION ATTEMPT: Do any of these flagged lines produce direct HTML output? RESULT: Refuted upon review. ReachApiHandler lines 152/168 are in post_contact_handler and is_authorized — both return WP_REST_Response. IntegrationsApiHandler lines are in REST handler methods. No direct echo of user-controlled HTML was found."],
+        "conclusion": "FP batch — semgrep over-triggered on data flow patterns that terminate in JSON-encoded REST responses, not HTML output."
+      },
+      "poc_description": "N/A",
+      "cvss_vector": null,
+      "remediation": "No action required.",
+      "patchstack_eligible": false
+    }
+  ],
+  "negative_findings": [
+    {
+      "area": "Unresolved hook — OptInMonster REST route registration",
+      "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+      "line": 210,
+      "reason": "The hook is registered via an anonymous closure at line 210-225 using rest_api_init. The route string 'hostinger-reach/v1/optinmonster' is a hardcoded literal, not a dynamic concatenation. Resolved to a specific known route; no dynamic hook unresolved.",
+      "verdict": "resolved_static"
+    },
+    {
+      "area": "Coverage gap — Redirects.php init handler",
+      "file": "src/Admin/Redirects.php",
+      "line": 23,
+      "reason": "The init closure reads $_GET['platform'] but only performs a wp_safe_redirect() to a hardcoded admin URL when $platform equals the plugin slug constant. The platform value is sanitized with sanitize_text_field and the redirect destination is hardcoded via admin_url(). No user-controlled open redirect. This is a helper that validates input before acting on it.",
+      "verdict": "coverage_gap_helper_not_entry_point"
+    },
+    {
+      "area": "AbandonedCarts nopriv AJAX handler",
+      "file": "src/Tracking/AbandonedCarts.php",
+      "line": 37,
+      "reason": "wp_ajax_nopriv_abandoned-carts is registered at line 37. handle_ajax_action() immediately calls check_ajax_referer('abandoned-carts', 'nonce') (line 41), and the nonce is generated via wp_create_nonce('abandoned-carts') embedded in the enqueued JS only on pages where should_track() is true (which requires the WooCommerce cart abandoned webhook to be enabled). The email value from $_POST['email'] is sanitized with sanitize_text_field and passed to track_abandoned_cart() which only performs a DB insert/update to a local cart table — no external data exfiltration. Impact is bounded to writing a cart entry. Exploitation requires obtaining a valid nonce from a WooCommerce page. Classified as RISK_NOTE — acceptable design for public cart tracking.",
+      "verdict": "risk_note_acceptable_design"
+    },
+    {
+      "area": "ThriveLeads SQL query with %i placeholder",
+      "file": "src/Integrations/ThriveLeads/ThriveLeadsIntegration.php",
+      "line": 103,
+      "reason": "get_contacts() uses $wpdb->prepare('SELECT email, name FROM %i LIMIT %d OFFSET %d', $table_name, ...) where %i is the identifier placeholder introduced in WP 6.2. $table_name is assembled from $wpdb->prefix + hardcoded constant TVE_LEADS_DB_PREFIX + 'contacts'. No user input flows into the table name. The %i placeholder properly quotes the identifier. No SQL injection.",
+      "verdict": "no_finding_clean"
+    },
+    {
+      "area": "Elementor $_POST access in get_elementor_form_ids_from_actions",
+      "file": "src/Integrations/Elementor/ElementorIntegration.php",
+      "line": 380,
+      "reason": "get_elementor_form_ids_from_actions() reads $_POST['actions'] and json_decodes it to extract form_ids. This is called during post-publish transitions triggered by the Elementor builder save — an authenticated editor/admin operation. No direct REST entry point. The form IDs extracted are integer-like values used only for local DB insertion via FormRepository. No capability check needed because the upstream save_builder action requires Elementor's own authentication.",
+      "verdict": "no_finding_clean"
+    },
+    {
+      "area": "API token file read in ApiKeyManager::get_order_id()",
+      "file": "src/Api/ApiKeyManager.php",
+      "line": 70,
+      "reason": "file_get_contents() reads from a path derived by parsing __DIR__ into a server root path (/{root1}/{root2}/.api_token). The path is constructed server-side from the plugin directory path and is not influenced by any user input. This reads a Hostinger-specific deployment token file. No SSRF or path traversal. The resulting value is used only as an alternative CSRF validation value in validate_csrf().",
+      "verdict": "no_finding_clean"
+    },
+    {
+      "area": "PluginManager::install() uses download_url with integration data",
+      "file": "src/Integrations/PluginManager.php",
+      "line": 36,
+      "reason": "download_url() receives $plugin_data['download_url'] which comes from PluginData registered by each integration class — all download URLs are hardcoded WordPress.org URLs in the integration classes. The POST /integrations endpoint that can trigger install is protected by permission_check() (admin-only). No SSRF vector reachable by low-privilege users.",
+      "verdict": "no_finding_clean"
+    }
+  ],
+  "out_of_scope": [
+    {
+      "area": "Frontend JavaScript files",
+      "reason": "Frontend JS bundles (abandoned-carts.js, connection-notice.js, etc.) were not analyzed. These are compiled assets and any issues would be in the build source, not the PHP plugin."
+    },
+    {
+      "area": "Third-party library vendored code",
+      "reason": "Vendor autoloaded packages (Hostinger\\Surveys, Hostinger\\WpMenuManager) were not analyzed as they are external dependencies outside the plugin's own codebase."
+    }
+  ]
+}

@@ -1,0 +1,329 @@
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "core",
+  "task": {
+    "role": "phase2_reviewer_core",
+    "goal": "Challenge the worker output packet-by-packet with concrete counter-evidence, field corrections, and explicit missing-evidence notes.",
+    "output_schema": "contracts/phase2-review-core-output.schema.json",
+    "output_path": "reports/phase2/hostinger-reach-phase2.review.r1.core.b05.json",
+    "packet_schema": "contracts/phase2-reviewer-packet.schema.json",
+    "allow_missed_findings": false,
+    "constraints": [
+      "Treat each finding packet as the unit of review; do not restart whole-plugin auditing.",
+      "Answer reachability, authorization, dataflow, impact, and missing-evidence questions for each packet before finalizing finding_reviews.",
+      "Start from finding_packets, worker_findings, and phase1_context before opening other artifacts.",
+      "Refute before confirm; keep objections evidence-bound with file:line anchors.",
+      "Do not rewrite the full findings set; produce critique JSON only.",
+      "Default to packet-local critique only. Focus on finding_reviews plus field corrections for the existing finding packets.",
+      "Treat finding_packets as the reviewer core evidence pack. If packet-local evidence is insufficient, prefer needs_more_evidence over broad exploration."
+    ],
+    "max_candidates": null
+  },
+  "artifacts": {
+    "worker_output_path": null,
+    "ir_path": null,
+    "semgrep_path": null,
+    "psalm_path": null,
+    "threat_context_path": null,
+    "source_root": "plugins/hostinger-reach"
+  },
+  "worker_summary": {
+    "total_findings": 1,
+    "true_positive_count": 0,
+    "false_positive_count": 1,
+    "needs_review_count": 0,
+    "negative_findings_count": 0,
+    "overall_risk": "low",
+    "analysis_summary": "Reviewer core batch scoped to 1 packet(s)."
+  },
+  "worker_findings": [
+    {
+      "finding_id": "HR-FP-002",
+      "verdict": "FP",
+      "vuln_type": "Broken Access Control \u2014 Public REST endpoint (POST /contact)",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 0.85,
+      "entry_point_id": "ep_rest__contact",
+      "source_anchor": "src/Api/Routes/ReachRoutes.php:27",
+      "sink_anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+      "patchstack_eligible": false
+    }
+  ],
+  "finding_packets": [
+    {
+      "packet_id": "HR-FP-002",
+      "parent_finding_id": "HR-FP-002",
+      "packet_kind": "base",
+      "focus_anchor": "src/Api/Routes/ReachRoutes.php:27",
+      "finding_id": "HR-FP-002",
+      "verdict": "FP",
+      "vuln_type": "Broken Access Control \u2014 Public REST endpoint (POST /contact)",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 0.85,
+      "entry_point_id": "ep_rest__contact",
+      "patchstack_eligible": false,
+      "claimed_impact": "Worker claims Broken Access Control \u2014 Public REST endpoint (POST /contact) is materially exploitable with auth boundary `unknown` and impact reachable at src/Api/Handlers/ReachApiHandler.php:152.",
+      "worker_context": {
+        "source_function": "ReachApiHandler::post_contact_handler",
+        "sink_function": "do_action('hostinger_reach_submit')",
+        "fp_reason": "Packet-local reviewer scope: ReachRoutes at src/Api/Routes/ReachRoutes.php:27. Primary files: src/Api/Handlers/ReachApiHandler.php, src/Api/Routes/ReachRoutes.php.",
+        "original_fp_reason": "The POST /contact endpoint's in-handler is_authorized() check requires both a valid wp_rest nonce AND get_connection_status_handler() to succeed; the nonce is only embedded in the SubscriptionFormBlock HTML which renders on specific posts/pages, and the connection check makes an outbound API call that requires a stored API key \u2014 the combination significantly raises the exploitation bar compared to the OptInMonster case.",
+        "reasoning_excerpt": {
+          "hypothesis": "Validate only the packet-local claim for ReachRoutes. Determine whether anchors src/Api/Routes/ReachRoutes.php:27, src/Api/Handlers/ReachApiHandler.php:152, src/Api/Handlers/ReachApiHandler.php:165, ReachRoutes.php:27 actually support the worker's claim without widening to other surfaces.",
+          "trace": "Packet-local review only. Focus file: src/Api/Routes/ReachRoutes.php. Focus anchors: src/Api/Routes/ReachRoutes.php:27, src/Api/Handlers/ReachApiHandler.php:152, src/Api/Handlers/ReachApiHandler.php:165, ReachRoutes.php:27. Primary files: src/Api/Handlers/ReachApiHandler.php, src/Api/Routes/ReachRoutes.php. Entry point: src/Api/Routes/ReachRoutes.php:27. Treat unrelated callers, consumers, and sibling surfaces as out of scope unless an explicit expansion attempt is justified.",
+          "defenses": [
+            "is_authorized() at line 165: requires valid wp_rest nonce AND the site must be connected (get_connection_status_handler() makes a live API call to verify the stored API key)",
+            "The wp_rest nonce is only embedded via SubscriptionFormBlock::data() which outputs nonce in the block render \u2014 this is a legitimate public form, and the endpoint is specifically designed to accept public form submissions from site visitors",
+            "Treat downstream hook consumers as missing evidence unless a concrete consumer is already shown in the packet."
+          ],
+          "refutation": [
+            "Refute or keep this packet on ReachRoutes alone. Do not carry over conclusions from plugin-wide traces without packet-local code evidence."
+          ],
+          "conclusion": "Keep, downgrade, retract, or mark needs_more_evidence based only on packet-local evidence for ReachRoutes."
+        },
+        "original_reasoning_excerpt": {
+          "hypothesis": "An unauthenticated attacker can inject arbitrary contact via POST /contact.",
+          "trace": "POST /contact (ReachRoutes.php line 27, __return_true) \u2192 post_contact_handler() (ReachApiHandler.php line 139) \u2192 is_authorized() (line 165) \u2192 wp_verify_nonce + get_connection_status_handler()",
+          "defenses": [
+            "is_authorized() at line 165: requires valid wp_rest nonce AND the site must be connected (get_connection_status_handler() makes a live API call to verify the stored API key)",
+            "The wp_rest nonce is only embedded via SubscriptionFormBlock::data() which outputs nonce in the block render \u2014 this is a legitimate public form, and the endpoint is specifically designed to accept public form submissions from site visitors",
+            "The /contact endpoint's intended use is for frontend subscription form submissions from public visitors \u2014 this is by design"
+          ],
+          "refutation": [
+            "REFUTATION ATTEMPT: Is the POST /contact endpoint intended to be public? RESULT: Yes \u2014 it is the backend for the frontend subscription form block (SubscriptionFormBlock.php line 17 exposes the endpoint URL and nonce to any visitor who views a page with the subscription block). This is the intended flow: visitors submit their email through the public form.",
+            "REFUTATION ATTEMPT: Does this constitute unauthorized contact injection? RESULT: Partially. A visitor can submit any email address, but the contact endpoint is specifically designed for public subscription \u2014 the site owner published a subscription form. This is the same abuse vector as any public form submission endpoint.",
+            "CONCLUSION: The design intent of this endpoint is public. Treating it as a vulnerability would mean flagging all public subscription forms. FP for the purposes of unauthorized access control bypass."
+          ],
+          "conclusion": "FP. The POST /contact endpoint is a public subscription form endpoint by design. The nonce provides CSRF protection for form submissions. Note that compared to OptInMonster, this endpoint only exposes the nonce on pages where the subscription block is published, making it a more controlled surface."
+        }
+      },
+      "review_focus": {
+        "scope_statement": "Review only the packet-local claim centered on src/Api/Routes/ReachRoutes.php:27 in src/Api/Routes/ReachRoutes.php. Start from the listed packet evidence, not from a plugin-wide hypothesis.",
+        "sink_semantics": "hook_dispatch",
+        "default_resolution_on_missing_terminal_evidence": "needs_more_evidence",
+        "stop_conditions": [
+          "Once packet-local reachability, authorization, dataflow, impact, and missing evidence are answered with file:line support, stop and write critique JSON.",
+          "Do not reopen unrelated plugin surfaces just because the parent finding or worker narrative mentions them.",
+          "If the packet ends at a hook dispatch and no downstream consumer is already evidenced in this packet, mark the missing downstream consumer explicitly instead of tracing every consumer in the plugin."
+        ],
+        "disallowed_drift": [
+          "whole_plugin_reaudit",
+          "translation_or_asset_search",
+          "sibling_surface_expansion_without_evidence",
+          "shared_hook_consumer_enumeration"
+        ],
+        "primary_scope_files": [
+          "src/Api/Handlers/ReachApiHandler.php",
+          "src/Api/Routes/ReachRoutes.php"
+        ],
+        "optional_scope_files": [
+          "src/Api/Handlers/ReachApiHandler.php",
+          "src/Api/Routes/ReachRoutes.php"
+        ],
+        "entry_point_anchor": "src/Api/Routes/ReachRoutes.php:27"
+      },
+      "scope_policy": {
+        "allowed_primary_files": [
+          "src/Api/Handlers/ReachApiHandler.php",
+          "src/Api/Routes/ReachRoutes.php"
+        ],
+        "allowed_optional_files": [
+          "src/Api/Handlers/ReachApiHandler.php",
+          "src/Api/Routes/ReachRoutes.php"
+        ],
+        "max_out_of_band_files": 1
+      },
+      "anchors": {
+        "entry_point_anchor": "src/Api/Routes/ReachRoutes.php:27",
+        "source_anchor": "src/Api/Routes/ReachRoutes.php:27",
+        "sink_anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+        "review_anchor_candidates": [
+          {
+            "kind": "entry_point",
+            "anchor": "src/Api/Routes/ReachRoutes.php:27",
+            "note": null
+          },
+          {
+            "kind": "finding_source",
+            "anchor": "src/Api/Routes/ReachRoutes.php:27",
+            "note": "Broken Access Control \u2014 Public REST endpoint (POST /contact)"
+          },
+          {
+            "kind": "finding_sink",
+            "anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+            "note": "Broken Access Control \u2014 Public REST endpoint (POST /contact)"
+          },
+          {
+            "kind": "fp_evidence",
+            "anchor": "src/Api/Handlers/ReachApiHandler.php:165",
+            "note": "nonce_enforced"
+          },
+          {
+            "kind": "anomaly",
+            "anchor": "src/Api/Routes/ReachRoutes.php:27",
+            "note": "rest_return_true"
+          },
+          {
+            "kind": "aggregate_reference",
+            "anchor": "ReachRoutes.php:27",
+            "note": null
+          },
+          {
+            "kind": "aggregate_reference",
+            "anchor": "ReachApiHandler.php:139",
+            "note": null
+          },
+          {
+            "kind": "aggregate_reference",
+            "anchor": "SubscriptionFormBlock.php:17",
+            "note": null
+          }
+        ]
+      },
+      "primary_files": [
+        "src/Api/Handlers/ReachApiHandler.php",
+        "src/Api/Routes/ReachRoutes.php"
+      ],
+      "primary_snippets": [
+        {
+          "file": "src/Api/Routes/ReachRoutes.php",
+          "anchor": "src/Api/Routes/ReachRoutes.php:27",
+          "focus_line": 27,
+          "line_start": 21,
+          "line_end": 33,
+          "kind": "finding_source",
+          "code": "    21\t        $this->handler                 = $handler;\n    22\t        $this->api_key_manager         = $api_key_manager;\n    23\t        $this->contact_list_repository = $contact_list_repository;\n    24\t    }\n    25\t\n    26\t    public function register_routes(): void {\n    27\t        register_rest_route(\n    28\t            HOSTINGER_REACH_PLUGIN_REST_API_BASE,\n    29\t            'contact',\n    30\t            array(\n    31\t                'methods'             => 'POST',\n    32\t                'callback'            => array( $this->handler, 'post_contact_handler' ),\n    33\t                'permission_callback' => '__return_true',"
+        },
+        {
+          "file": "src/Api/Handlers/ReachApiHandler.php",
+          "anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+          "focus_line": 152,
+          "line_start": 146,
+          "line_end": 158,
+          "kind": "finding_sink",
+          "code": "   146\t        $surname  = $request->get_param( 'surname' );\n   147\t        $form_id  = $request->get_param( 'id' );\n   148\t        $metadata = $request->get_param( 'metadata' );\n   149\t        $tags     = $request->get_param( 'tags' );\n   150\t        $group    = apply_filters( 'hostinger_reach_get_group', $request->get_param( 'group' ), $form_id );\n   151\t\n   152\t        return $this->post_contact(\n   153\t            array(\n   154\t                'form_id'  => $form_id,\n   155\t                'group'    => $group,\n   156\t                'tags'     => $tags,\n   157\t                'email'    => $email,\n   158\t                'name'     => $name,"
+        }
+      ],
+      "optional_files": [
+        "src/Api/Handlers/ReachApiHandler.php",
+        "src/Api/Routes/ReachRoutes.php"
+      ],
+      "optional_snippets": [
+        {
+          "file": "src/Api/Routes/ReachRoutes.php",
+          "anchor": "src/Api/Routes/ReachRoutes.php:27",
+          "focus_line": 27,
+          "line_start": 21,
+          "line_end": 33,
+          "kind": "entry_point",
+          "code": "    21\t        $this->handler                 = $handler;\n    22\t        $this->api_key_manager         = $api_key_manager;\n    23\t        $this->contact_list_repository = $contact_list_repository;\n    24\t    }\n    25\t\n    26\t    public function register_routes(): void {\n    27\t        register_rest_route(\n    28\t            HOSTINGER_REACH_PLUGIN_REST_API_BASE,\n    29\t            'contact',\n    30\t            array(\n    31\t                'methods'             => 'POST',\n    32\t                'callback'            => array( $this->handler, 'post_contact_handler' ),\n    33\t                'permission_callback' => '__return_true',"
+        },
+        {
+          "file": "src/Api/Handlers/ReachApiHandler.php",
+          "anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+          "focus_line": 152,
+          "line_start": 146,
+          "line_end": 158,
+          "kind": "finding_sink",
+          "code": "   146\t        $surname  = $request->get_param( 'surname' );\n   147\t        $form_id  = $request->get_param( 'id' );\n   148\t        $metadata = $request->get_param( 'metadata' );\n   149\t        $tags     = $request->get_param( 'tags' );\n   150\t        $group    = apply_filters( 'hostinger_reach_get_group', $request->get_param( 'group' ), $form_id );\n   151\t\n   152\t        return $this->post_contact(\n   153\t            array(\n   154\t                'form_id'  => $form_id,\n   155\t                'group'    => $group,\n   156\t                'tags'     => $tags,\n   157\t                'email'    => $email,\n   158\t                'name'     => $name,"
+        },
+        {
+          "file": "src/Api/Handlers/ReachApiHandler.php",
+          "anchor": "src/Api/Handlers/ReachApiHandler.php:165",
+          "focus_line": 165,
+          "line_start": 159,
+          "line_end": 171,
+          "kind": "fp_evidence",
+          "code": "   159\t                'surname'  => $surname,\n   160\t                'metadata' => $metadata,\n   161\t            )\n   162\t        );\n   163\t    }\n   164\t\n   165\t    public function is_authorized( WP_REST_Request $request ): bool {\n   166\t        $nonce = $request->get_header( 'X-WP-Nonce' );\n   167\t\n   168\t        return wp_verify_nonce( $nonce, 'wp_rest' ) && $this->get_connection_status_handler();\n   169\t    }\n   170\t\n   171\t    public function post_generate_auth_url(): WP_REST_Response {"
+        }
+      ],
+      "review_questions": {
+        "reachability": "Can an attacker really reach the claimed path from src/Api/Routes/ReachRoutes.php:27 without hidden preconditions or workflow assumptions?",
+        "authorization": "Does the path have a stronger guard than the worker claims, including capability, permission_callback, nonce semantics, or trust-boundary limits for auth `unknown`?",
+        "dataflow": "Does attacker-controlled data actually flow from src/Api/Routes/ReachRoutes.php:27 to src/Api/Handlers/ReachApiHandler.php:152 for the claimed Broken Access Control \u2014 Public REST endpoint (POST /contact), without a refuting guard, sanitizer, or broken hop?",
+        "impact": "Assuming the path reaches src/Api/Handlers/ReachApiHandler.php:152, is the worker's claimed impact concrete and not overstated for this plugin context?",
+        "missing_evidence": "What exact file:line evidence is still missing before this finding can be kept, downgraded, or retracted with confidence?"
+      }
+    }
+  ],
+  "phase1_context": {
+    "entry_point_count": 25,
+    "anomaly_count": 3,
+    "unresolved_hook_count": 8,
+    "related_entry_points": [
+      {
+        "id": "ep_rest__contact",
+        "type": "rest_route",
+        "hook_name": "?contact",
+        "auth_level": "none",
+        "file": "src/Api/Routes/ReachRoutes.php",
+        "line": 27,
+        "callback_name": null,
+        "callback_class": null
+      }
+    ],
+    "top_anomalies": [],
+    "unresolved_hooks": []
+  },
+  "evidence": {
+    "primary_anchors": [
+      {
+        "kind": "entry_point",
+        "anchor": "src/Api/Routes/ReachRoutes.php:27",
+        "packet_id": "HR-FP-002",
+        "finding_id": "HR-FP-002",
+        "entry_point_id": "ep_rest__contact",
+        "note": "Broken Access Control \u2014 Public REST endpoint (POST /contact)"
+      },
+      {
+        "kind": "finding_source",
+        "anchor": "src/Api/Routes/ReachRoutes.php:27",
+        "packet_id": "HR-FP-002",
+        "finding_id": "HR-FP-002",
+        "entry_point_id": "ep_rest__contact",
+        "note": "Broken Access Control \u2014 Public REST endpoint (POST /contact)"
+      },
+      {
+        "kind": "finding_sink",
+        "anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+        "packet_id": "HR-FP-002",
+        "finding_id": "HR-FP-002",
+        "entry_point_id": "ep_rest__contact",
+        "note": "Broken Access Control \u2014 Public REST endpoint (POST /contact)"
+      }
+    ],
+    "primary_files": [
+      "src/Api/Handlers/ReachApiHandler.php",
+      "src/Api/Routes/ReachRoutes.php"
+    ],
+    "primary_snippets": [
+      {
+        "file": "src/Api/Routes/ReachRoutes.php",
+        "anchor": "src/Api/Routes/ReachRoutes.php:27",
+        "focus_line": 27,
+        "line_start": 21,
+        "line_end": 33,
+        "kind": "finding_source",
+        "code": "    21\t        $this->handler                 = $handler;\n    22\t        $this->api_key_manager         = $api_key_manager;\n    23\t        $this->contact_list_repository = $contact_list_repository;\n    24\t    }\n    25\t\n    26\t    public function register_routes(): void {\n    27\t        register_rest_route(\n    28\t            HOSTINGER_REACH_PLUGIN_REST_API_BASE,\n    29\t            'contact',\n    30\t            array(\n    31\t                'methods'             => 'POST',\n    32\t                'callback'            => array( $this->handler, 'post_contact_handler' ),\n    33\t                'permission_callback' => '__return_true',"
+      },
+      {
+        "file": "src/Api/Handlers/ReachApiHandler.php",
+        "anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+        "focus_line": 152,
+        "line_start": 146,
+        "line_end": 158,
+        "kind": "finding_sink",
+        "code": "   146\t        $surname  = $request->get_param( 'surname' );\n   147\t        $form_id  = $request->get_param( 'id' );\n   148\t        $metadata = $request->get_param( 'metadata' );\n   149\t        $tags     = $request->get_param( 'tags' );\n   150\t        $group    = apply_filters( 'hostinger_reach_get_group', $request->get_param( 'group' ), $form_id );\n   151\t\n   152\t        return $this->post_contact(\n   153\t            array(\n   154\t                'form_id'  => $form_id,\n   155\t                'group'    => $group,\n   156\t                'tags'     => $tags,\n   157\t                'email'    => $email,\n   158\t                'name'     => $name,"
+      }
+    ],
+    "optional_evidence": {
+      "anchors": [],
+      "files": [],
+      "snippets": []
+    }
+  },
+  "threat_context_summary": null
+}

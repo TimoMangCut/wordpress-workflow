@@ -1,0 +1,271 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.local/contracts/phase2-cluster-input.schema.json",
+  "version": "1.0.0",
+  "title": "Phase 2 Cluster Input",
+  "description": "Compact JSON-first input for bounded cross-bundle synthesis and challenge.",
+  "type": "object",
+  "required": [
+    "plugin_slug",
+    "cluster_id",
+    "cluster_strategy",
+    "cluster_summary",
+    "shared_context",
+    "member_findings",
+    "questions_to_answer",
+    "exploration_budget",
+    "constraints",
+    "recommended_models"
+  ],
+  "properties": {
+    "plugin_slug": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cluster_id": {
+      "type": "string",
+      "pattern": "^cluster-c[0-9]{2,}$"
+    },
+    "cluster_strategy": {
+      "type": "string",
+      "enum": [
+        "cross_bundle_cluster_v1"
+      ]
+    },
+    "cluster_summary": {
+      "type": "object",
+      "required": [
+        "bug_family",
+        "dominant_vuln_types",
+        "auth_boundary",
+        "priority_score",
+        "synthesis_scope",
+        "member_count"
+      ],
+      "properties": {
+        "bug_family": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dominant_vuln_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "auth_boundary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "priority_score": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "synthesis_scope": {
+          "type": "string",
+          "enum": [
+            "single_bundle",
+            "cross_bundle"
+          ]
+        },
+        "member_count": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "shared_context": {
+      "type": "object",
+      "required": [
+        "entry_point_ids",
+        "supporting_files",
+        "primary_files",
+        "optional_files",
+        "primary_anchors",
+        "source_agents",
+        "shared_signals"
+      ],
+      "properties": {
+        "entry_point_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "supporting_files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "primary_files": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "optional_files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "primary_anchors": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "source_agents": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "shared_signals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "member_findings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "finding_id",
+          "verdict",
+          "vuln_type",
+          "confidence",
+          "auth_required",
+          "entry_point_ids",
+          "source_agents",
+          "source_anchor",
+          "sink_anchor",
+          "supporting_files",
+          "guard_anchors",
+          "why_this_might_connect"
+        ],
+        "properties": {
+          "finding_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "verdict": {
+            "type": "string",
+            "minLength": 1
+          },
+          "vuln_type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "severity": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "auth_required": {
+            "type": "string",
+            "minLength": 1
+          },
+          "entry_point_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "source_agents": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "source_anchor": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sink_anchor": {
+            "type": "string",
+            "minLength": 1
+          },
+          "supporting_files": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "guard_anchors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "why_this_might_connect": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "questions_to_answer": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "exploration_budget": {
+      "type": "object",
+      "required": [
+        "max_optional_files",
+        "max_out_of_band_files",
+        "max_new_links",
+        "max_open_questions"
+      ],
+      "properties": {
+        "max_optional_files": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_out_of_band_files": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_new_links": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_open_questions": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "constraints": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "recommended_models": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false
+}

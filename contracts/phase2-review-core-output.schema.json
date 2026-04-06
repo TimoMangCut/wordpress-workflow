@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "phase2-review-core-output.schema.json",
+  "version": "1.0.0",
+  "title": "Phase 2 Review Core Output Schema",
+  "description": "Structured packet-by-packet critique from the Phase 2 reviewer core loop. Core review is limited to claim validation and field corrections; it must not propose missed findings.",
+  "type": "object",
+  "required": ["plugin_slug", "review_round", "review_status", "summary", "finding_reviews"],
+  "properties": {
+    "plugin_slug": { "type": "string" },
+    "review_round": { "type": "integer", "minimum": 1 },
+    "review_mode": { "enum": ["core", "skeptical"] },
+    "review_status": { "enum": ["stable", "needs_revision"] },
+    "summary": {
+      "type": "object",
+      "required": ["worker_findings_reviewed", "material_issues_found"],
+      "properties": {
+        "worker_findings_reviewed": { "type": "integer", "minimum": 0 },
+        "material_issues_found": { "type": "boolean" },
+        "new_candidate_count": { "type": "integer", "minimum": 0, "maximum": 0 },
+        "notes": { "type": ["string", "null"] }
+      }
+    },
+    "finding_reviews": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["finding_id", "packet_id", "assessment", "reason", "required_changes", "counter_evidence", "missing_evidence", "expansion_attempts"],
+        "properties": {
+          "finding_id": { "type": "string" },
+          "packet_id": { "type": "string" },
+          "parent_finding_id": { "type": ["string", "null"] },
+          "assessment": { "enum": ["keep", "needs_more_evidence", "downgrade", "retract", "field_fix"] },
+          "reason": { "type": "string" },
+          "required_changes": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "counter_evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["type", "file", "line", "detail"],
+              "properties": {
+                "type": { "enum": ["guard", "sanitizer", "unreachable", "scope", "impact", "other"] },
+                "file": { "type": "string" },
+                "line": { "type": "integer", "minimum": 1 },
+                "detail": { "type": "string" }
+              }
+            }
+          },
+          "missing_evidence": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "expansion_attempts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["type", "target", "reason", "outcome"],
+              "properties": {
+                "type": { "enum": ["optional_file", "out_of_band_file"] },
+                "target": { "type": "string" },
+                "reason": { "type": "string" },
+                "outcome": { "type": "string" }
+              }
+            }
+          },
+          "suggested_field_corrections": {
+            "type": ["object", "null"]
+          }
+        }
+      }
+    },
+    "missed_findings": false
+  }
+}

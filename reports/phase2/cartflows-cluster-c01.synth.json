@@ -1,0 +1,140 @@
+{
+  "plugin_slug": "cartflows",
+  "cluster_id": "cluster-c01",
+  "stage": "synthesis",
+  "status": "mixed",
+  "summary": {
+    "member_findings_reviewed": 6,
+    "material_links_found": 1,
+    "objections_count": 4,
+    "open_questions_count": 2,
+    "expansion_attempts_count": 2,
+    "notes": "CONFIRMED: four members collapse onto `upload_checkout_file()` at `modules/checkout/classes/class-cartflows-checkout-ajax.php:293`, reached from `:57` and `:58`, with the same nonce gate at `:295`, allowlist at `classes/class-cartflows-helper.php:1934`, and `wp_handle_upload()` sink at `:425`. REJECTED: the pack does not support a stronger chain from that upload surface into the checkout layout include at `modules/checkout/classes/class-cartflows-checkout-markup.php:533` or the email-existence endpoint at `modules/checkout/classes/class-cartflows-checkout-ajax.php:209`. UNCERTAIN: the include only becomes cluster-relevant if a low-privileged actor can set a path-valued `wcf-checkout-layout` target."
+  },
+  "suggested_actions": [
+    {
+      "finding_id": "cartflows-a1-001",
+      "action": "join_with_cluster",
+      "reason": "Same handler, guards, and sink as `agent-a2-f22-upload-checkout-file`; keep one upload bundle instead of two separate TPs."
+    },
+    {
+      "finding_id": "agent-a2-f22-upload-checkout-file",
+      "action": "join_with_cluster",
+      "reason": "Same `upload_checkout_file()` path as `cartflows-a1-001`, exposed through the parallel authenticated hook but not a different sink or trust boundary."
+    },
+    {
+      "finding_id": "cf-c-anom_35",
+      "action": "downgrade",
+      "reason": "The nopriv missing-capability variant does not add a new boundary beyond the already public checkout upload flow, because the frontend emits the `wcf-file-upload` nonce and the same method handles both hooks."
+    },
+    {
+      "finding_id": "cf-c-anom_5",
+      "action": "downgrade",
+      "reason": "The priv-hook missing-capability variant is the same upload method registered at both AJAX hooks; it is duplicate guard analysis, not a separate critical claim."
+    },
+    {
+      "finding_id": "agent-a4-review-checkout-block-layout-include",
+      "action": "needs_more_evidence",
+      "reason": "The optional block path only supplies `layout` via `sanitize_title()`, and the bounded review did not show attacker control of a path-valued template include target."
+    },
+    {
+      "finding_id": "cartflows-a1-002",
+      "action": "keep_separate",
+      "reason": "`check_email_exists()` uses a different AJAX action, nonce, and sink (`email_exists()`), so it does not compose with the file-upload bundle into a stronger exploit chain."
+    }
+  ],
+  "proposed_links": [
+    {
+      "finding_ids": [
+        "cartflows-a1-001",
+        "agent-a2-f22-upload-checkout-file",
+        "cf-c-anom_35",
+        "cf-c-anom_5"
+      ],
+      "relation": "shared_guard_model",
+      "reason": "`wp_ajax_wcf_upload_checkout_file` and `wp_ajax_nopriv_wcf_upload_checkout_file` both dispatch to `upload_checkout_file()` at `modules/checkout/classes/class-cartflows-checkout-ajax.php:293`, which applies the same nonce, extension, size, and MIME checks before the `wp_handle_upload()` sink at `:425`."
+    }
+  ],
+  "objections": [
+    {
+      "target_finding_ids": [
+        "cf-c-anom_35",
+        "cf-c-anom_5"
+      ],
+      "reason": "Absence of `current_user_can()` is not an additional privilege-bypass layer here: the checkout markup emits `wcf_file_upload_nonce` publicly at `modules/checkout/classes/class-cartflows-checkout-markup.php:1776`, and both hooks intentionally reach the same upload method."
+    },
+    {
+      "target_finding_ids": [
+        "agent-a4-review-checkout-block-layout-include"
+      ],
+      "reason": "The bounded evidence does not trace user-controlled upload output into `$template_layout`; the upload handler stores files under unique names in the uploads directory, while the include site reads `wcf-checkout-layout` meta and a separate `cartflows_checkout_layout_template` filter."
+    },
+    {
+      "target_finding_ids": [
+        "agent-a4-review-checkout-block-layout-include"
+      ],
+      "reason": "The optional Gutenberg path only injects `layout` through `sanitize_title()` at `modules/gutenberg/classes/class-cartflows-init-blocks.php:232` and `modules/gutenberg/dist/blocks/checkout-form/class-wcfb-checkout-form.php:856`, which strips arbitrary path syntax and leaves filesystem-path control unproven."
+    },
+    {
+      "target_finding_ids": [
+        "cartflows-a1-002"
+      ],
+      "reason": "`check_email_exists()` shares only the public checkout AJAX surface and nonce-emission pattern; its effect is user enumeration via `email_exists()`, not a file-operation sink or a usable chain with the upload handler."
+    }
+  ],
+  "open_questions": [
+    {
+      "target_finding_ids": [
+        "agent-a4-review-checkout-block-layout-include"
+      ],
+      "question": "Is there any unauthenticated or low-privileged path that can persist a path-like `wcf-checkout-layout` value, rather than only the Gutenberg preview's `sanitize_title()` slug?",
+      "why_it_matters": "Without a traced low-privileged write primitive into `wcf-checkout-layout`, the include at `modules/checkout/classes/class-cartflows-checkout-markup.php:533` does not compose into a stronger cluster claim."
+    },
+    {
+      "target_finding_ids": [
+        "cartflows-a1-001",
+        "agent-a2-f22-upload-checkout-file",
+        "cf-c-anom_35",
+        "cf-c-anom_5"
+      ],
+      "question": "Are uploaded checkout files later rendered or processed anywhere in CartFlows in a way that upgrades impact beyond a bounded allowlisted media upload?",
+      "why_it_matters": "A stronger cross-bundle hypothesis would need a post-upload consumer or execution primitive, not just storage through `wp_handle_upload()`."
+    }
+  ],
+  "missing_evidence": [
+    {
+      "target_finding_ids": [
+        "agent-a4-review-checkout-block-layout-include"
+      ],
+      "evidence_needed": "A traced low-privileged source-to-sink path that sets `wcf-checkout-layout` or `cartflows_checkout_layout_template` to an existing attacker-chosen path reaching the `include` at `modules/checkout/classes/class-cartflows-checkout-markup.php:533`.",
+      "reason": "Current evidence shows include behavior but not attacker control of a path-valued target within the allowed trust boundary."
+    },
+    {
+      "target_finding_ids": [
+        "cartflows-a1-001",
+        "agent-a2-f22-upload-checkout-file",
+        "cf-c-anom_35",
+        "cf-c-anom_5"
+      ],
+      "evidence_needed": "A traced post-upload sink or MIME-bypass showing that the public checkout upload reaches something more dangerous than allowlisted media storage in WordPress uploads.",
+      "reason": "Without follow-on impact, the four upload-related members collapse to one bounded upload surface rather than a broader cross-bundle chain."
+    }
+  ],
+  "expansion_attempts": [
+    {
+      "opened_files": [
+        "plugins/cartflows/modules/gutenberg/classes/class-cartflows-init-blocks.php",
+        "plugins/cartflows/modules/gutenberg/dist/blocks/checkout-form/class-wcfb-checkout-form.php"
+      ],
+      "reason": "Primary files were insufficient to test whether the checkout block could control the template include target.",
+      "result": "Optional-file review showed the block only feeds `layout` through `sanitize_title()` and the `cartflows_checkout_meta_wcf-checkout-layout` filter, which weakens rather than strengthens arbitrary path control."
+    },
+    {
+      "opened_files": [
+        "plugins/cartflows/classes/class-cartflows-default-meta.php"
+      ],
+      "reason": "One out-of-band file was opened to confirm how `wcf-checkout-layout` is resolved before the include site.",
+      "result": "`get_checkout_meta_value()` returns stored/default meta and applies `cartflows_checkout_meta_{key}` filters, but this bounded check found no in-plugin callback for `cartflows_checkout_layout_template`; no stronger path-control chain was validated."
+    }
+  ]
+}

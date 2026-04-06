@@ -1,0 +1,89 @@
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "core",
+  "review_status": "needs_revision",
+  "summary": {
+    "worker_findings_reviewed": 1,
+    "material_issues_found": true,
+    "new_candidate_count": 0,
+    "notes": "The FP direction for HR-FP-001 is supportable, but the packet points its entry-point anchor at the POST registration block and overstates the response as purely static IntegrationsProvider metadata even though `import_status` is added dynamically."
+  },
+  "finding_reviews": [
+    {
+      "finding_id": "HR-FP-001",
+      "packet_id": "HR-FP-001",
+      "parent_finding_id": "HR-FP-001",
+      "assessment": "field_fix",
+      "reason": "Reachability: confirmed for the GET route, but the operative anchor is `src/Api/Routes/IntegrationsRoutes.php:21-27`, not `src/Api/Routes/IntegrationsRoutes.php:31`, because line 31 starts the separate POST registration that uses `permission_check()`. Authorization: there is no stronger guard than the public registration shown at `src/Api/Routes/IntegrationsRoutes.php:27`; `get_integrations_handler()` at `src/Api/Handlers/IntegrationsApiHandler.php:59-67` performs no nonce or capability check. Dataflow: the public callback serializes `get_integrations_data()` at `src/Api/Handlers/IntegrationsApiHandler.php:65`, and that method builds each item from `PluginData::to_array()` at `src/Dto/PluginData.php:200-218` plus plugin-state booleans and `import_status` at `src/Api/Handlers/IntegrationsApiHandler.php:183-192`. Impact: packet-local evidence supports only low-sensitivity integration inventory and status disclosure, not a meaningful broken-access-control impact; however, the current FP rationale is too absolute because `import_status` is not part of the static DTO fields. The one justified out-of-band check at `src/Integrations/ImportManager.php:34-47` shows `import_status` is returned as `status`, `total`, and filter-derived `summary`, which still does not show credentials, tokens, PII, or a protected admin action in the reviewed code. Missing evidence: if the worker wants to keep saying the body is entirely 'hardcoded in IntegrationsProvider::INTEGRATIONS' or that every `import_status.summary` payload is always non-sensitive across integrations, the exact provider/filter implementation lines are still absent from this packet.",
+      "required_changes": [
+        "Keep the false-positive disposition, but correct the entry-point anchor from `src/Api/Routes/IntegrationsRoutes.php:31` to the actual public GET registration at `src/Api/Routes/IntegrationsRoutes.php:21` or `src/Api/Routes/IntegrationsRoutes.php:25`.",
+        "Describe the authorization boundary precisely: the reviewed GET route is public via `permission_callback => '__return_true'`, and the handler adds no nonce or capability check.",
+        "Narrow the FP rationale from 'only hardcoded IntegrationsProvider metadata' to the packet-local response actually shown: `PluginData::to_array()` fields plus activation/install booleans and `import_status` status-summary data.",
+        "Keep the impact framing at informational inventory/status disclosure with no packet-local credential, PII, or privileged action shown, rather than implying the response contents are fully static or exhaustively characterized."
+      ],
+      "counter_evidence": [
+        {
+          "type": "scope",
+          "file": "src/Api/Routes/IntegrationsRoutes.php",
+          "line": 31,
+          "detail": "This anchor starts the separate POST `/integrations` registration that uses `permission_check()`, so it is not the operative entry point for the public GET route under review."
+        },
+        {
+          "type": "other",
+          "file": "src/Api/Routes/IntegrationsRoutes.php",
+          "line": 27,
+          "detail": "The reviewed GET route is explicitly public because its `permission_callback` is `__return_true`."
+        },
+        {
+          "type": "impact",
+          "file": "src/Dto/PluginData.php",
+          "line": 200,
+          "detail": "`PluginData::to_array()` exposes integration identifiers, plugin file/folder names, plugin/admin URLs, title, icon, and a few booleans; this supports low-sensitivity inventory disclosure rather than credentials or user records."
+        },
+        {
+          "type": "impact",
+          "file": "src/Api/Handlers/IntegrationsApiHandler.php",
+          "line": 191,
+          "detail": "The response is not limited to the DTO fields because `get_integrations_data()` appends `import_status` from `ImportManager::get_status($integration_name)`."
+        },
+        {
+          "type": "impact",
+          "file": "src/Integrations/ImportManager.php",
+          "line": 43,
+          "detail": "The reviewed `get_status()` implementation returns only `status`, `total`, and `summary` data assembled from import state and a filter-provided summary; this file still does not show credentials, API tokens, or user PII."
+        },
+        {
+          "type": "scope",
+          "file": "src/Api/Handlers/IntegrationsApiHandler.php",
+          "line": 65,
+          "detail": "The packet-local path terminates in a JSON response body and does not show any further privileged state change or browser execution sink."
+        }
+      ],
+      "missing_evidence": [
+        "If the worker wants to keep the statement that the returned plugin metadata is 'hardcoded in `IntegrationsProvider::INTEGRATIONS`', the exact provider construction file:line for the `PluginData` objects returned by `PluginManager::get_plugin()` is still missing from this packet.",
+        "If the worker wants to claim that every `import_status.summary` payload is always innocuous, the concrete `hostinger_reach_import_summary_*` filter-provider file:line is still missing; `src/Integrations/ImportManager.php:36-47` shows that portion of the response is integration-specific and filter-derived."
+      ],
+      "expansion_attempts": [
+        {
+          "type": "out_of_band_file",
+          "target": "src/Integrations/ImportManager.php",
+          "reason": "Needed one minimal out-of-band check because `import_status` is appended into the reviewed JSON response at `src/Api/Handlers/IntegrationsApiHandler.php:191` and packet-local files did not define its shape.",
+          "outcome": "Opened within the single out-of-band allowance. `ImportManager::get_status()` returns `status`, `total`, and `summary` at `src/Integrations/ImportManager.php:43-47`, with `summary` populated from `apply_filters( 'hostinger_reach_import_summary_' . $integration, array() )` at line 36."
+        }
+      ],
+      "suggested_field_corrections": {
+        "verdict": "FP",
+        "vuln_type": "False positive: intentionally public GET `/integrations` route with only low-sensitivity integration inventory/status disclosure shown packet-locally",
+        "severity": "info",
+        "confidence": 0.95,
+        "auth_required": "none; GET `/integrations` is public via `permission_callback => '__return_true'`",
+        "entry_point_anchor": "src/Api/Routes/IntegrationsRoutes.php:21",
+        "source_anchor": "src/Api/Routes/IntegrationsRoutes.php:21",
+        "sink_anchor": "src/Api/Handlers/IntegrationsApiHandler.php:65",
+        "fp_reason": "The public GET route at `src/Api/Routes/IntegrationsRoutes.php:21-27` returns JSON assembled from `PluginData::to_array()` at `src/Dto/PluginData.php:200-218` plus plugin-state booleans and `import_status` at `src/Api/Handlers/IntegrationsApiHandler.php:183-192`. The inspected code shows integration inventory and import-progress metadata, but no credentials, tokens, user records, or privileged action.",
+        "claimed_impact": "Unauthenticated informational disclosure of integration inventory and import-progress status only; no packet-local broken-access-control impact beyond reconnaissance/operational metadata is shown."
+      }
+    }
+  ]
+}

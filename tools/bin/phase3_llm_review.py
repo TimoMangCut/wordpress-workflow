@@ -6,7 +6,7 @@ Reads Phase 2 output + Phase 1 IR (+ optional Semgrep + source) and asks the
 selected LLM CLI provider to produce a structured validation report.
 
 ROLE: Skeptic reviewer ONLY. This script should only receive findings that Phase 3a
-(phase3_gate.py) classified as PLAUSIBLE or UNCERTAIN. CONFIRMED findings bypass
+(phase3_gate.py) classified as UNCERTAIN or RISK_NOTE. CONFIRMED findings bypass
 this stage entirely. The LLM must NOT self-confirm findings — it must find
 counter-evidence, demand PoC, or propose dynamic tests.
 """
@@ -43,7 +43,7 @@ Inputs:
 - Plugin source code: `{PLUGIN_PATH}`
 
 Use `{REVIEW_INPUT_PATH}` as the canonical scope for this review.
-It already contains the reviewable findings filtered from `validated_findings` where `validation_status` is `PLAUSIBLE` or `UNCERTAIN`.
+It already contains the reviewable findings filtered from `validated_findings` where `validation_status` is `UNCERTAIN` or `RISK_NOTE`.
 Do NOT inspect or iterate `.findings[]` from the gate JSON.
 Do NOT touch CONFIRMED or REJECTED findings.
 
@@ -54,7 +54,7 @@ For each finding:
 2) Verify code evidence at claimed file:line
 3) Assess exploitability honestly
 4) Propose dynamic test steps (exact HTTP requests)
-5) Recommend: downgrade / keep / upgrade
+5) Recommend: reject / downgrade / keep / upgrade
 
 Write JSON to: `{REVIEW_OUTPUT_PATH}`
 Write Markdown to: `{OUTPUT_PATH}`
@@ -65,8 +65,10 @@ JSON schema:
   "reviews": [
     {{
       "finding_id": "...",
-      "original_status": "PLAUSIBLE|UNCERTAIN",
-      "verdict_change": "downgrade|keep|upgrade",
+      "original_status": "UNCERTAIN|RISK_NOTE",
+      "verdict_change": "reject|downgrade|keep|upgrade",
+      "proposed_final_state": "REJECTED|UNCERTAIN|RISK_NOTE",
+      "reopening_condition": "required when verdict_change=reject if you can state it precisely",
       "reason": "...",
       "counter_evidence": [{{"type":"guard|sanitizer|unreachable","file":"...","line":0,"detail":"..."}}],
       "missing_evidence": ["..."],
@@ -162,7 +164,7 @@ def load_system_prompt(root_dir: Path) -> str:
     for c in candidates:
         if c.exists() and c.is_file():
             return c.read_text(encoding="utf-8", errors="replace")
-    return "Khi thuc hien WP plugin security audit, LUON load skill `$application-security` truoc."
+    return "Hay ap dung truc tiep WordPress AppSec workflow trong prompt va project docs. Khong duoc phu thuoc vao skill auto-load."
 
 
 def load_claude_headless_fallback(root_dir: Path) -> str:
@@ -176,15 +178,21 @@ def load_claude_headless_fallback(root_dir: Path) -> str:
 
 
 def normalize_prompt_for_provider(text: str, provider: str) -> str:
-    if provider != "claude":
-        return text
-
-    lines = [line for line in text.splitlines() if "application-security" not in line]
+    lines = []
+    for line in text.splitlines():
+        lower = line.lower()
+        if "application-security" in lower or "load skill" in lower:
+            continue
+        lines.append(line)
     text = "\n".join(lines).strip()
     extra = load_claude_headless_fallback(_ROOT_DIR)
+    prefix = (
+        f"Provider note: you are running via {provider}. "
+        "Keep the workflow self-contained; do not rely on provider-specific skill auto-loading."
+    )
     if not text:
-        return extra
-    return f"{text}\n\n{extra}"
+        return f"{prefix}\n\n{extra}"
+    return f"{text}\n\n{prefix}\n\n{extra}"
 
 
 def provider_display_name(provider: str) -> str:
@@ -228,7 +236,7 @@ def expected_review_count(reports_dir: Path, slug: str) -> int:
     count = 0
     for row in rows:
         status = str(row.get("validation_status", "")).upper()
-        if status in {"PLAUSIBLE", "UNCERTAIN"}:
+        if status in {"UNCERTAIN", "RISK_NOTE"}:
             count += 1
     return count
 
@@ -331,7 +339,7 @@ def build_review_bundle(
         if not isinstance(row, dict):
             continue
         status = str(row.get("validation_status") or "").upper()
-        if status not in {"PLAUSIBLE", "UNCERTAIN"}:
+        if status not in {"UNCERTAIN", "RISK_NOTE"}:
             continue
         fid = str(row.get("finding_id") or "")
         reviewable.append(
@@ -355,7 +363,7 @@ def build_review_bundle(
         },
         "gate_contract": {
             "top_level_keys": ["phase3_summary", "validated_findings", "actionable_findings"],
-            "canonical_review_source": "validated_findings filtered by validation_status in {PLAUSIBLE, UNCERTAIN}",
+            "canonical_review_source": "validated_findings filtered by validation_status in {UNCERTAIN, RISK_NOTE}",
         },
         "empty_review_behavior": "If reviewable_findings is empty, write reviews=[] and an empty-review markdown without inventing findings.",
     }

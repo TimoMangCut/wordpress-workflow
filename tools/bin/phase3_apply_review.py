@@ -17,6 +17,12 @@ from report_paths import build_report_layout
 _SCRIPT_DIR = Path(__file__).resolve().parent
 _ROOT_DIR = _SCRIPT_DIR.parent.parent  # tools/bin -> tools -> root
 
+FINAL_STATES = {"CONFIRMED", "UNCERTAIN", "RISK_NOTE", "REJECTED"}
+DEFAULT_REOPENING_CONDITION = (
+    "Reopen only if new traced entry-to-impact evidence or a reproducible exploit path "
+    "contradicts the current rejection."
+)
+
 
 def load_json(path: str) -> Optional[dict]:
     try:
@@ -42,6 +48,79 @@ def file_line_exists(path: str, line_no: int) -> bool:
 
 def normalize_rel_path(path: str) -> str:
     return (path or "").replace("\\", "/").lstrip("./")
+
+
+def normalize_verdict_change(value: Any) -> str:
+    raw = str(value or "").strip().lower()
+    aliases = {
+        "rejected": "reject",
+        "reject": "reject",
+        "downgrade": "downgrade",
+        "keep": "keep",
+        "upgrade": "upgrade",
+    }
+    return aliases.get(raw, "")
+
+
+def normalize_final_state(value: Any) -> Optional[str]:
+    if value is None:
+        return None
+    state = str(value).strip().upper()
+    return state if state in FINAL_STATES else None
+
+
+def normalize_string_list(value: Any) -> List[str]:
+    if not isinstance(value, list):
+        return []
+    out: List[str] = []
+    for item in value:
+        text = str(item or "").strip()
+        if text:
+            out.append(text)
+    return out
+
+
+def normalize_counter_evidence(value: Any) -> List[Dict[str, Any]]:
+    if not isinstance(value, list):
+        return []
+    out: List[Dict[str, Any]] = []
+    for item in value:
+        if not isinstance(item, dict):
+            continue
+        clean: Dict[str, Any] = {}
+        for key in ("type", "file", "line", "detail"):
+            if key not in item:
+                continue
+            val = item.get(key)
+            if key == "line":
+                try:
+                    clean[key] = int(val)
+                except Exception:
+                    continue
+            else:
+                text = str(val or "").strip()
+                if text:
+                    clean[key] = text
+        if clean:
+            out.append(clean)
+    return out
+
+
+def derive_reopening_condition(review_row: Dict[str, Any]) -> str:
+    explicit = str(
+        review_row.get("reopening_condition")
+        or review_row.get("reopen_if")
+        or review_row.get("reopen_when")
+        or ""
+    ).strip()
+    if explicit:
+        return explicit
+
+    missing = normalize_string_list(review_row.get("missing_evidence"))
+    if missing:
+        return "Reopen if new evidence addresses: " + "; ".join(missing)
+
+    return DEFAULT_REOPENING_CONDITION
 
 
 def parse_args() -> argparse.Namespace:
@@ -91,25 +170,63 @@ def main() -> int:
     reviews = review.get("reviews") or review.get("findings") or []
     applied = 0
     changes: List[Dict[str, Any]] = []
-    llm_upgraded_ids: List[str] = []  # track findings LLM confirmed for gate patching
+    review_counts = {
+        "reject": 0,
+        "downgrade": 0,
+        "keep": 0,
+        "upgrade": 0,
+    }
 
     for r in reviews:
         fid = r.get("finding_id")
         if not fid or fid not in by_id:
             continue
         f = by_id[fid]
+        review_meta: Dict[str, Any] = {
+            "original_status": str(r.get("original_status") or "").strip().upper() or None,
+            "reason": r.get("reason"),
+            "counter_evidence": normalize_counter_evidence(r.get("counter_evidence")),
+            "missing_evidence": normalize_string_list(r.get("missing_evidence")),
+            "dynamic_test_plan": normalize_string_list(r.get("dynamic_test_plan")),
+        }
 
-        # Verdict change (conservative)
-        vc = str(r.get("verdict_change") or "").lower()
-        if vc == "downgrade" and f.get("verdict") == "TP":
+        # Verdict change (structured, but backward-compatible with the old review schema)
+        vc = normalize_verdict_change(r.get("verdict_change"))
+        proposed_final_state = normalize_final_state(
+            r.get("proposed_final_state") or r.get("suggested_final_state") or r.get("final_state")
+        )
+        if vc:
+            review_meta["verdict_change"] = vc
+            review_counts[vc] = review_counts.get(vc, 0) + 1
+        if proposed_final_state:
+            review_meta["proposed_final_state"] = proposed_final_state
+
+        if vc == "reject" or proposed_final_state == "REJECTED":
+            old = f.get("verdict")
+            if old != "FP":
+                f["phase3_review_prior_verdict"] = old
+                f["verdict"] = "FP"
+                changes.append(
+                    {
+                        "finding_id": fid,
+                        "field": "verdict",
+                        "old": old,
+                        "new": "FP",
+                        "reason": r.get("reason"),
+                    }
+                )
+                applied += 1
+            review_meta["final_state"] = "REJECTED"
+            review_meta["reopening_condition"] = derive_reopening_condition(r)
+        elif vc == "downgrade" and f.get("verdict") == "TP":
             old = f.get("verdict")
             f["verdict"] = "REVIEW"
             f["phase3_review_verdict_reason"] = r.get("reason")
+            if proposed_final_state in {"UNCERTAIN", "RISK_NOTE"}:
+                review_meta["final_state"] = proposed_final_state
             changes.append({"finding_id": fid, "field": "verdict", "old": old, "new": "REVIEW", "reason": r.get("reason")})
             applied += 1
         elif vc == "upgrade":
-            # Widen guard: apply when verdict is REVIEW, FP, or TP.
-            # TP findings may still be UNCERTAIN at gate level — LLM upgrade confirms them.
             if f.get("verdict") in ("REVIEW", "FP"):
                 old = f.get("verdict")
                 f["verdict"] = "TP"
@@ -117,15 +234,15 @@ def main() -> int:
                 changes.append({"finding_id": fid, "field": "verdict", "old": old, "new": "TP", "reason": r.get("reason")})
                 applied += 1
             elif f.get("verdict") == "TP":
-                # Already TP — no phase2 change needed, but record for gate patching below
                 f["phase3_review_verdict_reason"] = r.get("reason")
                 changes.append({"finding_id": fid, "field": "phase3_review_note", "old": None, "new": "LLM confirmed TP", "reason": r.get("reason")})
                 applied += 1
-            llm_upgraded_ids.append(fid)
+        elif proposed_final_state in {"UNCERTAIN", "RISK_NOTE"}:
+            review_meta["final_state"] = proposed_final_state
 
         corr = r.get("suggested_field_corrections") or {}
         if not isinstance(corr, dict):
-            continue
+            corr = {}
 
         # entry_point_id guardrail: must exist in IR
         if "entry_point_id" in corr:
@@ -183,11 +300,20 @@ def main() -> int:
                 changes.append({"finding_id": fid, "field": "storage_key", "old": old, "new": new_key})
                 applied += 1
 
+        if corr:
+            review_meta["suggested_field_corrections"] = corr
+
+        f["phase3_review"] = review_meta
+
     before_path = os.path.join(layout.phase2, f"{slug}-phase2.before_review.json")
     shutil.copy2(phase2_path, before_path)
 
     phase2.setdefault("postprocess", {})
-    phase2["postprocess"]["phase3_review_applied"] = {"applied_edits": applied}
+    phase2["postprocess"]["phase3_review_applied"] = {
+        "applied_edits": applied,
+        "reviewed_findings": len(reviews),
+        "review_counts": review_counts,
+    }
     save_json(phase2_path, phase2)
 
     after_path = os.path.join(layout.phase2, f"{slug}-phase2.after_review.json")
@@ -199,6 +325,7 @@ def main() -> int:
         {
             "plugin_slug": slug,
             "applied_edits": applied,
+            "review_counts": review_counts,
             "changes": changes,
             "review_source": review_path,
         },
@@ -230,19 +357,6 @@ def main() -> int:
 
     final_path = os.path.join(layout.phase3, f"{slug}-phase3.final.json")
     if os.path.exists(gate_path):
-        # Patch gate validated_findings for LLM-upgraded findings:
-        # UNCERTAIN → PLAUSIBLE when LLM skeptic confirmed the finding is real.
-        if llm_upgraded_ids:
-            gate_data = load_json(gate_path) or {}
-            patched = 0
-            for vf in gate_data.get("validated_findings", []) or []:
-                if vf.get("finding_id") in llm_upgraded_ids and vf.get("validation_status") == "UNCERTAIN":
-                    vf["validation_status"] = "PLAUSIBLE"
-                    vf["phase3_llm_upgrade"] = True
-                    patched += 1
-            if patched:
-                save_json(gate_path, gate_data)
-                print(f"[=] Gate patched: {patched} UNCERTAIN → PLAUSIBLE (LLM-upgraded)")
         shutil.copy2(gate_path, final_path)
         print(f"[=] Final gate snapshot: {final_path}")
     print(f"[=] Review diff log: {diff_path}")

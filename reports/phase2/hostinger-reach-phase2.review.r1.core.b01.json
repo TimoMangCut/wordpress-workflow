@@ -1,0 +1,87 @@
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "core",
+  "review_status": "needs_revision",
+  "summary": {
+    "worker_findings_reviewed": 1,
+    "material_issues_found": true,
+    "new_candidate_count": 0,
+    "notes": "Packet HR-002 needs field correction and stronger evidence before it can be kept as a security finding."
+  },
+  "finding_reviews": [
+    {
+      "finding_id": "HR-002",
+      "packet_id": "HR-002",
+      "parent_finding_id": "HR-002",
+      "assessment": "needs_more_evidence",
+      "reason": "Reachability: the packet's cited entry point at src/Api/Webhooks/Handlers/WebhookHandler.php:19 is not packet-locally connected to this AJAX handler; the actual reachable hook in scope is the wp_ajax registration at src/Admin/Notices/AddFormNotice.php:28. Authorization: handle_ajax_action() has no capability check, but execution is still limited to authenticated AJAX requests with a valid nonce, and nonce delivery is gated by should_render() and admin-screen conditions. Dataflow: sanitized $_POST['choice'] at src/Admin/Notices/AddFormNotice.php:45 only selects between a one-week transient write at line 59 and a fixed redirect string at line 66. Impact: packet-local evidence supports, at most, global dismissal of an onboarding notice, not subscriber privilege escalation or a meaningful security state change. Missing evidence: the worker has not shown that a subscriber can actually obtain the localized nonce on the whitelisted screens, nor that this notice toggle has concrete security impact.",
+      "required_changes": [
+        "Remove src/Api/Webhooks/Handlers/WebhookHandler.php:19 as the entry point for this packet unless a packet-local trace to AddFormNotice::init() is provided; the in-scope registration is src/Admin/Notices/AddFormNotice.php:28.",
+        "Do not describe the issue as 'subscriber privilege escalation' without evidence that a subscriber or equivalent low-privileged role can reach a whitelisted screen and receive the nonce localized at src/Admin/Notices/AddFormNotice.php:155.",
+        "Narrow the authorization precondition to an authenticated user with a valid notice nonce obtained from the screens allowed by src/Admin/Notices/AddFormNotice.php:103-117.",
+        "Narrow the impact statement to the concrete packet-local effects: setting the notice-dismiss transient at src/Admin/Notices/AddFormNotice.php:59 or returning the fixed redirect URL at src/Admin/Notices/AddFormNotice.php:66."
+      ],
+      "counter_evidence": [
+        {
+          "type": "scope",
+          "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
+          "line": 19,
+          "detail": "This abstract webhook handler only registers init_hooks on init; the packet provides no packet-local path from this anchor to AddFormNotice::handle_ajax_action(), so the current entry-point anchor is mismapped."
+        },
+        {
+          "type": "guard",
+          "file": "src/Admin/Notices/AddFormNotice.php",
+          "line": 28,
+          "detail": "The handler is registered only on wp_ajax_hostinger_reach_add_form_notice_action, not on a wp_ajax_nopriv_* hook, so the route is authenticated-only."
+        },
+        {
+          "type": "guard",
+          "file": "src/Admin/Notices/AddFormNotice.php",
+          "line": 44,
+          "detail": "check_ajax_referer(self::NOTICE_ACTION, 'nonce') must pass before either branch executes."
+        },
+        {
+          "type": "guard",
+          "file": "src/Admin/Notices/AddFormNotice.php",
+          "line": 103,
+          "detail": "should_render() restricts notice rendering to a fixed set of admin screens, so nonce distribution is not shown as universally available to all logged-in roles."
+        },
+        {
+          "type": "guard",
+          "file": "src/Admin/Notices/AddFormNotice.php",
+          "line": 155,
+          "detail": "The nonce is localized only when enqueue_notice_assets() runs, which depends on should_render(); packet-local evidence does not prove a subscriber can obtain it."
+        },
+        {
+          "type": "impact",
+          "file": "src/Admin/Notices/AddFormNotice.php",
+          "line": 59,
+          "detail": "The dismiss branch only sets the hostinger_reach_add_form_notice_dismissed transient for one week and returns wp_send_json_success()."
+        },
+        {
+          "type": "impact",
+          "file": "src/Admin/Notices/AddFormNotice.php",
+          "line": 66,
+          "detail": "The success branch only returns a fixed admin.php?page=hostinger-reach&addForm=1 redirect string; it does not change plugin settings, capabilities, or stored credentials."
+        }
+      ],
+      "missing_evidence": [
+        "File:line or reproducible evidence that a subscriber or equivalent low-privileged role can reach one of the screens whitelisted at src/Admin/Notices/AddFormNotice.php:103-110 and receive the nonce localized at src/Admin/Notices/AddFormNotice.php:155.",
+        "Packet-local evidence that the transient written at src/Admin/Notices/AddFormNotice.php:59 causes a measurable security consequence beyond hiding this onboarding notice.",
+        "A packet-local trace connecting the claimed entry-point anchor src/Api/Webhooks/Handlers/WebhookHandler.php:19 to AddFormNotice::init() if that anchor is to remain in the packet."
+      ],
+      "expansion_attempts": [],
+      "suggested_field_corrections": {
+        "entry_point_anchor": "src/Admin/Notices/AddFormNotice.php:28",
+        "source_anchor": "src/Admin/Notices/AddFormNotice.php:43",
+        "sink_anchor": "src/Admin/Notices/AddFormNotice.php:59",
+        "auth_required": "authenticated user with a valid nonce from the AddFormNotice admin UI",
+        "vuln_type": "Missing capability check on authenticated AJAX notice action",
+        "severity": "low",
+        "patchstack_eligible": false,
+        "claimed_impact": "Global dismissal of the Add Form admin notice for one week; success branch only returns a fixed admin redirect URL."
+      }
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "phase2-review-output.schema.json",
+  "version": "1.0.0",
+  "title": "Phase 2 Review Output Schema",
+  "description": "Structured critique from the Phase 2 reviewer loop. Used between worker and reviewer rounds before canonical phase2.json is finalized.",
+  "type": "object",
+  "required": ["plugin_slug", "review_round", "review_status", "summary", "finding_reviews", "missed_findings"],
+  "properties": {
+    "plugin_slug": { "type": "string" },
+    "review_round": { "type": "integer", "minimum": 1 },
+    "review_mode": { "enum": ["core", "explore", "skeptical", "forced_exploration"] },
+    "review_status": { "enum": ["stable", "needs_revision"] },
+    "summary": {
+      "type": "object",
+      "required": ["worker_findings_reviewed", "material_issues_found"],
+      "properties": {
+        "worker_findings_reviewed": { "type": "integer", "minimum": 0 },
+        "material_issues_found": { "type": "boolean" },
+        "new_candidate_count": { "type": "integer", "minimum": 0 },
+        "notes": { "type": ["string", "null"] }
+      }
+    },
+    "finding_reviews": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["finding_id", "assessment", "reason", "required_changes", "counter_evidence"],
+        "properties": {
+          "finding_id": { "type": "string" },
+          "assessment": { "enum": ["keep", "needs_more_evidence", "downgrade", "retract", "field_fix"] },
+          "reason": { "type": "string" },
+          "required_changes": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "counter_evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["type", "file", "line", "detail"],
+              "properties": {
+                "type": { "enum": ["guard", "sanitizer", "unreachable", "scope", "impact", "other"] },
+                "file": { "type": "string" },
+                "line": { "type": "integer", "minimum": 1 },
+                "detail": { "type": "string" }
+              }
+            }
+          },
+          "suggested_field_corrections": {
+            "type": ["object", "null"]
+          }
+        }
+      }
+    },
+    "missed_findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "candidate_id",
+          "vuln_type",
+          "auth_required",
+          "source_file_path",
+          "source_line_number",
+          "sink_file_path",
+          "sink_line_number",
+          "reason",
+          "confidence"
+        ],
+        "properties": {
+          "candidate_id": { "type": "string" },
+          "vuln_type": { "type": "string" },
+          "auth_required": {
+            "enum": ["none", "subscriber", "contributor", "author", "editor", "admin", "system", "unknown"]
+          },
+          "source_file_path": { "type": "string" },
+          "source_line_number": { "type": "integer", "minimum": 1 },
+          "sink_file_path": { "type": "string" },
+          "sink_line_number": { "type": "integer", "minimum": 1 },
+          "reason": { "type": "string" },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    }
+  }
+}

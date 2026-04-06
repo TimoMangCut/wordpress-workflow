@@ -1,0 +1,150 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.local/contracts/phase2-cluster.schema.json",
+  "version": "1.0.0",
+  "title": "Phase 2 Cluster Document",
+  "description": "Deterministic cross-bundle synthesis unit built from merged Phase 2 findings.",
+  "type": "object",
+  "required": [
+    "plugin_slug",
+    "cluster_id",
+    "cluster_strategy",
+    "bug_family",
+    "auth_boundary",
+    "source_agents",
+    "member_findings",
+    "priority_score",
+    "recommended_models"
+  ],
+  "properties": {
+    "plugin_slug": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cluster_id": {
+      "type": "string",
+      "pattern": "^cluster-c[0-9]{2,}$"
+    },
+    "cluster_strategy": {
+      "type": "string",
+      "enum": [
+        "cross_bundle_cluster_v1"
+      ]
+    },
+    "bug_family": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dominant_vuln_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "auth_boundary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "entry_point_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "supporting_files": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "source_agents": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "member_finding_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "member_findings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object"
+      }
+    },
+    "priority_score": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "synthesis_scope": {
+      "type": "string",
+      "enum": [
+        "single_bundle",
+        "cross_bundle"
+      ],
+      "default": "single_bundle"
+    },
+    "recommended_models": {
+      "type": "object",
+      "required": [
+        "synthesizer",
+        "challenger"
+      ],
+      "properties": {
+        "synthesizer": {
+          "type": "object",
+          "required": [
+            "provider",
+            "model"
+          ],
+          "properties": {
+            "provider": {
+              "type": "string",
+              "enum": [
+                "codex",
+                "claude"
+              ]
+            },
+            "model": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "challenger": {
+          "type": "object",
+          "required": [
+            "provider",
+            "model"
+          ],
+          "properties": {
+            "provider": {
+              "type": "string",
+              "enum": [
+                "codex",
+                "claude"
+              ]
+            },
+            "model": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true
+}

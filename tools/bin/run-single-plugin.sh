@@ -49,6 +49,19 @@ CODEX_MODEL="${CODEX_MODEL:-${LLM_MODEL:-}}"
 CLAUDE_BIN="${CLAUDE_BIN:-claude}"
 CLAUDE_MODEL="${CLAUDE_MODEL:-${LLM_MODEL:-}}"
 PRIMARY_PROVIDER="${PRIMARY_PROVIDER:-codex}"
+PHASE2_WORKER_PROVIDER="${PHASE2_WORKER_PROVIDER:-claude}"
+PHASE2_REVIEWER_PROVIDER="${PHASE2_REVIEWER_PROVIDER:-codex}"
+PHASE2_WORKER_TIMEOUT_SECONDS="${PHASE2_WORKER_TIMEOUT_SECONDS:-900}"
+PHASE2_REVISION_TIMEOUT_SECONDS="${PHASE2_REVISION_TIMEOUT_SECONDS:-600}"
+PHASE2_REVIEWER_TIMEOUT_SECONDS="${PHASE2_REVIEWER_TIMEOUT_SECONDS:-600}"
+PHASE2_EXPLORATION_TIMEOUT_SECONDS="${PHASE2_EXPLORATION_TIMEOUT_SECONDS:-240}"
+PHASE2_WORKER_CODEX_MODEL="${PHASE2_WORKER_CODEX_MODEL:-${CODEX_MODEL:-gpt-5.4}}"
+PHASE2_WORKER_CLAUDE_MODEL="${PHASE2_WORKER_CLAUDE_MODEL:-${CLAUDE_MODEL:-claude-sonnet-4.6}}"
+PHASE2_REVIEWER_CODEX_MODEL="${PHASE2_REVIEWER_CODEX_MODEL:-${CODEX_MODEL:-gpt-5.4}}"
+PHASE2_REVIEWER_CLAUDE_MODEL="${PHASE2_REVIEWER_CLAUDE_MODEL:-claude-opus-4.6}"
+PHASE2_MAX_REVIEW_ROUNDS="${PHASE2_MAX_REVIEW_ROUNDS:-1}"
+PHASE2_ENABLE_FORCED_EXPLORATION="${PHASE2_ENABLE_FORCED_EXPLORATION:-true}"
+PHASE2_MAX_EXPLORATION_CANDIDATES="${PHASE2_MAX_EXPLORATION_CANDIDATES:-3}"
 
 usage() {
     cat <<'EOF'
@@ -67,10 +80,24 @@ Options:
   --with-claude          Convenience flag: run both codex and claude.
   --provider <name>      Single LLM provider shorthand: codex|claude.
   --providers <list>     Provider list, comma-separated (for example: codex,claude).
-  --primary-provider <p> Canonical provider for both Phase 2 and Phase 3.
+  --primary-provider <p> Canonical provider for Phase 3. Phase 2 canonical output always comes from the worker role.
+  --worker-timeout <sec> Worker timeout for Phase 2 round 1 quick/deep analysis (default: 900).
+  --revision-timeout <sec> Worker timeout for Phase 2 revision/expansion rounds (default: 600).
+  --reviewer-timeout <sec> Reviewer timeout for skeptical Phase 2 review rounds (default: 600).
+  --exploration-timeout <sec> Reviewer timeout for final forced exploration round (default: 240).
+  --worker-provider <p>  Phase 2 worker provider (default: claude).
+  --reviewer-provider <p> Phase 2 reviewer provider (default: codex).
   --model <name>         Set the same model for both providers.
   --codex-model <name>   Codex model override.
   --claude-model <name>  Claude model override.
+  --worker-codex-model <name>   Codex model for Phase 2 worker role.
+  --worker-claude-model <name>  Claude model for Phase 2 worker role.
+  --reviewer-codex-model <name> Codex model for Phase 2 reviewer role.
+  --reviewer-claude-model <name> Claude model for Phase 2 reviewer role.
+  --max-review-rounds <N>       Phase 2 skeptical review rounds.
+  --forced-exploration          Enable the final Phase 2 expansion round.
+  --no-forced-exploration       Disable the final Phase 2 expansion round.
+  --max-exploration-candidates <N> Limit reviewer exploration candidates in the final round.
   --codex-bin <path>     Codex CLI binary/path (default: env CODEX_BIN or codex).
   --claude-bin <path>    Claude Code binary/path (default: env CLAUDE_BIN or claude).
   -h, --help             Show this help message.
@@ -78,7 +105,10 @@ Options:
 Notes:
   - This wrapper is single-plugin only. It does not support range or interactive batch mode.
   - Phase 1 always runs first via tools/bin/scan-all.sh.
-  - By default only Codex runs. Add --with-claude to run both Codex and Claude.
+  - Phase 2 uses a role loop by default: Claude Sonnet worker + Codex reviewer.
+  - After the normal review loop, Phase 2 runs one forced-exploration round by default.
+  - Canonical Phase 2 now also runs deterministic cluster planning/evidence-pack/consensus by default before Phase 3.
+  - Phase 3 still uses provider-list controls; add --with-claude to include Claude there.
 EOF
 }
 
@@ -126,6 +156,30 @@ while [[ $# -gt 0 ]]; do
             PRIMARY_PROVIDER="${2:-}"
             shift 2
             ;;
+        --worker-timeout)
+            PHASE2_WORKER_TIMEOUT_SECONDS="${2:-}"
+            shift 2
+            ;;
+        --revision-timeout)
+            PHASE2_REVISION_TIMEOUT_SECONDS="${2:-}"
+            shift 2
+            ;;
+        --reviewer-timeout)
+            PHASE2_REVIEWER_TIMEOUT_SECONDS="${2:-}"
+            shift 2
+            ;;
+        --exploration-timeout)
+            PHASE2_EXPLORATION_TIMEOUT_SECONDS="${2:-}"
+            shift 2
+            ;;
+        --worker-provider)
+            PHASE2_WORKER_PROVIDER="${2:-}"
+            shift 2
+            ;;
+        --reviewer-provider)
+            PHASE2_REVIEWER_PROVIDER="${2:-}"
+            shift 2
+            ;;
         --model)
             CODEX_MODEL="${2:-}"
             CLAUDE_MODEL="${2:-}"
@@ -137,6 +191,38 @@ while [[ $# -gt 0 ]]; do
             ;;
         --claude-model)
             CLAUDE_MODEL="${2:-}"
+            shift 2
+            ;;
+        --worker-codex-model)
+            PHASE2_WORKER_CODEX_MODEL="${2:-}"
+            shift 2
+            ;;
+        --worker-claude-model)
+            PHASE2_WORKER_CLAUDE_MODEL="${2:-}"
+            shift 2
+            ;;
+        --reviewer-codex-model)
+            PHASE2_REVIEWER_CODEX_MODEL="${2:-}"
+            shift 2
+            ;;
+        --reviewer-claude-model)
+            PHASE2_REVIEWER_CLAUDE_MODEL="${2:-}"
+            shift 2
+            ;;
+        --max-review-rounds)
+            PHASE2_MAX_REVIEW_ROUNDS="${2:-}"
+            shift 2
+            ;;
+        --forced-exploration)
+            PHASE2_ENABLE_FORCED_EXPLORATION=true
+            shift
+            ;;
+        --no-forced-exploration)
+            PHASE2_ENABLE_FORCED_EXPLORATION=false
+            shift
+            ;;
+        --max-exploration-candidates)
+            PHASE2_MAX_EXPLORATION_CANDIDATES="${2:-}"
             shift 2
             ;;
         --codex-bin)
@@ -306,7 +392,19 @@ print_artifact_status() {
     fi
 }
 
-PHASE2_CMD=(bash "${BIN_DIR}/run-phase2.sh" --slug "$PLUGIN_SLUG" --providers "$LLM_PROVIDERS" --primary-provider "$PRIMARY_PROVIDER")
+PHASE2_CMD=(bash "${BIN_DIR}/run-phase2.sh" --slug "$PLUGIN_SLUG" \
+    --worker-timeout "$PHASE2_WORKER_TIMEOUT_SECONDS" \
+    --revision-timeout "$PHASE2_REVISION_TIMEOUT_SECONDS" \
+    --reviewer-timeout "$PHASE2_REVIEWER_TIMEOUT_SECONDS" \
+    --exploration-timeout "$PHASE2_EXPLORATION_TIMEOUT_SECONDS" \
+    --worker-provider "$PHASE2_WORKER_PROVIDER" \
+    --reviewer-provider "$PHASE2_REVIEWER_PROVIDER" \
+    --worker-codex-model "$PHASE2_WORKER_CODEX_MODEL" \
+    --worker-claude-model "$PHASE2_WORKER_CLAUDE_MODEL" \
+    --reviewer-codex-model "$PHASE2_REVIEWER_CODEX_MODEL" \
+    --reviewer-claude-model "$PHASE2_REVIEWER_CLAUDE_MODEL" \
+    --max-review-rounds "$PHASE2_MAX_REVIEW_ROUNDS" \
+    --max-exploration-candidates "$PHASE2_MAX_EXPLORATION_CANDIDATES")
 PHASE3_CMD=(bash "${BIN_DIR}/run-phase3.sh" --slug "$PLUGIN_SLUG" --llm-mode "$LLM_MODE" --providers "$LLM_PROVIDERS" --primary-provider "$PRIMARY_PROVIDER")
 
 if [ "$FORCE" = true ]; then
@@ -315,6 +413,11 @@ if [ "$FORCE" = true ]; then
 fi
 if [ "$FORCE_DEEP" = true ]; then
     PHASE2_CMD+=(--force-deep)
+fi
+if [ "$PHASE2_ENABLE_FORCED_EXPLORATION" = true ]; then
+    PHASE2_CMD+=(--forced-exploration)
+else
+    PHASE2_CMD+=(--no-forced-exploration)
 fi
 if [ "$APPLY_REVIEW" = true ]; then
     PHASE3_CMD+=(--apply-review)
@@ -341,7 +444,9 @@ echo "  Single Plugin Pipeline"
 echo "========================================="
 echo "  Plugin slug: ${PLUGIN_SLUG}"
 echo "  Plugin dir : ${PLUGIN_DIR}"
-echo "  Providers  : ${LLM_PROVIDERS}"
+echo "  Phase 2 loop: worker=${PHASE2_WORKER_PROVIDER} (${PHASE2_WORKER_CODEX_MODEL}/${PHASE2_WORKER_CLAUDE_MODEL}) reviewer=${PHASE2_REVIEWER_PROVIDER} (${PHASE2_REVIEWER_CODEX_MODEL}/${PHASE2_REVIEWER_CLAUDE_MODEL}) forced_exploration=${PHASE2_ENABLE_FORCED_EXPLORATION}/${PHASE2_MAX_EXPLORATION_CANDIDATES}"
+echo "  Phase 2 timeouts: worker=${PHASE2_WORKER_TIMEOUT_SECONDS}s revision=${PHASE2_REVISION_TIMEOUT_SECONDS}s reviewer=${PHASE2_REVIEWER_TIMEOUT_SECONDS}s exploration=${PHASE2_EXPLORATION_TIMEOUT_SECONDS}s"
+echo "  Phase 3 providers: ${LLM_PROVIDERS}"
 echo "  LLM mode   : ${LLM_MODE}"
 echo "  Reports dir: ${REPORTS_DIR}"
 

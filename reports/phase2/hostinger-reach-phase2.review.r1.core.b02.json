@@ -1,0 +1,71 @@
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "core",
+  "review_status": "needs_revision",
+  "summary": {
+    "worker_findings_reviewed": 1,
+    "material_issues_found": true,
+    "new_candidate_count": 0,
+    "notes": "HR-001 overstates unauthenticated reachability and impact on packet-local evidence. The file shows a public REST route plus a nonce gate, but not guest nonce exposure or a concrete downstream consumer."
+  },
+  "finding_reviews": [
+    {
+      "finding_id": "HR-001",
+      "packet_id": "HR-001",
+      "parent_finding_id": "HR-001",
+      "assessment": "needs_more_evidence",
+      "reason": "Packet-local code proves a public REST route and an in-handler wp_rest nonce check, but it does not yet prove that anonymous users can obtain the required nonce in this execution context or that the hook dispatch reaches a state-changing subscriber/contact sink.",
+      "required_changes": [
+        "Downgrade the wording from 'unauthenticated REST endpoint' to a nonce-gated REST route until packet-local evidence shows the localized wp_rest nonce is exposed to guest users for this surface.",
+        "Do not claim contact injection or subscriber creation from this packet alone; the current terminal step at src/Integrations/OptInMonster/OptInMonsterIntegration.php:78 is only a hook dispatch.",
+        "Reassess severity and Patchstack eligibility only after proving both guest reachability and a concrete downstream state change."
+      ],
+      "counter_evidence": [
+        {
+          "type": "guard",
+          "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+          "line": 63,
+          "detail": "submit_optinmonster() immediately rejects the request unless is_authorized() passes, so the endpoint is not fully open despite permission_callback being __return_true."
+        },
+        {
+          "type": "guard",
+          "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+          "line": 203,
+          "detail": "is_authorized() requires wp_verify_nonce($nonce, 'wp_rest'); this packet does not show that an anonymous caller can obtain a valid nonce in the relevant execution context."
+        },
+        {
+          "type": "scope",
+          "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+          "line": 231,
+          "detail": "Nonce localization only occurs inside enqueue_assets() when $js_file is truthy, and this file does not show the frontend/public hook context needed to support the worker's 'any page visitor can read the nonce' claim."
+        },
+        {
+          "type": "impact",
+          "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+          "line": 78,
+          "detail": "The packet-local terminal step is do_action('hostinger_reach_submit', ...). Without a demonstrated consumer, this file alone does not prove subscriber creation, contact-list mutation, or comparable security impact."
+        },
+        {
+          "type": "other",
+          "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+          "line": 253,
+          "detail": "The dataflow is narrowed to a field that passes email validation logic before dispatch, so the claim should stay scoped to email-like input rather than arbitrary attacker-controlled payload injection."
+        }
+      ],
+      "missing_evidence": [
+        "File:line evidence that active_integration_hooks()/enqueue_assets() executes on guest-reachable frontend requests for this integration, rather than only in a restricted context.",
+        "File:line evidence that the localized nonce created at src/Integrations/OptInMonster/OptInMonsterIntegration.php:244 is actually exposed to unauthenticated users in the affected workflow.",
+        "File:line evidence of a concrete consumer for the hook dispatched at src/Integrations/OptInMonster/OptInMonsterIntegration.php:78 that creates or updates a Hostinger Reach subscriber/contact.",
+        "If the claim remains 'unauthenticated', packet-local evidence that a logged-out wp_rest nonce is accepted by this exact route in the deployed flow, rather than relying only on a generalized WordPress assumption."
+      ],
+      "expansion_attempts": [],
+      "suggested_field_corrections": {
+        "vuln_type": "Broken Access Control - Nonce-gated REST route with unproven guest reachability",
+        "auth_required": "unknown",
+        "severity": "needs_reassessment",
+        "patchstack_eligible": "needs_reassessment"
+      }
+    }
+  ]
+}

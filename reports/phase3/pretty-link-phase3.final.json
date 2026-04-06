@@ -2,28 +2,35 @@
   "plugin_slug": "pretty-link",
   "phase1_summary": {
     "entry_points": 69,
-    "anomalies": 43,
-    "sources": 689,
-    "sinks": 779
+    "anomalies": 55,
+    "sources": 702,
+    "sinks": 839
   },
   "phase2_summary": {
     "total": 64,
     "tp": 0,
-    "fp": 63,
-    "review": 1
+    "fp": 64,
+    "review": 0
   },
   "phase3_summary": {
     "confirmed": 0,
+    "uncertain": 0,
+    "risk_note": 0,
+    "rejected": 64
+  },
+  "phase3_summary_legacy": {
+    "confirmed": 0,
     "plausible": 0,
-    "uncertain": 1,
-    "accepted_fp": 63,
+    "uncertain": 0,
+    "accepted_fp": 64,
     "likely_hallucination": 0
   },
   "validated_findings": [
     {
       "finding_id": "agent-a2-f001",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_for_links",
       "entry_point_exact": true,
@@ -41,12 +48,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliAppController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "agent-a2-f002",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
       "entry_point_exact": true,
@@ -64,12 +78,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliStripeConnectController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "agent-a2-f003",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_stripe_prices",
       "entry_point_exact": true,
@@ -87,12 +108,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliStripeController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "agent-a2-f004",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_customer_portal_notice",
       "entry_point_exact": true,
@@ -110,12 +138,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliStripeController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "agent-a2-f005",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_review_prompt",
       "entry_point_exact": true,
@@ -133,12 +168,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliReviewNoticeController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "agent-a2-f006",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_upgrade_header",
       "entry_point_exact": true,
@@ -156,12 +198,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliAppController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "agent-a2-f007",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_create_pretty_link",
       "entry_point_exact": true,
@@ -179,12 +228,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliPostsController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "agent-a2-f008",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_quick_create",
       "entry_point_exact": true,
@@ -202,12 +258,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliLinksController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "agent-a2-f009",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_install",
       "entry_point_exact": true,
@@ -225,12 +288,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliAddonsController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "agent-a2-f010",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_notice",
       "entry_point_exact": true,
@@ -248,12 +318,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliAppController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "agent-a2-f011",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_onboarding_finish",
       "entry_point_exact": true,
@@ -271,12 +348,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliOnboardingController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "agent-a2-f012",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_install_license_edition",
       "entry_point_exact": true,
@@ -294,12 +378,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliUpdateController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "agent-a2-f013",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_plp_edge_updates",
       "entry_point_exact": true,
@@ -317,12 +408,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliUpdateController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "agent-a2-f014",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_mosh_addon_install",
       "entry_point_exact": true,
@@ -340,12 +438,19 @@
         "fp_evidence_file_exists": "exists: vendor-prefixed/caseproof/ground-level-mothership/Manager/AddonsManager.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "agent-a5-fp-001",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_init_init",
       "entry_point_exact": true,
@@ -363,12 +468,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliAuthenticatorController.php",
         "fp_code_evidence": "sink evidence ok; source location provided but source token not found (verify)"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": false,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack ineligible or intentionally withheld"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "agent-a5-fp-004",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_init_init",
       "entry_point_exact": true,
@@ -386,12 +498,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliAuthenticatorController.php",
         "fp_code_evidence": "sink evidence validated (and source evidence checked when available)"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": false,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack ineligible or intentionally withheld"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "agent-a5-fp-002",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_init_init",
       "entry_point_exact": true,
@@ -409,12 +528,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliAuthenticatorController.php",
         "fp_code_evidence": "sink evidence ok; source location provided but source token not found (verify)"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": false,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack ineligible or intentionally withheld"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "agent-a5-fp-003",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_init_init",
       "entry_point_exact": true,
@@ -432,12 +558,19 @@
         "fp_evidence_file_exists": "exists: app/lib/PrliStripeConnect.php",
         "fp_code_evidence": "sink evidence ok; source location provided but source token not found (verify)"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": false,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack ineligible or intentionally withheld"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "agent-a5-fp-005",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_init_init",
       "entry_point_exact": true,
@@ -455,12 +588,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliAuthenticatorController.php",
         "fp_code_evidence": "sink evidence validated (and source evidence checked when available)"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": false,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack ineligible or intentionally withheld"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "agent-a5-fp-006",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_init_init",
       "entry_point_exact": true,
@@ -478,12 +618,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliClicksController.php",
         "fp_code_evidence": "sink evidence validated (and source evidence checked when available)"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": false,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack ineligible or intentionally withheld"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_1",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_admin_init_admin_init",
       "entry_point_exact": true,
@@ -501,12 +648,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliStripeConnectController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_2",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
       "entry_point_exact": true,
@@ -524,12 +678,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliStripeConnectController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_3",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_disconnect",
       "entry_point_exact": true,
@@ -547,12 +708,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliStripeConnectController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_4",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_customer_portal_notice",
       "entry_point_exact": true,
@@ -570,12 +738,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliStripeController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_5",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_review_prompt",
       "entry_point_exact": true,
@@ -593,12 +768,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliReviewNoticeController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_7",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_for_links",
       "entry_point_exact": true,
@@ -616,12 +798,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliPostsController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_10",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_upgrade_header",
       "entry_point_exact": true,
@@ -639,12 +828,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliAppController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_11",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_notice",
       "entry_point_exact": true,
@@ -662,12 +858,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliAppController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_12",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_onboarding_finish",
       "entry_point_exact": true,
@@ -685,12 +888,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliOnboardingController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_15",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
       "entry_point_exact": true,
@@ -708,12 +918,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliStripeConnectController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_16",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_disconnect",
       "entry_point_exact": true,
@@ -731,12 +948,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliStripeConnectController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_17",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_customer_portal_notice",
       "entry_point_exact": true,
@@ -754,12 +978,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliStripeController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_18",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_review_prompt",
       "entry_point_exact": true,
@@ -777,12 +1008,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliReviewNoticeController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_19",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_pl_dismiss_upgrade_header",
       "entry_point_exact": true,
@@ -800,12 +1038,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliAppController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_20",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_notice",
       "entry_point_exact": true,
@@ -823,12 +1068,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliAppController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_21",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_onboarding_finish",
       "entry_point_exact": true,
@@ -846,12 +1098,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliOnboardingController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_22",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_search_stripe_prices",
       "entry_point_exact": true,
@@ -869,12 +1128,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliStripeController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_23",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_add_product",
       "entry_point_exact": true,
@@ -892,12 +1158,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliStripeController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_24",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_customer_portal_notice",
       "entry_point_exact": true,
@@ -915,12 +1188,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliStripeController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_25",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_tinymce_validate_slug",
       "entry_point_exact": true,
@@ -938,12 +1218,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliPostsController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_26",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": null,
       "entry_point_exact": false,
@@ -961,12 +1248,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliPostsController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_27",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": null,
       "entry_point_exact": false,
@@ -984,12 +1278,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliLinksController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_28",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_quick_create",
       "entry_point_exact": true,
@@ -1007,12 +1308,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliLinksController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_29",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_activate",
       "entry_point_exact": true,
@@ -1030,12 +1338,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliAddonsController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_30",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_deactivate",
       "entry_point_exact": true,
@@ -1053,12 +1368,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliAddonsController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_31",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_addon_install",
       "entry_point_exact": true,
@@ -1076,12 +1398,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliAddonsController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_32",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_notice",
       "entry_point_exact": true,
@@ -1099,12 +1428,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliAppController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_33",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_daily_notice",
       "entry_point_exact": true,
@@ -1122,12 +1458,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliAppController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_34",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_dismiss_monthly_notice",
       "entry_point_exact": true,
@@ -1145,12 +1488,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliAppController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_35",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_activate_license",
       "entry_point_exact": true,
@@ -1168,12 +1518,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliUpdateController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_36",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_deactivate_license",
       "entry_point_exact": true,
@@ -1191,12 +1548,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliUpdateController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_37",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_install_license_edition",
       "entry_point_exact": true,
@@ -1214,12 +1578,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliUpdateController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_38",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_update_creds",
       "entry_point_exact": true,
@@ -1237,12 +1608,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliStripeConnectController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_39",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_refresh",
       "entry_point_exact": true,
@@ -1260,12 +1638,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliStripeConnectController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_40",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_ajax_priv_wp_ajax_prli_stripe_connect_disconnect",
       "entry_point_exact": true,
@@ -1283,12 +1668,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliStripeConnectController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "anom_41",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "ep_init_init",
       "entry_point_exact": true,
@@ -1306,70 +1698,49 @@
         "fp_evidence_file_exists": "exists: app/lib/PrliStripeConnect.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "agent-d-unresolved-001",
-      "verdict": "REVIEW",
-      "validation_status": "UNCERTAIN",
-      "confidence_score": 0.6695,
+      "verdict": "FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
+      "confidence_score": 1.0,
       "resolved_entry_point_id": null,
       "entry_point_exact": false,
       "suggested_entry_point_id": null,
       "entry_point_resolution_notes": "no EP resolved",
       "checks": {
-        "file_exists": true,
-        "path_reachable": false,
-        "auth_consistent": true,
-        "guard_consistent": true,
-        "sanitizer_claim": true,
-        "semgrep_corroborates": true,
-        "psalm_corroborates": false,
-        "code_evidence": true,
-        "reasoning_quality": false,
-        "cvss_plausible": true,
-        "patchstack_eligible": true,
-        "no_hallucination": true
+        "fp_code_evidence": 0.0
       },
       "check_scores": {
-        "file_exists": 1.0,
-        "path_reachable": 0.45,
-        "auth_consistent": 0.6,
-        "guard_consistent": 0.6,
-        "sanitizer_claim": 0.8,
-        "semgrep_corroborates": 0.5,
-        "psalm_corroborates": null,
-        "code_evidence": 1.0,
-        "reasoning_quality": 0.0,
-        "cvss_plausible": 0.8,
-        "patchstack_eligible": 0.8,
-        "no_hallucination": 1.0
+        "fp_code_evidence": 0.0
       },
       "check_notes": {
-        "file_exists": "exists: app/lib/PrliAddonUpdates.php",
-        "path_reachable": "no entry point resolved (missing/invalid entry_point_id + fuzzy resolution failed)",
-        "auth_consistent": "EP unresolved \u2192 cannot disprove auth claim",
-        "guard_consistent": "EP unresolved \u2192 cannot validate guards precisely",
-        "sanitizer_claim": "sanitizer claim not contradicted",
-        "semgrep_corroborates": "Semgrep has data, but no corroborating hit near claimed location",
-        "psalm_corroborates": "Psalm SARIF not available/valid (N/A)",
-        "code_evidence": "sink evidence validated (and source evidence checked when available)",
-        "reasoning_quality": "evidence-binding + refute-first heuristics",
-        "cvss_plausible": "cvss_vector omitted (allowed)",
-        "patchstack_eligible": "patchstack_eligible not provided (allowed)",
-        "no_hallucination": "no hallucination signals",
-        "_confidence": "weighted checks used: file_exists, path_reachable, auth_consistent, guard_consistent, sanitizer_claim, semgrep_corroborates, code_evidence, reasoning_quality, cvss_plausible, patchstack_eligible, no_hallucination"
+        "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
       "issues": [
-        "insufficient_evidence_to_confirm",
-        "path_reachability_weak",
-        "reasoning_quality_low"
-      ]
+        "fp_missing_reason: FP finding has no fp_reason \u2014 evidence-free dismissal",
+        "fp_missing_evidence: FP finding has no fp_evidence object"
+      ],
+      "patchstack_eligible": null,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack eligibility not determined"
+      },
+      "review_final_state": "REJECTED",
+      "reopening_condition": "Reopen only if the analyzed codebase gains a real instantiation path for PrliAddonUpdates or another concrete runtime source that binds $main_file to attacker-influenced input."
     },
     {
       "finding_id": "agent-d-fp-002",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "resolved_dynamic:ba175a7ef01df93a1b1c51a9ed9a28a69d63b592",
       "entry_point_exact": true,
@@ -1387,12 +1758,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliLinksController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": false,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack ineligible or intentionally withheld"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "agent-d-fp-003",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "resolved_dynamic:7a6c3356d249c53a5800d04c9105eb4df950dcc7",
       "entry_point_exact": true,
@@ -1410,12 +1788,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliLinksController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": false,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack ineligible or intentionally withheld"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "agent-d-fp-004",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "resolved_dynamic:c3ea7794c1b9cc4378f2e9b4b9438a9988e98467",
       "entry_point_exact": true,
@@ -1433,12 +1818,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliLinksController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": false,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack ineligible or intentionally withheld"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "agent-d-fp-005",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "resolved_dynamic:46b5df1b5a5a01dfd0b09f02576b28a53c2f0959",
       "entry_point_exact": true,
@@ -1456,12 +1848,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliLinksController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": false,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack ineligible or intentionally withheld"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "agent-d-fp-006",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "resolved_dynamic:e191a1c9a87053c796ec39fba5b2a217d2c18671",
       "entry_point_exact": true,
@@ -1479,12 +1878,19 @@
         "fp_evidence_file_exists": "exists: app/controllers/PrliAppController.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": false,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack ineligible or intentionally withheld"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "agent-d-fp-007",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "resolved_dynamic:ff47a18053962bd4a6dad0483d9a7c818ea3506e",
       "entry_point_exact": true,
@@ -1502,12 +1908,19 @@
         "fp_evidence_file_exists": "exists: vendor-prefixed/caseproof/ground-level-mothership/Manager/LicenseManager.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": false,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack ineligible or intentionally withheld"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     },
     {
       "finding_id": "agent-d-fp-008",
       "verdict": "FP",
-      "validation_status": "ACCEPTED_FP",
+      "validation_status": "REJECTED",
+      "legacy_validation_status": "ACCEPTED_FP",
       "confidence_score": 1.0,
       "resolved_entry_point_id": "resolved_dynamic:b236fdd07ca2f86085170ae978dc2f6d376a2d5d",
       "entry_point_exact": true,
@@ -1525,9 +1938,21 @@
         "fp_evidence_file_exists": "exists: vendor-prefixed/caseproof/growth-tools/src/Helper/AddonHelper.php",
         "fp_code_evidence": "missing sink_file_path/file_path or sink_line_number/line_number"
       },
-      "issues": []
+      "issues": [],
+      "patchstack_eligible": false,
+      "reportability_notes": {
+        "patchstack_eligible": "patchstack ineligible or intentionally withheld"
+      },
+      "review_final_state": null,
+      "reopening_condition": null
     }
   ],
   "actionable_findings": [],
-  "actionable_not_patchstack": []
+  "actionable_not_patchstack": [],
+  "actionable_reportability_unknown": [],
+  "reportability_summary": {
+    "confirmed_patchstack_eligible": 0,
+    "confirmed_patchstack_ineligible": 0,
+    "confirmed_patchstack_unknown": 0
+  }
 }

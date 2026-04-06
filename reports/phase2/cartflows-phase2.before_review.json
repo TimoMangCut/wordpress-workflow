@@ -960,7 +960,7 @@
     },
     {
       "finding_id": "cf-c-anom_5",
-      "verdict": "TP",
+      "verdict": "REVIEW",
       "vuln_type": "missing_capability",
       "cwe_id": "CWE-862",
       "severity": "critical",
@@ -983,7 +983,8 @@
       "remediation": "Add current_user_can() check at the start of upload_checkout_file(). Evaluate whether unauthenticated file upload is an intentional design requirement; if so, add strict file type, size, and rate-limiting controls.",
       "source_agents": [
         "agent-c"
-      ]
+      ],
+      "phase3_review_verdict_reason": "This finding targets ep_ajax_priv_wp_ajax_wcf_upload_checkout_file (the authenticated hook at checkout-ajax.php:57) but claims auth_required:none. WordPress fires wp_ajax_ hooks only for authenticated users; unauthenticated calls are routed to wp_ajax_nopriv_ hooks. The core vulnerability claim \u2014 missing capability check in upload_checkout_file() \u2014 is real (confirmed in source) but already covered by agent-a2-f22-upload-checkout-file with the same code references. This finding's auth claim is factually wrong for the named entry point, and its severity rating of 'critical' is not warranted for media-only uploads (master allowlist at helper.php:1934 restricts to jpg/jpeg/png/gif/webp/ico/pdf/mp3/m4a/wav/mp4/m4v/mov; PHP is blocked)."
     },
     {
       "finding_id": "cf-c-anom_6",
@@ -1774,7 +1775,7 @@
     },
     {
       "finding_id": "cf-c-anom_35",
-      "verdict": "TP",
+      "verdict": "REVIEW",
       "vuln_type": "nopriv_sensitive_op_missing_capability",
       "cwe_id": "CWE-862",
       "severity": "critical",
@@ -1799,7 +1800,8 @@
       "remediation": "Add current_user_can() check before processing the file upload, or require authentication by removing the wp_ajax_nopriv_ hook registration.",
       "source_agents": [
         "agent-c"
-      ]
+      ],
+      "phase3_review_verdict_reason": "The finding contains two material evidence errors: (1) the claimed sink line 325 is not wp_handle_upload \u2014 line 325 is wp_send_json_error() for a blocked file type; wp_handle_upload is called at line 425 inside move_uploaded_file(); (2) the PoC uses the wrong file field name 'wcf_upload_file' \u2014 the actual field is 'wcf_checkout_file' (checkout-ajax.php:301, :311). Additionally, the claim that .html, .svg, and .xml files can be uploaded is false: the master allowlist at classes/class-cartflows-helper.php:1934 restricts to jpg/jpeg/png/gif/webp/ico/pdf/mp3/m4a/wav/mp4/m4v/mov. The underlying observation (no capability check on the nopriv handler) is correct but already fully addressed by cartflows-a1-001 with accurate code references."
     },
     {
       "finding_id": "cf-c-anom_36",
@@ -2011,7 +2013,7 @@
   },
   "postprocess": {
     "phase3_review_applied": {
-      "applied_edits": 0
+      "applied_edits": 2
     }
   }
 }

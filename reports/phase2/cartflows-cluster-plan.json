@@ -1,0 +1,43 @@
+{
+  "plugin_slug": "cartflows",
+  "cluster_strategy": "cross_bundle_cluster_v1",
+  "generated_from": "reports/phase2/cartflows-phase2.json",
+  "total_input_findings": 77,
+  "total_active_findings": 6,
+  "total_clusters": 1,
+  "recommended_models": {
+    "synthesizer": {
+      "provider": "codex",
+      "model": "gpt-5.4"
+    },
+    "challenger": {
+      "provider": "claude",
+      "model": "claude-sonnet-4.6"
+    }
+  },
+  "clusters": [
+    {
+      "cluster_id": "cluster-c01",
+      "bug_family": "file_ops",
+      "auth_boundary": "none",
+      "member_count": 6,
+      "source_agents": [
+        "agent-a1",
+        "agent-a2",
+        "agent-a4",
+        "agent-c"
+      ],
+      "entry_point_ids": [
+        "ep_ajax_nopriv_wp_ajax_nopriv_wcf_check_email_exists",
+        "ep_ajax_nopriv_wp_ajax_nopriv_wcf_upload_checkout_file",
+        "ep_ajax_priv_wp_ajax_wcf_upload_checkout_file",
+        "ep_block_wcfb_checkout_form"
+      ],
+      "priority_score": 59,
+      "path": "reports/phase2/cartflows-cluster-c01.json",
+      "input_path": "reports/phase2/cartflows-cluster-c01.input.json",
+      "pack_path": "reports/phase2/cartflows-cluster-c01.pack.json"
+    }
+  ],
+  "uncovered_worker_agents": []
+}

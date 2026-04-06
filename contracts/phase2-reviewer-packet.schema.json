@@ -1,0 +1,198 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "phase2-reviewer-packet.schema.json",
+  "version": "1.0.0",
+  "title": "Phase 2 Reviewer Packet Schema",
+  "description": "Claim-by-claim review packet for a single Phase 2 finding.",
+  "type": "object",
+  "required": [
+    "packet_id",
+    "parent_finding_id",
+    "finding_id",
+    "verdict",
+    "vuln_type",
+    "auth_required",
+    "confidence",
+    "claimed_impact",
+    "worker_context",
+    "review_focus",
+    "scope_policy",
+    "anchors",
+    "primary_files",
+    "primary_snippets",
+    "optional_files",
+    "optional_snippets",
+    "review_questions"
+  ],
+  "properties": {
+    "packet_id": { "type": "string" },
+    "parent_finding_id": { "type": "string" },
+    "packet_kind": { "type": ["string", "null"] },
+    "focus_anchor": { "type": ["string", "null"] },
+    "finding_id": { "type": "string" },
+    "verdict": { "type": "string" },
+    "vuln_type": { "type": "string" },
+    "severity": { "type": ["string", "null"] },
+    "auth_required": { "type": ["string", "null"] },
+    "confidence": { "type": ["number", "null"] },
+    "entry_point_id": { "type": ["string", "null"] },
+    "patchstack_eligible": { "type": ["boolean", "null"] },
+    "claimed_impact": { "type": ["string", "null"] },
+    "worker_context": {
+      "type": "object",
+      "required": ["reasoning_excerpt"],
+      "properties": {
+        "source_function": { "type": ["string", "null"] },
+        "sink_function": { "type": ["string", "null"] },
+        "fp_reason": { "type": ["string", "null"] },
+        "original_fp_reason": { "type": ["string", "null"] },
+        "reasoning_excerpt": {
+          "type": "object",
+          "properties": {
+            "hypothesis": { "type": ["string", "null"] },
+            "trace": { "type": ["string", "null"] },
+            "defenses": { "type": "array", "items": { "type": "string" } },
+            "refutation": { "type": "array", "items": { "type": "string" } },
+            "conclusion": { "type": ["string", "null"] }
+          }
+        },
+        "original_reasoning_excerpt": {
+          "type": "object",
+          "properties": {
+            "hypothesis": { "type": ["string", "null"] },
+            "trace": { "type": ["string", "null"] },
+            "defenses": { "type": "array", "items": { "type": "string" } },
+            "refutation": { "type": "array", "items": { "type": "string" } },
+            "conclusion": { "type": ["string", "null"] }
+          }
+        }
+      }
+    },
+    "review_focus": {
+      "type": "object",
+      "required": [
+        "scope_statement",
+        "sink_semantics",
+        "default_resolution_on_missing_terminal_evidence",
+        "stop_conditions",
+        "disallowed_drift",
+        "primary_scope_files",
+        "optional_scope_files",
+        "entry_point_anchor"
+      ],
+      "properties": {
+        "scope_statement": { "type": "string" },
+        "sink_semantics": {
+          "type": "string",
+          "enum": [
+            "hook_dispatch",
+            "json_response",
+            "local_output",
+            "network_side_effect",
+            "boolean_guard",
+            "state_change",
+            "unknown"
+          ]
+        },
+        "default_resolution_on_missing_terminal_evidence": { "type": "string" },
+        "stop_conditions": { "type": "array", "items": { "type": "string" } },
+        "disallowed_drift": { "type": "array", "items": { "type": "string" } },
+        "primary_scope_files": { "type": "array", "items": { "type": "string" } },
+        "optional_scope_files": { "type": "array", "items": { "type": "string" } },
+        "entry_point_anchor": { "type": ["string", "null"] }
+      }
+    },
+    "scope_policy": {
+      "type": "object",
+      "required": ["allowed_primary_files", "allowed_optional_files", "max_out_of_band_files"],
+      "properties": {
+        "allowed_primary_files": { "type": "array", "items": { "type": "string" } },
+        "allowed_optional_files": { "type": "array", "items": { "type": "string" } },
+        "max_out_of_band_files": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "anchors": {
+      "type": "object",
+      "required": [
+        "entry_point_anchor",
+        "source_anchor",
+        "sink_anchor",
+        "review_anchor_candidates"
+      ],
+      "properties": {
+        "entry_point_anchor": { "type": ["string", "null"] },
+        "source_anchor": { "type": "string" },
+        "sink_anchor": { "type": "string" },
+        "review_anchor_candidates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["kind", "anchor"],
+            "properties": {
+              "kind": { "type": "string" },
+              "anchor": { "type": "string" },
+              "note": { "type": ["string", "null"] }
+            }
+          }
+        }
+      }
+    },
+    "primary_files": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "primary_snippets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["file", "anchor", "focus_line", "line_start", "line_end", "kind", "code"],
+        "properties": {
+          "file": { "type": "string" },
+          "anchor": { "type": "string" },
+          "focus_line": { "type": "integer", "minimum": 1 },
+          "line_start": { "type": "integer", "minimum": 1 },
+          "line_end": { "type": "integer", "minimum": 1 },
+          "kind": { "type": "string" },
+          "code": { "type": "string" }
+        }
+      }
+    },
+    "optional_files": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "optional_snippets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["file", "anchor", "focus_line", "line_start", "line_end", "kind", "code"],
+        "properties": {
+          "file": { "type": "string" },
+          "anchor": { "type": "string" },
+          "focus_line": { "type": "integer", "minimum": 1 },
+          "line_start": { "type": "integer", "minimum": 1 },
+          "line_end": { "type": "integer", "minimum": 1 },
+          "kind": { "type": "string" },
+          "code": { "type": "string" }
+        }
+      }
+    },
+    "review_questions": {
+      "type": "object",
+      "required": [
+        "reachability",
+        "authorization",
+        "dataflow",
+        "impact",
+        "missing_evidence"
+      ],
+      "properties": {
+        "reachability": { "type": "string" },
+        "authorization": { "type": "string" },
+        "dataflow": { "type": "string" },
+        "impact": { "type": "string" },
+        "missing_evidence": { "type": "string" }
+      }
+    }
+  }
+}

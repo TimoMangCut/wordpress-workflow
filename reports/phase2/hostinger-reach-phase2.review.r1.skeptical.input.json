@@ -1,0 +1,1598 @@
+{
+  "plugin_slug": "hostinger-reach",
+  "review_round": 1,
+  "review_mode": "skeptical",
+  "task": {
+    "role": "phase2_reviewer",
+    "goal": "Challenge the worker output with concrete counter-evidence and field corrections.",
+    "output_schema": "contracts/phase2-review-output.schema.json",
+    "output_path": "reports/phase2/hostinger-reach-phase2.review.r1.json",
+    "packet_schema": "contracts/phase2-reviewer-packet.schema.json",
+    "constraints": [
+      "Treat each finding packet as the unit of review; do not restart whole-plugin auditing.",
+      "Answer reachability, authorization, dataflow, impact, and missing-evidence questions for each packet before finalizing finding_reviews.",
+      "Start from finding_packets, worker_findings, and phase1_context before opening other artifacts.",
+      "Refute before confirm; keep objections evidence-bound with file:line anchors.",
+      "Do not rewrite the full findings set; produce critique JSON only.",
+      "Default to finding_reviews on existing findings; keep missed_findings empty unless an omission is concrete and adjacent."
+    ],
+    "max_candidates": null
+  },
+  "artifacts": {
+    "worker_output_path": "reports/phase2/hostinger-reach-phase2.worker.r1.json",
+    "ir_path": "reports/phase1/hostinger-reach-ir.json",
+    "semgrep_path": "reports/phase1/hostinger-reach-semgrep.json",
+    "psalm_path": "reports/phase1/hostinger-reach-psalm.sarif",
+    "threat_context_path": null,
+    "source_root": "plugins/hostinger-reach"
+  },
+  "worker_summary": {
+    "total_findings": 9,
+    "true_positive_count": 1,
+    "false_positive_count": 7,
+    "needs_review_count": 1,
+    "negative_findings_count": 7,
+    "overall_risk": "low",
+    "analysis_summary": "Phase 2 deep analysis of hostinger-reach v1.4.4. Three REST anomalies from IR were investigated: (1) GET /integrations with __return_true returns non-sensitive enumeration data with no secrets; (2) POST /contact with __return_true is protected by an in-handler wp_rest nonce check which, combined with the requirement that the site be connected, reduces exploitability; (3) POST /optinmonster with __return_true is similarly protected by an in-handler wp_rest nonce check. The wp_rest nonce IS generated for unauthenticated visitors on WordPress (since WP 5.3), making the nonce-only check on public REST routes a meaningful bypass opportunity but requiring the attacker to first obtain a valid nonce from a page where it is embedded. For /optinmonster, the nonce is localised to every page load when the integration is active, making it effectively public. This constitutes a finding. AddFormNotice AJAX handler is missing a capability check \u2014 any authenticated user can trigger it (nonce guards are present but no role check). Semgrep-flagged XSS signals in SatisfactionSurvey and Functions.php are all FP: the code paths use boolean/server-env values that are not reflected in HTML output. WooCommerce SQL patterns are FP due to hardcoded table names. Unresolved hooks resolved to hardcoded values or admin-only contexts."
+  },
+  "worker_findings": [
+    {
+      "finding_id": "HR-001",
+      "verdict": "TP",
+      "vuln_type": "Broken Access Control \u2014 Unauthenticated REST Endpoint (subscriber contact injection via obtainable nonce)",
+      "severity": "medium",
+      "auth_required": null,
+      "confidence": 0.72,
+      "entry_point_id": "ep_rest_hostinger_reach_v1__optinmonster",
+      "source_anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:62",
+      "sink_anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:78",
+      "patchstack_eligible": true
+    },
+    {
+      "finding_id": "HR-002",
+      "verdict": "REVIEW",
+      "vuln_type": "Broken Access Control \u2014 AJAX handler missing capability check (subscriber privilege escalation via dismiss action)",
+      "severity": "low",
+      "auth_required": null,
+      "confidence": 0.55,
+      "entry_point_id": "ep_init_init",
+      "source_anchor": "src/Admin/Notices/AddFormNotice.php:43",
+      "sink_anchor": "src/Admin/Notices/AddFormNotice.php:59",
+      "patchstack_eligible": false
+    },
+    {
+      "finding_id": "HR-FP-001",
+      "verdict": "FP",
+      "vuln_type": "Broken Access Control \u2014 Public REST endpoint (GET /integrations)",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 1.0,
+      "entry_point_id": "ep_rest__integrations",
+      "source_anchor": "src/Api/Routes/IntegrationsRoutes.php:21",
+      "sink_anchor": "src/Api/Handlers/IntegrationsApiHandler.php:65",
+      "patchstack_eligible": false
+    },
+    {
+      "finding_id": "HR-FP-002",
+      "verdict": "FP",
+      "vuln_type": "Broken Access Control \u2014 Public REST endpoint (POST /contact)",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 0.85,
+      "entry_point_id": "ep_rest__contact",
+      "source_anchor": "src/Api/Routes/ReachRoutes.php:27",
+      "sink_anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+      "patchstack_eligible": false
+    },
+    {
+      "finding_id": "HR-FP-003",
+      "verdict": "FP",
+      "vuln_type": "XSS \u2014 SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI']",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 1.0,
+      "entry_point_id": "ep_init_init",
+      "source_anchor": "src/Admin/Surveys/SatisfactionSurvey.php:51",
+      "sink_anchor": "src/Admin/Surveys/SatisfactionSurvey.php:51",
+      "patchstack_eligible": false
+    },
+    {
+      "finding_id": "HR-FP-004",
+      "verdict": "FP",
+      "vuln_type": "XSS \u2014 Functions.php is_hostinger_user()/is_staging() read unescaped server vars",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 1.0,
+      "entry_point_id": "ep_init_init",
+      "source_anchor": "src/Functions.php:119",
+      "sink_anchor": "src/Functions.php:123",
+      "patchstack_eligible": false
+    },
+    {
+      "finding_id": "HR-FP-005",
+      "verdict": "FP",
+      "vuln_type": "Privilege Escalation via Option Update \u2014 POST /integrations saves unsanitized input to options",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 1.0,
+      "entry_point_id": "ep_rest__integrations",
+      "source_anchor": "src/Api/Routes/IntegrationsRoutes.php:31",
+      "sink_anchor": "src/Api/Handlers/IntegrationsApiHandler.php:210",
+      "patchstack_eligible": false
+    },
+    {
+      "finding_id": "HR-FP-006",
+      "verdict": "FP",
+      "vuln_type": "SQL Injection \u2014 WooCommerce get_contacts() uses interpolated table name",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 1.0,
+      "entry_point_id": "ep_rest__import___P_integration__a_z0_9____",
+      "source_anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:217",
+      "sink_anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:248",
+      "patchstack_eligible": false
+    },
+    {
+      "finding_id": "HR-FP-007",
+      "verdict": "FP",
+      "vuln_type": "XSS \u2014 Multiple semgrep-flagged echo-without-escape in handler/integration files",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 1.0,
+      "entry_point_id": "ep_rest_api_init_rest_api_init",
+      "source_anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+      "sink_anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+      "patchstack_eligible": false
+    }
+  ],
+  "finding_packets": [
+    {
+      "finding_id": "HR-001",
+      "verdict": "TP",
+      "vuln_type": "Broken Access Control \u2014 Unauthenticated REST Endpoint (subscriber contact injection via obtainable nonce)",
+      "severity": "medium",
+      "auth_required": null,
+      "confidence": 0.72,
+      "entry_point_id": "ep_rest_hostinger_reach_v1__optinmonster",
+      "patchstack_eligible": true,
+      "claimed_impact": "Worker claims Broken Access Control \u2014 Unauthenticated REST Endpoint (subscriber contact injection via obtainable nonce) is materially exploitable with auth boundary `unknown` and impact reachable at src/Integrations/OptInMonster/OptInMonsterIntegration.php:78.",
+      "anchors": {
+        "entry_point_anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:214",
+        "source_anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:62",
+        "sink_anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:78",
+        "review_anchor_candidates": [
+          {
+            "kind": "entry_point",
+            "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:214",
+            "note": "hostinger-reach/v1/optinmonster"
+          },
+          {
+            "kind": "anomaly",
+            "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:214",
+            "note": "rest_return_true"
+          }
+        ]
+      },
+      "primary_files": [
+        "src/Integrations/OptInMonster/OptInMonsterIntegration.php"
+      ],
+      "primary_snippets": [
+        {
+          "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+          "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:62",
+          "focus_line": 62,
+          "line_start": 56,
+          "line_end": 68,
+          "kind": "finding_source",
+          "code": "    56\t                'icon'           => 'https://ps.w.org/optinmonster/assets/icon-256x256.png',\n    57\t                'import_enabled' => true,\n    58\t            )\n    59\t        );\n    60\t    }\n    61\t\n    62\t    public function submit_optinmonster( WP_REST_Request $request ): WP_REST_Response {\n    63\t        if ( ! $this->is_authorized( $request ) ) {\n    64\t            return $this->handle_response( 403, array( 'errors' => 'You cannot perform this action' ) );\n    65\t        }\n    66\t\n    67\t        try {\n    68\t            $data    = json_decode( $request->get_body() ?? '', true );"
+        },
+        {
+          "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+          "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:78",
+          "focus_line": 78,
+          "line_start": 72,
+          "line_end": 84,
+          "kind": "finding_sink",
+          "code": "    72\t            }\n    73\t            $email = $this->find_email( $data['fields'] ?? array() );\n    74\t            if ( $email ) {\n    75\t                $campaign_name = $data['tags']['campaign_name'] ?? '';\n    76\t                $form_name     = $data['tags']['form_name'] ?? '';\n    77\t                $group         = $campaign_name . ' - ' . $form_name;\n    78\t                do_action(\n    79\t                    'hostinger_reach_submit',\n    80\t                    array(\n    81\t                        'email'    => $email,\n    82\t                        'group'    => empty( $group ) ? self::INTEGRATION_NAME : $group,\n    83\t                        'metadata' => array(\n    84\t                            'plugin' => self::INTEGRATION_NAME,"
+        },
+        {
+          "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+          "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:214",
+          "focus_line": 214,
+          "line_start": 208,
+          "line_end": 220,
+          "kind": "entry_point",
+          "code": "   208\t    }\n   209\t\n   210\t    private function register_routes(): void {\n   211\t        add_action(\n   212\t            'rest_api_init',\n   213\t            function (): void {\n   214\t                register_rest_route(\n   215\t                    'hostinger-reach/v1',\n   216\t                    '/optinmonster',\n   217\t                    array(\n   218\t                        'methods'             => 'POST',\n   219\t                        'callback'            => array( $this, 'submit_optinmonster' ),\n   220\t                        'permission_callback' => '__return_true',"
+        }
+      ],
+      "optional_files": [
+        "src/Integrations/OptInMonster/OptInMonsterIntegration.php"
+      ],
+      "optional_snippets": [
+        {
+          "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+          "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:214",
+          "focus_line": 214,
+          "line_start": 208,
+          "line_end": 220,
+          "kind": "entry_point",
+          "code": "   208\t    }\n   209\t\n   210\t    private function register_routes(): void {\n   211\t        add_action(\n   212\t            'rest_api_init',\n   213\t            function (): void {\n   214\t                register_rest_route(\n   215\t                    'hostinger-reach/v1',\n   216\t                    '/optinmonster',\n   217\t                    array(\n   218\t                        'methods'             => 'POST',\n   219\t                        'callback'            => array( $this, 'submit_optinmonster' ),\n   220\t                        'permission_callback' => '__return_true',"
+        }
+      ],
+      "review_questions": {
+        "reachability": "Can an attacker really reach the claimed path from src/Integrations/OptInMonster/OptInMonsterIntegration.php:214 without hidden preconditions or workflow assumptions?",
+        "authorization": "Does the path have a stronger guard than the worker claims, including capability, permission_callback, nonce semantics, or trust-boundary limits for auth `unknown`?",
+        "dataflow": "Does attacker-controlled data actually flow from src/Integrations/OptInMonster/OptInMonsterIntegration.php:62 to src/Integrations/OptInMonster/OptInMonsterIntegration.php:78 for the claimed Broken Access Control \u2014 Unauthenticated REST Endpoint (subscriber contact injection via obtainable nonce), without a refuting guard, sanitizer, or broken hop?",
+        "impact": "Assuming the path reaches src/Integrations/OptInMonster/OptInMonsterIntegration.php:78, is the worker's claimed impact concrete and not overstated for this plugin context?",
+        "missing_evidence": "What exact file:line evidence is still missing before this finding can be kept, downgraded, or retracted with confidence?"
+      }
+    },
+    {
+      "finding_id": "HR-002",
+      "verdict": "REVIEW",
+      "vuln_type": "Broken Access Control \u2014 AJAX handler missing capability check (subscriber privilege escalation via dismiss action)",
+      "severity": "low",
+      "auth_required": null,
+      "confidence": 0.55,
+      "entry_point_id": "ep_init_init",
+      "patchstack_eligible": false,
+      "claimed_impact": "Worker claims Broken Access Control \u2014 AJAX handler missing capability check (subscriber privilege escalation via dismiss action) is materially exploitable with auth boundary `unknown` and impact reachable at src/Admin/Notices/AddFormNotice.php:59.",
+      "anchors": {
+        "entry_point_anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+        "source_anchor": "src/Admin/Notices/AddFormNotice.php:43",
+        "sink_anchor": "src/Admin/Notices/AddFormNotice.php:59",
+        "review_anchor_candidates": [
+          {
+            "kind": "entry_point",
+            "anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+            "note": "init"
+          },
+          {
+            "kind": "unresolved_hook",
+            "anchor": "src/Admin/Notices/AddFormNotice.php:28",
+            "note": "add_action"
+          }
+        ]
+      },
+      "primary_files": [
+        "src/Admin/Notices/AddFormNotice.php",
+        "src/Api/Webhooks/Handlers/WebhookHandler.php"
+      ],
+      "primary_snippets": [
+        {
+          "file": "src/Admin/Notices/AddFormNotice.php",
+          "anchor": "src/Admin/Notices/AddFormNotice.php:43",
+          "focus_line": 43,
+          "line_start": 37,
+          "line_end": 49,
+          "kind": "finding_source",
+          "code": "    37\t    public function enqueue_admin_assets(): void {\n    38\t        if ( $this->should_render() ) {\n    39\t            $this->enqueue_notice_assets();\n    40\t        }\n    41\t    }\n    42\t\n    43\t    public function handle_ajax_action(): void {\n    44\t        check_ajax_referer( self::NOTICE_ACTION, 'nonce' );\n    45\t        $choice = sanitize_text_field( $_POST['choice'] );\n    46\t\n    47\t        switch ( $choice ) {\n    48\t            case 'success':\n    49\t                $this->handle_success();"
+        },
+        {
+          "file": "src/Admin/Notices/AddFormNotice.php",
+          "anchor": "src/Admin/Notices/AddFormNotice.php:59",
+          "focus_line": 59,
+          "line_start": 53,
+          "line_end": 65,
+          "kind": "finding_sink",
+          "code": "    53\t                $this->handle_dismiss();\n    54\t                break;\n    55\t        }\n    56\t    }\n    57\t\n    58\t    private function handle_dismiss(): void {\n    59\t        set_transient( self::NOTICE_DISMISS_TRANSIENT, true, WEEK_IN_SECONDS );\n    60\t        wp_send_json_success();\n    61\t    }\n    62\t\n    63\t    private function handle_success(): void {\n    64\t        wp_send_json_success(\n    65\t            array("
+        },
+        {
+          "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
+          "anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+          "focus_line": 19,
+          "line_start": 13,
+          "line_end": 25,
+          "kind": "entry_point",
+          "code": "    13\t    public function __construct( ReachApiHandler $reach_api_handler, FormRepository $form_repository ) {\n    14\t        $this->reach_api_handler = $reach_api_handler;\n    15\t        $this->form_repository   = $form_repository;\n    16\t    }\n    17\t\n    18\t    public function init(): void {\n    19\t        add_action( 'init', array( $this, 'init_hooks' ) );\n    20\t    }\n    21\t\n    22\t    public function is_enabled(): bool {\n    23\t        return $this->reach_api_handler->is_connected() && $this->is_automation_active();\n    24\t    }\n    25\t"
+        }
+      ],
+      "optional_files": [
+        "src/Admin/Notices/AddFormNotice.php",
+        "src/Api/Webhooks/Handlers/WebhookHandler.php"
+      ],
+      "optional_snippets": [
+        {
+          "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
+          "anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+          "focus_line": 19,
+          "line_start": 13,
+          "line_end": 25,
+          "kind": "entry_point",
+          "code": "    13\t    public function __construct( ReachApiHandler $reach_api_handler, FormRepository $form_repository ) {\n    14\t        $this->reach_api_handler = $reach_api_handler;\n    15\t        $this->form_repository   = $form_repository;\n    16\t    }\n    17\t\n    18\t    public function init(): void {\n    19\t        add_action( 'init', array( $this, 'init_hooks' ) );\n    20\t    }\n    21\t\n    22\t    public function is_enabled(): bool {\n    23\t        return $this->reach_api_handler->is_connected() && $this->is_automation_active();\n    24\t    }\n    25\t"
+        },
+        {
+          "file": "src/Admin/Notices/AddFormNotice.php",
+          "anchor": "src/Admin/Notices/AddFormNotice.php:28",
+          "focus_line": 28,
+          "line_start": 22,
+          "line_end": 34,
+          "kind": "unresolved_hook",
+          "code": "    22\t        $this->functions         = $functions;\n    23\t    }\n    24\t\n    25\t    public function init(): void {\n    26\t        add_action( 'admin_notices', array( $this, 'display_notice' ) );\n    27\t        add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );\n    28\t        add_action( 'wp_ajax_' . self::NOTICE_ACTION, array( $this, 'handle_ajax_action' ) );\n    29\t    }\n    30\t\n    31\t    public function display_notice(): void {\n    32\t        if ( $this->should_render() ) {\n    33\t            $this->render();\n    34\t        }"
+        }
+      ],
+      "review_questions": {
+        "reachability": "Can an attacker really reach the claimed path from src/Api/Webhooks/Handlers/WebhookHandler.php:19 without hidden preconditions or workflow assumptions?",
+        "authorization": "Does the path have a stronger guard than the worker claims, including capability, permission_callback, nonce semantics, or trust-boundary limits for auth `unknown`?",
+        "dataflow": "Does attacker-controlled data actually flow from src/Admin/Notices/AddFormNotice.php:43 to src/Admin/Notices/AddFormNotice.php:59 for the claimed Broken Access Control \u2014 AJAX handler missing capability check (subscriber privilege escalation via dismiss action), without a refuting guard, sanitizer, or broken hop?",
+        "impact": "Assuming the path reaches src/Admin/Notices/AddFormNotice.php:59, is the worker's claimed impact concrete and not overstated for this plugin context?",
+        "missing_evidence": "What exact file:line evidence is still missing before this finding can be kept, downgraded, or retracted with confidence?"
+      }
+    },
+    {
+      "finding_id": "HR-FP-001",
+      "verdict": "FP",
+      "vuln_type": "Broken Access Control \u2014 Public REST endpoint (GET /integrations)",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 1.0,
+      "entry_point_id": "ep_rest__integrations",
+      "patchstack_eligible": false,
+      "claimed_impact": "Worker claims Broken Access Control \u2014 Public REST endpoint (GET /integrations) is materially exploitable with auth boundary `unknown` and impact reachable at src/Api/Handlers/IntegrationsApiHandler.php:65.",
+      "anchors": {
+        "entry_point_anchor": "src/Api/Routes/IntegrationsRoutes.php:31",
+        "source_anchor": "src/Api/Routes/IntegrationsRoutes.php:21",
+        "sink_anchor": "src/Api/Handlers/IntegrationsApiHandler.php:65",
+        "review_anchor_candidates": [
+          {
+            "kind": "entry_point",
+            "anchor": "src/Api/Routes/IntegrationsRoutes.php:31",
+            "note": "?integrations"
+          },
+          {
+            "kind": "anomaly",
+            "anchor": "src/Api/Routes/IntegrationsRoutes.php:21",
+            "note": "rest_return_true"
+          }
+        ]
+      },
+      "primary_files": [
+        "src/Api/Handlers/IntegrationsApiHandler.php",
+        "src/Api/Routes/IntegrationsRoutes.php"
+      ],
+      "primary_snippets": [
+        {
+          "file": "src/Api/Routes/IntegrationsRoutes.php",
+          "anchor": "src/Api/Routes/IntegrationsRoutes.php:21",
+          "focus_line": 21,
+          "line_start": 15,
+          "line_end": 27,
+          "kind": "finding_source",
+          "code": "    15\t\n    16\t    public function __construct( IntegrationsApiHandler $handler ) {\n    17\t        $this->handler = $handler;\n    18\t    }\n    19\t\n    20\t    public function register_routes(): void {\n    21\t        register_rest_route(\n    22\t            HOSTINGER_REACH_PLUGIN_REST_API_BASE,\n    23\t            'integrations',\n    24\t            array(\n    25\t                'methods'             => 'GET',\n    26\t                'callback'            => array( $this->handler, 'get_integrations_handler' ),\n    27\t                'permission_callback' => '__return_true',"
+        },
+        {
+          "file": "src/Api/Handlers/IntegrationsApiHandler.php",
+          "anchor": "src/Api/Handlers/IntegrationsApiHandler.php:65",
+          "focus_line": 65,
+          "line_start": 59,
+          "line_end": 71,
+          "kind": "finding_sink",
+          "code": "    59\t    public function get_integrations_handler(): WP_REST_Response {\n    60\t        return $this->handle_response(\n    61\t            array(\n    62\t                'response' => array(\n    63\t                    'code' => 200,\n    64\t                ),\n    65\t                'body'     => wp_json_encode( $this->get_integrations_data() ),\n    66\t            )\n    67\t        );\n    68\t    }\n    69\t\n    70\t    public function post_integrations_handler( WP_REST_Request $request ): WP_REST_Response {\n    71\t        $is_active         = $request->get_param( Integration::INTEGRATION_IS_ACTIVE );"
+        },
+        {
+          "file": "src/Api/Routes/IntegrationsRoutes.php",
+          "anchor": "src/Api/Routes/IntegrationsRoutes.php:31",
+          "focus_line": 31,
+          "line_start": 25,
+          "line_end": 37,
+          "kind": "entry_point",
+          "code": "    25\t                'methods'             => 'GET',\n    26\t                'callback'            => array( $this->handler, 'get_integrations_handler' ),\n    27\t                'permission_callback' => '__return_true',\n    28\t            )\n    29\t        );\n    30\t\n    31\t        register_rest_route(\n    32\t            HOSTINGER_REACH_PLUGIN_REST_API_BASE,\n    33\t            'integrations',\n    34\t            array(\n    35\t                'methods'             => 'POST',\n    36\t                'callback'            => array( $this->handler, 'post_integrations_handler' ),\n    37\t                'permission_callback' => array( $this, 'permission_check' ),"
+        }
+      ],
+      "optional_files": [
+        "src/Api/Routes/IntegrationsRoutes.php"
+      ],
+      "optional_snippets": [
+        {
+          "file": "src/Api/Routes/IntegrationsRoutes.php",
+          "anchor": "src/Api/Routes/IntegrationsRoutes.php:31",
+          "focus_line": 31,
+          "line_start": 25,
+          "line_end": 37,
+          "kind": "entry_point",
+          "code": "    25\t                'methods'             => 'GET',\n    26\t                'callback'            => array( $this->handler, 'get_integrations_handler' ),\n    27\t                'permission_callback' => '__return_true',\n    28\t            )\n    29\t        );\n    30\t\n    31\t        register_rest_route(\n    32\t            HOSTINGER_REACH_PLUGIN_REST_API_BASE,\n    33\t            'integrations',\n    34\t            array(\n    35\t                'methods'             => 'POST',\n    36\t                'callback'            => array( $this->handler, 'post_integrations_handler' ),\n    37\t                'permission_callback' => array( $this, 'permission_check' ),"
+        },
+        {
+          "file": "src/Api/Routes/IntegrationsRoutes.php",
+          "anchor": "src/Api/Routes/IntegrationsRoutes.php:21",
+          "focus_line": 21,
+          "line_start": 15,
+          "line_end": 27,
+          "kind": "anomaly",
+          "code": "    15\t\n    16\t    public function __construct( IntegrationsApiHandler $handler ) {\n    17\t        $this->handler = $handler;\n    18\t    }\n    19\t\n    20\t    public function register_routes(): void {\n    21\t        register_rest_route(\n    22\t            HOSTINGER_REACH_PLUGIN_REST_API_BASE,\n    23\t            'integrations',\n    24\t            array(\n    25\t                'methods'             => 'GET',\n    26\t                'callback'            => array( $this->handler, 'get_integrations_handler' ),\n    27\t                'permission_callback' => '__return_true',"
+        }
+      ],
+      "review_questions": {
+        "reachability": "Can an attacker really reach the claimed path from src/Api/Routes/IntegrationsRoutes.php:31 without hidden preconditions or workflow assumptions?",
+        "authorization": "Does the path have a stronger guard than the worker claims, including capability, permission_callback, nonce semantics, or trust-boundary limits for auth `unknown`?",
+        "dataflow": "Does attacker-controlled data actually flow from src/Api/Routes/IntegrationsRoutes.php:21 to src/Api/Handlers/IntegrationsApiHandler.php:65 for the claimed Broken Access Control \u2014 Public REST endpoint (GET /integrations), without a refuting guard, sanitizer, or broken hop?",
+        "impact": "Assuming the path reaches src/Api/Handlers/IntegrationsApiHandler.php:65, is the worker's claimed impact concrete and not overstated for this plugin context?",
+        "missing_evidence": "What exact file:line evidence is still missing before this finding can be kept, downgraded, or retracted with confidence?"
+      }
+    },
+    {
+      "finding_id": "HR-FP-002",
+      "verdict": "FP",
+      "vuln_type": "Broken Access Control \u2014 Public REST endpoint (POST /contact)",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 0.85,
+      "entry_point_id": "ep_rest__contact",
+      "patchstack_eligible": false,
+      "claimed_impact": "Worker claims Broken Access Control \u2014 Public REST endpoint (POST /contact) is materially exploitable with auth boundary `unknown` and impact reachable at src/Api/Handlers/ReachApiHandler.php:152.",
+      "anchors": {
+        "entry_point_anchor": "src/Api/Routes/ReachRoutes.php:27",
+        "source_anchor": "src/Api/Routes/ReachRoutes.php:27",
+        "sink_anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+        "review_anchor_candidates": [
+          {
+            "kind": "entry_point",
+            "anchor": "src/Api/Routes/ReachRoutes.php:27",
+            "note": "?contact"
+          },
+          {
+            "kind": "anomaly",
+            "anchor": "src/Api/Routes/ReachRoutes.php:27",
+            "note": "rest_return_true"
+          }
+        ]
+      },
+      "primary_files": [
+        "src/Api/Handlers/ReachApiHandler.php",
+        "src/Api/Routes/ReachRoutes.php"
+      ],
+      "primary_snippets": [
+        {
+          "file": "src/Api/Routes/ReachRoutes.php",
+          "anchor": "src/Api/Routes/ReachRoutes.php:27",
+          "focus_line": 27,
+          "line_start": 21,
+          "line_end": 33,
+          "kind": "finding_source",
+          "code": "    21\t        $this->handler                 = $handler;\n    22\t        $this->api_key_manager         = $api_key_manager;\n    23\t        $this->contact_list_repository = $contact_list_repository;\n    24\t    }\n    25\t\n    26\t    public function register_routes(): void {\n    27\t        register_rest_route(\n    28\t            HOSTINGER_REACH_PLUGIN_REST_API_BASE,\n    29\t            'contact',\n    30\t            array(\n    31\t                'methods'             => 'POST',\n    32\t                'callback'            => array( $this->handler, 'post_contact_handler' ),\n    33\t                'permission_callback' => '__return_true',"
+        },
+        {
+          "file": "src/Api/Handlers/ReachApiHandler.php",
+          "anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+          "focus_line": 152,
+          "line_start": 146,
+          "line_end": 158,
+          "kind": "finding_sink",
+          "code": "   146\t        $surname  = $request->get_param( 'surname' );\n   147\t        $form_id  = $request->get_param( 'id' );\n   148\t        $metadata = $request->get_param( 'metadata' );\n   149\t        $tags     = $request->get_param( 'tags' );\n   150\t        $group    = apply_filters( 'hostinger_reach_get_group', $request->get_param( 'group' ), $form_id );\n   151\t\n   152\t        return $this->post_contact(\n   153\t            array(\n   154\t                'form_id'  => $form_id,\n   155\t                'group'    => $group,\n   156\t                'tags'     => $tags,\n   157\t                'email'    => $email,\n   158\t                'name'     => $name,"
+        }
+      ],
+      "optional_files": [
+        "src/Api/Routes/ReachRoutes.php"
+      ],
+      "optional_snippets": [
+        {
+          "file": "src/Api/Routes/ReachRoutes.php",
+          "anchor": "src/Api/Routes/ReachRoutes.php:27",
+          "focus_line": 27,
+          "line_start": 21,
+          "line_end": 33,
+          "kind": "entry_point",
+          "code": "    21\t        $this->handler                 = $handler;\n    22\t        $this->api_key_manager         = $api_key_manager;\n    23\t        $this->contact_list_repository = $contact_list_repository;\n    24\t    }\n    25\t\n    26\t    public function register_routes(): void {\n    27\t        register_rest_route(\n    28\t            HOSTINGER_REACH_PLUGIN_REST_API_BASE,\n    29\t            'contact',\n    30\t            array(\n    31\t                'methods'             => 'POST',\n    32\t                'callback'            => array( $this->handler, 'post_contact_handler' ),\n    33\t                'permission_callback' => '__return_true',"
+        }
+      ],
+      "review_questions": {
+        "reachability": "Can an attacker really reach the claimed path from src/Api/Routes/ReachRoutes.php:27 without hidden preconditions or workflow assumptions?",
+        "authorization": "Does the path have a stronger guard than the worker claims, including capability, permission_callback, nonce semantics, or trust-boundary limits for auth `unknown`?",
+        "dataflow": "Does attacker-controlled data actually flow from src/Api/Routes/ReachRoutes.php:27 to src/Api/Handlers/ReachApiHandler.php:152 for the claimed Broken Access Control \u2014 Public REST endpoint (POST /contact), without a refuting guard, sanitizer, or broken hop?",
+        "impact": "Assuming the path reaches src/Api/Handlers/ReachApiHandler.php:152, is the worker's claimed impact concrete and not overstated for this plugin context?",
+        "missing_evidence": "What exact file:line evidence is still missing before this finding can be kept, downgraded, or retracted with confidence?"
+      }
+    },
+    {
+      "finding_id": "HR-FP-003",
+      "verdict": "FP",
+      "vuln_type": "XSS \u2014 SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI']",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 1.0,
+      "entry_point_id": "ep_init_init",
+      "patchstack_eligible": false,
+      "claimed_impact": "Worker claims XSS \u2014 SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI'] is materially exploitable with auth boundary `unknown` and impact reachable at src/Admin/Surveys/SatisfactionSurvey.php:51.",
+      "anchors": {
+        "entry_point_anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+        "source_anchor": "src/Admin/Surveys/SatisfactionSurvey.php:51",
+        "sink_anchor": "src/Admin/Surveys/SatisfactionSurvey.php:51",
+        "review_anchor_candidates": [
+          {
+            "kind": "entry_point",
+            "anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+            "note": "init"
+          }
+        ]
+      },
+      "primary_files": [
+        "src/Admin/Surveys/SatisfactionSurvey.php",
+        "src/Api/Webhooks/Handlers/WebhookHandler.php"
+      ],
+      "primary_snippets": [
+        {
+          "file": "src/Admin/Surveys/SatisfactionSurvey.php",
+          "anchor": "src/Admin/Surveys/SatisfactionSurvey.php:51",
+          "focus_line": 51,
+          "line_start": 45,
+          "line_end": 57,
+          "kind": "finding_source",
+          "code": "    45\t        }\n    46\t\n    47\t        return ( time() - $connection_time ) >= ( 5 * self::DAY_IN_SECONDS );\n    48\t    }\n    49\t\n    50\t    protected function is_hostinger_page(): bool {\n    51\t        return str_contains( $_SERVER['REQUEST_URI'], 'hostinger' );\n    52\t    }\n    53\t\n    54\t    protected function get_review_url(): string {\n    55\t        return 'https://wordpress.org/support/plugin/hostinger-reach/reviews/#new-post';\n    56\t    }\n    57\t"
+        },
+        {
+          "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
+          "anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+          "focus_line": 19,
+          "line_start": 13,
+          "line_end": 25,
+          "kind": "entry_point",
+          "code": "    13\t    public function __construct( ReachApiHandler $reach_api_handler, FormRepository $form_repository ) {\n    14\t        $this->reach_api_handler = $reach_api_handler;\n    15\t        $this->form_repository   = $form_repository;\n    16\t    }\n    17\t\n    18\t    public function init(): void {\n    19\t        add_action( 'init', array( $this, 'init_hooks' ) );\n    20\t    }\n    21\t\n    22\t    public function is_enabled(): bool {\n    23\t        return $this->reach_api_handler->is_connected() && $this->is_automation_active();\n    24\t    }\n    25\t"
+        }
+      ],
+      "optional_files": [
+        "src/Api/Webhooks/Handlers/WebhookHandler.php"
+      ],
+      "optional_snippets": [
+        {
+          "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
+          "anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+          "focus_line": 19,
+          "line_start": 13,
+          "line_end": 25,
+          "kind": "entry_point",
+          "code": "    13\t    public function __construct( ReachApiHandler $reach_api_handler, FormRepository $form_repository ) {\n    14\t        $this->reach_api_handler = $reach_api_handler;\n    15\t        $this->form_repository   = $form_repository;\n    16\t    }\n    17\t\n    18\t    public function init(): void {\n    19\t        add_action( 'init', array( $this, 'init_hooks' ) );\n    20\t    }\n    21\t\n    22\t    public function is_enabled(): bool {\n    23\t        return $this->reach_api_handler->is_connected() && $this->is_automation_active();\n    24\t    }\n    25\t"
+        }
+      ],
+      "review_questions": {
+        "reachability": "Can an attacker really reach the claimed path from src/Api/Webhooks/Handlers/WebhookHandler.php:19 without hidden preconditions or workflow assumptions?",
+        "authorization": "Does the path have a stronger guard than the worker claims, including capability, permission_callback, nonce semantics, or trust-boundary limits for auth `unknown`?",
+        "dataflow": "Does attacker-controlled data actually flow from src/Admin/Surveys/SatisfactionSurvey.php:51 to src/Admin/Surveys/SatisfactionSurvey.php:51 for the claimed XSS \u2014 SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI'], without a refuting guard, sanitizer, or broken hop?",
+        "impact": "Assuming the path reaches src/Admin/Surveys/SatisfactionSurvey.php:51, is the worker's claimed impact concrete and not overstated for this plugin context?",
+        "missing_evidence": "What exact file:line evidence is still missing before this finding can be kept, downgraded, or retracted with confidence?"
+      }
+    },
+    {
+      "finding_id": "HR-FP-004",
+      "verdict": "FP",
+      "vuln_type": "XSS \u2014 Functions.php is_hostinger_user()/is_staging() read unescaped server vars",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 1.0,
+      "entry_point_id": "ep_init_init",
+      "patchstack_eligible": false,
+      "claimed_impact": "Worker claims XSS \u2014 Functions.php is_hostinger_user()/is_staging() read unescaped server vars is materially exploitable with auth boundary `unknown` and impact reachable at src/Functions.php:123.",
+      "anchors": {
+        "entry_point_anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+        "source_anchor": "src/Functions.php:119",
+        "sink_anchor": "src/Functions.php:123",
+        "review_anchor_candidates": [
+          {
+            "kind": "entry_point",
+            "anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+            "note": "init"
+          }
+        ]
+      },
+      "primary_files": [
+        "src/Api/Webhooks/Handlers/WebhookHandler.php",
+        "src/Functions.php"
+      ],
+      "primary_snippets": [
+        {
+          "file": "src/Functions.php",
+          "anchor": "src/Functions.php:119",
+          "focus_line": 119,
+          "line_start": 113,
+          "line_end": 125,
+          "kind": "finding_source",
+          "code": "   113\t        }\n   114\t\n   115\t        return $host;\n   116\t    }\n   117\t\n   118\t    public function is_hostinger_user(): bool {\n   119\t        return ! empty( $_SERVER['H_PLATFORM'] );\n   120\t    }\n   121\t\n   122\t    public function is_staging(): bool {\n   123\t        return isset( $_SERVER['H_STAGING'] ) && filter_var( wp_unslash( $_SERVER['H_STAGING'] ), FILTER_VALIDATE_BOOLEAN ) === true;\n   124\t    }\n   125\t"
+        },
+        {
+          "file": "src/Functions.php",
+          "anchor": "src/Functions.php:123",
+          "focus_line": 123,
+          "line_start": 117,
+          "line_end": 129,
+          "kind": "finding_sink",
+          "code": "   117\t\n   118\t    public function is_hostinger_user(): bool {\n   119\t        return ! empty( $_SERVER['H_PLATFORM'] );\n   120\t    }\n   121\t\n   122\t    public function is_staging(): bool {\n   123\t        return isset( $_SERVER['H_STAGING'] ) && filter_var( wp_unslash( $_SERVER['H_STAGING'] ), FILTER_VALIDATE_BOOLEAN ) === true;\n   124\t    }\n   125\t\n   126\t    public function has_reach_subscription_block( int $post_id ): bool {\n   127\t        $content = get_post_field( 'post_content', $post_id );\n   128\t\n   129\t        return str_contains( $content, '<!-- wp:hostinger-reach/subscription' );"
+        },
+        {
+          "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
+          "anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+          "focus_line": 19,
+          "line_start": 13,
+          "line_end": 25,
+          "kind": "entry_point",
+          "code": "    13\t    public function __construct( ReachApiHandler $reach_api_handler, FormRepository $form_repository ) {\n    14\t        $this->reach_api_handler = $reach_api_handler;\n    15\t        $this->form_repository   = $form_repository;\n    16\t    }\n    17\t\n    18\t    public function init(): void {\n    19\t        add_action( 'init', array( $this, 'init_hooks' ) );\n    20\t    }\n    21\t\n    22\t    public function is_enabled(): bool {\n    23\t        return $this->reach_api_handler->is_connected() && $this->is_automation_active();\n    24\t    }\n    25\t"
+        }
+      ],
+      "optional_files": [
+        "src/Api/Webhooks/Handlers/WebhookHandler.php"
+      ],
+      "optional_snippets": [
+        {
+          "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
+          "anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+          "focus_line": 19,
+          "line_start": 13,
+          "line_end": 25,
+          "kind": "entry_point",
+          "code": "    13\t    public function __construct( ReachApiHandler $reach_api_handler, FormRepository $form_repository ) {\n    14\t        $this->reach_api_handler = $reach_api_handler;\n    15\t        $this->form_repository   = $form_repository;\n    16\t    }\n    17\t\n    18\t    public function init(): void {\n    19\t        add_action( 'init', array( $this, 'init_hooks' ) );\n    20\t    }\n    21\t\n    22\t    public function is_enabled(): bool {\n    23\t        return $this->reach_api_handler->is_connected() && $this->is_automation_active();\n    24\t    }\n    25\t"
+        }
+      ],
+      "review_questions": {
+        "reachability": "Can an attacker really reach the claimed path from src/Api/Webhooks/Handlers/WebhookHandler.php:19 without hidden preconditions or workflow assumptions?",
+        "authorization": "Does the path have a stronger guard than the worker claims, including capability, permission_callback, nonce semantics, or trust-boundary limits for auth `unknown`?",
+        "dataflow": "Does attacker-controlled data actually flow from src/Functions.php:119 to src/Functions.php:123 for the claimed XSS \u2014 Functions.php is_hostinger_user()/is_staging() read unescaped server vars, without a refuting guard, sanitizer, or broken hop?",
+        "impact": "Assuming the path reaches src/Functions.php:123, is the worker's claimed impact concrete and not overstated for this plugin context?",
+        "missing_evidence": "What exact file:line evidence is still missing before this finding can be kept, downgraded, or retracted with confidence?"
+      }
+    },
+    {
+      "finding_id": "HR-FP-005",
+      "verdict": "FP",
+      "vuln_type": "Privilege Escalation via Option Update \u2014 POST /integrations saves unsanitized input to options",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 1.0,
+      "entry_point_id": "ep_rest__integrations",
+      "patchstack_eligible": false,
+      "claimed_impact": "Worker claims Privilege Escalation via Option Update \u2014 POST /integrations saves unsanitized input to options is materially exploitable with auth boundary `unknown` and impact reachable at src/Api/Handlers/IntegrationsApiHandler.php:210.",
+      "anchors": {
+        "entry_point_anchor": "src/Api/Routes/IntegrationsRoutes.php:31",
+        "source_anchor": "src/Api/Routes/IntegrationsRoutes.php:31",
+        "sink_anchor": "src/Api/Handlers/IntegrationsApiHandler.php:210",
+        "review_anchor_candidates": [
+          {
+            "kind": "entry_point",
+            "anchor": "src/Api/Routes/IntegrationsRoutes.php:31",
+            "note": "?integrations"
+          },
+          {
+            "kind": "anomaly",
+            "anchor": "src/Api/Routes/IntegrationsRoutes.php:21",
+            "note": "rest_return_true"
+          }
+        ]
+      },
+      "primary_files": [
+        "src/Api/Handlers/IntegrationsApiHandler.php",
+        "src/Api/Routes/IntegrationsRoutes.php"
+      ],
+      "primary_snippets": [
+        {
+          "file": "src/Api/Routes/IntegrationsRoutes.php",
+          "anchor": "src/Api/Routes/IntegrationsRoutes.php:31",
+          "focus_line": 31,
+          "line_start": 25,
+          "line_end": 37,
+          "kind": "finding_source",
+          "code": "    25\t                'methods'             => 'GET',\n    26\t                'callback'            => array( $this->handler, 'get_integrations_handler' ),\n    27\t                'permission_callback' => '__return_true',\n    28\t            )\n    29\t        );\n    30\t\n    31\t        register_rest_route(\n    32\t            HOSTINGER_REACH_PLUGIN_REST_API_BASE,\n    33\t            'integrations',\n    34\t            array(\n    35\t                'methods'             => 'POST',\n    36\t                'callback'            => array( $this->handler, 'post_integrations_handler' ),\n    37\t                'permission_callback' => array( $this, 'permission_check' ),"
+        },
+        {
+          "file": "src/Api/Handlers/IntegrationsApiHandler.php",
+          "anchor": "src/Api/Handlers/IntegrationsApiHandler.php:210",
+          "focus_line": 210,
+          "line_start": 204,
+          "line_end": 212,
+          "kind": "finding_sink",
+          "code": "   204\t\n   205\t        return $this->save_integrations_data( $integrations_data );\n   206\t    }\n   207\t\n   208\t\n   209\t    private function save_integrations_data( array $data ): bool {\n   210\t        return update_option( self::INTEGRATIONS_OPTION_NAME, $data );\n   211\t    }\n   212\t}"
+        }
+      ],
+      "optional_files": [
+        "src/Api/Routes/IntegrationsRoutes.php"
+      ],
+      "optional_snippets": [
+        {
+          "file": "src/Api/Routes/IntegrationsRoutes.php",
+          "anchor": "src/Api/Routes/IntegrationsRoutes.php:31",
+          "focus_line": 31,
+          "line_start": 25,
+          "line_end": 37,
+          "kind": "entry_point",
+          "code": "    25\t                'methods'             => 'GET',\n    26\t                'callback'            => array( $this->handler, 'get_integrations_handler' ),\n    27\t                'permission_callback' => '__return_true',\n    28\t            )\n    29\t        );\n    30\t\n    31\t        register_rest_route(\n    32\t            HOSTINGER_REACH_PLUGIN_REST_API_BASE,\n    33\t            'integrations',\n    34\t            array(\n    35\t                'methods'             => 'POST',\n    36\t                'callback'            => array( $this->handler, 'post_integrations_handler' ),\n    37\t                'permission_callback' => array( $this, 'permission_check' ),"
+        },
+        {
+          "file": "src/Api/Routes/IntegrationsRoutes.php",
+          "anchor": "src/Api/Routes/IntegrationsRoutes.php:21",
+          "focus_line": 21,
+          "line_start": 15,
+          "line_end": 27,
+          "kind": "anomaly",
+          "code": "    15\t\n    16\t    public function __construct( IntegrationsApiHandler $handler ) {\n    17\t        $this->handler = $handler;\n    18\t    }\n    19\t\n    20\t    public function register_routes(): void {\n    21\t        register_rest_route(\n    22\t            HOSTINGER_REACH_PLUGIN_REST_API_BASE,\n    23\t            'integrations',\n    24\t            array(\n    25\t                'methods'             => 'GET',\n    26\t                'callback'            => array( $this->handler, 'get_integrations_handler' ),\n    27\t                'permission_callback' => '__return_true',"
+        }
+      ],
+      "review_questions": {
+        "reachability": "Can an attacker really reach the claimed path from src/Api/Routes/IntegrationsRoutes.php:31 without hidden preconditions or workflow assumptions?",
+        "authorization": "Does the path have a stronger guard than the worker claims, including capability, permission_callback, nonce semantics, or trust-boundary limits for auth `unknown`?",
+        "dataflow": "Does attacker-controlled data actually flow from src/Api/Routes/IntegrationsRoutes.php:31 to src/Api/Handlers/IntegrationsApiHandler.php:210 for the claimed Privilege Escalation via Option Update \u2014 POST /integrations saves unsanitized input to options, without a refuting guard, sanitizer, or broken hop?",
+        "impact": "Assuming the path reaches src/Api/Handlers/IntegrationsApiHandler.php:210, is the worker's claimed impact concrete and not overstated for this plugin context?",
+        "missing_evidence": "What exact file:line evidence is still missing before this finding can be kept, downgraded, or retracted with confidence?"
+      }
+    },
+    {
+      "finding_id": "HR-FP-006",
+      "verdict": "FP",
+      "vuln_type": "SQL Injection \u2014 WooCommerce get_contacts() uses interpolated table name",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 1.0,
+      "entry_point_id": "ep_rest__import___P_integration__a_z0_9____",
+      "patchstack_eligible": false,
+      "claimed_impact": "Worker claims SQL Injection \u2014 WooCommerce get_contacts() uses interpolated table name is materially exploitable with auth boundary `unknown` and impact reachable at src/Integrations/WooCommerce/WooCommerceIntegration.php:248.",
+      "anchors": {
+        "entry_point_anchor": null,
+        "source_anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:217",
+        "sink_anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:248",
+        "review_anchor_candidates": []
+      },
+      "primary_files": [
+        "src/Integrations/WooCommerce/WooCommerceIntegration.php"
+      ],
+      "primary_snippets": [
+        {
+          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+          "anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:217",
+          "focus_line": 217,
+          "line_start": 211,
+          "line_end": 223,
+          "kind": "finding_source",
+          "code": "   211\t                'title'    => __( 'WooCommerce Customers', 'hostinger-reach' ),\n   212\t                'contacts' => $this->get_contacts_count(),\n   213\t            ),\n   214\t        );\n   215\t    }\n   216\t\n   217\t    public function get_contacts( mixed $form_id = null, ?int $limit = 100, ?int $offset = 0 ): array {\n   218\t        if ( ! $this->is_woo_customer_data_available() ) {\n   219\t            return array();\n   220\t        }\n   221\t\n   222\t        global $wpdb;\n   223\t        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared"
+        },
+        {
+          "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+          "anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:248",
+          "focus_line": 248,
+          "line_start": 242,
+          "line_end": 254,
+          "kind": "finding_sink",
+          "code": "   242\t                        'plugin'  => self::INTEGRATION_NAME,\n   243\t                        'group'   => self::INTEGRATION_NAME,\n   244\t                    ),\n   245\t                );\n   246\t            },\n   247\t            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared\n   248\t            $wpdb->get_results( $sql )\n   249\t        );\n   250\t    }\n   251\t\n   252\t    public function get_contacts_count(): int {\n   253\t        global $wpdb;\n   254\t        if ( ! $this->is_woo_customer_data_available() ) {"
+        }
+      ],
+      "optional_files": [],
+      "optional_snippets": [],
+      "review_questions": {
+        "reachability": "Can an attacker really reach the claimed path from ep_rest__import___P_integration__a_z0_9____ without hidden preconditions or workflow assumptions?",
+        "authorization": "Does the path have a stronger guard than the worker claims, including capability, permission_callback, nonce semantics, or trust-boundary limits for auth `unknown`?",
+        "dataflow": "Does attacker-controlled data actually flow from src/Integrations/WooCommerce/WooCommerceIntegration.php:217 to src/Integrations/WooCommerce/WooCommerceIntegration.php:248 for the claimed SQL Injection \u2014 WooCommerce get_contacts() uses interpolated table name, without a refuting guard, sanitizer, or broken hop?",
+        "impact": "Assuming the path reaches src/Integrations/WooCommerce/WooCommerceIntegration.php:248, is the worker's claimed impact concrete and not overstated for this plugin context?",
+        "missing_evidence": "What exact file:line evidence is still missing before this finding can be kept, downgraded, or retracted with confidence?"
+      }
+    },
+    {
+      "finding_id": "HR-FP-007",
+      "verdict": "FP",
+      "vuln_type": "XSS \u2014 Multiple semgrep-flagged echo-without-escape in handler/integration files",
+      "severity": "info",
+      "auth_required": null,
+      "confidence": 1.0,
+      "entry_point_id": "ep_rest_api_init_rest_api_init",
+      "patchstack_eligible": false,
+      "claimed_impact": "Worker claims XSS \u2014 Multiple semgrep-flagged echo-without-escape in handler/integration files is materially exploitable with auth boundary `unknown` and impact reachable at src/Api/Handlers/ReachApiHandler.php:152.",
+      "anchors": {
+        "entry_point_anchor": "src/Api/Routes/Routes.php:22",
+        "source_anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+        "sink_anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+        "review_anchor_candidates": [
+          {
+            "kind": "entry_point",
+            "anchor": "src/Api/Routes/Routes.php:22",
+            "note": "rest_api_init"
+          }
+        ]
+      },
+      "primary_files": [
+        "src/Api/Handlers/ReachApiHandler.php",
+        "src/Api/Routes/Routes.php"
+      ],
+      "primary_snippets": [
+        {
+          "file": "src/Api/Handlers/ReachApiHandler.php",
+          "anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+          "focus_line": 152,
+          "line_start": 146,
+          "line_end": 158,
+          "kind": "finding_source",
+          "code": "   146\t        $surname  = $request->get_param( 'surname' );\n   147\t        $form_id  = $request->get_param( 'id' );\n   148\t        $metadata = $request->get_param( 'metadata' );\n   149\t        $tags     = $request->get_param( 'tags' );\n   150\t        $group    = apply_filters( 'hostinger_reach_get_group', $request->get_param( 'group' ), $form_id );\n   151\t\n   152\t        return $this->post_contact(\n   153\t            array(\n   154\t                'form_id'  => $form_id,\n   155\t                'group'    => $group,\n   156\t                'tags'     => $tags,\n   157\t                'email'    => $email,\n   158\t                'name'     => $name,"
+        },
+        {
+          "file": "src/Api/Routes/Routes.php",
+          "anchor": "src/Api/Routes/Routes.php:22",
+          "focus_line": 22,
+          "line_start": 16,
+          "line_end": 28,
+          "kind": "entry_point",
+          "code": "    16\t    public function __construct( ApiHandler $handler, ApiKeyManager $api_key_manager ) {\n    17\t        $this->handler         = $handler;\n    18\t        $this->api_key_manager = $api_key_manager;\n    19\t    }\n    20\t\n    21\t    public function init(): void {\n    22\t        add_action( 'rest_api_init', array( $this, 'register_routes' ) );\n    23\t    }\n    24\t\n    25\t    public function permission_check(): bool {\n    26\t        if ( has_action( 'litespeed_control_set_nocache' ) ) {\n    27\t            do_action(\n    28\t                'litespeed_control_set_nocache',"
+        }
+      ],
+      "optional_files": [
+        "src/Api/Routes/Routes.php"
+      ],
+      "optional_snippets": [
+        {
+          "file": "src/Api/Routes/Routes.php",
+          "anchor": "src/Api/Routes/Routes.php:22",
+          "focus_line": 22,
+          "line_start": 16,
+          "line_end": 28,
+          "kind": "entry_point",
+          "code": "    16\t    public function __construct( ApiHandler $handler, ApiKeyManager $api_key_manager ) {\n    17\t        $this->handler         = $handler;\n    18\t        $this->api_key_manager = $api_key_manager;\n    19\t    }\n    20\t\n    21\t    public function init(): void {\n    22\t        add_action( 'rest_api_init', array( $this, 'register_routes' ) );\n    23\t    }\n    24\t\n    25\t    public function permission_check(): bool {\n    26\t        if ( has_action( 'litespeed_control_set_nocache' ) ) {\n    27\t            do_action(\n    28\t                'litespeed_control_set_nocache',"
+        }
+      ],
+      "review_questions": {
+        "reachability": "Can an attacker really reach the claimed path from src/Api/Routes/Routes.php:22 without hidden preconditions or workflow assumptions?",
+        "authorization": "Does the path have a stronger guard than the worker claims, including capability, permission_callback, nonce semantics, or trust-boundary limits for auth `unknown`?",
+        "dataflow": "Does attacker-controlled data actually flow from src/Api/Handlers/ReachApiHandler.php:152 to src/Api/Handlers/ReachApiHandler.php:152 for the claimed XSS \u2014 Multiple semgrep-flagged echo-without-escape in handler/integration files, without a refuting guard, sanitizer, or broken hop?",
+        "impact": "Assuming the path reaches src/Api/Handlers/ReachApiHandler.php:152, is the worker's claimed impact concrete and not overstated for this plugin context?",
+        "missing_evidence": "What exact file:line evidence is still missing before this finding can be kept, downgraded, or retracted with confidence?"
+      }
+    }
+  ],
+  "phase1_context": {
+    "entry_point_count": 25,
+    "anomaly_count": 3,
+    "unresolved_hook_count": 8,
+    "related_entry_points": [
+      {
+        "id": "ep_init_init",
+        "type": "init",
+        "hook_name": "init",
+        "auth_level": "none",
+        "file": "src/Providers/JobsProvider.php",
+        "line": 59,
+        "callback_name": null,
+        "callback_class": null
+      },
+      {
+        "id": "ep_init_init",
+        "type": "init",
+        "hook_name": "init",
+        "auth_level": "none",
+        "file": "src/Setup/Blocks.php",
+        "line": 23,
+        "callback_name": "register_blocks",
+        "callback_class": "Hostinger\\Reach\\Setup\\Blocks"
+      },
+      {
+        "id": "ep_init_init",
+        "type": "init",
+        "hook_name": "init",
+        "auth_level": "none",
+        "file": "src/Admin/Redirects.php",
+        "line": 23,
+        "callback_name": null,
+        "callback_class": null
+      },
+      {
+        "id": "ep_rest_api_init_rest_api_init",
+        "type": "rest_api_init",
+        "hook_name": "rest_api_init",
+        "auth_level": "none",
+        "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+        "line": 211,
+        "callback_name": null,
+        "callback_class": null
+      },
+      {
+        "id": "ep_rest_hostinger_reach_v1__optinmonster",
+        "type": "rest_route",
+        "hook_name": "hostinger-reach/v1/optinmonster",
+        "auth_level": "none",
+        "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+        "line": 214,
+        "callback_name": "submit_optinmonster",
+        "callback_class": "Hostinger\\Reach\\Integrations\\OptInMonster\\OptInMonsterIntegration"
+      },
+      {
+        "id": "ep_init_init",
+        "type": "init",
+        "hook_name": "init",
+        "auth_level": "none",
+        "file": "src/Api/Webhooks/Handlers/WebhookHandler.php",
+        "line": 19,
+        "callback_name": "init_hooks",
+        "callback_class": "Hostinger\\Reach\\Api\\Webhooks\\Handlers\\WebhookHandler"
+      },
+      {
+        "id": "ep_rest__contact",
+        "type": "rest_route",
+        "hook_name": "?contact",
+        "auth_level": "none",
+        "file": "src/Api/Routes/ReachRoutes.php",
+        "line": 27,
+        "callback_name": null,
+        "callback_class": null
+      },
+      {
+        "id": "ep_rest_api_init_rest_api_init",
+        "type": "rest_api_init",
+        "hook_name": "rest_api_init",
+        "auth_level": "none",
+        "file": "src/Api/Routes/FormsRoutes.php",
+        "line": 24,
+        "callback_name": "register_routes",
+        "callback_class": "Hostinger\\Reach\\Api\\Routes\\FormsRoutes"
+      },
+      {
+        "id": "ep_rest_api_init_rest_api_init",
+        "type": "rest_api_init",
+        "hook_name": "rest_api_init",
+        "auth_level": "none",
+        "file": "src/Api/Routes/FormsRoutes.php",
+        "line": 25,
+        "callback_name": "add_block_check_field_to_pages",
+        "callback_class": "Hostinger\\Reach\\Api\\Routes\\FormsRoutes"
+      },
+      {
+        "id": "ep_rest_api_init_rest_api_init",
+        "type": "rest_api_init",
+        "hook_name": "rest_api_init",
+        "auth_level": "none",
+        "file": "src/Api/Routes/Routes.php",
+        "line": 22,
+        "callback_name": "register_routes",
+        "callback_class": "Hostinger\\Reach\\Integrations\\OptInMonster\\OptInMonsterIntegration"
+      },
+      {
+        "id": "ep_rest__integrations",
+        "type": "rest_route",
+        "hook_name": "?integrations",
+        "auth_level": "none",
+        "file": "src/Api/Routes/IntegrationsRoutes.php",
+        "line": 21,
+        "callback_name": null,
+        "callback_class": null
+      },
+      {
+        "id": "ep_rest__integrations",
+        "type": "rest_route",
+        "hook_name": "?integrations",
+        "auth_level": "unknown",
+        "file": "src/Api/Routes/IntegrationsRoutes.php",
+        "line": 31,
+        "callback_name": null,
+        "callback_class": null
+      }
+    ],
+    "top_anomalies": [
+      {
+        "id": "anom_1",
+        "type": "rest_return_true",
+        "severity": "high",
+        "entry_point_id": "ep_rest_hostinger_reach_v1__optinmonster",
+        "description": "REST route 'hostinger-reach/v1/optinmonster' has permission_callback = __return_true \u2014 publicly accessible",
+        "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+        "line": 214
+      },
+      {
+        "id": "anom_2",
+        "type": "rest_return_true",
+        "severity": "high",
+        "entry_point_id": "ep_rest__contact",
+        "description": "REST route '?contact' has permission_callback = __return_true \u2014 publicly accessible",
+        "file": "src/Api/Routes/ReachRoutes.php",
+        "line": 27
+      },
+      {
+        "id": "anom_3",
+        "type": "rest_return_true",
+        "severity": "high",
+        "entry_point_id": "ep_rest__integrations",
+        "description": "REST route '?integrations' has permission_callback = __return_true \u2014 publicly accessible",
+        "file": "src/Api/Routes/IntegrationsRoutes.php",
+        "line": 21
+      }
+    ],
+    "unresolved_hooks": [
+      {
+        "file": "src/Admin/Notices/ConnectionNotice.php",
+        "line": 29,
+        "function": "add_action",
+        "hook_arg_type": "concatenation"
+      },
+      {
+        "file": "src/Admin/Notices/AddFormNotice.php",
+        "line": 28,
+        "function": "add_action",
+        "hook_arg_type": "concatenation"
+      },
+      {
+        "file": "src/Integrations/ThriveLeads/ThriveLeadsIntegration.php",
+        "line": 21,
+        "function": "add_action",
+        "hook_arg_type": "other"
+      },
+      {
+        "file": "src/Integrations/Integration.php",
+        "line": 116,
+        "function": "add_filter",
+        "hook_arg_type": "concatenation"
+      },
+      {
+        "file": "src/Integrations/Integration.php",
+        "line": 117,
+        "function": "add_filter",
+        "hook_arg_type": "concatenation"
+      },
+      {
+        "file": "src/Jobs/AbstractJob.php",
+        "line": 22,
+        "function": "add_action",
+        "hook_arg_type": "method_call"
+      },
+      {
+        "file": "src/Jobs/AbstractJob.php",
+        "line": 23,
+        "function": "add_action",
+        "hook_arg_type": "method_call"
+      },
+      {
+        "file": "src/Jobs/AbstractBatchedJob.php",
+        "line": 13,
+        "function": "add_action",
+        "hook_arg_type": "method_call"
+      }
+    ]
+  },
+  "evidence": {
+    "primary_anchors": [
+      {
+        "kind": "finding_source",
+        "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:62",
+        "finding_id": "HR-001",
+        "entry_point_id": "ep_rest_hostinger_reach_v1__optinmonster",
+        "note": "Broken Access Control \u2014 Unauthenticated REST Endpoint (subscriber contact injection via obtainable nonce)"
+      },
+      {
+        "kind": "finding_sink",
+        "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:78",
+        "finding_id": "HR-001",
+        "entry_point_id": "ep_rest_hostinger_reach_v1__optinmonster",
+        "note": "Broken Access Control \u2014 Unauthenticated REST Endpoint (subscriber contact injection via obtainable nonce)"
+      },
+      {
+        "kind": "finding_source",
+        "anchor": "src/Admin/Notices/AddFormNotice.php:43",
+        "finding_id": "HR-002",
+        "entry_point_id": "ep_init_init",
+        "note": "Broken Access Control \u2014 AJAX handler missing capability check (subscriber privilege escalation via dismiss action)"
+      },
+      {
+        "kind": "finding_sink",
+        "anchor": "src/Admin/Notices/AddFormNotice.php:59",
+        "finding_id": "HR-002",
+        "entry_point_id": "ep_init_init",
+        "note": "Broken Access Control \u2014 AJAX handler missing capability check (subscriber privilege escalation via dismiss action)"
+      },
+      {
+        "kind": "finding_source",
+        "anchor": "src/Api/Routes/IntegrationsRoutes.php:21",
+        "finding_id": "HR-FP-001",
+        "entry_point_id": "ep_rest__integrations",
+        "note": "Broken Access Control \u2014 Public REST endpoint (GET /integrations)"
+      },
+      {
+        "kind": "finding_sink",
+        "anchor": "src/Api/Handlers/IntegrationsApiHandler.php:65",
+        "finding_id": "HR-FP-001",
+        "entry_point_id": "ep_rest__integrations",
+        "note": "Broken Access Control \u2014 Public REST endpoint (GET /integrations)"
+      },
+      {
+        "kind": "finding_source",
+        "anchor": "src/Api/Routes/ReachRoutes.php:27",
+        "finding_id": "HR-FP-002",
+        "entry_point_id": "ep_rest__contact",
+        "note": "Broken Access Control \u2014 Public REST endpoint (POST /contact)"
+      },
+      {
+        "kind": "finding_sink",
+        "anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+        "finding_id": "HR-FP-002",
+        "entry_point_id": "ep_rest__contact",
+        "note": "Broken Access Control \u2014 Public REST endpoint (POST /contact)"
+      },
+      {
+        "kind": "finding_source",
+        "anchor": "src/Admin/Surveys/SatisfactionSurvey.php:51",
+        "finding_id": "HR-FP-003",
+        "entry_point_id": "ep_init_init",
+        "note": "XSS \u2014 SatisfactionSurvey::is_hostinger_page() uses unescaped $_SERVER['REQUEST_URI']"
+      },
+      {
+        "kind": "finding_source",
+        "anchor": "src/Functions.php:119",
+        "finding_id": "HR-FP-004",
+        "entry_point_id": "ep_init_init",
+        "note": "XSS \u2014 Functions.php is_hostinger_user()/is_staging() read unescaped server vars"
+      },
+      {
+        "kind": "finding_sink",
+        "anchor": "src/Functions.php:123",
+        "finding_id": "HR-FP-004",
+        "entry_point_id": "ep_init_init",
+        "note": "XSS \u2014 Functions.php is_hostinger_user()/is_staging() read unescaped server vars"
+      },
+      {
+        "kind": "finding_source",
+        "anchor": "src/Api/Routes/IntegrationsRoutes.php:31",
+        "finding_id": "HR-FP-005",
+        "entry_point_id": "ep_rest__integrations",
+        "note": "Privilege Escalation via Option Update \u2014 POST /integrations saves unsanitized input to options"
+      },
+      {
+        "kind": "finding_sink",
+        "anchor": "src/Api/Handlers/IntegrationsApiHandler.php:210",
+        "finding_id": "HR-FP-005",
+        "entry_point_id": "ep_rest__integrations",
+        "note": "Privilege Escalation via Option Update \u2014 POST /integrations saves unsanitized input to options"
+      },
+      {
+        "kind": "finding_source",
+        "anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:217",
+        "finding_id": "HR-FP-006",
+        "entry_point_id": "ep_rest__import___P_integration__a_z0_9____",
+        "note": "SQL Injection \u2014 WooCommerce get_contacts() uses interpolated table name"
+      },
+      {
+        "kind": "finding_sink",
+        "anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:248",
+        "finding_id": "HR-FP-006",
+        "entry_point_id": "ep_rest__import___P_integration__a_z0_9____",
+        "note": "SQL Injection \u2014 WooCommerce get_contacts() uses interpolated table name"
+      },
+      {
+        "kind": "finding_source",
+        "anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+        "finding_id": "HR-FP-007",
+        "entry_point_id": "ep_rest_api_init_rest_api_init",
+        "note": "XSS \u2014 Multiple semgrep-flagged echo-without-escape in handler/integration files"
+      },
+      {
+        "kind": "entry_point",
+        "anchor": "src/Providers/JobsProvider.php:59",
+        "finding_id": null,
+        "entry_point_id": "ep_init_init",
+        "note": "init"
+      },
+      {
+        "kind": "entry_point",
+        "anchor": "src/Setup/Blocks.php:23",
+        "finding_id": null,
+        "entry_point_id": "ep_init_init",
+        "note": "init"
+      },
+      {
+        "kind": "entry_point",
+        "anchor": "src/Admin/Redirects.php:23",
+        "finding_id": null,
+        "entry_point_id": "ep_init_init",
+        "note": "init"
+      },
+      {
+        "kind": "entry_point",
+        "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:211",
+        "finding_id": null,
+        "entry_point_id": "ep_rest_api_init_rest_api_init",
+        "note": "rest_api_init"
+      },
+      {
+        "kind": "entry_point",
+        "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:214",
+        "finding_id": null,
+        "entry_point_id": "ep_rest_hostinger_reach_v1__optinmonster",
+        "note": "hostinger-reach/v1/optinmonster"
+      },
+      {
+        "kind": "entry_point",
+        "anchor": "src/Api/Webhooks/Handlers/WebhookHandler.php:19",
+        "finding_id": null,
+        "entry_point_id": "ep_init_init",
+        "note": "init"
+      },
+      {
+        "kind": "entry_point",
+        "anchor": "src/Api/Routes/ReachRoutes.php:27",
+        "finding_id": null,
+        "entry_point_id": "ep_rest__contact",
+        "note": "?contact"
+      },
+      {
+        "kind": "entry_point",
+        "anchor": "src/Api/Routes/FormsRoutes.php:24",
+        "finding_id": null,
+        "entry_point_id": "ep_rest_api_init_rest_api_init",
+        "note": "rest_api_init"
+      },
+      {
+        "kind": "entry_point",
+        "anchor": "src/Api/Routes/FormsRoutes.php:25",
+        "finding_id": null,
+        "entry_point_id": "ep_rest_api_init_rest_api_init",
+        "note": "rest_api_init"
+      },
+      {
+        "kind": "entry_point",
+        "anchor": "src/Api/Routes/Routes.php:22",
+        "finding_id": null,
+        "entry_point_id": "ep_rest_api_init_rest_api_init",
+        "note": "rest_api_init"
+      },
+      {
+        "kind": "entry_point",
+        "anchor": "src/Api/Routes/IntegrationsRoutes.php:21",
+        "finding_id": null,
+        "entry_point_id": "ep_rest__integrations",
+        "note": "?integrations"
+      },
+      {
+        "kind": "entry_point",
+        "anchor": "src/Api/Routes/IntegrationsRoutes.php:31",
+        "finding_id": null,
+        "entry_point_id": "ep_rest__integrations",
+        "note": "?integrations"
+      }
+    ],
+    "primary_files": [
+      "src/Admin/Notices/AddFormNotice.php",
+      "src/Admin/Redirects.php",
+      "src/Admin/Surveys/SatisfactionSurvey.php",
+      "src/Api/Handlers/IntegrationsApiHandler.php",
+      "src/Api/Handlers/ReachApiHandler.php",
+      "src/Api/Routes/IntegrationsRoutes.php",
+      "src/Api/Routes/ReachRoutes.php",
+      "src/Functions.php",
+      "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+      "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+      "src/Providers/JobsProvider.php",
+      "src/Setup/Blocks.php"
+    ],
+    "primary_snippets": [
+      {
+        "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+        "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:62",
+        "focus_line": 62,
+        "line_start": 56,
+        "line_end": 68,
+        "kind": "finding_source",
+        "code": "    56\t                'icon'           => 'https://ps.w.org/optinmonster/assets/icon-256x256.png',\n    57\t                'import_enabled' => true,\n    58\t            )\n    59\t        );\n    60\t    }\n    61\t\n    62\t    public function submit_optinmonster( WP_REST_Request $request ): WP_REST_Response {\n    63\t        if ( ! $this->is_authorized( $request ) ) {\n    64\t            return $this->handle_response( 403, array( 'errors' => 'You cannot perform this action' ) );\n    65\t        }\n    66\t\n    67\t        try {\n    68\t            $data    = json_decode( $request->get_body() ?? '', true );"
+      },
+      {
+        "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+        "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:78",
+        "focus_line": 78,
+        "line_start": 72,
+        "line_end": 84,
+        "kind": "finding_sink",
+        "code": "    72\t            }\n    73\t            $email = $this->find_email( $data['fields'] ?? array() );\n    74\t            if ( $email ) {\n    75\t                $campaign_name = $data['tags']['campaign_name'] ?? '';\n    76\t                $form_name     = $data['tags']['form_name'] ?? '';\n    77\t                $group         = $campaign_name . ' - ' . $form_name;\n    78\t                do_action(\n    79\t                    'hostinger_reach_submit',\n    80\t                    array(\n    81\t                        'email'    => $email,\n    82\t                        'group'    => empty( $group ) ? self::INTEGRATION_NAME : $group,\n    83\t                        'metadata' => array(\n    84\t                            'plugin' => self::INTEGRATION_NAME,"
+      },
+      {
+        "file": "src/Admin/Notices/AddFormNotice.php",
+        "anchor": "src/Admin/Notices/AddFormNotice.php:43",
+        "focus_line": 43,
+        "line_start": 37,
+        "line_end": 49,
+        "kind": "finding_source",
+        "code": "    37\t    public function enqueue_admin_assets(): void {\n    38\t        if ( $this->should_render() ) {\n    39\t            $this->enqueue_notice_assets();\n    40\t        }\n    41\t    }\n    42\t\n    43\t    public function handle_ajax_action(): void {\n    44\t        check_ajax_referer( self::NOTICE_ACTION, 'nonce' );\n    45\t        $choice = sanitize_text_field( $_POST['choice'] );\n    46\t\n    47\t        switch ( $choice ) {\n    48\t            case 'success':\n    49\t                $this->handle_success();"
+      },
+      {
+        "file": "src/Admin/Notices/AddFormNotice.php",
+        "anchor": "src/Admin/Notices/AddFormNotice.php:59",
+        "focus_line": 59,
+        "line_start": 53,
+        "line_end": 65,
+        "kind": "finding_sink",
+        "code": "    53\t                $this->handle_dismiss();\n    54\t                break;\n    55\t        }\n    56\t    }\n    57\t\n    58\t    private function handle_dismiss(): void {\n    59\t        set_transient( self::NOTICE_DISMISS_TRANSIENT, true, WEEK_IN_SECONDS );\n    60\t        wp_send_json_success();\n    61\t    }\n    62\t\n    63\t    private function handle_success(): void {\n    64\t        wp_send_json_success(\n    65\t            array("
+      },
+      {
+        "file": "src/Api/Routes/IntegrationsRoutes.php",
+        "anchor": "src/Api/Routes/IntegrationsRoutes.php:21",
+        "focus_line": 21,
+        "line_start": 15,
+        "line_end": 27,
+        "kind": "finding_source",
+        "code": "    15\t\n    16\t    public function __construct( IntegrationsApiHandler $handler ) {\n    17\t        $this->handler = $handler;\n    18\t    }\n    19\t\n    20\t    public function register_routes(): void {\n    21\t        register_rest_route(\n    22\t            HOSTINGER_REACH_PLUGIN_REST_API_BASE,\n    23\t            'integrations',\n    24\t            array(\n    25\t                'methods'             => 'GET',\n    26\t                'callback'            => array( $this->handler, 'get_integrations_handler' ),\n    27\t                'permission_callback' => '__return_true',"
+      },
+      {
+        "file": "src/Api/Handlers/IntegrationsApiHandler.php",
+        "anchor": "src/Api/Handlers/IntegrationsApiHandler.php:65",
+        "focus_line": 65,
+        "line_start": 59,
+        "line_end": 71,
+        "kind": "finding_sink",
+        "code": "    59\t    public function get_integrations_handler(): WP_REST_Response {\n    60\t        return $this->handle_response(\n    61\t            array(\n    62\t                'response' => array(\n    63\t                    'code' => 200,\n    64\t                ),\n    65\t                'body'     => wp_json_encode( $this->get_integrations_data() ),\n    66\t            )\n    67\t        );\n    68\t    }\n    69\t\n    70\t    public function post_integrations_handler( WP_REST_Request $request ): WP_REST_Response {\n    71\t        $is_active         = $request->get_param( Integration::INTEGRATION_IS_ACTIVE );"
+      },
+      {
+        "file": "src/Api/Routes/ReachRoutes.php",
+        "anchor": "src/Api/Routes/ReachRoutes.php:27",
+        "focus_line": 27,
+        "line_start": 21,
+        "line_end": 33,
+        "kind": "finding_source",
+        "code": "    21\t        $this->handler                 = $handler;\n    22\t        $this->api_key_manager         = $api_key_manager;\n    23\t        $this->contact_list_repository = $contact_list_repository;\n    24\t    }\n    25\t\n    26\t    public function register_routes(): void {\n    27\t        register_rest_route(\n    28\t            HOSTINGER_REACH_PLUGIN_REST_API_BASE,\n    29\t            'contact',\n    30\t            array(\n    31\t                'methods'             => 'POST',\n    32\t                'callback'            => array( $this->handler, 'post_contact_handler' ),\n    33\t                'permission_callback' => '__return_true',"
+      },
+      {
+        "file": "src/Api/Handlers/ReachApiHandler.php",
+        "anchor": "src/Api/Handlers/ReachApiHandler.php:152",
+        "focus_line": 152,
+        "line_start": 146,
+        "line_end": 158,
+        "kind": "finding_sink",
+        "code": "   146\t        $surname  = $request->get_param( 'surname' );\n   147\t        $form_id  = $request->get_param( 'id' );\n   148\t        $metadata = $request->get_param( 'metadata' );\n   149\t        $tags     = $request->get_param( 'tags' );\n   150\t        $group    = apply_filters( 'hostinger_reach_get_group', $request->get_param( 'group' ), $form_id );\n   151\t\n   152\t        return $this->post_contact(\n   153\t            array(\n   154\t                'form_id'  => $form_id,\n   155\t                'group'    => $group,\n   156\t                'tags'     => $tags,\n   157\t                'email'    => $email,\n   158\t                'name'     => $name,"
+      },
+      {
+        "file": "src/Admin/Surveys/SatisfactionSurvey.php",
+        "anchor": "src/Admin/Surveys/SatisfactionSurvey.php:51",
+        "focus_line": 51,
+        "line_start": 45,
+        "line_end": 57,
+        "kind": "finding_source",
+        "code": "    45\t        }\n    46\t\n    47\t        return ( time() - $connection_time ) >= ( 5 * self::DAY_IN_SECONDS );\n    48\t    }\n    49\t\n    50\t    protected function is_hostinger_page(): bool {\n    51\t        return str_contains( $_SERVER['REQUEST_URI'], 'hostinger' );\n    52\t    }\n    53\t\n    54\t    protected function get_review_url(): string {\n    55\t        return 'https://wordpress.org/support/plugin/hostinger-reach/reviews/#new-post';\n    56\t    }\n    57\t"
+      },
+      {
+        "file": "src/Functions.php",
+        "anchor": "src/Functions.php:119",
+        "focus_line": 119,
+        "line_start": 113,
+        "line_end": 125,
+        "kind": "finding_source",
+        "code": "   113\t        }\n   114\t\n   115\t        return $host;\n   116\t    }\n   117\t\n   118\t    public function is_hostinger_user(): bool {\n   119\t        return ! empty( $_SERVER['H_PLATFORM'] );\n   120\t    }\n   121\t\n   122\t    public function is_staging(): bool {\n   123\t        return isset( $_SERVER['H_STAGING'] ) && filter_var( wp_unslash( $_SERVER['H_STAGING'] ), FILTER_VALIDATE_BOOLEAN ) === true;\n   124\t    }\n   125\t"
+      },
+      {
+        "file": "src/Functions.php",
+        "anchor": "src/Functions.php:123",
+        "focus_line": 123,
+        "line_start": 117,
+        "line_end": 129,
+        "kind": "finding_sink",
+        "code": "   117\t\n   118\t    public function is_hostinger_user(): bool {\n   119\t        return ! empty( $_SERVER['H_PLATFORM'] );\n   120\t    }\n   121\t\n   122\t    public function is_staging(): bool {\n   123\t        return isset( $_SERVER['H_STAGING'] ) && filter_var( wp_unslash( $_SERVER['H_STAGING'] ), FILTER_VALIDATE_BOOLEAN ) === true;\n   124\t    }\n   125\t\n   126\t    public function has_reach_subscription_block( int $post_id ): bool {\n   127\t        $content = get_post_field( 'post_content', $post_id );\n   128\t\n   129\t        return str_contains( $content, '<!-- wp:hostinger-reach/subscription' );"
+      },
+      {
+        "file": "src/Api/Routes/IntegrationsRoutes.php",
+        "anchor": "src/Api/Routes/IntegrationsRoutes.php:31",
+        "focus_line": 31,
+        "line_start": 25,
+        "line_end": 37,
+        "kind": "finding_source",
+        "code": "    25\t                'methods'             => 'GET',\n    26\t                'callback'            => array( $this->handler, 'get_integrations_handler' ),\n    27\t                'permission_callback' => '__return_true',\n    28\t            )\n    29\t        );\n    30\t\n    31\t        register_rest_route(\n    32\t            HOSTINGER_REACH_PLUGIN_REST_API_BASE,\n    33\t            'integrations',\n    34\t            array(\n    35\t                'methods'             => 'POST',\n    36\t                'callback'            => array( $this->handler, 'post_integrations_handler' ),\n    37\t                'permission_callback' => array( $this, 'permission_check' ),"
+      },
+      {
+        "file": "src/Api/Handlers/IntegrationsApiHandler.php",
+        "anchor": "src/Api/Handlers/IntegrationsApiHandler.php:210",
+        "focus_line": 210,
+        "line_start": 204,
+        "line_end": 212,
+        "kind": "finding_sink",
+        "code": "   204\t\n   205\t        return $this->save_integrations_data( $integrations_data );\n   206\t    }\n   207\t\n   208\t\n   209\t    private function save_integrations_data( array $data ): bool {\n   210\t        return update_option( self::INTEGRATIONS_OPTION_NAME, $data );\n   211\t    }\n   212\t}"
+      },
+      {
+        "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+        "anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:217",
+        "focus_line": 217,
+        "line_start": 211,
+        "line_end": 223,
+        "kind": "finding_source",
+        "code": "   211\t                'title'    => __( 'WooCommerce Customers', 'hostinger-reach' ),\n   212\t                'contacts' => $this->get_contacts_count(),\n   213\t            ),\n   214\t        );\n   215\t    }\n   216\t\n   217\t    public function get_contacts( mixed $form_id = null, ?int $limit = 100, ?int $offset = 0 ): array {\n   218\t        if ( ! $this->is_woo_customer_data_available() ) {\n   219\t            return array();\n   220\t        }\n   221\t\n   222\t        global $wpdb;\n   223\t        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared"
+      },
+      {
+        "file": "src/Integrations/WooCommerce/WooCommerceIntegration.php",
+        "anchor": "src/Integrations/WooCommerce/WooCommerceIntegration.php:248",
+        "focus_line": 248,
+        "line_start": 242,
+        "line_end": 254,
+        "kind": "finding_sink",
+        "code": "   242\t                        'plugin'  => self::INTEGRATION_NAME,\n   243\t                        'group'   => self::INTEGRATION_NAME,\n   244\t                    ),\n   245\t                );\n   246\t            },\n   247\t            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared\n   248\t            $wpdb->get_results( $sql )\n   249\t        );\n   250\t    }\n   251\t\n   252\t    public function get_contacts_count(): int {\n   253\t        global $wpdb;\n   254\t        if ( ! $this->is_woo_customer_data_available() ) {"
+      },
+      {
+        "file": "src/Providers/JobsProvider.php",
+        "anchor": "src/Providers/JobsProvider.php:59",
+        "focus_line": 59,
+        "line_start": 53,
+        "line_end": 65,
+        "kind": "entry_point",
+        "code": "    53\t                function () use ( $job ) {\n    54\t                    return $job;\n    55\t                }\n    56\t            );\n    57\t\n    58\t            $job = $container->get( $job::class );\n    59\t            add_action(\n    60\t                'init',\n    61\t                function () use ( $job ): void {\n    62\t                    $job->init();\n    63\t                }\n    64\t            );\n    65\t"
+      },
+      {
+        "file": "src/Setup/Blocks.php",
+        "anchor": "src/Setup/Blocks.php:23",
+        "focus_line": 23,
+        "line_start": 17,
+        "line_end": 29,
+        "kind": "entry_point",
+        "code": "    17\t\n    18\t    public function init(): void {\n    19\t        if ( ! function_exists( 'register_block_type' ) ) {\n    20\t            return;\n    21\t        }\n    22\t\n    23\t        add_action( 'init', array( $this, 'register_blocks' ) );\n    24\t        add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_block_assets' ) );\n    25\t    }\n    26\t\n    27\t    public function register_blocks(): void {\n    28\t        $this->subscription_form_block->register();\n    29\t    }"
+      },
+      {
+        "file": "src/Admin/Redirects.php",
+        "anchor": "src/Admin/Redirects.php:23",
+        "focus_line": 23,
+        "line_start": 17,
+        "line_end": 29,
+        "kind": "entry_point",
+        "code": "    17\t        $this->platform = sanitize_text_field( $_GET['platform'] );\n    18\t        $this->login_redirect();\n    19\t    }\n    20\t\n    21\t    public function login_redirect(): void {\n    22\t        if ( $this->platform === HOSTINGER_REACH_PLUGIN_SLUG ) {\n    23\t            add_action(\n    24\t                'init',\n    25\t                static function (): void {\n    26\t                    $redirect_url = admin_url( 'admin.php?page=hostinger-reach' );\n    27\t                    wp_safe_redirect( $redirect_url );\n    28\t                    exit;\n    29\t                }"
+      }
+    ],
+    "optional_evidence": {
+      "anchors": [
+        {
+          "kind": "anomaly",
+          "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:214",
+          "entry_point_id": "ep_rest_hostinger_reach_v1__optinmonster",
+          "note": "rest_return_true"
+        },
+        {
+          "kind": "anomaly",
+          "anchor": "src/Api/Routes/ReachRoutes.php:27",
+          "entry_point_id": "ep_rest__contact",
+          "note": "rest_return_true"
+        },
+        {
+          "kind": "anomaly",
+          "anchor": "src/Api/Routes/IntegrationsRoutes.php:21",
+          "entry_point_id": "ep_rest__integrations",
+          "note": "rest_return_true"
+        },
+        {
+          "kind": "unresolved_hook",
+          "anchor": "src/Admin/Notices/ConnectionNotice.php:29",
+          "entry_point_id": null,
+          "note": "add_action"
+        },
+        {
+          "kind": "unresolved_hook",
+          "anchor": "src/Admin/Notices/AddFormNotice.php:28",
+          "entry_point_id": null,
+          "note": "add_action"
+        },
+        {
+          "kind": "unresolved_hook",
+          "anchor": "src/Integrations/ThriveLeads/ThriveLeadsIntegration.php:21",
+          "entry_point_id": null,
+          "note": "add_action"
+        },
+        {
+          "kind": "unresolved_hook",
+          "anchor": "src/Integrations/Integration.php:116",
+          "entry_point_id": null,
+          "note": "add_filter"
+        },
+        {
+          "kind": "unresolved_hook",
+          "anchor": "src/Integrations/Integration.php:117",
+          "entry_point_id": null,
+          "note": "add_filter"
+        },
+        {
+          "kind": "unresolved_hook",
+          "anchor": "src/Jobs/AbstractJob.php:22",
+          "entry_point_id": null,
+          "note": "add_action"
+        },
+        {
+          "kind": "unresolved_hook",
+          "anchor": "src/Jobs/AbstractJob.php:23",
+          "entry_point_id": null,
+          "note": "add_action"
+        },
+        {
+          "kind": "unresolved_hook",
+          "anchor": "src/Jobs/AbstractBatchedJob.php:13",
+          "entry_point_id": null,
+          "note": "add_action"
+        }
+      ],
+      "files": [
+        "src/Admin/Notices/AddFormNotice.php",
+        "src/Admin/Notices/ConnectionNotice.php",
+        "src/Api/Routes/IntegrationsRoutes.php",
+        "src/Api/Routes/ReachRoutes.php",
+        "src/Integrations/Integration.php",
+        "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+        "src/Integrations/ThriveLeads/ThriveLeadsIntegration.php",
+        "src/Jobs/AbstractBatchedJob.php",
+        "src/Jobs/AbstractJob.php"
+      ],
+      "snippets": [
+        {
+          "file": "src/Integrations/OptInMonster/OptInMonsterIntegration.php",
+          "anchor": "src/Integrations/OptInMonster/OptInMonsterIntegration.php:214",
+          "focus_line": 214,
+          "line_start": 208,
+          "line_end": 220,
+          "kind": "anomaly",
+          "code": "   208\t    }\n   209\t\n   210\t    private function register_routes(): void {\n   211\t        add_action(\n   212\t            'rest_api_init',\n   213\t            function (): void {\n   214\t                register_rest_route(\n   215\t                    'hostinger-reach/v1',\n   216\t                    '/optinmonster',\n   217\t                    array(\n   218\t                        'methods'             => 'POST',\n   219\t                        'callback'            => array( $this, 'submit_optinmonster' ),\n   220\t                        'permission_callback' => '__return_true',"
+        },
+        {
+          "file": "src/Api/Routes/ReachRoutes.php",
+          "anchor": "src/Api/Routes/ReachRoutes.php:27",
+          "focus_line": 27,
+          "line_start": 21,
+          "line_end": 33,
+          "kind": "anomaly",
+          "code": "    21\t        $this->handler                 = $handler;\n    22\t        $this->api_key_manager         = $api_key_manager;\n    23\t        $this->contact_list_repository = $contact_list_repository;\n    24\t    }\n    25\t\n    26\t    public function register_routes(): void {\n    27\t        register_rest_route(\n    28\t            HOSTINGER_REACH_PLUGIN_REST_API_BASE,\n    29\t            'contact',\n    30\t            array(\n    31\t                'methods'             => 'POST',\n    32\t                'callback'            => array( $this->handler, 'post_contact_handler' ),\n    33\t                'permission_callback' => '__return_true',"
+        },
+        {
+          "file": "src/Api/Routes/IntegrationsRoutes.php",
+          "anchor": "src/Api/Routes/IntegrationsRoutes.php:21",
+          "focus_line": 21,
+          "line_start": 15,
+          "line_end": 27,
+          "kind": "anomaly",
+          "code": "    15\t\n    16\t    public function __construct( IntegrationsApiHandler $handler ) {\n    17\t        $this->handler = $handler;\n    18\t    }\n    19\t\n    20\t    public function register_routes(): void {\n    21\t        register_rest_route(\n    22\t            HOSTINGER_REACH_PLUGIN_REST_API_BASE,\n    23\t            'integrations',\n    24\t            array(\n    25\t                'methods'             => 'GET',\n    26\t                'callback'            => array( $this->handler, 'get_integrations_handler' ),\n    27\t                'permission_callback' => '__return_true',"
+        },
+        {
+          "file": "src/Admin/Notices/ConnectionNotice.php",
+          "anchor": "src/Admin/Notices/ConnectionNotice.php:29",
+          "focus_line": 29,
+          "line_start": 23,
+          "line_end": 35,
+          "kind": "unresolved_hook",
+          "code": "    23\t        $this->functions         = $functions;\n    24\t    }\n    25\t\n    26\t    public function init(): void {\n    27\t        add_action( 'admin_notices', array( $this, 'display_notice' ) );\n    28\t        add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );\n    29\t        add_action( 'wp_ajax_' . self::NOTICE_ACTION, array( $this, 'handle_ajax_action' ) );\n    30\t    }\n    31\t\n    32\t    public function display_notice(): void {\n    33\t        if ( $this->should_render() ) {\n    34\t            $this->render();\n    35\t        }"
+        },
+        {
+          "file": "src/Admin/Notices/AddFormNotice.php",
+          "anchor": "src/Admin/Notices/AddFormNotice.php:28",
+          "focus_line": 28,
+          "line_start": 22,
+          "line_end": 34,
+          "kind": "unresolved_hook",
+          "code": "    22\t        $this->functions         = $functions;\n    23\t    }\n    24\t\n    25\t    public function init(): void {\n    26\t        add_action( 'admin_notices', array( $this, 'display_notice' ) );\n    27\t        add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );\n    28\t        add_action( 'wp_ajax_' . self::NOTICE_ACTION, array( $this, 'handle_ajax_action' ) );\n    29\t    }\n    30\t\n    31\t    public function display_notice(): void {\n    32\t        if ( $this->should_render() ) {\n    33\t            $this->render();\n    34\t        }"
+        },
+        {
+          "file": "src/Integrations/ThriveLeads/ThriveLeadsIntegration.php",
+          "anchor": "src/Integrations/ThriveLeads/ThriveLeadsIntegration.php:21",
+          "focus_line": 21,
+          "line_start": 15,
+          "line_end": 27,
+          "kind": "unresolved_hook",
+          "code": "    15\tclass ThriveLeadsIntegration extends Integration implements IntegrationInterface {\n    16\t\n    17\t    public const INTEGRATION_NAME = 'thrive-leads';\n    18\t\n    19\t    public function active_integration_hooks(): void {\n    20\t        if ( defined( 'TVE_LEADS_ACTION_FORM_CONVERSION' ) ) {\n    21\t            add_action( TVE_LEADS_ACTION_FORM_CONVERSION, array( $this, 'handle_submission' ), 10, 6 );\n    22\t        }\n    23\t    }\n    24\t\n    25\t    public function handle_submission( WP_Post $group, WP_Post $form_type, array $variation, int $test_model_id, array $post_data, mixed $current_screen ): void {\n    26\t        if ( ! $this->is_form_enabled( $form_type->ID ) ) {\n    27\t            return;"
+        },
+        {
+          "file": "src/Integrations/Integration.php",
+          "anchor": "src/Integrations/Integration.php:116",
+          "focus_line": 116,
+          "line_start": 110,
+          "line_end": 122,
+          "kind": "unresolved_hook",
+          "code": "   110\t\n   111\t\n   112\t    public function init(): void {\n   113\t        add_filter( 'hostinger_reach_integrations', array( $this, 'load_integration' ) );\n   114\t        add_filter( 'hostinger_reach_plugin_data', array( $this, 'load_plugin_data' ) );\n   115\t        add_filter( 'hostinger_reach_after_form_state_is_set', array( $this, 'on_form_state_changed' ), 10, 4 );\n   116\t        add_filter( 'hostinger_reach_contacts_' . $this->get_name(), array( $this, 'get_contacts' ), 10, 3 );\n   117\t        add_filter( 'hostinger_reach_import_summary_' . $this->get_name(), array( $this, 'get_import_summary' ), 10, 0 );\n   118\t        add_filter( 'hostinger_reach_import_enabled', array( $this, 'get_is_import_enabled' ), 10, 2 );\n   119\t        add_action( 'hostinger_reach_integrations_loaded', array( $this, 'init_active_integration' ) );\n   120\t        add_action( 'hostinger_reach_contact_submitted', array( $this, 'on_contact_form_submission' ) );\n   121\t    }\n   122\t"
+        },
+        {
+          "file": "src/Integrations/Integration.php",
+          "anchor": "src/Integrations/Integration.php:117",
+          "focus_line": 117,
+          "line_start": 111,
+          "line_end": 123,
+          "kind": "unresolved_hook",
+          "code": "   111\t\n   112\t    public function init(): void {\n   113\t        add_filter( 'hostinger_reach_integrations', array( $this, 'load_integration' ) );\n   114\t        add_filter( 'hostinger_reach_plugin_data', array( $this, 'load_plugin_data' ) );\n   115\t        add_filter( 'hostinger_reach_after_form_state_is_set', array( $this, 'on_form_state_changed' ), 10, 4 );\n   116\t        add_filter( 'hostinger_reach_contacts_' . $this->get_name(), array( $this, 'get_contacts' ), 10, 3 );\n   117\t        add_filter( 'hostinger_reach_import_summary_' . $this->get_name(), array( $this, 'get_import_summary' ), 10, 0 );\n   118\t        add_filter( 'hostinger_reach_import_enabled', array( $this, 'get_is_import_enabled' ), 10, 2 );\n   119\t        add_action( 'hostinger_reach_integrations_loaded', array( $this, 'init_active_integration' ) );\n   120\t        add_action( 'hostinger_reach_contact_submitted', array( $this, 'on_contact_form_submission' ) );\n   121\t    }\n   122\t\n   123\t    public function load_plugin_data( array $plugin_data ): array {"
+        },
+        {
+          "file": "src/Jobs/AbstractJob.php",
+          "anchor": "src/Jobs/AbstractJob.php:22",
+          "focus_line": 22,
+          "line_start": 16,
+          "line_end": 28,
+          "kind": "unresolved_hook",
+          "code": "    16\t    public function __construct( ActionScheduler $action_scheduler, ReachApiHandler $reach_api_handler ) {\n    17\t        $this->action_scheduler  = $action_scheduler;\n    18\t        $this->reach_api_handler = $reach_api_handler;\n    19\t    }\n    20\t\n    21\t    public function init(): void {\n    22\t        add_action( $this->get_process_item_hook(), array( $this, 'handle_process_items_action' ) );\n    23\t        add_action( $this->get_start_hook(), array( $this, 'handle_sart_hook_action' ) );\n    24\t\n    25\t        if ( $this instanceof RecurringJobInterface && $this->can_schedule_recurrent() ) {\n    26\t            $this->action_scheduler->schedule_recurring( $this->get_interval(), $this->get_start_hook() );\n    27\t        }\n    28\t    }"
+        },
+        {
+          "file": "src/Jobs/AbstractJob.php",
+          "anchor": "src/Jobs/AbstractJob.php:23",
+          "focus_line": 23,
+          "line_start": 17,
+          "line_end": 29,
+          "kind": "unresolved_hook",
+          "code": "    17\t        $this->action_scheduler  = $action_scheduler;\n    18\t        $this->reach_api_handler = $reach_api_handler;\n    19\t    }\n    20\t\n    21\t    public function init(): void {\n    22\t        add_action( $this->get_process_item_hook(), array( $this, 'handle_process_items_action' ) );\n    23\t        add_action( $this->get_start_hook(), array( $this, 'handle_sart_hook_action' ) );\n    24\t\n    25\t        if ( $this instanceof RecurringJobInterface && $this->can_schedule_recurrent() ) {\n    26\t            $this->action_scheduler->schedule_recurring( $this->get_interval(), $this->get_start_hook() );\n    27\t        }\n    28\t    }\n    29\t"
+        },
+        {
+          "file": "src/Jobs/AbstractBatchedJob.php",
+          "anchor": "src/Jobs/AbstractBatchedJob.php:13",
+          "focus_line": 13,
+          "line_start": 7,
+          "line_end": 19,
+          "kind": "unresolved_hook",
+          "code": "     7\t\n     8\tabstract class AbstractBatchedJob extends AbstractJob {\n     9\t\n    10\t    public const BATCH_LIMIT_PER_JOB = 15;\n    11\t\n    12\t    public function init(): void {\n    13\t        add_action( $this->get_create_batch_hook(), array( $this, 'handle_create_batch_action' ), 10, 2 );\n    14\t        parent::init();\n    15\t    }\n    16\t\n    17\t    protected function get_create_batch_hook(): string {\n    18\t        return \"{$this->get_hook_base_name()}/create_batch\";\n    19\t    }"
+        }
+      ]
+    }
+  },
+  "threat_context_summary": null
+}

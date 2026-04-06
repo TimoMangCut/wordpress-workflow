@@ -1,0 +1,77 @@
+{
+  "run_timestamp": "2026-04-05T16:49:21Z",
+  "benchmark_version": "option_d_v2",
+  "plugins": [
+    {
+      "slug": "backwpup",
+      "verified_by": "pipeline_derived",
+      "benchmark_semantics": "pipeline_regression_reference",
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "review_hit": 0,
+      "review_miss": 21,
+      "reviewable": 21,
+      "rejected": 23,
+      "quality_score": null,
+      "decision_rate": 0.0,
+      "gt_findings_count": 0,
+      "pipeline_decided_count": 0,
+      "pipeline_reviewable_count": 21,
+      "tp_details": []
+    },
+    {
+      "slug": "cartflows",
+      "verified_by": "manual_review",
+      "benchmark_semantics": "independent_accuracy",
+      "tp": 1,
+      "fp": 0,
+      "fn": 1,
+      "review_hit": 1,
+      "review_miss": 4,
+      "reviewable": 5,
+      "rejected": 71,
+      "quality_score": 0.5,
+      "decision_rate": 0.16666666666666666,
+      "gt_findings_count": 2,
+      "pipeline_decided_count": 1,
+      "pipeline_reviewable_count": 5,
+      "tp_details": [
+        {
+          "pipeline_sink_file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+          "gt_sink_file": "modules/checkout/classes/class-cartflows-checkout-ajax.php",
+          "match": "TP"
+        }
+      ]
+    },
+    {
+      "slug": "pretty-link",
+      "verified_by": "pipeline_derived",
+      "benchmark_semantics": "pipeline_regression_reference",
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "review_hit": 0,
+      "review_miss": 0,
+      "reviewable": 0,
+      "rejected": 64,
+      "quality_score": null,
+      "decision_rate": null,
+      "gt_findings_count": 0,
+      "pipeline_decided_count": 0,
+      "pipeline_reviewable_count": 0,
+      "tp_details": []
+    }
+  ],
+  "aggregate": {
+    "total_tp": 1,
+    "total_fp": 0,
+    "total_fn": 1,
+    "total_review_hit": 1,
+    "total_review_miss": 25,
+    "total_reviewable": 26,
+    "total_rejected": 158,
+    "quality_score": 0.5,
+    "decision_rate": 0.037037037037037035
+  }
+}

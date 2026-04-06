@@ -1,6 +1,12 @@
 {
   "plugin_slug": "backwpup",
   "applied_edits": 0,
+  "review_counts": {
+    "reject": 0,
+    "downgrade": 3,
+    "keep": 19,
+    "upgrade": 0
+  },
   "changes": [],
   "review_source": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase3/backwpup-phase3-review.json"
 }

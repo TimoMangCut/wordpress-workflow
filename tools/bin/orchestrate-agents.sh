@@ -5,7 +5,7 @@
 #   bash tools/bin/orchestrate-agents.sh <slug> [options]
 #
 # Options:
-#   --parallel-limit N      Max agents running concurrently (default: 1, serial)
+#   --parallel-limit N      Max agents running concurrently (default: 4)
 #   --timeout N             Override timeout_seconds from dispatch config (seconds)
 #   --dispatch-file PATH    Override dispatch config path (default: reports/<slug>-dispatch.json)
 #   --resume-missing-only   Skip agents whose output file already exists and is valid JSON
@@ -35,7 +35,7 @@ set -euo pipefail
 # ---------------------------------------------------------------------------
 # Defaults
 # ---------------------------------------------------------------------------
-PARALLEL_LIMIT=1        # serial-by-default: Codex quota is expensive
+PARALLEL_LIMIT=4        # worker bundles are bounded; 4-way concurrency is the default
 RESUME_MISSING_ONLY=0   # 0 = run all; 1 = skip agents with valid existing output
 POLL_INTERVAL=15        # seconds between completion polls
 TIMEOUT_OVERRIDE=""     # empty = read from dispatch config
@@ -55,7 +55,7 @@ Arguments:
   <slug>                  Plugin slug (e.g. woocommerce)
 
 Options:
-  --parallel-limit N      Max agents running concurrently (default: 1 — serial)
+  --parallel-limit N      Max agents running concurrently (default: 4)
   --timeout N             Timeout in seconds per agent (overrides dispatch config)
   --dispatch-file PATH    Path to dispatch config JSON (default: reports/<slug>-dispatch.json)
   --resume-missing-only   Skip agents whose output file already exists and is valid JSON.
@@ -67,7 +67,7 @@ Environment variables:
   CODEX_QUOTA_ACCOUNT     Codex account ID for traceability (logged in failures.json)
 
 Examples:
-  # Normal serial run (quota-safe default)
+  # Default parallel run
   bash tools/bin/orchestrate-agents.sh woocommerce
 
   # Resume after quota interruption (only run agents that did not write valid output)
@@ -140,14 +140,25 @@ fi
 # Paths
 # ---------------------------------------------------------------------------
 REPORTS_DIR="$REPO_ROOT/reports"
+PHASE2_DIR="$REPORTS_DIR/phase2"
 LOGS_DIR="$REPORTS_DIR/logs"
 DISPATCH_FILE="${DISPATCH_FILE_OVERRIDE:-$REPORTS_DIR/${SLUG}-dispatch.json}"
 FAILURES_LOG="$LOGS_DIR/${SLUG}-failures.json"
 MERGE_READY_SENTINEL="$REPORTS_DIR/${SLUG}-merge-ready"
 MERGE_SCRIPT="$SCRIPT_DIR/merge_agent_outputs.py"
+CLUSTER_SCRIPT="$SCRIPT_DIR/build_candidate_clusters.py"
+CLUSTER_PACK_SCRIPT="$SCRIPT_DIR/build_cluster_evidence_pack.py"
+CONSENSUS_SCRIPT="$SCRIPT_DIR/write_phase2_consensus.py"
 SKILL_SETS_DIR="$REPO_ROOT/tools/config"
+REVIEW_SCHEMA="$REPO_ROOT/contracts/phase2-review-output.schema.json"
+AGENT_OUTPUT_SCHEMA="$REPO_ROOT/contracts/agent-output.schema.json"
+CLUSTER_OUTPUT_SCHEMA="$REPO_ROOT/contracts/phase2-cluster-output.schema.json"
+AGENT_REVIEW_PROMPT_TEMPLATE="$REPO_ROOT/tools/config/phase2-agent-review-prompt-template.md"
+AGENT_REVISION_PROMPT_TEMPLATE="$REPO_ROOT/tools/config/phase2-agent-revision-prompt-template.md"
+CLUSTER_SYNTH_PROMPT_TEMPLATE="$REPO_ROOT/tools/config/phase2-cluster-synthesis-prompt-template.md"
+CLUSTER_CHALLENGE_PROMPT_TEMPLATE="$REPO_ROOT/tools/config/phase2-cluster-challenge-prompt-template.md"
 
-mkdir -p "$LOGS_DIR"
+mkdir -p "$LOGS_DIR" "$PHASE2_DIR"
 
 # ---------------------------------------------------------------------------
 # Temp state dir (bash-3-compatible replacement for associative arrays)
@@ -285,6 +296,173 @@ print(mm.get(sys.argv[2], ''))
 " "$DISPATCH_FILE" "$agent"
 }
 
+bundle_review_enabled() {
+  python3 -c "
+import json, sys
+d = json.load(open(sys.argv[1]))
+print(str(bool(d.get('bundle_review_enabled', False))).lower())
+" "$DISPATCH_FILE"
+}
+
+reviewer_provider_for_run() {
+  python3 -c "
+import json, sys
+d = json.load(open(sys.argv[1]))
+print(d.get('reviewer_provider', 'codex'))
+" "$DISPATCH_FILE"
+}
+
+reviewer_model_for_run() {
+  python3 -c "
+import json, sys
+d = json.load(open(sys.argv[1]))
+print(d.get('reviewer_model', ''))
+" "$DISPATCH_FILE"
+}
+
+review_rounds_for_run() {
+  python3 -c "
+import json, sys
+d = json.load(open(sys.argv[1]))
+print(int(d.get('review_rounds', 1)))
+" "$DISPATCH_FILE"
+}
+
+input_for_agent() {
+  local agent="$1"
+  python3 -c "
+import json,sys
+d=json.load(open(sys.argv[1]))
+print(d.get('inputs',{}).get(sys.argv[2],''))
+" "$DISPATCH_FILE" "$agent"
+}
+
+quota_signal_in_log() {
+  local path="$1"
+  [[ -f "$path" ]] && grep -qi "usage limit\|usage exhausted\|rate limit\|quota" "$path" 2>/dev/null
+}
+
+is_valid_agent_output() {
+  python3 - "$1" "$AGENT_OUTPUT_SCHEMA" <<'PY' 2>/dev/null
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+schema_path = Path(sys.argv[2])
+if not path.exists():
+    raise SystemExit(1)
+data = json.loads(path.read_text(encoding="utf-8"))
+required = {"agent_id", "plugin_slug", "findings"}
+if not required.issubset(data):
+    raise SystemExit(1)
+if schema_path.exists():
+    try:
+        import jsonschema
+    except Exception:
+        raise SystemExit(0)
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    jsonschema.validate(instance=data, schema=schema)
+PY
+}
+
+is_valid_review_output() {
+  python3 - "$1" "$REVIEW_SCHEMA" <<'PY' 2>/dev/null
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+schema_path = Path(sys.argv[2])
+if not path.exists():
+    raise SystemExit(1)
+data = json.loads(path.read_text(encoding="utf-8"))
+required = {"plugin_slug", "review_round", "review_status", "summary", "finding_reviews", "missed_findings"}
+if not required.issubset(data):
+    raise SystemExit(1)
+if schema_path.exists():
+    try:
+        import jsonschema
+    except Exception:
+        raise SystemExit(0)
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    jsonschema.validate(instance=data, schema=schema)
+PY
+}
+
+is_valid_cluster_output() {
+  python3 - "$1" "$CLUSTER_OUTPUT_SCHEMA" <<'PY' 2>/dev/null
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+schema_path = Path(sys.argv[2])
+if not path.exists():
+    raise SystemExit(1)
+data = json.loads(path.read_text(encoding="utf-8"))
+required = {"plugin_slug", "cluster_id", "stage", "status", "summary", "suggested_actions", "proposed_links", "objections"}
+if not required.issubset(data):
+    raise SystemExit(1)
+if schema_path.exists():
+    try:
+        import jsonschema
+    except Exception:
+        raise SystemExit(0)
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    jsonschema.validate(instance=data, schema=schema)
+PY
+}
+
+normalize_cluster_output_file() {
+  local output_path="$1" stage="$2" cluster_path="$3"
+  python3 - "$output_path" "$stage" "$cluster_path" <<'PY' >/dev/null 2>&1 || true
+import json
+import sys
+from pathlib import Path
+
+output_path = Path(sys.argv[1])
+stage = sys.argv[2]
+cluster_path = Path(sys.argv[3])
+if not output_path.exists() or not cluster_path.exists():
+    raise SystemExit(0)
+
+data = json.loads(output_path.read_text(encoding="utf-8"))
+cluster = json.loads(cluster_path.read_text(encoding="utf-8"))
+
+summary = data.get("summary")
+if isinstance(summary, str):
+    data["summary"] = {
+        "member_findings_reviewed": len(cluster.get("member_findings", [])),
+        "material_links_found": len(data.get("proposed_links", [])) if isinstance(data.get("proposed_links"), list) else 0,
+        "objections_count": len(data.get("objections", [])) if isinstance(data.get("objections"), list) else 0,
+        "notes": summary,
+    }
+elif not isinstance(summary, dict):
+    data["summary"] = {
+        "member_findings_reviewed": len(cluster.get("member_findings", [])),
+        "material_links_found": 0,
+        "objections_count": 0,
+        "notes": "",
+    }
+else:
+    data["summary"].setdefault("member_findings_reviewed", len(cluster.get("member_findings", [])))
+    data["summary"].setdefault("material_links_found", len(data.get("proposed_links", [])) if isinstance(data.get("proposed_links"), list) else 0)
+    data["summary"].setdefault("objections_count", len(data.get("objections", [])) if isinstance(data.get("objections"), list) else 0)
+    data["summary"].setdefault("notes", "")
+
+data.setdefault("plugin_slug", cluster.get("plugin_slug", ""))
+data.setdefault("cluster_id", cluster.get("cluster_id", ""))
+data["stage"] = stage
+data.setdefault("status", "needs_followup")
+for field in ("suggested_actions", "proposed_links", "objections"):
+    if not isinstance(data.get(field), list):
+        data[field] = []
+
+output_path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+PY
+}
+
 # ---------------------------------------------------------------------------
 # Step 1: Read dispatch config
 # ---------------------------------------------------------------------------
@@ -308,6 +486,10 @@ DISPATCH_SLUG=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); pri
 DISPATCH_TIMEOUT=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(d.get('timeout_seconds', 900))" "$DISPATCH_FILE")
 SOURCE_DIR=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(d.get('source_dir', ''))" "$DISPATCH_FILE")
 QUOTA_ACCOUNT=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(d.get('quota_account','') or '')" "$DISPATCH_FILE")
+BUNDLE_REVIEW_ENABLED="$(bundle_review_enabled)"
+REVIEWER_PROVIDER="$(reviewer_provider_for_run)"
+REVIEWER_MODEL="$(reviewer_model_for_run)"
+REVIEW_ROUNDS="$(review_rounds_for_run)"
 # Runtime override: CODEX_QUOTA_ACCOUNT env var wins over dispatch value
 QUOTA_ACCOUNT="${CODEX_QUOTA_ACCOUNT:-$QUOTA_ACCOUNT}"
 TIMEOUT_SECONDS="${TIMEOUT_OVERRIDE:-$DISPATCH_TIMEOUT}"
@@ -315,6 +497,7 @@ TIMEOUT_SECONDS="${TIMEOUT_OVERRIDE:-$DISPATCH_TIMEOUT}"
 log_info "slug from dispatch: $DISPATCH_SLUG"
 log_info "timeout: ${TIMEOUT_SECONDS}s | parallel-limit: $PARALLEL_LIMIT | source_dir: $SOURCE_DIR"
 log_info "quota_account: ${QUOTA_ACCOUNT:-(not set)} | resume_missing_only: $RESUME_MISSING_ONLY"
+log_info "bundle_review_enabled: $BUNDLE_REVIEW_ENABLED | reviewer=${REVIEWER_PROVIDER} (${REVIEWER_MODEL:-<default>}) | review_rounds=${REVIEW_ROUNDS}"
 
 if [[ "$DISPATCH_SLUG" != "$SLUG" ]]; then
   log_warn "Slug mismatch: CLI arg '$SLUG' vs dispatch config '$DISPATCH_SLUG'. Using CLI arg."
@@ -352,9 +535,9 @@ print(d.get('inputs',{}).get(sys.argv[2],''))
   [[ "$INPUT_FILE" != /* ]] && local_path="$REPO_ROOT/$INPUT_FILE"
 
   if [[ ! -f "$local_path" ]]; then
-    log_warn "Input file for '$agent' not found: $INPUT_FILE — IR slice empty. Skipping."
+    log_warn "Input file for '$agent' not found: $INPUT_FILE — prepared bundle missing. Skipping."
     append_failure "phase2" "$agent" "missing_input_file" "0" "skipped" \
-      "IR slice not found for '$agent' — no EPs in group (not an error)."
+      "Prepared input bundle not found for '$agent' — nothing assigned to this agent (not an error)."
     continue
   fi
 
@@ -422,32 +605,47 @@ done
 
 if [[ "${SKIP_QUOTA_PROBE:-0}" != "1" ]] && [[ "$NEEDS_CODEX" -eq 1 ]]; then
   log_info "Preflight: probing Codex quota before launching agents..."
-  PROBE_OUT=$(mktemp /tmp/orchestrate-probe.XXXXXX)
-  PROBE_ERR=$(mktemp /tmp/orchestrate-probe-err.XXXXXX)
   PROBE_EXIT=0
-  echo '{"probe":true,"task":"reply with: {\"ok\":true}"}' \
-    | codex exec \
-        --dangerously-bypass-approvals-and-sandbox \
-        -C "$REPO_ROOT" \
-        --output-last-message "$PROBE_OUT" \
-        2>"$PROBE_ERR" || PROBE_EXIT=$?
+  PROBE_ERR_TEXT=""
+  PROBE_SUCCESS=0
+  for probe_attempt in 1 2 3; do
+    PROBE_OUT=$(mktemp /tmp/orchestrate-probe.XXXXXX)
+    PROBE_ERR=$(mktemp /tmp/orchestrate-probe-err.XXXXXX)
+    PROBE_EXIT=0
+    echo '{"probe":true,"task":"reply with: {\"ok\":true}"}' \
+      | codex exec \
+          --dangerously-bypass-approvals-and-sandbox \
+          -C "$REPO_ROOT" \
+          --output-last-message "$PROBE_OUT" \
+          2>"$PROBE_ERR" || PROBE_EXIT=$?
 
-  PROBE_ERR_TEXT="$(cat "$PROBE_ERR" 2>/dev/null || true)"
-
-  if grep -qi "usage limit\|usage exhausted\|rate limit\|quota" "$PROBE_ERR" 2>/dev/null; then
-    log_error "Preflight FAILED: Codex quota exhausted (exit=$PROBE_EXIT)."
-    log_error "stderr: $PROBE_ERR_TEXT"
-    log_error "Aborting — no agents launched. Use --resume-missing-only after quota reset."
-    append_failure "phase2" "preflight" "quota_exhausted" "0" "aborted" \
-      "Codex quota probe failed before any agent launched." \
-      "codex" "$QUOTA_ACCOUNT" "$PROBE_EXIT" "$PROBE_ERR_TEXT"
-    flush_failures
+    PROBE_ERR_TEXT="$(cat "$PROBE_ERR" 2>/dev/null || true)"
+    if quota_signal_in_log "$PROBE_ERR"; then
+      if [[ "$probe_attempt" -lt 3 ]]; then
+        log_warn "Codex preflight hit usage-limit signal on attempt ${probe_attempt}/3; retrying after short backoff."
+        rm -f "$PROBE_OUT" "$PROBE_ERR"
+        sleep 3
+        continue
+      fi
+      log_error "Preflight FAILED: Codex quota exhausted after 3 attempts (exit=$PROBE_EXIT)."
+      log_error "stderr: $PROBE_ERR_TEXT"
+      log_error "Aborting — no agents launched. Use --resume-missing-only after quota reset."
+      append_failure "phase2" "preflight" "quota_exhausted" "3" "aborted" \
+        "Codex quota probe failed before any agent launched." \
+        "codex" "$QUOTA_ACCOUNT" "$PROBE_EXIT" "$PROBE_ERR_TEXT"
+      flush_failures
+      rm -f "$PROBE_OUT" "$PROBE_ERR"
+      exit 2
+    fi
+    PROBE_SUCCESS=1
+    log_info "Preflight quota probe: OK (exit=$PROBE_EXIT, attempt=$probe_attempt)"
     rm -f "$PROBE_OUT" "$PROBE_ERR"
+    break
+  done
+  if [[ "$PROBE_SUCCESS" -ne 1 ]]; then
+    log_error "Preflight FAILED: Codex probe did not succeed."
     exit 2
   fi
-
-  log_info "Preflight quota probe: OK (exit=$PROBE_EXIT)"
-  rm -f "$PROBE_OUT" "$PROBE_ERR"
 elif [[ "${SKIP_QUOTA_PROBE:-0}" == "1" ]]; then
   log_info "Preflight quota probe: SKIPPED (SKIP_QUOTA_PROBE=1)"
 else
@@ -530,12 +728,301 @@ fi
 skill_set_file_for_agent() {
   local agent="$1"
   case "$agent" in
+    agent-w*) echo "$SKILL_SETS_DIR/skill-set-agent-worker.md" ;;
     agent-a*) echo "$SKILL_SETS_DIR/skill-set-agent-a.md" ;;
     agent-b*) echo "$SKILL_SETS_DIR/skill-set-agent-b.md" ;;
     agent-c*) echo "$SKILL_SETS_DIR/skill-set-agent-c.md" ;;
     agent-d*) echo "$SKILL_SETS_DIR/skill-set-agent-d.md" ;;
     *)        echo "" ;;
   esac
+}
+
+render_agent_review_prompt() {
+  local slug="$1" agent="$2" input_path="$3" worker_output_path="$4" review_output_path="$5" threat_context_path="$6" round="$7"
+  python3 - "$AGENT_REVIEW_PROMPT_TEMPLATE" "$slug" "$agent" "$input_path" "$worker_output_path" "$review_output_path" "$threat_context_path" "$round" <<'PY'
+from pathlib import Path
+import sys
+
+template_path, slug, agent, input_path, worker_output_path, review_output_path, threat_context_path, round_number = sys.argv[1:9]
+text = Path(template_path).read_text(encoding="utf-8", errors="replace")
+for needle, value in {
+    "{PLUGIN_SLUG}": slug,
+    "{AGENT_ID}": agent,
+    "{INPUT_BUNDLE_PATH}": input_path,
+    "{WORKER_OUTPUT_PATH}": worker_output_path,
+    "{REVIEW_OUTPUT_PATH}": review_output_path,
+    "{THREAT_CONTEXT_PATH}": threat_context_path,
+    "{ROUND_NUMBER}": round_number,
+}.items():
+    text = text.replace(needle, value)
+print(text, end="")
+PY
+}
+
+render_agent_revision_prompt() {
+  local slug="$1" agent="$2" input_path="$3" prev_worker_output="$4" review_output_path="$5" revised_output_path="$6" threat_context_path="$7" round="$8"
+  python3 - "$AGENT_REVISION_PROMPT_TEMPLATE" "$slug" "$agent" "$input_path" "$prev_worker_output" "$review_output_path" "$revised_output_path" "$threat_context_path" "$round" <<'PY'
+from pathlib import Path
+import sys
+
+template_path, slug, agent, input_path, prev_worker_output, review_output_path, revised_output_path, threat_context_path, round_number = sys.argv[1:10]
+text = Path(template_path).read_text(encoding="utf-8", errors="replace")
+for needle, value in {
+    "{PLUGIN_SLUG}": slug,
+    "{AGENT_ID}": agent,
+    "{INPUT_BUNDLE_PATH}": input_path,
+    "{PREVIOUS_WORKER_OUTPUT_PATH}": prev_worker_output,
+    "{REVIEW_OUTPUT_PATH}": review_output_path,
+    "{OUTPUT_PATH}": revised_output_path,
+    "{THREAT_CONTEXT_PATH}": threat_context_path,
+    "{ROUND_NUMBER}": round_number,
+}.items():
+    text = text.replace(needle, value)
+print(text, end="")
+PY
+}
+
+render_cluster_synthesis_prompt() {
+  local slug="$1" cluster_id="$2" cluster_pack_path="$3" output_path="$4"
+  python3 - "$CLUSTER_SYNTH_PROMPT_TEMPLATE" "$slug" "$cluster_id" "$cluster_pack_path" "$output_path" <<'PY'
+from pathlib import Path
+import sys
+
+template_path, slug, cluster_id, cluster_pack_path, output_path = sys.argv[1:6]
+text = Path(template_path).read_text(encoding="utf-8", errors="replace")
+for needle, value in {
+    "{PLUGIN_SLUG}": slug,
+    "{CLUSTER_ID}": cluster_id,
+    "{CLUSTER_PACK_PATH}": cluster_pack_path,
+    "{OUTPUT_PATH}": output_path,
+}.items():
+    text = text.replace(needle, value)
+print(text, end="")
+PY
+}
+
+render_cluster_challenge_prompt() {
+  local slug="$1" cluster_id="$2" cluster_pack_path="$3" synth_path="$4" output_path="$5"
+  python3 - "$CLUSTER_CHALLENGE_PROMPT_TEMPLATE" "$slug" "$cluster_id" "$cluster_pack_path" "$synth_path" "$output_path" <<'PY'
+from pathlib import Path
+import sys
+
+template_path, slug, cluster_id, cluster_pack_path, synth_path, output_path = sys.argv[1:7]
+text = Path(template_path).read_text(encoding="utf-8", errors="replace")
+for needle, value in {
+    "{PLUGIN_SLUG}": slug,
+    "{CLUSTER_ID}": cluster_id,
+    "{CLUSTER_PACK_PATH}": cluster_pack_path,
+    "{SYNTH_PATH}": synth_path,
+    "{OUTPUT_PATH}": output_path,
+}.items():
+    text = text.replace(needle, value)
+print(text, end="")
+PY
+}
+
+run_provider_prompt_sync() {
+  local provider="$1" model="$2" prompt_file="$3" log_file="$4" last_message_file="$5"
+  local rc=0
+  if [[ "$provider" == "claude" ]]; then
+    local claude_cmd
+    claude_cmd=(claude -p --dangerously-skip-permissions --verbose --output-format stream-json)
+    if [[ -n "$model" ]]; then
+      claude_cmd+=(--model "$model")
+    fi
+    (
+      cd "$REPO_ROOT"
+      "${claude_cmd[@]}" \
+        2>>"$log_file" \
+        < "$prompt_file" \
+        | python3 -u - 2>>"$log_file" \
+            > "$last_message_file" <<'PYEOF'
+import sys, json
+for raw in sys.stdin.buffer:
+    line = raw.decode("utf-8", errors="replace").rstrip("\n")
+    if not line:
+        continue
+    try:
+        obj = json.loads(line)
+    except Exception:
+        print(line, flush=True)
+        continue
+    t = obj.get("type", "")
+    if t == "content_block_delta":
+        delta = obj.get("delta", {})
+        if delta.get("type") == "text_delta":
+            print(delta.get("text", ""), end="", flush=True)
+    elif t == "message_stop":
+        print("", flush=True)
+PYEOF
+    ) || rc=$?
+  else
+    (
+      cd "$REPO_ROOT"
+      codex exec \
+        --dangerously-bypass-approvals-and-sandbox \
+        -C "$REPO_ROOT" \
+        --output-last-message "$last_message_file" \
+        2>>"$log_file" \
+        < "$prompt_file"
+    ) || rc=$?
+  fi
+  return "$rc"
+}
+
+run_coded_prompt_with_usage_retries() {
+  local provider="$1" model="$2" prompt_file="$3" log_file="$4" last_message_file="$5"
+  local rc=0
+  local attempt
+  for attempt in 1 2 3; do
+    : > "$log_file"
+    : > "$last_message_file"
+    rc=0
+    run_provider_prompt_sync "$provider" "$model" "$prompt_file" "$log_file" "$last_message_file" || rc=$?
+    if [[ "$provider" == "codex" ]] && quota_signal_in_log "$log_file"; then
+      if [[ "$attempt" -lt 3 ]]; then
+        log_warn "Codex usage-limit signal for prompt run (attempt ${attempt}/3); retrying after short backoff."
+        sleep 3
+        continue
+      fi
+    fi
+    return "$rc"
+  done
+  return "$rc"
+}
+
+run_worker_bundle_review_loop() {
+  local agent="$1" worker_output="$2"
+  local worker_provider="$3" worker_model="$4"
+  local input_file review_path revised_path initial_snapshot threat_context_path review_prompt revision_prompt
+  local reviewer_log reviewer_last_message revision_log revision_last_message prompt_file rc=0 review_status=""
+
+  [[ "$agent" == agent-w* ]] || return 0
+  [[ "$BUNDLE_REVIEW_ENABLED" == "true" ]] || return 0
+  [[ "$REVIEW_ROUNDS" -ge 1 ]] || return 0
+  [[ -f "$AGENT_REVIEW_PROMPT_TEMPLATE" ]] || return 0
+  [[ -f "$AGENT_REVISION_PROMPT_TEMPLATE" ]] || return 0
+
+  input_file="$(input_for_agent "$agent")"
+  threat_context_path="$(threat_context_for_run)"
+  initial_snapshot="$PHASE2_DIR/${SLUG}-${agent}-worker.initial.json"
+  review_path="$PHASE2_DIR/${SLUG}-${agent}-review.r1.json"
+  revised_path="$PHASE2_DIR/${SLUG}-${agent}-revised.r1.json"
+  reviewer_log="$LOGS_DIR/${SLUG}-${agent}-review.r1.log"
+  reviewer_last_message="$LOGS_DIR/${SLUG}-${agent}-review.r1.last-message.txt"
+  revision_log="$LOGS_DIR/${SLUG}-${agent}-revision.r1.log"
+  revision_last_message="$LOGS_DIR/${SLUG}-${agent}-revision.r1.last-message.txt"
+
+  cp -f "$worker_output" "$initial_snapshot"
+
+  prompt_file="$(mktemp /tmp/review-${SLUG}-${agent}.XXXXXX)"
+  render_agent_review_prompt "$SLUG" "$agent" "$input_file" "$initial_snapshot" "$review_path" "$threat_context_path" "1" > "$prompt_file"
+  log_info "Running reviewer loop for $agent via $REVIEWER_PROVIDER (${REVIEWER_MODEL:-<default>})"
+  rc=0
+  run_coded_prompt_with_usage_retries "$REVIEWER_PROVIDER" "$REVIEWER_MODEL" "$prompt_file" "$reviewer_log" "$reviewer_last_message" || rc=$?
+  rm -f "$prompt_file"
+  if [[ "$rc" -ne 0 ]] || ! is_valid_review_output "$review_path"; then
+    log_warn "Reviewer loop for $agent failed or produced invalid critique; preserving worker output."
+    return 0
+  fi
+
+  review_status="$(python3 -c "import json; d=json.load(open('$review_path')); print(d.get('review_status','needs_revision'))" 2>/dev/null || echo needs_revision)"
+  if [[ "$review_status" == "stable" ]]; then
+    log_info "Reviewer loop for $agent marked bundle stable."
+    return 0
+  fi
+
+  prompt_file="$(mktemp /tmp/revise-${SLUG}-${agent}.XXXXXX)"
+  render_agent_revision_prompt "$SLUG" "$agent" "$input_file" "$initial_snapshot" "$review_path" "$revised_path" "$threat_context_path" "1" > "$prompt_file"
+  log_info "Running worker revision for $agent via $worker_provider (${worker_model:-<default>})"
+  rc=0
+  run_coded_prompt_with_usage_retries "$worker_provider" "$worker_model" "$prompt_file" "$revision_log" "$revision_last_message" || rc=$?
+  rm -f "$prompt_file"
+  if [[ "$rc" -ne 0 ]] || ! is_valid_agent_output "$revised_path"; then
+    log_warn "Worker revision for $agent failed or produced invalid output; preserving original worker output."
+    return 0
+  fi
+
+  cp -f "$revised_path" "$worker_output"
+  log_info "Reviewer loop for $agent applied revised worker output."
+  return 0
+}
+
+run_cluster_llm_stage() {
+  local cluster_plan="$PHASE2_DIR/${SLUG}-cluster-plan.json"
+  local threat_context_path synth_count=0 challenge_count=0
+  [[ -f "$cluster_plan" ]] || return 0
+  [[ -f "$CLUSTER_SYNTH_PROMPT_TEMPLATE" ]] || return 0
+  [[ -f "$CLUSTER_CHALLENGE_PROMPT_TEMPLATE" ]] || return 0
+
+  threat_context_path="$(threat_context_for_run)"
+
+  while IFS=$'\t' read -r cluster_id cluster_path cluster_input_path cluster_pack_path; do
+    [[ -n "$cluster_id" && -n "$cluster_path" ]] || continue
+    [[ "$cluster_path" != /* ]] && cluster_path="$REPO_ROOT/$cluster_path"
+    [[ -f "$cluster_path" ]] || continue
+    [[ -z "$cluster_pack_path" ]] && cluster_pack_path="$cluster_input_path"
+    [[ -z "$cluster_pack_path" ]] && cluster_pack_path="$cluster_path"
+    [[ "$cluster_pack_path" != /* ]] && cluster_pack_path="$REPO_ROOT/$cluster_pack_path"
+    [[ -f "$cluster_pack_path" ]] || continue
+
+    local synth_provider synth_model challenge_provider challenge_model
+    synth_provider="$(python3 -c "import json; d=json.load(open('$cluster_path')); print(d.get('recommended_models',{}).get('synthesizer',{}).get('provider','codex'))" 2>/dev/null || echo codex)"
+    synth_model="$(python3 -c "import json; d=json.load(open('$cluster_path')); print(d.get('recommended_models',{}).get('synthesizer',{}).get('model','gpt-5.4'))" 2>/dev/null || echo gpt-5.4)"
+    challenge_provider="$(python3 -c "import json; d=json.load(open('$cluster_path')); print(d.get('recommended_models',{}).get('challenger',{}).get('provider','claude'))" 2>/dev/null || echo claude)"
+    challenge_model="$(python3 -c "import json; d=json.load(open('$cluster_path')); print(d.get('recommended_models',{}).get('challenger',{}).get('model','claude-sonnet-4.6'))" 2>/dev/null || echo claude-sonnet-4.6)"
+
+    local synth_path challenge_path synth_log synth_last_message challenge_log challenge_last_message prompt_file rc
+    synth_path="$PHASE2_DIR/${SLUG}-${cluster_id}.synth.json"
+    challenge_path="$PHASE2_DIR/${SLUG}-${cluster_id}.challenge.json"
+    synth_log="$LOGS_DIR/${SLUG}-${cluster_id}.synth.log"
+    synth_last_message="$LOGS_DIR/${SLUG}-${cluster_id}.synth.last-message.txt"
+    challenge_log="$LOGS_DIR/${SLUG}-${cluster_id}.challenge.log"
+    challenge_last_message="$LOGS_DIR/${SLUG}-${cluster_id}.challenge.last-message.txt"
+
+    prompt_file="$(mktemp /tmp/cluster-synth-${SLUG}-${cluster_id}.XXXXXX)"
+    render_cluster_synthesis_prompt "$SLUG" "$cluster_id" "$cluster_pack_path" "$synth_path" > "$prompt_file"
+    log_info "Running cluster synthesizer for $cluster_id via $synth_provider (${synth_model:-<default>})"
+    rc=0
+    run_coded_prompt_with_usage_retries "$synth_provider" "$synth_model" "$prompt_file" "$synth_log" "$synth_last_message" || rc=$?
+    rm -f "$prompt_file"
+    normalize_cluster_output_file "$synth_path" "synthesis" "$cluster_pack_path"
+    if [[ "$rc" -ne 0 ]] || ! is_valid_cluster_output "$synth_path"; then
+      log_warn "Cluster synthesizer for $cluster_id failed or produced invalid output; skipping challenger."
+      append_failure "phase2" "$cluster_id" "cluster_synth_failed" "0" "continued" \
+        "Cluster synthesis failed or produced invalid JSON; cluster challenge skipped." \
+        "$synth_provider" "$QUOTA_ACCOUNT"
+      continue
+    fi
+    synth_count=$((synth_count + 1))
+
+    prompt_file="$(mktemp /tmp/cluster-challenge-${SLUG}-${cluster_id}.XXXXXX)"
+    render_cluster_challenge_prompt "$SLUG" "$cluster_id" "$cluster_pack_path" "$synth_path" "$challenge_path" > "$prompt_file"
+    log_info "Running cluster challenger for $cluster_id via $challenge_provider (${challenge_model:-<default>})"
+    rc=0
+    run_coded_prompt_with_usage_retries "$challenge_provider" "$challenge_model" "$prompt_file" "$challenge_log" "$challenge_last_message" || rc=$?
+    rm -f "$prompt_file"
+    normalize_cluster_output_file "$challenge_path" "challenge" "$cluster_pack_path"
+    if [[ "$rc" -ne 0 ]] || ! is_valid_cluster_output "$challenge_path"; then
+      log_warn "Cluster challenger for $cluster_id failed or produced invalid output."
+      append_failure "phase2" "$cluster_id" "cluster_challenge_failed" "0" "continued" \
+        "Cluster challenge failed or produced invalid JSON; synthesis artifact preserved." \
+        "$challenge_provider" "$QUOTA_ACCOUNT"
+      continue
+    fi
+    challenge_count=$((challenge_count + 1))
+  done < <(python3 - "$cluster_plan" <<'PY'
+import json
+import sys
+
+data = json.load(open(sys.argv[1]))
+for cluster in data.get("clusters", []):
+    print(f"{cluster.get('cluster_id','')}\t{cluster.get('path','')}\t{cluster.get('input_path','')}\t{cluster.get('pack_path','')}")
+PY
+  )
+
+  log_info "Cluster LLM stage complete: synth=${synth_count} challenge=${challenge_count}"
+  return 0
 }
 
 # ---------------------------------------------------------------------------
@@ -695,6 +1182,9 @@ while true; do
 
     # --- Completed: output file exists and is valid JSON ---
     if [[ -f "$out_file" ]] && is_valid_json "$out_file"; then
+      if [[ "$agent" == agent-w* ]]; then
+        run_worker_bundle_review_loop "$agent" "$out_file" "$agent_provider" "$(state_get "$agent" model)" || true
+      fi
       log_info "Agent '$agent' completed → $out_file (${elapsed}s, provider=$agent_provider)"
       state_set "$agent" "status" "done"
       OUTPUT_FILES+=("$out_file")
@@ -728,7 +1218,7 @@ while true; do
         state_set "$agent" "status" "failed"
         FAILED_AGENTS+=("$agent")
         append_failure "phase2" "$agent" "timeout" "1" "skipped" \
-          "Agent '$agent' timed out after retry — EP group findings may be incomplete." \
+          "Agent '$agent' timed out after retry — assigned bundle findings may be incomplete." \
           "$agent_provider" "$QUOTA_ACCOUNT"
         kill "$new_pid" 2>/dev/null || true
         wait "$new_pid" 2>/dev/null || true
@@ -774,9 +1264,22 @@ except Exception:
           quota_signal="quota_exhausted_mid_run"
           log_error "  └─ Quota exhaustion detected in agent log. Use --resume-missing-only after quota reset."
         fi
+        if [[ -n "$quota_signal" && "$agent_provider" == "codex" ]]; then
+          quota_retries="$(state_get "$agent" quota_retries)"
+          quota_retries="${quota_retries:-0}"
+          if [[ "$quota_retries" -lt 3 ]]; then
+            quota_retries=$((quota_retries + 1))
+            state_set "$agent" "quota_retries" "$quota_retries"
+            log_warn "Retrying $agent after usage-limit signal (${quota_retries}/3) because cached quota responses can be stale."
+            sleep 3
+            launch_agent "$agent"
+            STILL_RUNNING+=("$agent")
+            continue
+          fi
+        fi
         failure_type="${quota_signal:-missing_output}"
         append_failure "phase2" "$agent" "$failure_type" "0" "skipped" \
-          "Agent '$agent' wrote no output — EP group findings absent." \
+          "Agent '$agent' wrote no output — assigned bundle findings absent." \
           "$agent_provider" "$QUOTA_ACCOUNT" "$exit_code" "$stderr_excerpt"
       fi
       state_set "$agent" "status" "failed"
@@ -879,6 +1382,48 @@ if ! python3 "$MERGE_SCRIPT" "$SLUG" --expected-agents $EXPECTED_AGENTS_ARGS; th
   exit 1
 fi
 log_info "Merge complete."
+
+# ---------------------------------------------------------------------------
+# Step 6.5: Deterministic cluster planning (cross-bundle synthesis prep)
+# ---------------------------------------------------------------------------
+if [[ -f "$CLUSTER_SCRIPT" ]]; then
+  log_info "=== Step 6.5: Building deterministic cluster plan ==="
+  if python3 "$CLUSTER_SCRIPT" "$SLUG" --reports-dir "$REPORTS_DIR"; then
+    log_info "Cluster planning complete."
+    if [[ -f "$PHASE2_DIR/${SLUG}-cluster-plan.json" && -f "$CLUSTER_PACK_SCRIPT" ]]; then
+      log_info "=== Step 6.6: Building deterministic cluster evidence packs ==="
+      if python3 "$CLUSTER_PACK_SCRIPT" "$SLUG" --reports-dir "$REPORTS_DIR"; then
+        log_info "Cluster evidence pack build complete."
+        log_info "=== Step 6.7: Running cluster synthesizer/challenger stage ==="
+        run_cluster_llm_stage || true
+      else
+        log_warn "Cluster evidence pack build failed for slug '$SLUG'. Continuing without cluster LLM stage."
+        append_failure "phase2" "cluster-pack" "cluster_pack_build_failed" "0" "continued" \
+          "build_cluster_evidence_pack.py returned non-zero exit code; cluster synth/challenge skipped."
+      fi
+    fi
+  else
+    log_warn "Cluster planning failed for slug '$SLUG'. Continuing with merged Phase 2 output."
+    append_failure "phase2" "cluster-plan" "cluster_build_failed" "0" "continued" \
+      "build_candidate_clusters.py returned non-zero exit code; cluster artifacts missing."
+  fi
+else
+  log_warn "Cluster script not found: $CLUSTER_SCRIPT — skipping deterministic cluster planning."
+fi
+
+# ---------------------------------------------------------------------------
+# Step 6.8: Deterministic consensus writer
+# ---------------------------------------------------------------------------
+if [[ -f "$CONSENSUS_SCRIPT" ]]; then
+  log_info "=== Step 6.8: Writing deterministic Phase 2 consensus ==="
+  if ! python3 "$CONSENSUS_SCRIPT" "$SLUG" --reports-dir "$REPORTS_DIR"; then
+    log_warn "Consensus writer failed for slug '$SLUG'. Existing canonical Phase 2 may still reflect local merge."
+    append_failure "phase2" "consensus" "consensus_write_failed" "0" "continued" \
+      "write_phase2_consensus.py returned non-zero exit code."
+  fi
+else
+  log_warn "Consensus script not found: $CONSENSUS_SCRIPT — skipping consensus stage."
+fi
 
 # ---------------------------------------------------------------------------
 # Step 7: Write merge-ready sentinel

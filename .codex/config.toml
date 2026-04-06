@@ -1,5 +1,6 @@
 model = "gpt-5.4"
 model_reasoning_effort = "xhigh"
+model_provider = "codex-lb"
 personality = "pragmatic"
 project_doc_max_bytes = 131072
 
@@ -10,3 +11,10 @@ inherit = "core"
 LLM_PROVIDERS = "codex"
 PHASE2_PRIMARY_PROVIDER = "codex"
 PHASE3_PRIMARY_PROVIDER = "codex"
+
+[model_providers.codex-lb]
+name = "OpenAI"
+base_url = "http://127.0.0.1:2455/backend-api/codex"
+wire_api = "responses"
+supports_websockets = true
+requires_openai_auth = true  # required for codex app
