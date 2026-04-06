@@ -1,0 +1,93 @@
+{
+  "plugin_slug": "backwpup",
+  "cluster_id": "cluster-c03",
+  "cluster_strategy": "cross_bundle_cluster_v1",
+  "cluster_summary": {
+    "bug_family": "generic",
+    "dominant_vuln_types": [
+      "unresolved_hook_resolution"
+    ],
+    "auth_boundary": "unknown",
+    "priority_score": 1,
+    "synthesis_scope": "single_bundle",
+    "member_count": 1
+  },
+  "shared_context": {
+    "entry_point_ids": [
+      "unresolved:inc/dependencies/wp-media/event-manager/EventManager.php:26"
+    ],
+    "supporting_files": [
+      "inc/dependencies/wp-media/event-manager/EventManager.php"
+    ],
+    "primary_files": [
+      "inc/dependencies/wp-media/event-manager/EventManager.php"
+    ],
+    "optional_files": [],
+    "primary_anchors": [
+      "inc/dependencies/wp-media/event-manager/EventManager.php:26"
+    ],
+    "source_agents": [
+      "agent-d"
+    ],
+    "shared_signals": [
+      "shared_entry_point",
+      "shared_bug_family",
+      "shared_auth_boundary",
+      "shared_supporting_file"
+    ]
+  },
+  "member_findings": [
+    {
+      "finding_id": "agent-d-uh-004",
+      "verdict": "REVIEW",
+      "vuln_type": "unresolved_hook_resolution",
+      "confidence": 0.0,
+      "severity": "informational",
+      "auth_required": "unknown",
+      "entry_point_ids": [
+        "unresolved:inc/dependencies/wp-media/event-manager/EventManager.php:26"
+      ],
+      "source_agents": [
+        "agent-d"
+      ],
+      "source_anchor": "<unknown>",
+      "sink_anchor": "<unknown>",
+      "supporting_files": [
+        "inc/dependencies/wp-media/event-manager/EventManager.php"
+      ],
+      "guard_anchors": [
+        "inc/dependencies/wp-media/event-manager/EventManager.php:26"
+      ],
+      "why_this_might_connect": "generic; entry=unresolved:inc/dependencies/wp-media/event-manager/EventManager.php:26; sink=<unknown>"
+    }
+  ],
+  "questions_to_answer": [
+    "Which member findings should remain separate because the chain between them is speculative?",
+    "Which links are justified by a shared trust boundary, entry point, guard model, or sink family?",
+    "What evidence is still missing before treating this cluster as one stronger claim?"
+  ],
+  "exploration_budget": {
+    "max_optional_files": 0,
+    "max_out_of_band_files": 1,
+    "max_new_links": 3,
+    "max_open_questions": 3
+  },
+  "constraints": [
+    "Start from primary_anchors and primary_files before expanding.",
+    "Use optional_files only when the primary set is insufficient.",
+    "If you inspect files outside primary_files and optional_files, record them in expansion_attempts.",
+    "Prefer refutation over inflation.",
+    "Use only CONFIRMED, UNCERTAIN, RISK_NOTE, or REJECTED when describing mature outcomes.",
+    "Do not restate the full worker reasoning prose."
+  ],
+  "recommended_models": {
+    "synthesizer": {
+      "provider": "codex",
+      "model": "gpt-5.4"
+    },
+    "challenger": {
+      "provider": "claude",
+      "model": "claude-sonnet-4.6"
+    }
+  }
+}

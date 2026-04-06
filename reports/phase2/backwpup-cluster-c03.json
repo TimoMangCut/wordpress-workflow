@@ -1,0 +1,77 @@
+{
+  "plugin_slug": "backwpup",
+  "cluster_id": "cluster-c03",
+  "cluster_strategy": "cross_bundle_cluster_v1",
+  "bug_family": "generic",
+  "dominant_vuln_types": [
+    "unresolved_hook_resolution"
+  ],
+  "auth_boundary": "unknown",
+  "entry_point_ids": [
+    "unresolved:inc/dependencies/wp-media/event-manager/EventManager.php:26"
+  ],
+  "supporting_files": [
+    "inc/dependencies/wp-media/event-manager/EventManager.php"
+  ],
+  "source_agents": [
+    "agent-d"
+  ],
+  "member_finding_ids": [
+    "agent-d-uh-004"
+  ],
+  "member_findings": [
+    {
+      "finding_id": "agent-d-uh-004",
+      "verdict": "REVIEW",
+      "vuln_type": "unresolved_hook_resolution",
+      "severity": "informational",
+      "confidence": 0.0,
+      "entry_point_id": "unresolved:inc/dependencies/wp-media/event-manager/EventManager.php:26",
+      "source_function": null,
+      "source_file_path": null,
+      "source_line_number": null,
+      "sink_function": null,
+      "sink_file_path": null,
+      "sink_line_number": null,
+      "review_reason": "Dynamic hook, resolution failed \u2014 manual trace required. inc/dependencies/wp-media/event-manager/EventManager.php:26 is add_filter($hook_name, $callback, ...) where $hook_name is a parameter passed from add_subscriber_callback(). The caller iterates $subscriber->get_subscribed_events() which returns a map of hook_name => parameters defined by each SubscriberInterface implementation. Resolution requires enumerating all classes that implement SubscriberInterface and their get_subscribed_events() return values \u2014 this is a subscriber pattern dispatcher that can register an arbitrary number of hooks depending on the subscriber implementations present. Attempted: searched for SubscriberInterface implementations in the codebase. The actual hook names are defined in individual subscriber classes not visible from this file. To fully resolve: enumerate all classes implementing SubscriberInterface and read their get_subscribed_events() method to extract concrete hook names. This dispatcher itself introduces no vulnerability \u2014 it is a standard subscriber dispatch wrapper around add_filter().",
+      "source_agents": [
+        "agent-d"
+      ],
+      "phase3_review": {
+        "original_status": "UNCERTAIN",
+        "reason": "agent-d-uh-004 covers the EventManager subscriber-pattern dispatcher at inc/dependencies/wp-media/event-manager/EventManager.php:26, which is standard WordPress observer pattern. The phase2 finding itself states this dispatcher introduces no vulnerability. Gate scores: file_exists=0.0, code_evidence=0.0, reasoning_quality=0.0, no_hallucination=0.75 (file_not_found signal). The finding was never a security claim \u2014 it was a coverage gap note about unresolved dynamic hooks. No security impact. Downgrade to informational.",
+        "counter_evidence": [
+          {
+            "type": "design",
+            "file": "inc/dependencies/wp-media/event-manager/EventManager.php",
+            "line": 26,
+            "detail": "Standard WordPress subscriber/observer pattern. The dispatcher itself does not register privileged hooks \u2014 hook security depends on individual SubscriberInterface implementations, which are not flagged here."
+          }
+        ],
+        "missing_evidence": [
+          "Enumeration of all SubscriberInterface implementations and their get_subscribed_events() return values to determine if any registers a security-relevant hook without proper authorization."
+        ],
+        "dynamic_test_plan": [
+          "Step 1: Grep codebase for implements SubscriberInterface to enumerate all subscribers.",
+          "Step 2: For each subscriber, inspect get_subscribed_events() return value.",
+          "Step 3: For any subscriber that registers a hook handling untrusted input, trace the handler to confirm authorization check presence.",
+          "Step 4: If any hook handler lacks authorization, create a new targeted finding for that specific subscriber."
+        ],
+        "verdict_change": "downgrade"
+      },
+      "plugin_slug": "backwpup"
+    }
+  ],
+  "priority_score": 1,
+  "synthesis_scope": "single_bundle",
+  "recommended_models": {
+    "synthesizer": {
+      "provider": "codex",
+      "model": "gpt-5.4"
+    },
+    "challenger": {
+      "provider": "claude",
+      "model": "claude-sonnet-4.6"
+    }
+  }
+}

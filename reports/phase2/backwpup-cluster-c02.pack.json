@@ -1,0 +1,320 @@
+{
+  "plugin_slug": "backwpup",
+  "cluster_id": "cluster-c02",
+  "cluster_strategy": "cross_bundle_cluster_v1",
+  "cluster_summary": {
+    "bug_family": "authorization",
+    "dominant_vuln_types": [
+      "broken_access_control",
+      "sensitive_information_disclosure",
+      "missing_authentication_ajax_handler"
+    ],
+    "auth_boundary": "unknown",
+    "priority_score": 38,
+    "synthesis_scope": "cross_bundle",
+    "member_count": 5
+  },
+  "shared_context": {
+    "entry_point_ids": [
+      "ep_admin_post_admin_post_backwpup",
+      "ep_admin_post_admin_post_backwpup_support",
+      "ep_ajax_priv_wp_ajax_backwpup_debug_info",
+      "ep_ajax_priv_wp_ajax_download_backup_file"
+    ],
+    "supporting_files": [
+      "inc/class-admin.php",
+      "inc/class-destination-downloader.php",
+      "inc/class-page-onboarding.php"
+    ],
+    "primary_files": [
+      "inc/class-admin.php",
+      "inc/class-destination-downloader.php",
+      "inc/class-page-onboarding.php"
+    ],
+    "optional_files": [],
+    "primary_anchors": [
+      "inc/class-admin.php:281",
+      "inc/class-admin.php:287",
+      "inc/class-destination-downloader.php:58",
+      "inc/class-destination-downloader.php:95",
+      "inc/class-admin.php:296",
+      "inc/class-destination-downloader.php:110",
+      "inc/class-admin.php:1177",
+      "inc/class-admin.php:838",
+      "inc/class-page-onboarding.php:127",
+      "inc/class-admin.php:844",
+      "inc/class-admin.php:849"
+    ],
+    "source_agents": [
+      "agent-a2",
+      "agent-c",
+      "agent-d"
+    ],
+    "shared_signals": [
+      "shared_supporting_file"
+    ]
+  },
+  "member_findings": [
+    {
+      "finding_id": "agent-a2-f001",
+      "verdict": "TP",
+      "vuln_type": "sensitive_information_disclosure",
+      "confidence": 0.96,
+      "severity": "low",
+      "auth_required": "subscriber",
+      "entry_point_ids": [
+        "ep_ajax_priv_wp_ajax_backwpup_debug_info"
+      ],
+      "source_agents": [
+        "agent-a2"
+      ],
+      "source_anchor": "inc/class-admin.php:281",
+      "sink_anchor": "inc/class-admin.php:287",
+      "supporting_files": [
+        "inc/class-admin.php"
+      ],
+      "guard_anchors": [],
+      "why_this_might_connect": "authorization; entry=ep_ajax_priv_wp_ajax_backwpup_debug_info; sink=inc/class-admin.php:287"
+    },
+    {
+      "finding_id": "agent-d-cg-002",
+      "verdict": "REVIEW",
+      "vuln_type": "missing_authentication_ajax_handler",
+      "confidence": 0.5,
+      "severity": "high",
+      "auth_required": "unknown",
+      "entry_point_ids": [
+        "ep_ajax_priv_wp_ajax_download_backup_file"
+      ],
+      "source_agents": [
+        "agent-d"
+      ],
+      "source_anchor": "inc/class-destination-downloader.php:58",
+      "sink_anchor": "inc/class-destination-downloader.php:95",
+      "supporting_files": [
+        "inc/class-admin.php",
+        "inc/class-destination-downloader.php"
+      ],
+      "guard_anchors": [
+        "inc/class-admin.php:296",
+        "inc/class-destination-downloader.php:110"
+      ],
+      "why_this_might_connect": "authorization; entry=ep_ajax_priv_wp_ajax_download_backup_file; sink=inc/class-destination-downloader.php:95"
+    },
+    {
+      "finding_id": "agent-a2-f008",
+      "verdict": "REVIEW",
+      "vuln_type": "broken_access_control",
+      "confidence": 0.37,
+      "severity": "informational",
+      "auth_required": "unknown",
+      "entry_point_ids": [
+        "ep_admin_post_admin_post_backwpup_support"
+      ],
+      "source_agents": [
+        "agent-a2"
+      ],
+      "source_anchor": "inc/class-admin.php:1177",
+      "sink_anchor": "<unknown>",
+      "supporting_files": [
+        "inc/class-admin.php"
+      ],
+      "guard_anchors": [
+        "inc/class-admin.php:1177"
+      ],
+      "why_this_might_connect": "authorization; entry=ep_admin_post_admin_post_backwpup_support; sink=<unknown>"
+    },
+    {
+      "finding_id": "agent-c-anom_13",
+      "verdict": "REVIEW",
+      "vuln_type": "inconsistency",
+      "confidence": 0.6,
+      "severity": "high",
+      "auth_required": "unknown",
+      "entry_point_ids": [
+        "ep_admin_post_admin_post_backwpup_support"
+      ],
+      "source_agents": [
+        "agent-c"
+      ],
+      "source_anchor": "inc/class-admin.php:1177",
+      "sink_anchor": "inc/class-admin.php:1177",
+      "supporting_files": [
+        "inc/class-admin.php"
+      ],
+      "guard_anchors": [
+        "inc/class-admin.php:1177"
+      ],
+      "why_this_might_connect": "authorization; entry=ep_admin_post_admin_post_backwpup_support; sink=inc/class-admin.php:1177"
+    },
+    {
+      "finding_id": "agent-a2-f002",
+      "verdict": "TP",
+      "vuln_type": "broken_access_control",
+      "confidence": 0.93,
+      "severity": "low",
+      "auth_required": "unknown",
+      "entry_point_ids": [
+        "ep_admin_post_admin_post_backwpup"
+      ],
+      "source_agents": [
+        "agent-a2"
+      ],
+      "source_anchor": "inc/class-admin.php:838",
+      "sink_anchor": "inc/class-page-onboarding.php:127",
+      "supporting_files": [
+        "inc/class-admin.php",
+        "inc/class-page-onboarding.php"
+      ],
+      "guard_anchors": [
+        "inc/class-admin.php:844",
+        "inc/class-admin.php:849",
+        "inc/class-admin.php:851"
+      ],
+      "why_this_might_connect": "authorization; entry=ep_admin_post_admin_post_backwpup; sink=inc/class-page-onboarding.php:127"
+    }
+  ],
+  "questions_to_answer": [
+    "Which member findings should remain separate because the chain between them is speculative?",
+    "Which links are justified by a shared trust boundary, entry point, guard model, or sink family?",
+    "What evidence is still missing before treating this cluster as one stronger claim?"
+  ],
+  "exploration_budget": {
+    "max_optional_files": 0,
+    "max_out_of_band_files": 1,
+    "max_new_links": 3,
+    "max_open_questions": 3
+  },
+  "constraints": [
+    "Start from primary_anchors and primary_files before expanding.",
+    "Use optional_files only when the primary set is insufficient.",
+    "If you inspect files outside primary_files and optional_files, record them in expansion_attempts.",
+    "Prefer refutation over inflation.",
+    "Use only CONFIRMED, UNCERTAIN, RISK_NOTE, or REJECTED when describing mature outcomes.",
+    "Do not restate the full worker reasoning prose."
+  ],
+  "recommended_models": {
+    "synthesizer": {
+      "provider": "codex",
+      "model": "gpt-5.4"
+    },
+    "challenger": {
+      "provider": "claude",
+      "model": "claude-sonnet-4.6"
+    }
+  },
+  "evidence_pack": {
+    "primary_files_covered": [
+      "inc/class-admin.php",
+      "inc/class-destination-downloader.php",
+      "inc/class-page-onboarding.php"
+    ],
+    "optional_files_covered": [],
+    "primary_snippets": [
+      {
+        "file": "inc/class-admin.php",
+        "anchor": "inc/class-admin.php:281",
+        "focus_line": 281,
+        "line_start": 275,
+        "line_end": 287,
+        "kind": "primary_anchor",
+        "code": "   275\t\t\t\t// Everything after this point applies to AJAX.\n   276\t\t\t\treturn;\n   277\t\t\t}\n   278\t\t\t$jobtypes     = BackWPup::get_job_types();\n   279\t\t\t$destinations = BackWPup::get_registered_destinations();\n   280\t\n   281\t\t\tadd_action(\n   282\t\t\t\t'wp_ajax_backwpup_debug_info',\n   283\t\t\t\tfunction () {\n   284\t\t\t\t\techo '<html lang=\"en\"><head><title>' . esc_html__( 'Debug Information', 'backwpup' ) . '</title></head><body style=\"font-family:monospace;word-wrap: break-word;\">';\n   285\t\t\t\t\t$information = BackWPup_Page_Settings::get_information();\n   286\t\t\t\t\tforeach ( $information as $item ) {\n   287\t\t\t\t\t\techo esc_html( trim( $item['label'] ) ) . ': ' . esc_html( trim( $item['value'] ) ) . \"\\n<br/>\";"
+      },
+      {
+        "file": "inc/class-admin.php",
+        "anchor": "inc/class-admin.php:287",
+        "focus_line": 287,
+        "line_start": 281,
+        "line_end": 293,
+        "kind": "primary_anchor",
+        "code": "   281\t\t\tadd_action(\n   282\t\t\t\t'wp_ajax_backwpup_debug_info',\n   283\t\t\t\tfunction () {\n   284\t\t\t\t\techo '<html lang=\"en\"><head><title>' . esc_html__( 'Debug Information', 'backwpup' ) . '</title></head><body style=\"font-family:monospace;word-wrap: break-word;\">';\n   285\t\t\t\t\t$information = BackWPup_Page_Settings::get_information();\n   286\t\t\t\t\tforeach ( $information as $item ) {\n   287\t\t\t\t\t\techo esc_html( trim( $item['label'] ) ) . ': ' . esc_html( trim( $item['value'] ) ) . \"\\n<br/>\";\n   288\t\t\t\t\t}\n   289\t\t\t\t\techo '</body></html>';\n   290\t\t\t\t\twp_die();\n   291\t\t\t\t}\n   292\t\t\t\t);\n   293\t\t\tadd_action( 'wp_ajax_backwpup_working', [ \\BackWPup_Page_Jobs::class, 'ajax_working' ] );"
+      },
+      {
+        "file": "inc/class-destination-downloader.php",
+        "anchor": "inc/class-destination-downloader.php:58",
+        "focus_line": 58,
+        "line_start": 52,
+        "line_end": 64,
+        "kind": "primary_anchor",
+        "code": "    52\t\n    53\t\t/**\n    54\t\t * Download file via ajax.\n    55\t\t *\n    56\t\t * @return void\n    57\t\t */\n    58\t\tpublic static function download_by_ajax() {\n    59\t\t\t$dest = (string) filter_input( INPUT_GET, 'destination' );\n    60\t\t\tif ( ! $dest ) {\n    61\t\t\t\treturn;\n    62\t\t\t}\n    63\t\n    64\t\t\t$job_id = (int) filter_input( INPUT_GET, 'jobid', FILTER_SANITIZE_NUMBER_INT );"
+      },
+      {
+        "file": "inc/class-destination-downloader.php",
+        "anchor": "inc/class-destination-downloader.php:95",
+        "focus_line": 95,
+        "line_start": 89,
+        "line_end": 101,
+        "kind": "primary_anchor",
+        "code": "    89\t\t\t/**\n    90\t\t\t * Destination handler.\n    91\t\t\t *\n    92\t\t\t * @var \\BackWPup_Destinations $dest_class\n    93\t\t\t */\n    94\t\t\t$dest_class = BackWPup::get_destination( $dest );\n    95\t\t\t$dest_class->file_download(\n    96\t\t\t\t$job_id,\n    97\t\t\t\ttrim( sanitize_text_field( $file ) ),\n    98\t\t\t\ttrim( sanitize_text_field( $file_local ) )\n    99\t\t\t);\n   100\t\t}\n   101\t"
+      },
+      {
+        "file": "inc/class-admin.php",
+        "anchor": "inc/class-admin.php:296",
+        "focus_line": 296,
+        "line_start": 290,
+        "line_end": 302,
+        "kind": "primary_anchor",
+        "code": "   290\t\t\t\t\twp_die();\n   291\t\t\t\t}\n   292\t\t\t\t);\n   293\t\t\tadd_action( 'wp_ajax_backwpup_working', [ \\BackWPup_Page_Jobs::class, 'ajax_working' ] );\n   294\t\t\tadd_action( 'wp_ajax_backwpup_cron_text', [ \\BackWPup_Page_Editjob::class, 'ajax_cron_text' ] );\n   295\t\t\tadd_action( 'wp_ajax_backwpup_view_log', [ \\BackWPup_Page_Logs::class, 'ajax_view_log' ] );\n   296\t\t\tadd_action( 'wp_ajax_download_backup_file', [ \\BackWPup_Destination_Downloader::class, 'download_by_ajax' ] );\n   297\t\n   298\t\t\tforeach ( $jobtypes as $id => $jobtypeclass ) {\n   299\t\t\t\tadd_action( 'wp_ajax_backwpup_jobtype_' . strtolower( $id ), [ $jobtypeclass, 'edit_ajax' ] );\n   300\t\t\t}\n   301\t\t\tforeach ( $destinations as $id => $dest ) {\n   302\t\t\t\tif ( ! empty( $dest['class'] ) ) {"
+      },
+      {
+        "file": "inc/class-destination-downloader.php",
+        "anchor": "inc/class-destination-downloader.php:110",
+        "focus_line": 110,
+        "line_start": 104,
+        "line_end": 116,
+        "kind": "primary_anchor",
+        "code": "   104\t\t *\n   105\t\t * @throws DecryptException When an encrypted archive needs a decryption key.\n   106\t\t *\n   107\t\t * @return bool True on success, false on error.\n   108\t\t */\n   109\t\tpublic function download_by_chunks() {\n   110\t\t\t$this->ensure_user_can_download();\n   111\t\n   112\t\t\t$source_file_path = $this->data->source_file_path();\n   113\t\t\t$local_file_path  = $this->data->local_file_path();\n   114\t\t\t$size             = $this->destination->calculate_size();\n   115\t\t\t$start_byte       = 0;\n   116\t\t\t$chunk_size       = 2 * 1024 * 1024;"
+      },
+      {
+        "file": "inc/class-admin.php",
+        "anchor": "inc/class-admin.php:1177",
+        "focus_line": 1177,
+        "line_start": 1171,
+        "line_end": 1183,
+        "kind": "primary_anchor",
+        "code": "  1171\t\t\tadd_action( 'admin_init', [ $this, 'admin_init' ] );\n  1172\t\t\tadd_action( 'admin_enqueue_scripts', [ $this, 'admin_css' ] );\n  1173\t\t\tadd_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_assets' ] );\n  1174\t\t\t// Save Form posts general.\n  1175\t\t\tadd_action( 'admin_post_backwpup', [ $this, 'save_post_form' ] );\n  1176\t\t\t// Save form posts for support.\n  1177\t\t\tadd_action( 'admin_post_backwpup_support', [ \\BackWPup_Pro_Page_Support::class, 'save_post_form' ] );\n  1178\t\t\t// Admin Footer Text replacement.\n  1179\t\t\tadd_filter( 'admin_footer_text', [ $this, 'admin_footer_text' ], 100 );\n  1180\t\t\tadd_filter( 'update_footer', [ $this, 'update_footer' ], 100 );\n  1181\t\t\t// User Profile fields.\n  1182\t\t\tadd_action( 'show_user_profile', [ $this, 'user_profile_fields' ] );\n  1183\t\t\tadd_action( 'edit_user_profile', [ $this, 'user_profile_fields' ] );"
+      },
+      {
+        "file": "inc/class-admin.php",
+        "anchor": "inc/class-admin.php:838",
+        "focus_line": 838,
+        "line_start": 832,
+        "line_end": 844,
+        "kind": "primary_anchor",
+        "code": "   832\t\t\t\t'backwpupsettings',\n   833\t\t\t\t'backwpup',\n   834\t\t\t\t'backwpupfirstbackup',\n   835\t\t\t];\n   836\t\n   837\t\t\t// Sanitize $_POST data.\n   838\t\t\t$post_page          = isset( $_POST['page'] ) ? sanitize_text_field( wp_unslash( $_POST['page'] ) ) : null;\n   839\t\t\t$post_anchor        = isset( $_POST['anchor'] ) ? sanitize_text_field( wp_unslash( $_POST['anchor'] ) ) : null;\n   840\t\t\t$post_tab           = isset( $_POST['tab'] ) ? sanitize_text_field( wp_unslash( $_POST['tab'] ) ) : null;\n   841\t\t\t$post_nexttab       = isset( $_POST['nexttab'] ) ? sanitize_text_field( wp_unslash( $_POST['nexttab'] ) ) : null;\n   842\t\t\t$post_archiveformat = isset( $_POST['archiveformat'] ) ? sanitize_text_field( wp_unslash( $_POST['archiveformat'] ) ) : null;\n   843\t\n   844\t\t\tif ( isset( $post_page ) && ! in_array( $post_page, $allowed_pages, true ) ) {"
+      },
+      {
+        "file": "inc/class-page-onboarding.php",
+        "anchor": "inc/class-page-onboarding.php:127",
+        "focus_line": 127,
+        "line_start": 121,
+        "line_end": 133,
+        "kind": "primary_anchor",
+        "code": "   121\t\t\t\t// We clone the first backup job data to ensure we have the same values for all jobs.\n   122\t\t\t\tforeach ( $value as $sub_key => $sub_value ) {\n   123\t\t\t\t\tif ( 'job_id' === $sub_key || 'jobid' === $sub_key || 'archivename' === $sub_key || 'name' === $sub_key ) {\n   124\t\t\t\t\t\t// Skip job_id,archive name and name fields.\n   125\t\t\t\t\t\tcontinue;\n   126\t\t\t\t\t}\n   127\t\t\t\t\tBackWPup_Option::update( $value['job_id'], $sub_key, $sub_value );\n   128\t\t\t\t}\n   129\t\n   130\t\t\t\t// Cron part.\n   131\t\t\t\tif ( $value['cron'] ) {\n   132\t\t\t\t\tBackWPup_Option::update( $value['job_id'], 'cron', $value['cron'] );\n   133\t\t\t\t}"
+      },
+      {
+        "file": "inc/class-admin.php",
+        "anchor": "inc/class-admin.php:844",
+        "focus_line": 844,
+        "line_start": 838,
+        "line_end": 850,
+        "kind": "primary_anchor",
+        "code": "   838\t\t\t$post_page          = isset( $_POST['page'] ) ? sanitize_text_field( wp_unslash( $_POST['page'] ) ) : null;\n   839\t\t\t$post_anchor        = isset( $_POST['anchor'] ) ? sanitize_text_field( wp_unslash( $_POST['anchor'] ) ) : null;\n   840\t\t\t$post_tab           = isset( $_POST['tab'] ) ? sanitize_text_field( wp_unslash( $_POST['tab'] ) ) : null;\n   841\t\t\t$post_nexttab       = isset( $_POST['nexttab'] ) ? sanitize_text_field( wp_unslash( $_POST['nexttab'] ) ) : null;\n   842\t\t\t$post_archiveformat = isset( $_POST['archiveformat'] ) ? sanitize_text_field( wp_unslash( $_POST['archiveformat'] ) ) : null;\n   843\t\n   844\t\t\tif ( isset( $post_page ) && ! in_array( $post_page, $allowed_pages, true ) ) {\n   845\t\t\t\twp_die( esc_html__( 'Cheating, huh?', 'backwpup' ) );\n   846\t\t\t}\n   847\t\n   848\t\t\t// nonce check.\n   849\t\t\tcheck_admin_referer( $post_page . '_page' );\n   850\t"
+      },
+      {
+        "file": "inc/class-admin.php",
+        "anchor": "inc/class-admin.php:849",
+        "focus_line": 849,
+        "line_start": 843,
+        "line_end": 855,
+        "kind": "primary_anchor",
+        "code": "   843\t\n   844\t\t\tif ( isset( $post_page ) && ! in_array( $post_page, $allowed_pages, true ) ) {\n   845\t\t\t\twp_die( esc_html__( 'Cheating, huh?', 'backwpup' ) );\n   846\t\t\t}\n   847\t\n   848\t\t\t// nonce check.\n   849\t\t\tcheck_admin_referer( $post_page . '_page' );\n   850\t\n   851\t\t\tif ( ! current_user_can( 'backwpup' ) ) {\n   852\t\t\t\twp_die( esc_html__( 'Cheating, huh?', 'backwpup' ) );\n   853\t\t\t}\n   854\t\n   855\t\t\t$query_args = [];"
+      }
+    ],
+    "optional_snippets": [],
+    "snippet_counts": {
+      "primary": 11,
+      "optional": 0
+    }
+  }
+}

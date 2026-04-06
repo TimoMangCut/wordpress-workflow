@@ -1359,7 +1359,9 @@
     "review_count": 1,
     "duplicates_merged": 7,
     "conflicts_flagged": 0,
-    "schema_errors": 0
+    "schema_errors": 0,
+    "consensus_applied": true,
+    "consensus_unresolved_clusters": 0
   },
   "postprocess": {
     "phase3_review_applied": {
@@ -1372,5 +1374,20 @@
         "upgrade": 0
       }
     }
+  },
+  "consensus": {
+    "strategy": "phase2_consensus_v1",
+    "generated_timestamp": "2026-04-06T17:48:04.871431Z",
+    "local_phase2_path": "reports/phase2/pretty-link-phase2.json",
+    "cluster_plan_path": "reports/phase2/pretty-link-cluster-plan.json",
+    "global_exploration_path": null,
+    "clusters_total": 0,
+    "synth_ok_count": 0,
+    "challenge_ok_count": 0,
+    "open_questions_total": 0,
+    "missing_evidence_total": 0,
+    "unresolved_cluster_ids": [],
+    "clusters": [],
+    "notes": []
   }
 }

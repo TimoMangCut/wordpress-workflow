@@ -1,0 +1,491 @@
+{
+  "plugin_slug": "backwpup",
+  "cluster_id": "cluster-c01",
+  "cluster_strategy": "cross_bundle_cluster_v1",
+  "cluster_summary": {
+    "bug_family": "authorization",
+    "dominant_vuln_types": [
+      "broken_access_control",
+      "sensitive_data_exposure"
+    ],
+    "auth_boundary": "unknown",
+    "priority_score": 164,
+    "synthesis_scope": "cross_bundle",
+    "member_count": 16
+  },
+  "shared_context": {
+    "entry_point_ids": [
+      "ep_rest___addjob",
+      "ep_rest___authenticate_cloud",
+      "ep_rest___backups___P_id__d___type",
+      "ep_rest___cloudsaveandtest",
+      "ep_rest___delete_auth_cloud",
+      "ep_rest___delete_job",
+      "ep_rest___getblock",
+      "ep_rest___save_excluded_tables",
+      "ep_rest___save_files_exclusions",
+      "ep_rest___save_job_format",
+      "ep_rest___save_job_settings",
+      "ep_rest___storages",
+      "ep_rest___update_job_title",
+      "ep_rest___updatejob",
+      "ep_rest_backwpup_v1__process_bulk_actions",
+      "ep_rest_backwpup_v1__startbackup"
+    ],
+    "supporting_files": [
+      "inc/Utils/BackWPupHelpers.php",
+      "inc/class-destination-ftp.php",
+      "inc/class-jobtype-dbdump.php",
+      "inc/class-jobtype-file.php",
+      "parts/sidebar/storage-FTP.php",
+      "src/Backups/API/Rest.php",
+      "src/Frontend/API/Rest.php",
+      "src/Jobs/API/Rest.php",
+      "src/StorageProviders/API/Rest.php",
+      "src/StorageProviders/CloudProviderManager.php",
+      "src/StorageProviders/Dropbox/DropboxProvider.php",
+      "src/StorageProviders/SugarSync/SugarSyncProvider.php"
+    ],
+    "primary_files": [
+      "src/Jobs/API/Rest.php",
+      "src/StorageProviders/API/Rest.php",
+      "src/Backups/API/Rest.php"
+    ],
+    "optional_files": [
+      "inc/Utils/BackWPupHelpers.php",
+      "inc/class-destination-ftp.php",
+      "inc/class-jobtype-dbdump.php",
+      "inc/class-jobtype-file.php",
+      "parts/sidebar/storage-FTP.php",
+      "src/Frontend/API/Rest.php",
+      "src/StorageProviders/CloudProviderManager.php",
+      "src/StorageProviders/Dropbox/DropboxProvider.php",
+      "src/StorageProviders/SugarSync/SugarSyncProvider.php"
+    ],
+    "primary_anchors": [
+      "src/Backups/API/Rest.php:360",
+      "src/Backups/API/Rest.php:420",
+      "src/Backups/API/Rest.php:405",
+      "src/Backups/API/Rest.php:157",
+      "src/Backups/API/Rest.php:260",
+      "src/Backups/API/Rest.php:192",
+      "src/Jobs/API/Rest.php:436",
+      "src/Jobs/API/Rest.php:451",
+      "src/Jobs/API/Rest.php:364",
+      "src/Jobs/API/Rest.php:762",
+      "src/Jobs/API/Rest.php:736",
+      "src/Jobs/API/Rest.php:677"
+    ],
+    "source_agents": [
+      "agent-a3"
+    ],
+    "shared_signals": [
+      "shared_auth_boundary"
+    ]
+  },
+  "member_findings": [
+    {
+      "finding_id": "agent-a3-getblock-secret-disclosure",
+      "verdict": "TP",
+      "vuln_type": "sensitive_data_exposure",
+      "confidence": 0.97,
+      "severity": "high",
+      "auth_required": "unknown",
+      "entry_point_ids": [
+        "ep_rest___getblock"
+      ],
+      "source_agents": [
+        "agent-a3"
+      ],
+      "source_anchor": "src/Frontend/API/Rest.php:83",
+      "sink_anchor": "parts/sidebar/storage-FTP.php:178",
+      "supporting_files": [
+        "inc/Utils/BackWPupHelpers.php",
+        "parts/sidebar/storage-FTP.php",
+        "src/Frontend/API/Rest.php"
+      ],
+      "guard_anchors": [
+        "src/Frontend/API/Rest.php:91",
+        "inc/Utils/BackWPupHelpers.php:74"
+      ],
+      "why_this_might_connect": "authorization; entry=ep_rest___getblock; sink=parts/sidebar/storage-FTP.php:178"
+    },
+    {
+      "finding_id": "agent-a3-process-bulk-actions-needs-proof",
+      "verdict": "REVIEW",
+      "vuln_type": "broken_access_control",
+      "confidence": 0.63,
+      "severity": "medium",
+      "auth_required": "unknown",
+      "entry_point_ids": [
+        "ep_rest_backwpup_v1__process_bulk_actions"
+      ],
+      "source_agents": [
+        "agent-a3"
+      ],
+      "source_anchor": "src/Backups/API/Rest.php:360",
+      "sink_anchor": "src/Backups/API/Rest.php:420",
+      "supporting_files": [
+        "inc/Utils/BackWPupHelpers.php",
+        "src/Backups/API/Rest.php"
+      ],
+      "guard_anchors": [
+        "inc/Utils/BackWPupHelpers.php:198",
+        "src/Backups/API/Rest.php:405"
+      ],
+      "why_this_might_connect": "authorization; entry=ep_rest_backwpup_v1__process_bulk_actions; sink=src/Backups/API/Rest.php:420"
+    },
+    {
+      "finding_id": "agent-a3-startbackup-bac",
+      "verdict": "TP",
+      "vuln_type": "broken_access_control",
+      "confidence": 0.96,
+      "severity": "medium",
+      "auth_required": "unknown",
+      "entry_point_ids": [
+        "ep_rest_backwpup_v1__startbackup"
+      ],
+      "source_agents": [
+        "agent-a3"
+      ],
+      "source_anchor": "src/Backups/API/Rest.php:157",
+      "sink_anchor": "src/Backups/API/Rest.php:260",
+      "supporting_files": [
+        "src/Backups/API/Rest.php"
+      ],
+      "guard_anchors": [
+        "src/Backups/API/Rest.php:192"
+      ],
+      "why_this_might_connect": "authorization; entry=ep_rest_backwpup_v1__startbackup; sink=src/Backups/API/Rest.php:260"
+    },
+    {
+      "finding_id": "agent-a3-update-backup-type-bac",
+      "verdict": "TP",
+      "vuln_type": "broken_access_control",
+      "confidence": 0.94,
+      "severity": "medium",
+      "auth_required": "unknown",
+      "entry_point_ids": [
+        "ep_rest___backups___P_id__d___type"
+      ],
+      "source_agents": [
+        "agent-a3"
+      ],
+      "source_anchor": "src/Jobs/API/Rest.php:436",
+      "sink_anchor": "src/Jobs/API/Rest.php:451",
+      "supporting_files": [
+        "src/Jobs/API/Rest.php"
+      ],
+      "guard_anchors": [
+        "src/Jobs/API/Rest.php:364"
+      ],
+      "why_this_might_connect": "authorization; entry=ep_rest___backups___P_id__d___type; sink=src/Jobs/API/Rest.php:451"
+    },
+    {
+      "finding_id": "agent-a3-save-excluded-tables-bac",
+      "verdict": "TP",
+      "vuln_type": "broken_access_control",
+      "confidence": 0.94,
+      "severity": "medium",
+      "auth_required": "unknown",
+      "entry_point_ids": [
+        "ep_rest___save_excluded_tables"
+      ],
+      "source_agents": [
+        "agent-a3"
+      ],
+      "source_anchor": "src/Jobs/API/Rest.php:762",
+      "sink_anchor": "inc/class-jobtype-dbdump.php:149",
+      "supporting_files": [
+        "inc/class-jobtype-dbdump.php",
+        "src/Jobs/API/Rest.php"
+      ],
+      "guard_anchors": [
+        "inc/class-jobtype-dbdump.php:149"
+      ],
+      "why_this_might_connect": "authorization; entry=ep_rest___save_excluded_tables; sink=inc/class-jobtype-dbdump.php:149"
+    },
+    {
+      "finding_id": "agent-a3-save-files-exclusions-bac",
+      "verdict": "TP",
+      "vuln_type": "broken_access_control",
+      "confidence": 0.94,
+      "severity": "medium",
+      "auth_required": "unknown",
+      "entry_point_ids": [
+        "ep_rest___save_files_exclusions"
+      ],
+      "source_agents": [
+        "agent-a3"
+      ],
+      "source_anchor": "src/Jobs/API/Rest.php:736",
+      "sink_anchor": "inc/class-jobtype-file.php:217",
+      "supporting_files": [
+        "inc/class-jobtype-file.php",
+        "src/Jobs/API/Rest.php"
+      ],
+      "guard_anchors": [
+        "inc/class-jobtype-file.php:225"
+      ],
+      "why_this_might_connect": "authorization; entry=ep_rest___save_files_exclusions; sink=inc/class-jobtype-file.php:217"
+    },
+    {
+      "finding_id": "agent-a3-save-job-format-bac",
+      "verdict": "TP",
+      "vuln_type": "broken_access_control",
+      "confidence": 0.94,
+      "severity": "medium",
+      "auth_required": "unknown",
+      "entry_point_ids": [
+        "ep_rest___save_job_format"
+      ],
+      "source_agents": [
+        "agent-a3"
+      ],
+      "source_anchor": "src/Jobs/API/Rest.php:677",
+      "sink_anchor": "src/Jobs/API/Rest.php:708",
+      "supporting_files": [
+        "src/Jobs/API/Rest.php"
+      ],
+      "guard_anchors": [
+        "src/Jobs/API/Rest.php:692",
+        "src/Jobs/API/Rest.php:706"
+      ],
+      "why_this_might_connect": "authorization; entry=ep_rest___save_job_format; sink=src/Jobs/API/Rest.php:708"
+    },
+    {
+      "finding_id": "agent-a3-save-job-settings-bac",
+      "verdict": "TP",
+      "vuln_type": "broken_access_control",
+      "confidence": 0.94,
+      "severity": "medium",
+      "auth_required": "unknown",
+      "entry_point_ids": [
+        "ep_rest___save_job_settings"
+      ],
+      "source_agents": [
+        "agent-a3"
+      ],
+      "source_anchor": "src/Jobs/API/Rest.php:591",
+      "sink_anchor": "src/Jobs/API/Rest.php:633",
+      "supporting_files": [
+        "src/Jobs/API/Rest.php"
+      ],
+      "guard_anchors": [],
+      "why_this_might_connect": "authorization; entry=ep_rest___save_job_settings; sink=src/Jobs/API/Rest.php:633"
+    },
+    {
+      "finding_id": "agent-a3-delete-job-bac",
+      "verdict": "TP",
+      "vuln_type": "broken_access_control",
+      "confidence": 0.96,
+      "severity": "medium",
+      "auth_required": "unknown",
+      "entry_point_ids": [
+        "ep_rest___delete_job"
+      ],
+      "source_agents": [
+        "agent-a3"
+      ],
+      "source_anchor": "src/Jobs/API/Rest.php:553",
+      "sink_anchor": "src/Jobs/API/Rest.php:570",
+      "supporting_files": [
+        "src/Jobs/API/Rest.php"
+      ],
+      "guard_anchors": [
+        "src/Jobs/API/Rest.php:187"
+      ],
+      "why_this_might_connect": "authorization; entry=ep_rest___delete_job; sink=src/Jobs/API/Rest.php:570"
+    },
+    {
+      "finding_id": "agent-a3-addjob-bac",
+      "verdict": "TP",
+      "vuln_type": "broken_access_control",
+      "confidence": 0.94,
+      "severity": "medium",
+      "auth_required": "unknown",
+      "entry_point_ids": [
+        "ep_rest___addjob"
+      ],
+      "source_agents": [
+        "agent-a3"
+      ],
+      "source_anchor": "src/Jobs/API/Rest.php:493",
+      "sink_anchor": "src/Jobs/API/Rest.php:524",
+      "supporting_files": [
+        "src/Jobs/API/Rest.php"
+      ],
+      "guard_anchors": [
+        "src/Jobs/API/Rest.php:165"
+      ],
+      "why_this_might_connect": "authorization; entry=ep_rest___addjob; sink=src/Jobs/API/Rest.php:524"
+    },
+    {
+      "finding_id": "agent-a3-update-job-title-bac",
+      "verdict": "TP",
+      "vuln_type": "broken_access_control",
+      "confidence": 0.95,
+      "severity": "medium",
+      "auth_required": "unknown",
+      "entry_point_ids": [
+        "ep_rest___update_job_title"
+      ],
+      "source_agents": [
+        "agent-a3"
+      ],
+      "source_anchor": "src/Jobs/API/Rest.php:469",
+      "sink_anchor": "src/Jobs/API/Rest.php:473",
+      "supporting_files": [
+        "src/Jobs/API/Rest.php"
+      ],
+      "guard_anchors": [
+        "src/Jobs/API/Rest.php:152"
+      ],
+      "why_this_might_connect": "authorization; entry=ep_rest___update_job_title; sink=src/Jobs/API/Rest.php:473"
+    },
+    {
+      "finding_id": "agent-a3-updatejob-bac",
+      "verdict": "TP",
+      "vuln_type": "broken_access_control",
+      "confidence": 0.95,
+      "severity": "medium",
+      "auth_required": "unknown",
+      "entry_point_ids": [
+        "ep_rest___updatejob"
+      ],
+      "source_agents": [
+        "agent-a3"
+      ],
+      "source_anchor": "src/Jobs/API/Rest.php:381",
+      "sink_anchor": "src/Jobs/API/Rest.php:392",
+      "supporting_files": [
+        "src/Jobs/API/Rest.php"
+      ],
+      "guard_anchors": [
+        "src/Jobs/API/Rest.php:104"
+      ],
+      "why_this_might_connect": "authorization; entry=ep_rest___updatejob; sink=src/Jobs/API/Rest.php:392"
+    },
+    {
+      "finding_id": "agent-a3-storages-bac",
+      "verdict": "TP",
+      "vuln_type": "broken_access_control",
+      "confidence": 0.94,
+      "severity": "medium",
+      "auth_required": "unknown",
+      "entry_point_ids": [
+        "ep_rest___storages"
+      ],
+      "source_agents": [
+        "agent-a3"
+      ],
+      "source_anchor": "src/StorageProviders/API/Rest.php:316",
+      "sink_anchor": "src/StorageProviders/API/Rest.php:354",
+      "supporting_files": [
+        "src/StorageProviders/API/Rest.php"
+      ],
+      "guard_anchors": [
+        "src/StorageProviders/API/Rest.php:350"
+      ],
+      "why_this_might_connect": "authorization; entry=ep_rest___storages; sink=src/StorageProviders/API/Rest.php:354"
+    },
+    {
+      "finding_id": "agent-a3-cloudsaveandtest-bac",
+      "verdict": "TP",
+      "vuln_type": "broken_access_control",
+      "confidence": 0.95,
+      "severity": "high",
+      "auth_required": "unknown",
+      "entry_point_ids": [
+        "ep_rest___cloudsaveandtest"
+      ],
+      "source_agents": [
+        "agent-a3"
+      ],
+      "source_anchor": "src/StorageProviders/API/Rest.php:262",
+      "sink_anchor": "inc/class-destination-ftp.php:65",
+      "supporting_files": [
+        "inc/class-destination-ftp.php",
+        "src/StorageProviders/API/Rest.php"
+      ],
+      "guard_anchors": [],
+      "why_this_might_connect": "authorization; entry=ep_rest___cloudsaveandtest; sink=inc/class-destination-ftp.php:65"
+    },
+    {
+      "finding_id": "agent-a3-delete-auth-cloud-bac",
+      "verdict": "TP",
+      "vuln_type": "broken_access_control",
+      "confidence": 0.95,
+      "severity": "medium",
+      "auth_required": "unknown",
+      "entry_point_ids": [
+        "ep_rest___delete_auth_cloud"
+      ],
+      "source_agents": [
+        "agent-a3"
+      ],
+      "source_anchor": "src/StorageProviders/API/Rest.php:231",
+      "sink_anchor": "src/StorageProviders/Dropbox/DropboxProvider.php:100",
+      "supporting_files": [
+        "src/StorageProviders/API/Rest.php",
+        "src/StorageProviders/CloudProviderManager.php",
+        "src/StorageProviders/Dropbox/DropboxProvider.php"
+      ],
+      "guard_anchors": [
+        "src/StorageProviders/CloudProviderManager.php:42"
+      ],
+      "why_this_might_connect": "authorization; entry=ep_rest___delete_auth_cloud; sink=src/StorageProviders/Dropbox/DropboxProvider.php:100"
+    },
+    {
+      "finding_id": "agent-a3-authenticate-cloud-bac",
+      "verdict": "TP",
+      "vuln_type": "broken_access_control",
+      "confidence": 0.94,
+      "severity": "medium",
+      "auth_required": "unknown",
+      "entry_point_ids": [
+        "ep_rest___authenticate_cloud"
+      ],
+      "source_agents": [
+        "agent-a3"
+      ],
+      "source_anchor": "src/StorageProviders/API/Rest.php:194",
+      "sink_anchor": "src/StorageProviders/SugarSync/SugarSyncProvider.php:134",
+      "supporting_files": [
+        "src/StorageProviders/API/Rest.php",
+        "src/StorageProviders/SugarSync/SugarSyncProvider.php"
+      ],
+      "guard_anchors": [],
+      "why_this_might_connect": "authorization; entry=ep_rest___authenticate_cloud; sink=src/StorageProviders/SugarSync/SugarSyncProvider.php:134"
+    }
+  ],
+  "questions_to_answer": [
+    "Which member findings should remain separate because the chain between them is speculative?",
+    "Which links are justified by a shared trust boundary, entry point, guard model, or sink family?",
+    "What evidence is still missing before treating this cluster as one stronger claim?"
+  ],
+  "exploration_budget": {
+    "max_optional_files": 2,
+    "max_out_of_band_files": 1,
+    "max_new_links": 3,
+    "max_open_questions": 3
+  },
+  "constraints": [
+    "Start from primary_anchors and primary_files before expanding.",
+    "Use optional_files only when the primary set is insufficient.",
+    "If you inspect files outside primary_files and optional_files, record them in expansion_attempts.",
+    "Prefer refutation over inflation.",
+    "Use only CONFIRMED, UNCERTAIN, RISK_NOTE, or REJECTED when describing mature outcomes.",
+    "Do not restate the full worker reasoning prose."
+  ],
+  "recommended_models": {
+    "synthesizer": {
+      "provider": "codex",
+      "model": "gpt-5.4"
+    },
+    "challenger": {
+      "provider": "claude",
+      "model": "claude-sonnet-4.6"
+    }
+  }
+}

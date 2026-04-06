@@ -1,0 +1,136 @@
+{
+  "plugin_slug": "backwpup",
+  "cluster_id": "cluster-c02",
+  "stage": "challenge",
+  "status": "split",
+  "summary": {
+    "member_findings_reviewed": 5,
+    "material_links_found": 1,
+    "objections_count": 3,
+    "open_questions_count": 3,
+    "expansion_attempts_count": 1,
+    "notes": "Synthesizer conclusions largely upheld with one correction: the proposed `shared_guard_model` link between `agent-a2-f001` and `agent-d-cg-002` is mislabeled and should be retracted. The download path (`agent-d-cg-002`) is fully gated by `BackWpup_Download_Handler::verify_request()` at `inc/class-download-handler.php:67-79`, which calls `check_admin_referer()` and `current_user_can('backwpup_backups_download')` before any download closure executes \u2014 two layers deeper than `inc/class-destination-downloader.php:110`. These findings do not share a guard model; one is unguarded at the hook level, the other is guarded before reaching the sink. The support-hook pair (`agent-a2-f008`, `agent-c-anom_13`) remain unresolvable without `BackWPup_Pro_Page_Support::save_post_form`. The cluster does not support a unified authorization failure claim."
+  },
+  "suggested_actions": [
+    {
+      "finding_id": "agent-a2-f001",
+      "action": "keep_separate",
+      "reason": "Confirmed: the `wp_ajax_backwpup_debug_info` closure at `inc/class-admin.php:281-291` has no nonce or capability check in the hook body. `wp_ajax_*` requires a logged-in session at the WordPress core level (subscriber+), but no plugin-level capability restricts access further. This is a standalone low-severity information disclosure for any authenticated user, independent of the download and admin-post flows."
+    },
+    {
+      "finding_id": "agent-d-cg-002",
+      "action": "retract",
+      "reason": "Full call chain confirmed: `download_by_ajax()` at `inc/class-destination-downloader.php:58` calls `$dest_class->file_download()` at line 95, which constructs a `BackWpup_Download_Handler` with nonce `'backwpup_action_nonce'` and capability `'backwpup_backups_download'`. The handler's `verify_request()` at `inc/class-download-handler.php:67-79` calls `check_admin_referer()` then `current_user_can('backwpup_backups_download')` before the download closure runs. The AJAX endpoint is gated. `ensure_user_can_download()` at `inc/class-destination-downloader.php:110` adds a third layer inside `download_by_chunks()`. Missing-authentication reading is refuted by Tier 1 evidence."
+    },
+    {
+      "finding_id": "agent-a2-f008",
+      "action": "needs_more_evidence",
+      "reason": "Only the hook registration at `inc/class-admin.php:1177` is visible. `BackWPup_Pro_Page_Support::save_post_form` is not present in the local source tree. Cannot assess guards or sinks."
+    },
+    {
+      "finding_id": "agent-c-anom_13",
+      "action": "needs_more_evidence",
+      "reason": "Same unresolved `admin_post_backwpup_support` signal as `agent-a2-f008`. No new evidence in this pack. Deduplication with `agent-a2-f008` is correct."
+    },
+    {
+      "finding_id": "agent-a2-f002",
+      "action": "keep_separate",
+      "reason": "The `admin_post_backwpup` handler at `inc/class-admin.php:838-852` enforces `check_admin_referer( $post_page . '_page' )` and `current_user_can( 'backwpup' )` before reaching the onboarding write sink. This is a guarded counter-example, not a member of a missing-auth pattern. Keep separate and note it as evidence that the plugin's admin-post flow is defended."
+    }
+  ],
+  "proposed_links": [
+    {
+      "finding_ids": [
+        "agent-a2-f008",
+        "agent-c-anom_13"
+      ],
+      "relation": "shared_entry_point",
+      "reason": "Both findings resolve to the same unresolved `admin_post_backwpup_support` hook registration at `inc/class-admin.php:1177`. They describe one signal, not two independent issues. Deduplication is correct."
+    }
+  ],
+  "objections": [
+    {
+      "target_finding_ids": [
+        "agent-a2-f001",
+        "agent-d-cg-002"
+      ],
+      "reason": "The synthesizer's proposed `shared_guard_model` link between these two findings is mislabeled and should be retracted. `agent-a2-f001` (`wp_ajax_backwpup_debug_info`) has no capability or nonce check in the hook body \u2014 only WordPress's built-in logged-in requirement for `wp_ajax_*`. `agent-d-cg-002` (`wp_ajax_download_backup_file`) is fully gated: `BackWpup_Download_Handler::verify_request()` at `inc/class-download-handler.php:67-79` enforces nonce + `current_user_can('backwpup_backups_download')` before any download closure fires. These two findings have opposite guard postures. Grouping them as sharing a guard model obscures the concrete refutation of `agent-d-cg-002` and inflates the apparent risk surface."
+    },
+    {
+      "target_finding_ids": [
+        "agent-d-cg-002"
+      ],
+      "reason": "The synthesizer's refutation via `inc/class-destinations.php:147-184` is correct but understated. The full chain is: `download_by_ajax()` \u2192 `file_download()` \u2192 `BackWpup_Download_Handler::handle()` \u2192 `verify_request()` (nonce at line 73, capability at line 75 in `inc/class-download-handler.php`) \u2192 download closure \u2192 `download_by_chunks()` \u2192 `ensure_user_can_download()` at `inc/class-destination-downloader.php:110`. The auth checks occur at `verify_request()`, prior to even entering the download closure. The finding is fully refuted at Tier 1. `retract` is the correct action."
+    },
+    {
+      "target_finding_ids": [
+        "agent-a2-f001",
+        "agent-a2-f002",
+        "agent-d-cg-002"
+      ],
+      "reason": "The cluster summary's `auth_boundary: unknown` is partially resolved by this review. For `agent-a2-f002` and `agent-d-cg-002`, the capability names are visible in source (`backwpup` and `backwpup_backups_download`). `agent-a2-f001` is gated only by WordPress's `wp_ajax_*` logged-in requirement (no plugin capability). Capability-to-role mapping remains unconfirmed but the boundary itself is no longer entirely unknown."
+    }
+  ],
+  "open_questions": [
+    {
+      "target_finding_ids": [
+        "agent-a2-f001"
+      ],
+      "question": "What does `BackWPup_Page_Settings::get_information()` return \u2014 specifically, does it include secrets, API keys, encryption keys, or server path details that would elevate this from low-grade diagnostics to a meaningful credential/path disclosure?",
+      "why_it_matters": "The severity assignment (`low`) and finding state depend on what data is actually emitted. If the information includes sensitive deployment details, the finding should be upgraded; if it is generic environment metadata, `low` is appropriate."
+    },
+    {
+      "target_finding_ids": [
+        "agent-a2-f008",
+        "agent-c-anom_13"
+      ],
+      "question": "Where is `BackWPup_Pro_Page_Support::save_post_form` defined, and does it perform its own nonce and capability verification or rely on the caller?",
+      "why_it_matters": "The `admin_post_backwpup_support` hook bypasses the nonce+capability guard present in `save_post_form()` for `admin_post_backwpup` (lines 849-852). If the Pro support handler lacks equivalent guards, this becomes a concrete missing-auth finding for admin-level operations."
+    },
+    {
+      "target_finding_ids": [
+        "agent-a2-f001",
+        "agent-a2-f002",
+        "agent-d-cg-002"
+      ],
+      "question": "Are `backwpup` and `backwpup_backups_download` capabilities assigned to any role below `administrator` by default in this plugin's role configuration?",
+      "why_it_matters": "If these capabilities are admin-only by default, the exploitable user population for the remaining findings is minimal. If assigned to subscriber or editor, the attack surface for `agent-a2-f001` (which lacks even a capability check) widens considerably."
+    }
+  ],
+  "missing_evidence": [
+    {
+      "target_finding_ids": [
+        "agent-a2-f008",
+        "agent-c-anom_13"
+      ],
+      "evidence_needed": "Source file defining `BackWPup_Pro_Page_Support::save_post_form`, including its guard sequence (nonce verification, capability check) and any state-changing sinks it reaches.",
+      "reason": "Without this, the support-hook pair cannot advance past UNCERTAIN. The hook registration alone does not establish a vulnerability."
+    },
+    {
+      "target_finding_ids": [
+        "agent-a2-f001"
+      ],
+      "evidence_needed": "Source of `BackWPup_Page_Settings::get_information()` or a runtime sample of its output in a representative deployment.",
+      "reason": "Impact rating for the debug-info AJAX disclosure depends entirely on the sensitivity of the emitted fields. The finding cannot be accurately severity-rated without this."
+    },
+    {
+      "target_finding_ids": [
+        "agent-a2-f001",
+        "agent-a2-f002",
+        "agent-d-cg-002"
+      ],
+      "evidence_needed": "Capability registration code (likely in the plugin's activation or admin hook) showing which roles receive `backwpup` and `backwpup_backups_download` by default.",
+      "reason": "The `auth_boundary` is listed as `unknown` in the cluster summary. Resolving role mapping changes severity assessment for all three findings."
+    }
+  ],
+  "expansion_attempts": [
+    {
+      "opened_files": [
+        "plugins/backwpup/inc/class-download-handler.php",
+        "plugins/backwpup/inc/class-destinations.php"
+      ],
+      "reason": "Verify the full call chain from `download_by_ajax()` to the actual download operation, specifically whether `ensure_user_can_download()` at `inc/class-destination-downloader.php:110` is reached before or after any authorization check, and whether the synthesizer's refutation of `agent-d-cg-002` is complete.",
+      "result": "Both files were outside `primary_files` and `optional_files`. `inc/class-destinations.php:147-184` was already examined by the synthesizer. Reading `inc/class-download-handler.php` (1 out-of-band file, within budget) confirmed the authoritative auth check: `verify_request()` at lines 67-79 calls `check_admin_referer('backwpup_action_nonce', 'backwpup_action_nonce')` and `current_user_can('backwpup_backups_download')` before the download closure is invoked. This strengthens the synthesizer's retraction of `agent-d-cg-002` and also invalidates the proposed `shared_guard_model` link between `agent-a2-f001` and `agent-d-cg-002`."
+    }
+  ]
+}

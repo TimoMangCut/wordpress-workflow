@@ -1,6 +1,6 @@
 # Phase 3 Gate Report - `pretty-link`
 
-_Generated: 2026-04-05T15:34:47.644929+00:00_
+_Generated: 2026-04-06T18:08:31.148194+00:00_
 
 ## Plugin Overview
 - Plugin slug: `pretty-link`

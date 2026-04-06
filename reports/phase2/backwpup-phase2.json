@@ -1638,7 +1638,9 @@
     "review_count": 5,
     "duplicates_merged": 11,
     "conflicts_flagged": 0,
-    "schema_errors": 0
+    "schema_errors": 0,
+    "consensus_applied": true,
+    "consensus_unresolved_clusters": 0
   },
   "postprocess": {
     "phase3_review_applied": {
@@ -1651,5 +1653,54 @@
         "upgrade": 0
       }
     }
+  },
+  "consensus": {
+    "strategy": "phase2_consensus_v1",
+    "generated_timestamp": "2026-04-06T18:07:36.547639Z",
+    "local_phase2_path": "reports/phase2/backwpup-phase2.json",
+    "cluster_plan_path": "reports/phase2/backwpup-cluster-plan.json",
+    "global_exploration_path": null,
+    "clusters_total": 3,
+    "synth_ok_count": 3,
+    "challenge_ok_count": 3,
+    "open_questions_total": 14,
+    "missing_evidence_total": 14,
+    "unresolved_cluster_ids": [],
+    "clusters": [
+      {
+        "cluster_id": "cluster-c01",
+        "member_count": 16,
+        "pack_path": "reports/phase2/backwpup-cluster-c01.pack.json",
+        "synth_path": "reports/phase2/backwpup-cluster-c01.synth.json",
+        "challenge_path": "reports/phase2/backwpup-cluster-c01.challenge.json",
+        "synth_status": "mixed",
+        "challenge_status": "mixed",
+        "open_questions_count": 5,
+        "missing_evidence_count": 5
+      },
+      {
+        "cluster_id": "cluster-c02",
+        "member_count": 5,
+        "pack_path": "reports/phase2/backwpup-cluster-c02.pack.json",
+        "synth_path": "reports/phase2/backwpup-cluster-c02.synth.json",
+        "challenge_path": "reports/phase2/backwpup-cluster-c02.challenge.json",
+        "synth_status": "split",
+        "challenge_status": "split",
+        "open_questions_count": 6,
+        "missing_evidence_count": 6
+      },
+      {
+        "cluster_id": "cluster-c03",
+        "member_count": 1,
+        "pack_path": "reports/phase2/backwpup-cluster-c03.pack.json",
+        "synth_path": "reports/phase2/backwpup-cluster-c03.synth.json",
+        "challenge_path": "reports/phase2/backwpup-cluster-c03.challenge.json",
+        "synth_status": "stable",
+        "challenge_status": "stable",
+        "open_questions_count": 3,
+        "missing_evidence_count": 3
+      }
+    ],
+    "notes": []
   }
 }

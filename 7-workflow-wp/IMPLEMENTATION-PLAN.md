@@ -1,6 +1,6 @@
 # IMPLEMENTATION-PLAN.md — WordPress Audit Pipeline Upgrade
 
-> **Trạng thái:** 🟡 BATCH 5 ROLLOUT IN PROGRESS — Waves 1-3 ✅, Batch 4.5 stabilization ✅, Batch 5 canonical rollout in progress
+> **Trạng thái:** 🟢 BATCH 5 COMPLETE — Waves 1-3 ✅, Batch 4.5 stabilization ✅, Batch 5 canonical rollout + validation complete
 > **Last updated:** 2026-04-07
 > **Nguồn sự thật canonical:** `git log` + `change_manifest_session_N.json` + file này. Session cards = planning queue only, status trong đó KHÔNG canonical.
 > **Nguồn tham chiếu:**
@@ -121,7 +121,7 @@ SKILL SETS [ ] Session 20 — SKILL SETs Agents A-D
 DEPLOY     [ ] Session 22 — Step 4 Benchmark → USER REVIEW ④
            [x] Session 23 — First multi-agent pipeline run (Wave 4, S1+S2)   ← 2026-04-05
            [x] Batch 4.5 — Phase 2 stabilization: worker chunking + reviewer core/explore + cluster evidence packs + consensus writer   ← 2026-04-06
-           [ ] Batch 5 — Canonical rollout: wire cluster/consensus into default Phase 2 + rerun validation matrix + sync docs/benchmark   ← 2026-04-07
+           [x] Batch 5 — Canonical rollout: wire cluster/consensus into default Phase 2 + rerun validation matrix + sync docs/benchmark   ← 2026-04-07
 ```
 
 ### 1.2. Current Batch 4.5 / Batch 5 snapshot
@@ -155,6 +155,23 @@ Batch 5 scope is intentionally narrower:
 3. Sync implementation docs/benchmarks to the delivered workflow.
 
 Batch 5 is **not** a new topology wave. It is the rollout/wiring/validation wave for the stabilized Phase 2 architecture from Batch 4.5.
+
+Batch 5 close-out evidence:
+
+- `hostinger-reach`: canonical Phase 2 path now runs local loop → cluster synth/challenge → consensus cleanly
+  - `reports/phase2/hostinger-reach-phase2.consensus.json`
+  - `reports/logs/hostinger-reach-phase2-clusters.err`
+- `cartflows`: consensus path revalidated cleanly
+  - `reports/phase2/cartflows-phase2.consensus.json`
+- `duplicator`: zero-cluster path normalized through consensus writer
+  - `reports/phase2/duplicator-phase2.consensus.json`
+- `backwpup`: 3/3 clusters passed synth/challenge, then consensus rewritten to canonical output
+  - `reports/phase2/backwpup-phase2.consensus.json`
+- `pretty-link`: zero-cluster path normalized through consensus writer
+  - `reports/phase2/pretty-link-phase2.consensus.json`
+- Post-rollout benchmark rerun:
+  - `benchmark/results/run_20260406_180834.json`
+  - aggregate metrics unchanged vs `benchmark/results/baseline.json`
 
 ### Dependency graph (PHẢI đọc trước khi bắt đầu session)
 
