@@ -15,6 +15,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import jsonschema
+from report_paths import build_report_layout
 
 
 def find_project_root() -> Path:
@@ -28,9 +29,9 @@ def find_project_root() -> Path:
 
 ROOT = find_project_root()
 REPORTS_DIR = ROOT / "reports"
-PHASE2_DIR = REPORTS_DIR / "phase2"
-LOGS_DIR = REPORTS_DIR / "logs"
-LOGS_DIR.mkdir(parents=True, exist_ok=True)
+LAYOUT = build_report_layout(REPORTS_DIR).ensure()
+PHASE2_DIR = LAYOUT.phase2
+LOGS_DIR = LAYOUT.logs
 
 CLUSTER_OUTPUT_SCHEMA = ROOT / "contracts" / "phase2-cluster-output.schema.json"
 CLUSTER_PACK_SCHEMA = ROOT / "contracts" / "phase2-cluster-pack.schema.json"
@@ -106,6 +107,26 @@ def utc_timestamp() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
+def cluster_log_dir(slug: str) -> Path:
+    return LAYOUT.phase2_cluster_logs(slug)
+
+
+def cluster_run_errlog_path(slug: str) -> Path:
+    return cluster_log_dir(slug) / "run.err"
+
+
+def cluster_run_live_log_path(slug: str) -> Path:
+    return cluster_log_dir(slug) / "run.live.log"
+
+
+def cluster_stage_log_path(slug: str, cluster_id: str, stage: str) -> Path:
+    return cluster_log_dir(slug) / f"{cluster_id}.{stage}.log"
+
+
+def cluster_stage_last_message_path(slug: str, cluster_id: str, stage: str) -> Path:
+    return cluster_log_dir(slug) / f"{cluster_id}.{stage}.last-message.txt"
+
+
 def cluster_status_path(slug: str, cluster_id: str) -> Path:
     return PHASE2_DIR / f"{slug}-{cluster_id}.status.json"
 
@@ -117,6 +138,19 @@ def emit_progress(cluster_id: str, stage: str, event: str, **fields: object) -> 
             continue
         parts.append(f"{key}={value}")
     print(" ".join(parts), file=sys.stderr, flush=True)
+
+
+def append_progress_logs(slug: str, cluster_id: str, stage: str, event: str, **fields: object) -> None:
+    parts = [f"[{utc_timestamp()}] [{cluster_id}] {stage}:{event}"]
+    for key, value in fields.items():
+        if value is None:
+            continue
+        parts.append(f"{key}={value}")
+    line = " ".join(parts) + "\n"
+    for path in (cluster_run_errlog_path(slug), cluster_run_live_log_path(slug)):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("a", encoding="utf-8") as handle:
+            handle.write(line)
 
 
 def write_cluster_status(
@@ -158,6 +192,7 @@ def update_cluster_progress(
     **fields: object,
 ) -> None:
     emit_progress(cluster_id, stage, state, **fields)
+    append_progress_logs(plugin_slug, cluster_id, stage, state, **fields)
     write_cluster_status(status_path, plugin_slug, cluster_id, stage, state, **fields)
 
 
@@ -169,6 +204,8 @@ def render_template(template_path: Path, replacements: dict[str, str]) -> str:
 
 
 def run_claude(prompt: str, model: str, log_path: Path, last_message_path: Path, timeout_seconds: int) -> int:
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    last_message_path.parent.mkdir(parents=True, exist_ok=True)
     cmd = ["claude", "-p", "--dangerously-skip-permissions", "--verbose", "--output-format", "stream-json"]
     if model:
         cmd.extend(["--model", model])
@@ -206,6 +243,8 @@ def run_claude(prompt: str, model: str, log_path: Path, last_message_path: Path,
 
 
 def run_codex(prompt: str, log_path: Path, last_message_path: Path, timeout_seconds: int) -> int:
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    last_message_path.parent.mkdir(parents=True, exist_ok=True)
     with log_path.open("w", encoding="utf-8") as log_file:
         try:
             proc = subprocess.run(
@@ -269,10 +308,10 @@ def run_cluster(cluster_path: Path, cluster_pack_path: Path) -> tuple[bool, bool
     status_path = cluster_status_path(slug, cluster_id)
     synth_path = PHASE2_DIR / f"{slug}-{cluster_id}.synth.json"
     challenge_path = PHASE2_DIR / f"{slug}-{cluster_id}.challenge.json"
-    synth_log = LOGS_DIR / f"{slug}-{cluster_id}.synth.log"
-    synth_last = LOGS_DIR / f"{slug}-{cluster_id}.synth.last-message.txt"
-    challenge_log = LOGS_DIR / f"{slug}-{cluster_id}.challenge.log"
-    challenge_last = LOGS_DIR / f"{slug}-{cluster_id}.challenge.last-message.txt"
+    synth_log = cluster_stage_log_path(slug, cluster_id, "synth")
+    synth_last = cluster_stage_last_message_path(slug, cluster_id, "synth")
+    challenge_log = cluster_stage_log_path(slug, cluster_id, "challenge")
+    challenge_last = cluster_stage_last_message_path(slug, cluster_id, "challenge")
 
     (synth_provider, synth_model), (challenge_provider, challenge_model) = cluster_models(cluster_doc)
 
@@ -415,6 +454,10 @@ def main() -> int:
     if not selected:
         print("[ERROR] No clusters selected to run.", file=sys.stderr)
         return 1
+
+    for path in (cluster_run_errlog_path(args.slug), cluster_run_live_log_path(args.slug)):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("", encoding="utf-8")
 
     synth_ok = 0
     challenge_ok = 0

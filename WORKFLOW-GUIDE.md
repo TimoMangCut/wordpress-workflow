@@ -1,11 +1,16 @@
-﻿# Workflow Guide - Enhanced Method (V2)
+﻿# Workflow Guide - Canonical Workflow (Batch 5)
 
-Tài liệu này mô tả cách vận hành pipeline enhanced trong workspace `source-code`.
+Tài liệu này mô tả **workflow canonical hiện tại** của workspace này.
 Mục tiêu:
-- Chạy ổn định cho batch lớn.
-- Kiểm soát quota LLM.
-- Tách rõ vai trò từng phase.
-- Giữ output dễ đọc cho người vận hành.
+- phản ánh đúng topology đã chốt ở Batch 4.5 / Batch 5
+- phân biệt rõ `canonical entrypoint` với `script debug/maintenance`
+- giảm nhầm lẫn giữa `force overwrite`, `reviewer_explore`, và `LLM force mode`
+
+Nguyên tắc đọc tài liệu này:
+- Đường vận hành chuẩn hằng ngày:
+  - `bash tools/bin/run-single-plugin.sh <slug>`
+- `run-phase2.sh` và `run-phase3.sh` là **scoped rerun runners**
+- `run-pipeline.sh`, `scan-all.sh`, `prepare_agent_inputs.py`, `orchestrate-agents.sh`, `write_phase2_consensus.py` là **wrapper/component scripts**, chỉ dùng khi debug, validate, batch orchestration, hoặc repair từng stage
 
 ## 1) Kiến trúc tổng quan
 
@@ -17,15 +22,35 @@ Pipeline gồm 3 phase:
 - Không dùng LLM.
 - Psalm có cơ chế `primary + fallback` để tránh crash do `humanmade/psalm-plugin-wordpress`.
 
-2. Phase 2 (LLM Analysis + Deterministic Postprocess)
-- Chạy theo index range để kiểm soát quota.
-- Có chế độ interactive để chọn Start/End/Threads.
-- Plugin low/no-signal vẫn có `phase2-lite` (không skip im lặng).
+2. Phase 2 (Role-Based Review Loop + Cluster Consensus)
+- deterministic prep -> worker tracing -> reviewer core -> revision -> reviewer explore -> cluster synth/challenge -> consensus
+- depth policy là **adaptive by default**: workflow tự tăng độ sâu review/exploration khi tín hiệu Phase 1 mạnh hơn
+- reviewer không còn là một round “đọc lại cả plugin” duy nhất
+- `reviewer_core` và `reviewer_explore` là hai nhiệm vụ tách biệt
+- canonical output của Phase 2 là `reports/phase2/<slug>-phase2.json`
 
 3. Phase 3 (Gate-first + Optional LLM Skeptic)
 - `phase3_gate.py` luôn chạy trước và là authoritative.
 - Luôn sinh markdown deterministic.
 - LLM là lớp skeptic review (theo `--llm-mode`).
+
+Luồng canonical hiện tại:
+
+```text
+run-single-plugin.sh
+  -> Phase 1
+  -> threat context
+  -> Phase 2 local loop
+       worker
+       reviewer_core
+       worker revision
+       reviewer_explore
+  -> cluster synth/challenge
+  -> consensus writer
+  -> canonical phase2.json
+  -> Phase 3 gate
+  -> optional Phase 3 skeptic review
+```
 
 ## 2) Chuẩn bị môi trường
 
@@ -134,7 +159,7 @@ Ví dụ cấu hình dùng chung:
     "PHASE2_EXPLORATION_TIMEOUT_SECONDS": "240",
     "PHASE2_WORKER_CLAUDE_MODEL": "claude-sonnet-4.6",
     "PHASE2_REVIEWER_CODEX_MODEL": "gpt-5.4",
-    "PHASE2_REVIEWER_CLAUDE_MODEL": "claude-opus-4.6",
+    "PHASE2_REVIEWER_CLAUDE_MODEL": "claude-sonnet-4.6",
     "PHASE2_ENABLE_FORCED_EXPLORATION": "true",
     "PHASE2_MAX_EXPLORATION_CANDIDATES": "3",
     "PHASE3_PRIMARY_PROVIDER": "codex"
@@ -159,20 +184,20 @@ Ví dụ local override:
 - `PHASE2_REVIEWER_PROVIDER=codex`: reviewer mặc định của Phase 2 là Codex.
 - `PHASE2_WORKER_CLAUDE_MODEL=claude-sonnet-4.6`: model worker chính cho Claude ở Phase 2.
 - `PHASE2_REVIEWER_CODEX_MODEL=gpt-5.4`: model reviewer chính cho Codex ở Phase 2.
-- `PHASE2_REVIEWER_CLAUDE_MODEL=claude-opus-4.6`: model escalation/reviewer dự phòng cho Claude khi cần.
+- `PHASE2_REVIEWER_CLAUDE_MODEL=claude-sonnet-4.6`: model reviewer fallback cho Claude khi cần.
 - `PHASE2_PROVIDER_TIMEOUT_SECONDS=600`: fallback timeout tương thích ngược cho Phase 2 nếu timeout theo role chưa được set.
 - `PHASE2_WORKER_TIMEOUT_SECONDS=900`: timeout cho worker round 1 quick/deep.
 - `PHASE2_REVISION_TIMEOUT_SECONDS=600`: timeout cho worker revision/expansion rounds.
 - `PHASE2_REVIEWER_TIMEOUT_SECONDS=600`: timeout cho reviewer skeptical rounds.
-- `PHASE2_EXPLORATION_TIMEOUT_SECONDS=240`: timeout cho forced exploration round.
-- `PHASE2_ENABLE_FORCED_EXPLORATION=true`: trước khi kết thúc loop, reviewer chạy thêm một vòng ép worker tìm candidate mới ngoài tập finding hiện có.
-- `PHASE2_MAX_EXPLORATION_CANDIDATES=3`: giới hạn số candidate mới ở forced exploration round.
+- `PHASE2_EXPLORATION_TIMEOUT_SECONDS=240`: timeout cho `reviewer_explore` stage.
+- `PHASE2_ENABLE_FORCED_EXPLORATION=true`: tên env legacy cho `reviewer_explore`; đây không phải “force mode” tùy hứng mà là stage riêng ở cuối loop.
+- `PHASE2_MAX_EXPLORATION_CANDIDATES=3`: giới hạn số candidate mới trong `reviewer_explore`.
 - `LLM_PROVIDERS=codex`: mặc định Phase 3 chỉ gọi Codex trừ khi bạn override.
 - `PHASE3_PRIMARY_PROVIDER`: chọn provider canonical cho Phase 3 khi chạy multi-provider.
 - `CLAUDE_BIN`: cần thiết nếu shell batch không thấy `claude` trên `PATH`.
 - `CLAUDE_MODEL`: model Claude mặc định cho các path không pin riêng model, ví dụ worker fallback sau này.
 
-Có thể override tạm thời bằng CLI flag nếu cần:
+Có thể override tạm thời bằng CLI flag nếu cần, nhưng đây là **rerun/debug path** chứ không phải cách chạy chuẩn hằng ngày:
 
 ```bash
 bash tools/bin/run-phase2.sh --slug <slug> \
@@ -188,14 +213,28 @@ bash tools/bin/run-phase3.sh --with-claude --slug <slug> --llm-mode auto
 Ghi chú:
 - Phase 2 mới là role-based loop: worker và reviewer là hai role tách biệt, không còn chọn canonical theo provider list nữa.
 - Default topology hiện tại là `Claude Sonnet worker -> Codex GPT-5.4 reviewer`.
-- Sau skeptical loop thông thường, Phase 2 còn có một forced-exploration round để reviewer ép worker rà candidate mới trước khi chốt.
+- Sau `reviewer_core`, Phase 2 còn có một `reviewer_explore` stage riêng để tìm blind spots. Flag CLI vẫn mang tên legacy `forced-exploration`, nhưng về mặt workflow đây là một stage chính thức chứ không phải “force brute-search”.
 - `--provider` / `--providers` vẫn còn để tương thích ngược, nhưng abstraction đúng cho Phase 2 là `worker` và `reviewer`.
 - Artifact canonical vẫn giữ tên cũ để không phá pipeline. Phase 2 loop artifacts được lưu sidecar theo round.
 - Kiến trúc stabilization mục tiêu cho Phase 2 được chốt tại `7-workflow-wp/PHASE2-ARCHITECTURE-SPEC.md`.
 
-## 3) Cách chạy chuẩn
+## 3) Cách chạy
 
-### 3.1 Phase 1 - toàn bộ plugin
+Phần này chỉ trả lời đúng 4 câu hỏi thực dụng:
+- chạy 1 plugin thế nào
+- multi-thread thế nào
+- range thế nào
+- kết hợp thế nào
+
+### 3.1 Phase 1
+
+Chạy 1 plugin:
+
+```bash
+bash tools/bin/scan-all.sh plugins/<slug>/
+```
+
+Multi-thread:
 
 ```bash
 cd tools
@@ -203,53 +242,27 @@ bash bin/batch.sh ../plugins 4
 cd ..
 ```
 
-Hoặc chạy một plugin:
+Range:
 
 ```bash
-bash tools/bin/scan-all.sh plugins/<slug>/
+cd tools
+bash bin/batch.sh ../plugins 1 81 100
+cd ..
 ```
 
-Hoặc chạy trọn pipeline 1 plugin theo thứ tự Phase 1 -> Phase 2 -> Phase 3:
+Kết hợp range + multi-thread:
 
 ```bash
-bash tools/bin/run-single-plugin.sh <slug>
+cd tools
+bash bin/batch.sh ../plugins 6 81 100
+cd ..
 ```
 
-Wrapper này:
-- chỉ dành cho một plugin mỗi lần chạy
-- mặc định chạy `Claude Sonnet worker -> Codex GPT-5.4 reviewer` ở Phase 2
-- Phase 3 vẫn theo provider-list controls; `--with-claude` chủ yếu ảnh hưởng Phase 3
-- dừng lại nếu Phase 1 không sinh `reports/phase1/<slug>-ir.json` hoặc Phase 2 không sinh `reports/phase2/<slug>-phase2.json`
-
-Ví dụ chạy theo path plugin:
-
-```bash
-bash tools/bin/run-single-plugin.sh plugins/<slug>
-```
-
-Ví dụ ép Phase 2 theo role topology mặc định rồi cho Phase 3 chạy thêm Claude:
-
-```bash
-bash tools/bin/run-single-plugin.sh <slug> --with-claude --llm-mode auto
-```
-
-Multi-agent automation mode cho một plugin:
-
-```bash
-bash tools/bin/run-pipeline.sh <slug> --multi-agent
-```
-
-Mode này sẽ:
-- refresh Phase 1 qua `scan-all.sh`
-- tự generate `reports/<slug>-threat-context.json` nếu cần
-- tự chạy `prepare_agent_inputs.py <slug>`
-- normalize IR + Semgrep + Psalm thành candidate inventory rồi chunk thành `agent-wNN` bundles
-- orchestrate agents, merge output vào `reports/phase2/<slug>-phase2.local.json`
-- build deterministic `cluster-plan` + `cluster-cNN.json` + `cluster-cNN.input.json`
-- build `cluster-cNN.pack.json` theo evidence-pack stage
-- rồi chạy thêm `cluster-cNN.synth.json` và `cluster-cNN.challenge.json`
-- cuối cùng viết `reports/phase2/<slug>-phase2.consensus.json` rồi sync lại canonical `phase2.json`
-- sau đó mới chuyển sang Phase 3
+Ghi chú:
+- `batch.sh` là batch runner của Phase 1
+- `4` hoặc `6` là số thread
+- `81 100` là range plugin theo thứ tự index trong batch scan
+- output chính của Phase 1 nằm ở `reports/phase1/`
 
 Batch Psalm riêng (toàn bộ plugin mặc định):
 
@@ -332,77 +345,106 @@ Chỉ fallback theo signature (chế độ debug):
 PSALM_FALLBACK=true PSALM_FALLBACK_POLICY=signature bash tools/bin/scan-psalm.sh plugins/<slug>/
 ```
 
-### 3.2 Phase 2 - chạy theo range (khuyến nghị)
+### 3.2 Phase 2
 
-Chế độ interactive:
-
-```bash
-bash tools/bin/run-phase2.sh --interactive
-```
-
-Script sẽ:
-1. Hiển thị index theo IR-order.
-2. Hiển thị index đã có output Phase 2.
-3. Hỏi Start index.
-4. Hỏi End index.
-5. Hỏi Threads.
-
-Chế độ non-interactive:
-
-```bash
-bash tools/bin/run-phase2.sh --start-index 81 --end-index 100 --threads 3
-```
-
-Chạy một plugin:
+Chạy 1 plugin:
 
 ```bash
 bash tools/bin/run-phase2.sh --slug <slug>
 ```
 
-Ví dụ ép chạy cả Codex lẫn Claude bằng CLI:
+Range:
 
 ```bash
-bash tools/bin/run-phase2.sh --slug <slug> \
-  --worker-provider claude \
-  --reviewer-provider codex \
-  --worker-claude-model claude-sonnet-4.6 \
-  --reviewer-codex-model gpt-5.4 \
-  --forced-exploration \
-  --max-exploration-candidates 3
+bash tools/bin/run-phase2.sh --start-index 81 --end-index 100 --threads 3
 ```
 
-Option quan trọng:
-- `--force`: ghi đè output Phase 2 cũ.
-- `--force-deep`: luôn deep prompt, bỏ quick triage.
-- `--max-review-rounds`: số vòng reviewer critique + worker revision.
-- `--forced-exploration` / `--no-forced-exploration`: bật/tắt vòng ép tìm finding mới ở cuối loop.
-- `--max-exploration-candidates`: giới hạn số candidate mới trong forced exploration round.
-- `--clusters` / `--no-clusters`: bật/tắt deterministic cluster synth/challenge + consensus writer ở cuối Phase 2.
-- `--cluster-limit N`: chỉ chạy `N` cluster đầu tiên trong canonical Phase 2 path; hữu ích cho validation/quota-controlled reruns.
+Multi-thread:
+
+```bash
+bash tools/bin/run-phase2.sh --start-index 81 --end-index 100 --threads 4
+```
+
+Kết hợp range + multi-thread:
+
+```bash
+bash tools/bin/run-phase2.sh --start-index 81 --end-index 100 --threads 4
+```
+
+Interactive:
+
+```bash
+bash tools/bin/run-phase2.sh --interactive
+```
+
+Ghi chú:
+- Phase 2 hiện đã bao gồm:
+  - worker
+  - reviewer_core
+  - revision
+  - reviewer_explore
+  - cluster synth/challenge
+  - consensus
+- `--force` chỉ là bỏ freshness check và ghi đè output cũ
+- `--force-deep` chỉ override quick-triage fallback; bình thường workflow đã deep mặc định và tự tăng thêm độ sâu theo tín hiệu Phase 1
+- `--forced-exploration` là tên flag legacy của `reviewer_explore`
+- `--clusters` / `--no-clusters` chỉ bật/tắt cluster stage ở cuối Phase 2
 
 Artifact canonical của `run-phase2.sh` hiện có 3 lớp:
 - `reports/phase2/<slug>-phase2.local.json`: kết quả local loop sau worker/reviewer/revision.
 - `reports/phase2/<slug>-phase2.consensus.json`: deterministic consensus sau cluster stage.
 - `reports/phase2/<slug>-phase2.json`: canonical output cuối cùng cho Phase 3.
 
-### 3.3 Phase 3 - gate-first + LLM mode
+### 3.3 Phase 3
 
-Chế độ interactive:
-
-```bash
-bash tools/bin/run-phase3.sh --llm-mode auto
-```
-
-Chạy một plugin:
+Chạy 1 plugin:
 
 ```bash
 bash tools/bin/run-phase3.sh --slug <slug> --llm-mode auto
 ```
 
-Ví dụ ép chạy cả Codex lẫn Claude bằng CLI:
+Range:
 
 ```bash
-bash tools/bin/run-phase3.sh --with-claude --slug <slug> --llm-mode auto
+bash tools/bin/run-phase3.sh
+```
+
+Sau đó nhập:
+- `Start index`
+- `End index`
+
+Multi-thread:
+
+```bash
+bash tools/bin/run-phase3.sh
+```
+
+Sau đó nhập:
+- `Start index`
+- `End index`
+- `Threads`
+
+Kết hợp range + multi-thread:
+
+```bash
+bash tools/bin/run-phase3.sh --llm-mode auto
+```
+
+Sau đó nhập:
+- `Start index`
+- `End index`
+- `Threads`
+
+Deterministic only:
+
+```bash
+bash tools/bin/run-phase3.sh --slug <slug> --llm-mode off
+```
+
+LLM skeptic bắt buộc:
+
+```bash
+bash tools/bin/run-phase3.sh --slug <slug> --llm-mode force
 ```
 
 Artifact sidecar:
@@ -419,9 +461,9 @@ Artifact sidecar:
   - provider markdowns only: `reports/phase3/<index>-<slug>.codex.llm.md`, `reports/phase3/<index>-<slug>.claude.llm.md`
 
 LLM mode:
-- `auto`: chỉ gọi LLM nếu gate còn `uncertain/risk_note`.
-- `off`: không gọi LLM.
-- `force`: luôn gọi LLM skeptic.
+- `auto`: canonical mode, chỉ gọi LLM nếu gate còn `uncertain/risk_note`.
+- `off`: deterministic-only mode cho benchmark/debug.
+- `force`: luôn gọi LLM skeptic sau gate. Đây là debug/validation mode, **không phải mode vận hành chuẩn**.
 
 Apply review loop (tùy chọn):
 
@@ -429,13 +471,55 @@ Apply review loop (tùy chọn):
 bash tools/bin/run-phase3.sh --slug <slug> --llm-mode auto --apply-review
 ```
 
-## 4) Quota dashboard
+### 3.4 Full Audit
+
+Full audit 1 plugin, đường chuẩn đơn giản nhất:
+
+```bash
+bash tools/bin/run-single-plugin.sh <slug>
+```
+
+Full audit nhiều plugin / batch orchestration:
+
+```bash
+bash tools/bin/run-pipeline.sh
+bash tools/bin/run-pipeline.sh --multi-agent
+```
+
+Lưu ý rất quan trọng:
+- `run-single-plugin.sh` là **public full-audit entrypoint** cho 1 plugin
+- `run-single-plugin.sh` luôn chạy:
+  - `Phase 1`
+  - `Phase 2 canonical local loop`
+  - `cluster/consensus`
+  - `Phase 3`
+- `run-pipeline.sh` là **wrapper batch/internal orchestration**
+- `run-pipeline.sh --multi-agent` là backend orchestration path, **không phải full-audit path public mặc định**
+
+### 3.5 Script thành phần
+
+Chỉ dùng khi debug / validate / repair từng tầng:
+- `bash tools/bin/scan-all.sh plugins/<slug>/`
+- `python3 tools/bin/prepare_agent_inputs.py <slug>`
+- `bash tools/bin/orchestrate-agents.sh <slug>`
+- `python3 tools/bin/build_candidate_clusters.py <slug>`
+- `python3 tools/bin/build_cluster_evidence_pack.py <slug>`
+- `python3 tools/bin/write_phase2_consensus.py <slug>`
+
+## 4) Output và quota
 
 Layout chuẩn của `reports/`:
 - `reports/phase1` chứa toàn bộ artifact Phase 1
 - `reports/phase2` chứa toàn bộ artifact Phase 2
 - `reports/phase3` chứa toàn bộ artifact Phase 3
 - `reports/logs` chứa log và quota ledger
+
+Ngoài ba thư mục phase, top-level `reports/` còn có các artifact deterministic dùng để nối giữa các stage, ví dụ:
+- `reports/<slug>-threat-context.json`
+- `reports/<slug>-dispatch.json`
+- `reports/<slug>-candidate-inventory.json`
+
+Các file này không phải canonical findings output, nhưng là context/prep artifact cho Phase 2 multi-agent path.
 
 Nếu chưa có thư mục, các script sẽ tự tạo trước khi ghi output.
 
@@ -634,16 +718,22 @@ rm -f reports/logs/*.log \
 ## 7) Runbook ngắn (khuyến nghị)
 
 ```bash
-# 1) Phase 1 toàn bộ
-cd tools && bash bin/batch.sh ../plugins 4 && cd ..
+# 1) Full audit 1 plugin
+bash tools/bin/run-single-plugin.sh <slug>
 
-# 2) Phase 2 interactive
-bash tools/bin/run-phase2.sh --interactive
+# 2) Phase 1 batch
+cd tools && bash bin/batch.sh ../plugins 4 81 100 && cd ..
 
-# 3) Phase 3 interactive + auto LLM
+# 3) Phase 2 batch
+bash tools/bin/run-phase2.sh --start-index 81 --end-index 100 --threads 3
+
+# 4) Phase 3 batch
 bash tools/bin/run-phase3.sh --llm-mode auto
 
-# 4) Xem quota
+# 5) Batch/internal orchestration wrapper
+bash tools/bin/run-pipeline.sh --multi-agent
+
+# 6) Xem quota
 python3 tools/bin/quota-report.py --reports-dir reports --phase all --days 1
 ```
 

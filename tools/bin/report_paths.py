@@ -27,6 +27,42 @@ class ReportLayout:
         self.logs.mkdir(parents=True, exist_ok=True)
         return self
 
+    def slug_logs(self, slug: str) -> Path:
+        return self.logs / slug
+
+    def phase_logs(self, slug: str, phase: str) -> Path:
+        return self.slug_logs(slug) / phase
+
+    def phase1_logs(self, slug: str) -> Path:
+        return self.phase_logs(slug, "phase1")
+
+    def phase2_logs(self, slug: str) -> Path:
+        return self.phase_logs(slug, "phase2")
+
+    def phase2_worker_logs(self, slug: str) -> Path:
+        return self.phase2_logs(slug) / "worker"
+
+    def phase2_reviewer_logs(self, slug: str) -> Path:
+        return self.phase2_logs(slug) / "reviewer"
+
+    def phase2_chunked_logs(self, slug: str) -> Path:
+        return self.phase2_logs(slug) / "chunked"
+
+    def phase2_chunked_agents_logs(self, slug: str) -> Path:
+        return self.phase2_chunked_logs(slug) / "agents"
+
+    def phase2_chunked_agent_logs(self, slug: str, agent: str) -> Path:
+        return self.phase2_chunked_agents_logs(slug) / agent
+
+    def phase2_cluster_logs(self, slug: str) -> Path:
+        return self.phase2_logs(slug) / "cluster"
+
+    def phase3_logs(self, slug: str) -> Path:
+        return self.phase_logs(slug, "phase3")
+
+    def phase3_provider_logs(self, slug: str) -> Path:
+        return self.phase3_logs(slug) / "providers"
+
 
 def build_report_layout(reports_root: Pathish) -> ReportLayout:
     root = Path(reports_root).resolve()

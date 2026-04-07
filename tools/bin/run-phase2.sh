@@ -57,11 +57,13 @@ PHASE2_PROVIDER_TIMEOUT_SECONDS="${PHASE2_PROVIDER_TIMEOUT_SECONDS:-600}"
 PHASE2_WORKER_TIMEOUT_SECONDS="${PHASE2_WORKER_TIMEOUT_SECONDS:-900}"
 PHASE2_REVISION_TIMEOUT_SECONDS="${PHASE2_REVISION_TIMEOUT_SECONDS:-600}"
 PHASE2_REVIEWER_TIMEOUT_SECONDS="${PHASE2_REVIEWER_TIMEOUT_SECONDS:-600}"
-PHASE2_EXPLORATION_TIMEOUT_SECONDS="${PHASE2_EXPLORATION_TIMEOUT_SECONDS:-300}"
+PHASE2_EXPLORATION_TIMEOUT_SECONDS="${PHASE2_EXPLORATION_TIMEOUT_SECONDS:-240}"
 PHASE2_ENABLE_CLUSTER_CONSENSUS="${PHASE2_ENABLE_CLUSTER_CONSENSUS:-true}"
 PHASE2_CLUSTER_LIMIT="${PHASE2_CLUSTER_LIMIT:-}"
 PHASE2_WORKER_PROVIDER="${PHASE2_WORKER_PROVIDER:-claude}"
 PHASE2_REVIEWER_PROVIDER="${PHASE2_REVIEWER_PROVIDER:-codex}"
+PHASE2_WORKER_EXECUTION_MODE="${PHASE2_WORKER_EXECUTION_MODE:-adaptive}"
+PHASE2_WORKER_CHUNK_PARALLEL_LIMIT="${PHASE2_WORKER_CHUNK_PARALLEL_LIMIT:-4}"
 PHASE2_WORKER_CODEX_MODEL="${PHASE2_WORKER_CODEX_MODEL:-gpt-5.4}"
 PHASE2_WORKER_CLAUDE_MODEL="${PHASE2_WORKER_CLAUDE_MODEL:-${CLAUDE_MODEL:-claude-sonnet-4.6}}"
 PHASE2_REVIEWER_CODEX_MODEL="${PHASE2_REVIEWER_CODEX_MODEL:-gpt-5.4}"
@@ -75,6 +77,19 @@ END_SET=false
 THREADS_SET=false
 WORKER_PROVIDER_EXPLICIT=false
 REVIEWER_PROVIDER_EXPLICIT=false
+REVIEW_ROUNDS_EXPLICIT=false
+FORCED_EXPLORATION_EXPLICIT=false
+EXPLORATION_CANDIDATES_EXPLICIT=false
+REVISION_TIMEOUT_EXPLICIT=false
+REVIEWER_TIMEOUT_EXPLICIT=false
+EXPLORATION_TIMEOUT_EXPLICIT=false
+
+PHASE2_BASELINE_MAX_REVIEW_ROUNDS=1
+PHASE2_BASELINE_ENABLE_FORCED_EXPLORATION=true
+PHASE2_BASELINE_MAX_EXPLORATION_CANDIDATES=3
+PHASE2_BASELINE_REVISION_TIMEOUT_SECONDS=600
+PHASE2_BASELINE_REVIEWER_TIMEOUT_SECONDS=600
+PHASE2_BASELINE_EXPLORATION_TIMEOUT_SECONDS=240
 
 usage() {
     cat <<'EOF'
@@ -92,7 +107,7 @@ Options:
   --threads <N>          Parallel workers for batch mode (default: 1).
   --interactive          Show index list and ask Start/End/Threads.
   --force                Re-run even if the existing phase2 output is still fresh.
-  --force-deep           Skip quick-triage and always run deep prompt.
+  --force-deep           Override adaptive quick-triage fallback and always run deep prompt.
   --resume-existing      Resume from existing worker/review artifacts instead of restarting from round 1.
   --with-claude          Convenience flag: run both codex and claude.
   --provider <name>      Single LLM provider shorthand: codex|claude.
@@ -120,6 +135,11 @@ Options:
   --max-exploration-candidates <N> Cap the final exploration candidates (default: 3).
   --codex-bin <path>     Codex CLI binary/path (default: env CODEX_BIN or codex).
   --claude-bin <path>    Claude Code binary/path (default: env CLAUDE_BIN or claude).
+
+Notes:
+  - Phase 2 depth is adaptive by default.
+  - High-signal plugins may automatically switch worker round 1 to candidate-chunked execution
+    before the canonical reviewer_core/reviewer_explore + cluster/consensus path continues.
 EOF
 }
 
@@ -201,14 +221,17 @@ while [[ $# -gt 0 ]]; do
             ;;
         --revision-timeout)
             PHASE2_REVISION_TIMEOUT_SECONDS="${2:-}"
+            REVISION_TIMEOUT_EXPLICIT=true
             shift 2
             ;;
         --reviewer-timeout)
             PHASE2_REVIEWER_TIMEOUT_SECONDS="${2:-}"
+            REVIEWER_TIMEOUT_EXPLICIT=true
             shift 2
             ;;
         --exploration-timeout)
             PHASE2_EXPLORATION_TIMEOUT_SECONDS="${2:-}"
+            EXPLORATION_TIMEOUT_EXPLICIT=true
             shift 2
             ;;
         --clusters)
@@ -251,18 +274,22 @@ while [[ $# -gt 0 ]]; do
             ;;
         --max-review-rounds)
             PHASE2_MAX_REVIEW_ROUNDS="${2:-}"
+            REVIEW_ROUNDS_EXPLICIT=true
             shift 2
             ;;
         --forced-exploration)
             PHASE2_ENABLE_FORCED_EXPLORATION=true
+            FORCED_EXPLORATION_EXPLICIT=true
             shift
             ;;
         --no-forced-exploration)
             PHASE2_ENABLE_FORCED_EXPLORATION=false
+            FORCED_EXPLORATION_EXPLICIT=true
             shift
             ;;
         --max-exploration-candidates)
             PHASE2_MAX_EXPLORATION_CANDIDATES="${2:-}"
+            EXPLORATION_CANDIDATES_EXPLICIT=true
             shift 2
             ;;
         --codex-bin)
@@ -402,10 +429,14 @@ if [ ! -f "$PHASE2_REVISION_INPUT_BUILDER" ]; then
     exit 1
 fi
 
+PHASE2_AGENT_INPUT_PREPARER="${ROOT_DIR}/tools/bin/prepare_agent_inputs.py"
+PHASE2_MULTI_WORKER_ORCHESTRATOR="${ROOT_DIR}/tools/bin/orchestrate-agents.sh"
+
 PHASE2_CLUSTER_BUILDER="${ROOT_DIR}/tools/bin/build_candidate_clusters.py"
 PHASE2_CLUSTER_PACK_BUILDER="${ROOT_DIR}/tools/bin/build_cluster_evidence_pack.py"
 PHASE2_CLUSTER_RUNNER="${ROOT_DIR}/tools/bin/run-phase2-clusters.py"
 PHASE2_CONSENSUS_WRITER="${ROOT_DIR}/tools/bin/write_phase2_consensus.py"
+CLAUDE_STREAM_PARSER="${ROOT_DIR}/tools/bin/claude_stream_to_text.py"
 
 PHASE2_CLUSTER_INPUT_SCHEMA="${ROOT_DIR}/contracts/phase2-cluster-input.schema.json"
 PHASE2_CLUSTER_OUTPUT_SCHEMA="${ROOT_DIR}/contracts/phase2-cluster-output.schema.json"
@@ -534,19 +565,30 @@ if ! [[ "$PHASE2_EXPLORATION_TIMEOUT_SECONDS" =~ ^[0-9]+$ ]]; then
 fi
 
 if ! [[ "$PHASE2_MAX_REVIEW_ROUNDS" =~ ^[0-9]+$ ]] || [ "$PHASE2_MAX_REVIEW_ROUNDS" -lt 1 ]; then
-    log_warn "Invalid PHASE2_MAX_REVIEW_ROUNDS=$PHASE2_MAX_REVIEW_ROUNDS. Using default 1."
-    PHASE2_MAX_REVIEW_ROUNDS=1
+    log_warn "Invalid PHASE2_MAX_REVIEW_ROUNDS=$PHASE2_MAX_REVIEW_ROUNDS. Using default ${PHASE2_BASELINE_MAX_REVIEW_ROUNDS}."
+    PHASE2_MAX_REVIEW_ROUNDS="$PHASE2_BASELINE_MAX_REVIEW_ROUNDS"
 fi
 
 PHASE2_ENABLE_FORCED_EXPLORATION="$(printf '%s' "$PHASE2_ENABLE_FORCED_EXPLORATION" | tr '[:upper:]' '[:lower:]')"
 if [[ "$PHASE2_ENABLE_FORCED_EXPLORATION" != "true" && "$PHASE2_ENABLE_FORCED_EXPLORATION" != "false" ]]; then
-    log_warn "Invalid PHASE2_ENABLE_FORCED_EXPLORATION=$PHASE2_ENABLE_FORCED_EXPLORATION. Using default true."
-    PHASE2_ENABLE_FORCED_EXPLORATION=true
+    log_warn "Invalid PHASE2_ENABLE_FORCED_EXPLORATION=$PHASE2_ENABLE_FORCED_EXPLORATION. Using default ${PHASE2_BASELINE_ENABLE_FORCED_EXPLORATION}."
+    PHASE2_ENABLE_FORCED_EXPLORATION="$PHASE2_BASELINE_ENABLE_FORCED_EXPLORATION"
 fi
 
 if ! [[ "$PHASE2_MAX_EXPLORATION_CANDIDATES" =~ ^[0-9]+$ ]] || [ "$PHASE2_MAX_EXPLORATION_CANDIDATES" -lt 1 ]; then
-    log_warn "Invalid PHASE2_MAX_EXPLORATION_CANDIDATES=$PHASE2_MAX_EXPLORATION_CANDIDATES. Using default 3."
-    PHASE2_MAX_EXPLORATION_CANDIDATES=3
+    log_warn "Invalid PHASE2_MAX_EXPLORATION_CANDIDATES=$PHASE2_MAX_EXPLORATION_CANDIDATES. Using default ${PHASE2_BASELINE_MAX_EXPLORATION_CANDIDATES}."
+    PHASE2_MAX_EXPLORATION_CANDIDATES="$PHASE2_BASELINE_MAX_EXPLORATION_CANDIDATES"
+fi
+
+PHASE2_WORKER_EXECUTION_MODE="$(printf '%s' "$PHASE2_WORKER_EXECUTION_MODE" | tr '[:upper:]' '[:lower:]')"
+if [[ "$PHASE2_WORKER_EXECUTION_MODE" != "adaptive" && "$PHASE2_WORKER_EXECUTION_MODE" != "monolithic" && "$PHASE2_WORKER_EXECUTION_MODE" != "chunked" ]]; then
+    log_warn "Invalid PHASE2_WORKER_EXECUTION_MODE=$PHASE2_WORKER_EXECUTION_MODE. Using adaptive."
+    PHASE2_WORKER_EXECUTION_MODE="adaptive"
+fi
+
+if ! [[ "$PHASE2_WORKER_CHUNK_PARALLEL_LIMIT" =~ ^[0-9]+$ ]] || [ "$PHASE2_WORKER_CHUNK_PARALLEL_LIMIT" -lt 1 ]; then
+    log_warn "Invalid PHASE2_WORKER_CHUNK_PARALLEL_LIMIT=$PHASE2_WORKER_CHUNK_PARALLEL_LIMIT. Using default 4."
+    PHASE2_WORKER_CHUNK_PARALLEL_LIMIT=4
 fi
 
 normalize_providers() {
@@ -677,6 +719,12 @@ phase2_output_is_fresh() {
     fi
     if [ -f "$PHASE2_REVISION_INPUT_BUILDER" ]; then
         inputs+=("$PHASE2_REVISION_INPUT_BUILDER")
+    fi
+    if [ -f "$PHASE2_AGENT_INPUT_PREPARER" ]; then
+        inputs+=("$PHASE2_AGENT_INPUT_PREPARER")
+    fi
+    if [ -f "$PHASE2_MULTI_WORKER_ORCHESTRATOR" ]; then
+        inputs+=("$PHASE2_MULTI_WORKER_ORCHESTRATOR")
     fi
     if [ "$PHASE2_ENABLE_CLUSTER_CONSENSUS" = true ]; then
         for path in \
@@ -812,12 +860,24 @@ phase2_consensus_output_path() {
     printf '%s/%s-phase2.consensus.json' "$PHASE2_DIR" "$1"
 }
 
+phase2_dispatch_path() {
+    printf '%s/%s-dispatch.json' "$REPORTS_DIR" "$1"
+}
+
+phase2_candidate_inventory_path() {
+    printf '%s/%s-candidate-inventory.json' "$REPORTS_DIR" "$1"
+}
+
 phase2_cluster_plan_path() {
     printf '%s/%s-cluster-plan.json' "$PHASE2_DIR" "$1"
 }
 
 phase2_cluster_errlog_path() {
-    printf '%s/%s-phase2-clusters.err' "$LOGS_DIR" "$1"
+    logs_phase2_cluster_run_err_path "$1"
+}
+
+phase2_cluster_live_log_path() {
+    logs_phase2_cluster_run_live_path "$1"
 }
 
 phase2_loop_summary_path() {
@@ -834,19 +894,23 @@ phase2_loop_errlog_path() {
     local provider="$3"
     local round="$4"
     local label="${5:-}"
-    if [ -n "$label" ]; then
-        printf '%s/%s-phase2-%s.r%s.%s.%s.err' "$LOGS_DIR" "$slug" "$role" "$round" "$provider" "$label"
+    if [ "$role" = "worker" ]; then
+        logs_phase2_worker_err_path "$slug" "$provider" "$round" "$label"
     else
-        printf '%s/%s-phase2-%s.r%s.%s.err' "$LOGS_DIR" "$slug" "$role" "$round" "$provider"
+        logs_phase2_reviewer_err_path "$slug" "$provider" "$round" "$label"
     fi
 }
 
+phase2_loop_live_log_path() {
+    printf '%s\n' "$(live_log_path_from_errlog "$(phase2_loop_errlog_path "$@")")"
+}
+
 phase2_errlog_path() {
-    if [ "$3" = "quick" ]; then
-        printf '%s/%s-phase2-quick.%s.err' "$LOGS_DIR" "$1" "$2"
-    else
-        printf '%s/%s-phase2.%s.err' "$LOGS_DIR" "$1" "$2"
-    fi
+    logs_phase2_run_err_path "$1" "$3"
+}
+
+phase2_live_log_path() {
+    logs_phase2_run_live_path "$1" "$3"
 }
 
 phase2_existing_rounds() {
@@ -1350,14 +1414,15 @@ append_phase2_loop_worker_event() {
     local duration="$6"
     local output_rel="$7"
     local errlog_rel="$8"
-    local tp="$9"
-    local fp="${10}"
-    local rv="${11}"
-    local total="${12}"
-    local risk="${13}"
-    local delta_json="${14}"
+    local live_log_rel="$9"
+    local tp="${10}"
+    local fp="${11}"
+    local rv="${12}"
+    local total="${13}"
+    local risk="${14}"
+    local delta_json="${15}"
 
-    python3 - "$events_path" "$round" "$worker_mode" "$provider" "$model" "$duration" "$output_rel" "$errlog_rel" "$tp" "$fp" "$rv" "$total" "$risk" "$delta_json" <<'PY'
+    python3 - "$events_path" "$round" "$worker_mode" "$provider" "$model" "$duration" "$output_rel" "$errlog_rel" "$live_log_rel" "$tp" "$fp" "$rv" "$total" "$risk" "$delta_json" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -1372,14 +1437,15 @@ payload = {
     "duration_seconds": int(sys.argv[6]),
     "output_path": sys.argv[7],
     "errlog_path": sys.argv[8],
+    "live_log_path": sys.argv[9] or None,
     "counts": {
-        "tp": int(sys.argv[9]),
-        "fp": int(sys.argv[10]),
-        "review": int(sys.argv[11]),
-        "total": int(sys.argv[12]),
-        "risk": sys.argv[13],
+        "tp": int(sys.argv[10]),
+        "fp": int(sys.argv[11]),
+        "review": int(sys.argv[12]),
+        "total": int(sys.argv[13]),
+        "risk": sys.argv[14],
     },
-    "delta_from_previous_worker": json.loads(sys.argv[14]),
+    "delta_from_previous_worker": json.loads(sys.argv[15]),
 }
 with events_path.open("a", encoding="utf-8") as handle:
     handle.write(json.dumps(payload, separators=(",", ":")) + "\n")
@@ -1395,12 +1461,13 @@ append_phase2_loop_reviewer_event() {
     local duration="$6"
     local output_rel="$7"
     local errlog_rel="$8"
-    local review_status="$9"
-    local finding_reviews_count="${10}"
-    local missed_findings_count="${11}"
-    local material_flag="${12}"
+    local live_log_rel="$9"
+    local review_status="${10}"
+    local finding_reviews_count="${11}"
+    local missed_findings_count="${12}"
+    local material_flag="${13}"
 
-    python3 - "$events_path" "$round" "$review_mode" "$provider" "$model" "$duration" "$output_rel" "$errlog_rel" "$review_status" "$finding_reviews_count" "$missed_findings_count" "$material_flag" <<'PY'
+    python3 - "$events_path" "$round" "$review_mode" "$provider" "$model" "$duration" "$output_rel" "$errlog_rel" "$live_log_rel" "$review_status" "$finding_reviews_count" "$missed_findings_count" "$material_flag" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -1415,10 +1482,11 @@ payload = {
     "duration_seconds": int(sys.argv[6]),
     "output_path": sys.argv[7],
     "errlog_path": sys.argv[8],
-    "review_status": sys.argv[9],
-    "finding_reviews_count": int(sys.argv[10]),
-    "missed_findings_count": int(sys.argv[11]),
-    "material_feedback": sys.argv[12] == "1",
+    "live_log_path": sys.argv[9] or None,
+    "review_status": sys.argv[10],
+    "finding_reviews_count": int(sys.argv[11]),
+    "missed_findings_count": int(sys.argv[12]),
+    "material_feedback": sys.argv[13] == "1",
 }
 with events_path.open("a", encoding="utf-8") as handle:
     handle.write(json.dumps(payload, separators=(",", ":")) + "\n")
@@ -1451,8 +1519,15 @@ write_phase2_loop_summary() {
     local final_risk="${23}"
     local forced_exploration_enabled="${24}"
     local max_exploration_candidates="${25}"
+    local adaptive_depth_profile="${PHASE2_ADAPTIVE_DEPTH_PROFILE:-}"
+    local adaptive_signal_score="${PHASE2_ADAPTIVE_SIGNAL_SCORE:-0}"
+    local adaptive_depth_reasons="${PHASE2_ADAPTIVE_DEPTH_REASONS:-}"
+    local worker_execution_strategy="${PHASE2_ACTIVE_WORKER_STRATEGY:-monolithic}"
+    local effective_revision_timeout="${PHASE2_REVISION_TIMEOUT_SECONDS:-}"
+    local effective_reviewer_timeout="${PHASE2_REVIEWER_TIMEOUT_SECONDS:-}"
+    local effective_exploration_timeout="${PHASE2_EXPLORATION_TIMEOUT_SECONDS:-}"
 
-    python3 - "$summary_path" "$events_path" "$slug" "$initial_mode" "$worker_provider" "$reviewer_provider" "$worker_model" "$reviewer_model" "$max_review_rounds" "$completed_worker_rounds" "$completed_review_rounds" "$final_review_status" "$stop_reason" "$execution_status" "$runtime_seconds" "$canonical_output_rel" "$final_worker_rel" "$final_review_rel" "$final_tp" "$final_fp" "$final_rv" "$final_total" "$final_risk" "$forced_exploration_enabled" "$max_exploration_candidates" <<'PY'
+    python3 - "$summary_path" "$events_path" "$slug" "$initial_mode" "$worker_provider" "$reviewer_provider" "$worker_model" "$reviewer_model" "$max_review_rounds" "$completed_worker_rounds" "$completed_review_rounds" "$final_review_status" "$stop_reason" "$execution_status" "$runtime_seconds" "$canonical_output_rel" "$final_worker_rel" "$final_review_rel" "$final_tp" "$final_fp" "$final_rv" "$final_total" "$final_risk" "$forced_exploration_enabled" "$max_exploration_candidates" "$adaptive_depth_profile" "$adaptive_signal_score" "$adaptive_depth_reasons" "$worker_execution_strategy" "$effective_revision_timeout" "$effective_reviewer_timeout" "$effective_exploration_timeout" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -1480,11 +1555,22 @@ payload = {
     "reviewer_provider": sys.argv[6],
     "worker_model": sys.argv[7] or None,
     "reviewer_model": sys.argv[8] or None,
-    "max_review_rounds": int(sys.argv[9]),
-    "forced_exploration_enabled": sys.argv[24].lower() == "true",
-    "max_exploration_candidates": int(sys.argv[25]),
-    "completed_worker_rounds": int(sys.argv[10]),
-    "completed_review_rounds": int(sys.argv[11]),
+	    "max_review_rounds": int(sys.argv[9]),
+	    "forced_exploration_enabled": sys.argv[24].lower() == "true",
+	    "max_exploration_candidates": int(sys.argv[25]),
+        "adaptive_depth_policy": {
+            "profile": sys.argv[26] or None,
+            "signal_score": int(sys.argv[27]),
+            "reasons": [item for item in sys.argv[28].split(",") if item],
+            "worker_execution_strategy": sys.argv[29] or None,
+            "effective_timeouts": {
+                "revision_seconds": int(sys.argv[30]) if sys.argv[30] else None,
+                "reviewer_seconds": int(sys.argv[31]) if sys.argv[31] else None,
+                "exploration_seconds": int(sys.argv[32]) if sys.argv[32] else None,
+            },
+        },
+	    "completed_worker_rounds": int(sys.argv[10]),
+	    "completed_review_rounds": int(sys.argv[11]),
     "final_review_status": sys.argv[12],
     "stop_reason": sys.argv[13],
     "runtime_seconds": int(sys.argv[15]),
@@ -1606,6 +1692,245 @@ print(f'{unauth}|{sens}|{sql}|{rest_json}|{out}|{len(sources)}|{len(sinks)}')
 " 2>/dev/null || echo "0|0|0|0|0|0|0"
 }
 
+promote_int_if_auto() {
+    local current="$1"
+    local target="$2"
+    local explicit="$3"
+
+    if [ "$explicit" = true ]; then
+        printf '%s' "$current"
+        return 0
+    fi
+    if [ "$target" -gt "$current" ]; then
+        printf '%s' "$target"
+    else
+        printf '%s' "$current"
+    fi
+}
+
+promote_bool_if_auto() {
+    local current="$1"
+    local target="$2"
+    local explicit="$3"
+
+    if [ "$explicit" = true ]; then
+        printf '%s' "$current"
+        return 0
+    fi
+    if [ "$target" = "true" ]; then
+        printf 'true'
+    else
+        printf '%s' "$current"
+    fi
+}
+
+phase2_adaptive_depth_policy() {
+    local mode="$1"
+    local ep_count="$2"
+    local anom_count="$3"
+    local unauth_ep="$4"
+    local sensitive_sinks="$5"
+    local sql_sinks="$6"
+    local rest_json_sources="$7"
+    local output_sinks="$8"
+    local source_count="$9"
+    local sink_count="${10}"
+    local coverage_gaps_count="${11}"
+    local current_max_review_rounds="${12}"
+    local current_forced_exploration="${13}"
+    local current_max_exploration_candidates="${14}"
+    local current_revision_timeout="${15}"
+    local current_reviewer_timeout="${16}"
+    local current_exploration_timeout="${17}"
+    local review_rounds_explicit="${18}"
+    local forced_exploration_explicit="${19}"
+    local exploration_candidates_explicit="${20}"
+    local revision_timeout_explicit="${21}"
+    local reviewer_timeout_explicit="${22}"
+    local exploration_timeout_explicit="${23}"
+
+    local signal_score=0
+    local profile="deep-standard"
+    local target_max_review_rounds="$current_max_review_rounds"
+    local target_forced_exploration="$current_forced_exploration"
+    local target_max_exploration_candidates="$current_max_exploration_candidates"
+    local target_revision_timeout="$current_revision_timeout"
+    local target_reviewer_timeout="$current_reviewer_timeout"
+    local target_exploration_timeout="$current_exploration_timeout"
+    local effective_max_review_rounds effective_forced_exploration effective_max_exploration_candidates
+    local effective_revision_timeout effective_reviewer_timeout effective_exploration_timeout
+    local -a reasons=()
+    local reasons_csv
+
+    signal_score=$(( signal_score + (unauth_ep * 4) ))
+    signal_score=$(( signal_score + (sensitive_sinks * 2) ))
+    signal_score=$(( signal_score + (sql_sinks * 3) ))
+    signal_score=$(( signal_score + (rest_json_sources * 2) ))
+    signal_score=$(( signal_score + (coverage_gaps_count * 3) ))
+    if [ "$ep_count" -ge 5 ]; then
+        signal_score=$((signal_score + 2))
+    elif [ "$ep_count" -ge 2 ]; then
+        signal_score=$((signal_score + 1))
+    fi
+    if [ "$anom_count" -ge 8 ]; then
+        signal_score=$((signal_score + 2))
+    elif [ "$anom_count" -ge 4 ]; then
+        signal_score=$((signal_score + 1))
+    fi
+    if [ "$source_count" -ge 15 ]; then
+        signal_score=$((signal_score + 1))
+    fi
+    if [ "$sink_count" -ge 15 ]; then
+        signal_score=$((signal_score + 1))
+    fi
+    if [ "$output_sinks" -ge 8 ]; then
+        signal_score=$((signal_score + 1))
+    fi
+
+    if [ "$unauth_ep" -gt 0 ]; then
+        reasons+=("unauth_entry_points=${unauth_ep}")
+    fi
+    if [ "$sensitive_sinks" -gt 0 ]; then
+        reasons+=("sensitive_sinks=${sensitive_sinks}")
+    fi
+    if [ "$sql_sinks" -gt 0 ]; then
+        reasons+=("sql_sinks=${sql_sinks}")
+    fi
+    if [ "$rest_json_sources" -gt 0 ]; then
+        reasons+=("rest_json_sources=${rest_json_sources}")
+    fi
+    if [ "$coverage_gaps_count" -gt 0 ]; then
+        reasons+=("coverage_gaps=${coverage_gaps_count}")
+    fi
+    if [ "$anom_count" -gt 0 ]; then
+        reasons+=("anomalies=${anom_count}")
+    fi
+    if [ "$ep_count" -gt 0 ]; then
+        reasons+=("entry_points=${ep_count}")
+    fi
+
+    if [ "$mode" = "quick" ]; then
+        profile="quick-triage"
+        if [ ${#reasons[@]} -eq 0 ]; then
+            reasons+=("low_signal_surface")
+        fi
+    elif [ "$coverage_gaps_count" -ge 4 ] \
+        || [ "$unauth_ep" -ge 3 ] \
+        || [ "$sql_sinks" -ge 2 ] \
+        || [ "$sensitive_sinks" -ge 8 ] \
+        || [ "$rest_json_sources" -ge 8 ] \
+        || [ "$signal_score" -ge 18 ]; then
+        profile="deep-extended"
+        target_max_review_rounds=2
+        target_forced_exploration=true
+        target_max_exploration_candidates=5
+        target_revision_timeout=720
+        target_reviewer_timeout=900
+        target_exploration_timeout=360
+    elif [ "$coverage_gaps_count" -ge 2 ] \
+        || [ "$unauth_ep" -ge 1 ] \
+        || [ "$sql_sinks" -ge 1 ] \
+        || [ "$sensitive_sinks" -ge 4 ] \
+        || [ "$rest_json_sources" -ge 4 ] \
+        || [ "$anom_count" -ge 6 ] \
+        || [ "$signal_score" -ge 10 ]; then
+        profile="deep-elevated"
+        target_max_review_rounds=2
+        target_forced_exploration=true
+        target_max_exploration_candidates=4
+        target_revision_timeout=660
+        target_reviewer_timeout=720
+        target_exploration_timeout=300
+    fi
+
+    effective_max_review_rounds="$(promote_int_if_auto "$current_max_review_rounds" "$target_max_review_rounds" "$review_rounds_explicit")"
+    effective_forced_exploration="$(promote_bool_if_auto "$current_forced_exploration" "$target_forced_exploration" "$forced_exploration_explicit")"
+    effective_max_exploration_candidates="$(promote_int_if_auto "$current_max_exploration_candidates" "$target_max_exploration_candidates" "$exploration_candidates_explicit")"
+    effective_revision_timeout="$(promote_int_if_auto "$current_revision_timeout" "$target_revision_timeout" "$revision_timeout_explicit")"
+    effective_reviewer_timeout="$(promote_int_if_auto "$current_reviewer_timeout" "$target_reviewer_timeout" "$reviewer_timeout_explicit")"
+    effective_exploration_timeout="$(promote_int_if_auto "$current_exploration_timeout" "$target_exploration_timeout" "$exploration_timeout_explicit")"
+
+    reasons_csv=""
+    if [ ${#reasons[@]} -gt 0 ]; then
+        local old_ifs="$IFS"
+        IFS=,
+        reasons_csv="${reasons[*]}"
+        IFS="$old_ifs"
+    fi
+
+    printf '%s|%s|%s|%s|%s|%s|%s|%s|%s' \
+        "$profile" \
+        "$effective_max_review_rounds" \
+        "$effective_forced_exploration" \
+        "$effective_max_exploration_candidates" \
+        "$effective_revision_timeout" \
+        "$effective_reviewer_timeout" \
+        "$effective_exploration_timeout" \
+        "$signal_score" \
+        "$reasons_csv"
+}
+
+phase2_worker_execution_strategy() {
+    local mode="$1"
+    local profile="$2"
+    local signal_score="$3"
+    local entry_points="$4"
+    local source_count="$5"
+    local sink_count="$6"
+    local strategy_mode="${PHASE2_WORKER_EXECUTION_MODE:-adaptive}"
+    local strategy="monolithic"
+    local reason="default_monolithic"
+
+    case "$strategy_mode" in
+        monolithic|chunked)
+            strategy="$strategy_mode"
+            reason="manual_${strategy_mode}_override"
+            ;;
+        *)
+            if [ "$mode" != "deep" ]; then
+                strategy="monolithic"
+                reason="quick_mode"
+            elif [ "$profile" = "deep-extended" ] || [ "$profile" = "deep-elevated" ]; then
+                strategy="chunked"
+                reason="adaptive_profile_${profile}"
+            elif [ "$signal_score" -ge 120 ] || [ "$entry_points" -ge 20 ] || [ "$source_count" -ge 180 ] || [ "$sink_count" -ge 250 ]; then
+                strategy="chunked"
+                reason="adaptive_signal_threshold"
+            else
+                strategy="monolithic"
+                reason="adaptive_monolithic"
+            fi
+            ;;
+    esac
+
+    printf '%s|%s' "$strategy" "$reason"
+}
+
+phase2_effective_chunk_parallel_limit() {
+    local dispatch_path="$1"
+    local base_limit="${2:-$PHASE2_WORKER_CHUNK_PARALLEL_LIMIT}"
+    local agent_count="0"
+    if [ -f "$dispatch_path" ]; then
+        agent_count="$(python3 - "$dispatch_path" <<'PY'
+import json, sys
+try:
+    data = json.load(open(sys.argv[1], encoding="utf-8"))
+    print(len(data.get("agents") or []))
+except Exception:
+    print(0)
+PY
+)"
+    fi
+
+    if [ "$agent_count" -ge 48 ] && [ "$base_limit" -lt 8 ]; then
+        printf '%s|%s' "8" "high_bundle_volume"
+    elif [ "$agent_count" -ge 24 ] && [ "$base_limit" -lt 6 ]; then
+        printf '%s|%s' "6" "medium_bundle_volume"
+    else
+        printf '%s|%s' "$base_limit" "base_limit"
+    fi
+}
+
 normalize_system_prompt_for_provider() {
     local provider="$1"
     local prompt="$2"
@@ -1648,9 +1973,15 @@ run_llm_prompt() {
     local model_override="${7:-}"
     local model bin timeout_seconds
     local start_ts end_ts rc duration status
+    local live_log
     model="${model_override:-$(provider_model "$provider")}"
     bin="$(provider_bin "$provider")"
     timeout_seconds="${8:-$PHASE2_PROVIDER_TIMEOUT_SECONDS}"
+    live_log="$(live_log_path_from_errlog "$errlog")"
+    reset_log_file "$errlog"
+    reset_log_file "$live_log"
+    append_log_marker "$errlog" "phase2 llm start slug=${slug} mode=${mode} provider=${provider} model=${model:-default} timeout_seconds=${timeout_seconds}"
+    append_log_marker "$live_log" "phase2 llm start slug=${slug} mode=${mode} provider=${provider} model=${model:-default} timeout_seconds=${timeout_seconds}"
     start_ts="$(date +%s)"
     if [ "$provider" = "codex" ]; then
         (
@@ -1660,11 +1991,19 @@ run_llm_prompt() {
                 cmd+=(--model "$model")
             fi
             cmd+=("${system_prompt}"$'\n\n'"${prompt}")
+            set +e
             if [ "$timeout_seconds" -gt 0 ]; then
-                timeout_run "$timeout_seconds" "${cmd[@]}" 2>"$errlog"
+                timeout_run "$timeout_seconds" "${cmd[@]}" \
+                    > >(tee -a "$live_log") \
+                    2> >(tee -a "$errlog" "$live_log" >&2)
             else
-                "${cmd[@]}" 2>"$errlog"
+                "${cmd[@]}" \
+                    > >(tee -a "$live_log") \
+                    2> >(tee -a "$errlog" "$live_log" >&2)
             fi
+            rc=$?
+            set -e
+            exit "$rc"
         )
         rc=$?
     else
@@ -1681,57 +2020,28 @@ run_llm_prompt() {
                 cmd+=(--model "$model")
             fi
             cmd+=(--append-system-prompt-file "$system_prompt_file" "$prompt")
+            set +e
             if [ "$timeout_seconds" -gt 0 ]; then
-                timeout_run "$timeout_seconds" "${cmd[@]}" 2>"$errlog" \
-                    | python3 -u - 2>>"$errlog" <<'PYEOF'
-import sys, json
-for raw in sys.stdin.buffer:
-    line = raw.decode("utf-8", errors="replace").rstrip("\n")
-    if not line:
-        continue
-    try:
-        obj = json.loads(line)
-    except Exception:
-        print(line, flush=True)
-        continue
-    t = obj.get("type", "")
-    if t == "content_block_delta":
-        delta = obj.get("delta", {})
-        if delta.get("type") == "text_delta":
-            print(delta.get("text", ""), end="", flush=True)
-    elif t == "message_stop":
-        print(flush=True)
-PYEOF
-                echo "${PIPESTATUS[0]}" > "${errlog}.pipestatus"
+                timeout_run "$timeout_seconds" "${cmd[@]}" \
+                    2> >(tee -a "$errlog" "$live_log" >&2) \
+                    | python3 -u "$CLAUDE_STREAM_PARSER" 2> >(tee -a "$errlog" "$live_log" >&2) \
+                    | tee -a "$live_log"
+                printf '%s' "${PIPESTATUS[0]}" > "${errlog}.pipestatus"
             else
-                "${cmd[@]}" 2>"$errlog" \
-                    | python3 -u - 2>>"$errlog" <<'PYEOF'
-import sys, json
-for raw in sys.stdin.buffer:
-    line = raw.decode("utf-8", errors="replace").rstrip("\n")
-    if not line:
-        continue
-    try:
-        obj = json.loads(line)
-    except Exception:
-        print(line, flush=True)
-        continue
-    t = obj.get("type", "")
-    if t == "content_block_delta":
-        delta = obj.get("delta", {})
-        if delta.get("type") == "text_delta":
-            print(delta.get("text", ""), end="", flush=True)
-    elif t == "message_stop":
-        print(flush=True)
-PYEOF
-                echo "${PIPESTATUS[0]}" > "${errlog}.pipestatus"
+                "${cmd[@]}" \
+                    2> >(tee -a "$errlog" "$live_log" >&2) \
+                    | python3 -u "$CLAUDE_STREAM_PARSER" 2> >(tee -a "$errlog" "$live_log" >&2) \
+                    | tee -a "$live_log"
+                printf '%s' "${PIPESTATUS[0]}" > "${errlog}.pipestatus"
             fi
+            set -e
         )
         rc="$(cat "${errlog}.pipestatus" 2>/dev/null || echo 1)"
         rm -f "$system_prompt_file" "${errlog}.pipestatus"
     fi
     if [ "$rc" -eq 124 ]; then
         printf '[ERROR] provider timed out after %ss\n' "$timeout_seconds" >> "$errlog"
+        printf '[ERROR] provider timed out after %ss\n' "$timeout_seconds" >> "$live_log"
     fi
     end_ts="$(date +%s)"
     duration=$((end_ts - start_ts))
@@ -1740,6 +2050,8 @@ PYEOF
     if [ "$rc" -ne 0 ]; then
         status="failed"
     fi
+    append_log_marker "$errlog" "phase2 llm end slug=${slug} mode=${mode} provider=${provider} status=${status} rc=${rc} duration_seconds=${duration}"
+    append_log_marker "$live_log" "phase2 llm end slug=${slug} mode=${mode} provider=${provider} status=${status} rc=${rc} duration_seconds=${duration}"
     append_quota_log "phase2" "$slug" "$mode" "$provider" "$model" "$status" "$duration"
     return "$rc"
 }
@@ -1810,6 +2122,84 @@ postprocess_phase2_output() {
         --in-place
 }
 
+run_phase2_chunked_worker_round() {
+    local slug="$1"
+    local round="$2"
+    local worker_mode="$3"
+    local provider="$4"
+    local output_path="$5"
+    local raw_path="$6"
+    local errlog="$7"
+    local live_log dispatch_path inventory_path local_phase2_path
+    local effective_parallel_limit parallel_limit_reason
+    local start_ts end_ts duration status
+
+    live_log="$(live_log_path_from_errlog "$errlog")"
+    dispatch_path="$(phase2_dispatch_path "$slug")"
+    inventory_path="$(phase2_candidate_inventory_path "$slug")"
+    local_phase2_path="$(phase2_local_output_path "$slug")"
+
+    if [ ! -f "$PHASE2_AGENT_INPUT_PREPARER" ]; then
+        printf '[ERROR] chunked worker prep script missing: %s\n' "$PHASE2_AGENT_INPUT_PREPARER" >> "$errlog"
+        return 1
+    fi
+    if [ ! -f "$PHASE2_MULTI_WORKER_ORCHESTRATOR" ]; then
+        printf '[ERROR] chunked worker orchestrator missing: %s\n' "$PHASE2_MULTI_WORKER_ORCHESTRATOR" >> "$errlog"
+        return 1
+    fi
+
+    reset_log_file "$errlog"
+    reset_log_file "$live_log"
+    append_log_marker "$errlog" "chunked worker start slug=${slug} round=${round} mode=${worker_mode} provider=${provider} parallel_limit=${PHASE2_WORKER_CHUNK_PARALLEL_LIMIT}"
+    append_log_marker "$live_log" "chunked worker start slug=${slug} round=${round} mode=${worker_mode} provider=${provider} parallel_limit=${PHASE2_WORKER_CHUNK_PARALLEL_LIMIT}"
+
+    start_ts="$(date +%s)"
+    if ! PHASE2_BUNDLE_REVIEW_ENABLED=false PHASE2_SUPPORT_AGENTS_ENABLED=false PHASE2_MAX_REVIEW_ROUNDS=0 run_command_with_live_logs "$live_log" "$errlog" \
+        python3 "$PHASE2_AGENT_INPUT_PREPARER" "$slug" --output-dir "$REPORTS_DIR"; then
+        printf '[ERROR] prepare_agent_inputs.py failed for %s\n' "$slug" >> "$errlog"
+        append_log_marker "$live_log" "chunked worker prep failed slug=${slug}"
+        return 1
+    fi
+
+    if [ ! -f "$dispatch_path" ] || [ ! -f "$inventory_path" ]; then
+        printf '[ERROR] chunked worker artifacts missing dispatch=%s inventory=%s\n' "$dispatch_path" "$inventory_path" >> "$errlog"
+        append_log_marker "$live_log" "chunked worker artifacts missing"
+        return 1
+    fi
+
+    IFS='|' read -r effective_parallel_limit parallel_limit_reason <<< "$(phase2_effective_chunk_parallel_limit "$dispatch_path" "$PHASE2_WORKER_CHUNK_PARALLEL_LIMIT")"
+    append_log_marker "$errlog" "chunked worker parallel_limit=${effective_parallel_limit} reason=${parallel_limit_reason}"
+    append_log_marker "$live_log" "chunked worker parallel_limit=${effective_parallel_limit} reason=${parallel_limit_reason}"
+
+    if ! PHASE2_BUNDLE_REVIEW_ENABLED=false PHASE2_SUPPORT_AGENTS_ENABLED=false PHASE2_MAX_REVIEW_ROUNDS=0 run_command_with_live_logs "$live_log" "$errlog" \
+        bash "$PHASE2_MULTI_WORKER_ORCHESTRATOR" "$slug" \
+            --parallel-limit "$effective_parallel_limit" \
+            --stop-after-merge \
+            --no-single-agent-fallback; then
+        printf '[ERROR] chunked worker orchestrator failed for %s\n' "$slug" >> "$errlog"
+        append_log_marker "$live_log" "chunked worker orchestrator failed slug=${slug}"
+        return 1
+    fi
+
+    if [ ! -f "$local_phase2_path" ]; then
+        printf '[ERROR] chunked worker local phase2 missing: %s\n' "$local_phase2_path" >> "$errlog"
+        append_log_marker "$live_log" "chunked worker local phase2 missing"
+        return 1
+    fi
+
+    cp -f "$local_phase2_path" "$output_path"
+    cp -f "$local_phase2_path" "$raw_path" 2>/dev/null || true
+
+    end_ts="$(date +%s)"
+    duration=$((end_ts - start_ts))
+    PHASE2_LAST_DURATION_SECONDS="$duration"
+    status="ok"
+    append_log_marker "$errlog" "chunked worker end slug=${slug} round=${round} status=${status} duration_seconds=${duration} output=${output_path}"
+    append_log_marker "$live_log" "chunked worker end slug=${slug} round=${round} status=${status} duration_seconds=${duration} output=${output_path}"
+    append_quota_log "phase2" "$slug" "worker-r${round}-${worker_mode}-chunked" "multi-agent" "candidate_chunk_v2" "$status" "$duration"
+    return 0
+}
+
 run_phase2_worker_round() {
     local slug="$1"
     local round="$2"
@@ -1852,8 +2242,14 @@ run_phase2_worker_round() {
         prompt="$(render_phase2_revision_prompt "$slug" "$round" "$previous_worker_rel" "$review_rel" "$output_rel" "$threat_context_rel" "$revision_input_rel")"
     fi
 
-    if ! run_llm_prompt "$slug" "worker-r${round}-${worker_mode}" "$provider" "$system_prompt" "$prompt" "$errlog" "$model" "$timeout_seconds"; then
-        return 1
+    if [ "$round" -eq 1 ] && [ "$worker_mode" = "deep" ] && [ "${PHASE2_ACTIVE_WORKER_STRATEGY:-monolithic}" = "chunked" ]; then
+        if ! run_phase2_chunked_worker_round "$slug" "$round" "$worker_mode" "$provider" "$output_path" "$raw_path" "$errlog"; then
+            return 1
+        fi
+    else
+        if ! run_llm_prompt "$slug" "worker-r${round}-${worker_mode}" "$provider" "$system_prompt" "$prompt" "$errlog" "$model" "$timeout_seconds"; then
+            return 1
+        fi
     fi
     if [ ! -f "$output_path" ]; then
         printf '[ERROR] worker output missing: %s\n' "$output_path" >> "$errlog"
@@ -1955,6 +2351,7 @@ run_phase2_cluster_pipeline() {
     local slug="$1"
     local local_phase2_path="$2"
     local errlog="$3"
+    local live_log
     local cluster_plan_path cluster_total
     local -a cluster_cmd=()
 
@@ -1975,17 +2372,30 @@ run_phase2_cluster_pipeline() {
         fi
     done
 
+    live_log="$(live_log_path_from_errlog "$errlog")"
     : > "$errlog"
+    : > "$live_log"
     printf '[INFO] cluster pipeline start slug=%s local_phase2=%s\n' "$slug" "$local_phase2_path" >> "$errlog"
+    append_log_marker "$live_log" "cluster pipeline start slug=${slug} local_phase2=${local_phase2_path}"
 
-    if ! python3 "$PHASE2_CLUSTER_BUILDER" "$slug" --reports-dir "$REPORTS_DIR" --phase2-json "$local_phase2_path" >> "$errlog" 2>&1; then
+    append_log_marker "$errlog" "cluster-plan start"
+    append_log_marker "$live_log" "cluster-plan start"
+    if ! run_command_with_live_logs "$live_log" "$errlog" python3 "$PHASE2_CLUSTER_BUILDER" "$slug" --reports-dir "$REPORTS_DIR" --phase2-json "$local_phase2_path"; then
         printf '[WARN] cluster plan build failed; preserving local phase2 canonical\n' >> "$errlog"
+        append_log_marker "$live_log" "cluster-plan failed"
         log_warn "Cluster planning failed for ${slug}; preserving local Phase 2 canonical output."
     else
-        if ! python3 "$PHASE2_CLUSTER_PACK_BUILDER" "$slug" --reports-dir "$REPORTS_DIR" >> "$errlog" 2>&1; then
+        append_log_marker "$errlog" "cluster-plan done"
+        append_log_marker "$live_log" "cluster-plan done"
+        append_log_marker "$errlog" "cluster-pack start"
+        append_log_marker "$live_log" "cluster-pack start"
+        if ! run_command_with_live_logs "$live_log" "$errlog" python3 "$PHASE2_CLUSTER_PACK_BUILDER" "$slug" --reports-dir "$REPORTS_DIR"; then
             printf '[WARN] cluster evidence pack build failed; skipping cluster synth/challenge\n' >> "$errlog"
+            append_log_marker "$live_log" "cluster-pack failed"
             log_warn "Cluster evidence pack build failed for ${slug}; cluster synth/challenge skipped."
         else
+            append_log_marker "$errlog" "cluster-pack done"
+            append_log_marker "$live_log" "cluster-pack done"
             cluster_plan_path="$(phase2_cluster_plan_path "$slug")"
             cluster_total="$(phase2_cluster_count "$cluster_plan_path")"
             if [ "${cluster_total:-0}" -gt 0 ]; then
@@ -1993,23 +2403,35 @@ run_phase2_cluster_pipeline() {
                 if [ -n "$PHASE2_CLUSTER_LIMIT" ]; then
                     cluster_cmd+=(--limit "$PHASE2_CLUSTER_LIMIT")
                 fi
-                if ! "${cluster_cmd[@]}" >> "$errlog" 2>&1; then
+                append_log_marker "$errlog" "cluster-run start total_clusters=${cluster_total}"
+                append_log_marker "$live_log" "cluster-run start total_clusters=${cluster_total}"
+                if ! run_command_with_live_logs "$live_log" "$errlog" "${cluster_cmd[@]}"; then
                     printf '[WARN] cluster synth/challenge returned non-zero; continuing to consensus with available artifacts\n' >> "$errlog"
+                    append_log_marker "$live_log" "cluster-run non-zero continuing=true"
                     log_warn "Cluster synth/challenge was not fully clean for ${slug}; continuing to consensus with available artifacts."
+                else
+                    append_log_marker "$errlog" "cluster-run done"
+                    append_log_marker "$live_log" "cluster-run done"
                 fi
             else
                 printf '[INFO] cluster plan has zero active clusters; synth/challenge skipped\n' >> "$errlog"
+                append_log_marker "$live_log" "cluster-run skipped total_clusters=0"
             fi
         fi
     fi
 
-    if ! python3 "$PHASE2_CONSENSUS_WRITER" "$slug" --reports-dir "$REPORTS_DIR" >> "$errlog" 2>&1; then
+    append_log_marker "$errlog" "consensus start"
+    append_log_marker "$live_log" "consensus start"
+    if ! run_command_with_live_logs "$live_log" "$errlog" python3 "$PHASE2_CONSENSUS_WRITER" "$slug" --reports-dir "$REPORTS_DIR"; then
         printf '[WARN] consensus writer failed; preserving local phase2 canonical\n' >> "$errlog"
+        append_log_marker "$live_log" "consensus failed"
         log_warn "Consensus writer failed for ${slug}; preserving local Phase 2 canonical output."
         return 0
     fi
 
     printf '[INFO] cluster pipeline completed successfully for %s\n' "$slug" >> "$errlog"
+    append_log_marker "$live_log" "consensus done"
+    append_log_marker "$live_log" "cluster pipeline completed successfully slug=${slug}"
     return 0
 }
 
@@ -2033,8 +2455,15 @@ annotate_phase2_loop_output() {
     local execution_status="${17}"
     local forced_exploration_enabled="${18}"
     local max_exploration_candidates="${19}"
+    local adaptive_depth_profile="${PHASE2_ADAPTIVE_DEPTH_PROFILE:-}"
+    local adaptive_signal_score="${PHASE2_ADAPTIVE_SIGNAL_SCORE:-0}"
+    local adaptive_depth_reasons="${PHASE2_ADAPTIVE_DEPTH_REASONS:-}"
+    local worker_execution_strategy="${PHASE2_ACTIVE_WORKER_STRATEGY:-monolithic}"
+    local effective_revision_timeout="${PHASE2_REVISION_TIMEOUT_SECONDS:-}"
+    local effective_reviewer_timeout="${PHASE2_REVIEWER_TIMEOUT_SECONDS:-}"
+    local effective_exploration_timeout="${PHASE2_EXPLORATION_TIMEOUT_SECONDS:-}"
 
-    python3 - "$output_path" "$slug" "$worker_provider" "$reviewer_provider" "$worker_model" "$reviewer_model" "$initial_mode" "$completed_worker_rounds" "$completed_review_rounds" "$max_review_rounds" "$final_review_status" "$final_worker_rel" "$final_review_rel" "$summary_rel" "$stop_reason" "$runtime_seconds" "$execution_status" "$forced_exploration_enabled" "$max_exploration_candidates" <<'PY'
+    python3 - "$output_path" "$slug" "$worker_provider" "$reviewer_provider" "$worker_model" "$reviewer_model" "$initial_mode" "$completed_worker_rounds" "$completed_review_rounds" "$max_review_rounds" "$final_review_status" "$final_worker_rel" "$final_review_rel" "$summary_rel" "$stop_reason" "$runtime_seconds" "$execution_status" "$forced_exploration_enabled" "$max_exploration_candidates" "$adaptive_depth_profile" "$adaptive_signal_score" "$adaptive_depth_reasons" "$worker_execution_strategy" "$effective_revision_timeout" "$effective_reviewer_timeout" "$effective_exploration_timeout" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -2052,6 +2481,17 @@ data["phase2_loop"] = {
     "max_review_rounds": int(sys.argv[10]),
     "forced_exploration_enabled": sys.argv[18].lower() == "true",
     "max_exploration_candidates": int(sys.argv[19]),
+    "adaptive_depth_policy": {
+        "profile": sys.argv[20] or None,
+        "signal_score": int(sys.argv[21]),
+        "reasons": [item for item in sys.argv[22].split(",") if item],
+        "worker_execution_strategy": sys.argv[23] or None,
+        "effective_timeouts": {
+            "revision_seconds": int(sys.argv[24]) if sys.argv[24] else None,
+            "reviewer_seconds": int(sys.argv[25]) if sys.argv[25] else None,
+            "exploration_seconds": int(sys.argv[26]) if sys.argv[26] else None,
+        },
+    },
     "final_review_status": sys.argv[11],
     "stop_reason": sys.argv[15],
     "runtime_seconds": int(sys.argv[16]),
@@ -2186,8 +2626,8 @@ run_one() {
     local loop_summary_path="${PHASE2_DIR}/${slug}-phase2.loop-summary.json"
     local loop_summary_rel="reports/phase2/${slug}-phase2.loop-summary.json"
     local loop_events_path="${PHASE2_DIR}/${slug}-phase2.loop-summary.events.jsonl"
-    local errlog_deep="${LOGS_DIR}/${slug}-phase2.err"
-    local errlog_quick="${LOGS_DIR}/${slug}-phase2-quick.err"
+    local phase2_logs_root
+    local errlog_deep errlog_quick live_log_deep live_log_quick
     local worker_provider="$PHASE2_WORKER_PROVIDER"
     local reviewer_provider="$PHASE2_REVIEWER_PROVIDER"
     local worker_model reviewer_model
@@ -2201,6 +2641,12 @@ run_one() {
     local loop_started_ts loop_finished_ts total_runtime_seconds stop_reason="not_started"
     local execution_status="success"
     local forced_exploration_already_completed=false
+
+    phase2_logs_root="$(logs_phase2_dir "$slug")"
+    errlog_deep="$(logs_phase2_run_err_path "$slug" deep)"
+    errlog_quick="$(logs_phase2_run_err_path "$slug" quick)"
+    live_log_deep="$(logs_phase2_run_live_path "$slug" deep)"
+    live_log_quick="$(logs_phase2_run_live_path "$slug" quick)"
 
     loop_started_ts="$(date +%s)"
 
@@ -2239,15 +2685,16 @@ run_one() {
     echo "  Phase 1 anomalies: ${anom_count}"
     echo "  AST metrics: unauth_ep=${unauth_ep}, sensitive_sinks=${sensitive_sinks}, sql_sinks=${sql_sinks}, rest_json_sources=${rest_json_sources}, output_sinks=${output_sinks}, sources=${source_count}, sinks=${sink_count}"
     echo "  Prompt template: ${PROMPT_TEMPLATE}"
-    echo "  Mode default: deep (with quick-triage fallback for low-signal plugins)"
+    echo "  Mode default: adaptive deep (with quick-triage fallback for low-signal plugins)"
     worker_model="$(phase2_role_model worker "$worker_provider")"
     reviewer_model="$(phase2_role_model reviewer "$reviewer_provider")"
     echo "  Worker provider: ${worker_provider} (${worker_model:-default model})"
     echo "  Reviewer provider: ${reviewer_provider} (${reviewer_model:-default model})"
-    echo "  Max review rounds: ${PHASE2_MAX_REVIEW_ROUNDS}"
-    echo "  Forced exploration: ${PHASE2_ENABLE_FORCED_EXPLORATION} (max candidates=${PHASE2_MAX_EXPLORATION_CANDIDATES})"
+    echo "  Worker execution mode: ${PHASE2_WORKER_EXECUTION_MODE} (chunk parallel limit=${PHASE2_WORKER_CHUNK_PARALLEL_LIMIT})"
+    echo "  Base max review rounds: ${PHASE2_MAX_REVIEW_ROUNDS}"
+    echo "  Base forced exploration: ${PHASE2_ENABLE_FORCED_EXPLORATION} (max candidates=${PHASE2_MAX_EXPLORATION_CANDIDATES})"
     echo "  Cluster consensus: ${PHASE2_ENABLE_CLUSTER_CONSENSUS}${PHASE2_CLUSTER_LIMIT:+ (limit=${PHASE2_CLUSTER_LIMIT})}"
-    echo "  Timeout policy: worker=${PHASE2_WORKER_TIMEOUT_SECONDS}s, revision=${PHASE2_REVISION_TIMEOUT_SECONDS}s, reviewer=${PHASE2_REVIEWER_TIMEOUT_SECONDS}s, exploration=${PHASE2_EXPLORATION_TIMEOUT_SECONDS}s (${TIMEOUT_BACKEND})"
+    echo "  Base timeout policy: worker=${PHASE2_WORKER_TIMEOUT_SECONDS}s, revision=${PHASE2_REVISION_TIMEOUT_SECONDS}s, reviewer=${PHASE2_REVIEWER_TIMEOUT_SECONDS}s, exploration=${PHASE2_EXPLORATION_TIMEOUT_SECONDS}s (${TIMEOUT_BACKEND})"
 
     if [ "$RESUME_EXISTING" = true ]; then
         existing_rounds="$(phase2_existing_rounds "$slug" "$PHASE2_DIR")"
@@ -2260,19 +2707,16 @@ run_one() {
         fi
     fi
 
-    rm -f "$output" "$raw_output" "$errlog_deep" "$errlog_quick"
+    rm -f "$output" "$raw_output" "$errlog_deep" "$errlog_quick" "$live_log_deep" "$live_log_quick"
     rm -f "$loop_summary_path" "$loop_events_path"
     if [ "$resume_active" != true ]; then
+        rm -rf "$phase2_logs_root"
         rm -f "${PHASE2_DIR}/${slug}-phase2.worker.r"*.json \
               "${PHASE2_DIR}/${slug}-phase2.worker.r"*.raw.json \
-              "${PHASE2_DIR}/${slug}-phase2.review.r"*.json \
-              "${LOGS_DIR}/${slug}-phase2-worker.r"*.err \
-              "${LOGS_DIR}/${slug}-phase2-reviewer.r"*.err
+              "${PHASE2_DIR}/${slug}-phase2.review.r"*.json
         for provider in codex claude; do
             rm -f "$(phase2_output_path "$slug" "$provider")" \
-                  "$(phase2_raw_path "$slug" "$provider")" \
-                  "$(phase2_errlog_path "$slug" "$provider" deep)" \
-                  "$(phase2_errlog_path "$slug" "$provider" quick)"
+                  "$(phase2_raw_path "$slug" "$provider")"
         done
     fi
 
@@ -2312,12 +2756,51 @@ run_one() {
     local -a loop_errlogs
     loop_errlogs=()
     local coverage_gaps_count
+    local configured_max_review_rounds configured_forced_exploration configured_max_exploration_candidates
+    local configured_revision_timeout configured_reviewer_timeout configured_exploration_timeout
+    local adaptive_policy adaptive_depth_profile adaptive_signal_score adaptive_depth_reasons
+    local effective_max_review_rounds effective_forced_exploration effective_max_exploration_candidates
+    local effective_revision_timeout effective_reviewer_timeout effective_exploration_timeout
+    local worker_execution_strategy worker_execution_reason
+
+    configured_max_review_rounds="$PHASE2_MAX_REVIEW_ROUNDS"
+    configured_forced_exploration="$PHASE2_ENABLE_FORCED_EXPLORATION"
+    configured_max_exploration_candidates="$PHASE2_MAX_EXPLORATION_CANDIDATES"
+    configured_revision_timeout="$PHASE2_REVISION_TIMEOUT_SECONDS"
+    configured_reviewer_timeout="$PHASE2_REVIEWER_TIMEOUT_SECONDS"
+    configured_exploration_timeout="$PHASE2_EXPLORATION_TIMEOUT_SECONDS"
     coverage_gaps_count=$(python3 -c "import json; print(len(json.load(open('${ir_file}')).get('coverage_gaps', [])))" 2>/dev/null || echo "0")
 
     mode="deep"
     if [ "$FORCE_DEEP" != true ] && [ "$anom_count" = "0" ] && [ "$unauth_ep" = "0" ] && [ "$sensitive_sinks" = "0" ] && [ "$sql_sinks" = "0" ] && [ "$rest_json_sources" = "0" ] && [ "$coverage_gaps_count" = "0" ]; then
         mode="quick"
     fi
+
+    adaptive_policy="$(phase2_adaptive_depth_policy \
+        "$mode" "$ep_count" "$anom_count" "$unauth_ep" "$sensitive_sinks" "$sql_sinks" "$rest_json_sources" "$output_sinks" "$source_count" "$sink_count" "$coverage_gaps_count" \
+        "$configured_max_review_rounds" "$configured_forced_exploration" "$configured_max_exploration_candidates" \
+        "$configured_revision_timeout" "$configured_reviewer_timeout" "$configured_exploration_timeout" \
+        "$REVIEW_ROUNDS_EXPLICIT" "$FORCED_EXPLORATION_EXPLICIT" "$EXPLORATION_CANDIDATES_EXPLICIT" \
+        "$REVISION_TIMEOUT_EXPLICIT" "$REVIEWER_TIMEOUT_EXPLICIT" "$EXPLORATION_TIMEOUT_EXPLICIT")"
+    IFS='|' read -r adaptive_depth_profile effective_max_review_rounds effective_forced_exploration effective_max_exploration_candidates effective_revision_timeout effective_reviewer_timeout effective_exploration_timeout adaptive_signal_score adaptive_depth_reasons <<< "$adaptive_policy"
+
+    IFS='|' read -r worker_execution_strategy worker_execution_reason <<< "$(phase2_worker_execution_strategy "$mode" "$adaptive_depth_profile" "$adaptive_signal_score" "$ep_count" "$source_count" "$sink_count")"
+
+    local PHASE2_MAX_REVIEW_ROUNDS="$effective_max_review_rounds"
+    local PHASE2_ENABLE_FORCED_EXPLORATION="$effective_forced_exploration"
+    local PHASE2_MAX_EXPLORATION_CANDIDATES="$effective_max_exploration_candidates"
+    local PHASE2_REVISION_TIMEOUT_SECONDS="$effective_revision_timeout"
+    local PHASE2_REVIEWER_TIMEOUT_SECONDS="$effective_reviewer_timeout"
+    local PHASE2_EXPLORATION_TIMEOUT_SECONDS="$effective_exploration_timeout"
+    local PHASE2_ADAPTIVE_DEPTH_PROFILE="$adaptive_depth_profile"
+    local PHASE2_ADAPTIVE_SIGNAL_SCORE="$adaptive_signal_score"
+    local PHASE2_ADAPTIVE_DEPTH_REASONS="$adaptive_depth_reasons"
+    local PHASE2_ACTIVE_WORKER_STRATEGY="$worker_execution_strategy"
+
+    echo "  Adaptive depth policy: ${PHASE2_ADAPTIVE_DEPTH_PROFILE} (signal_score=${PHASE2_ADAPTIVE_SIGNAL_SCORE}${PHASE2_ADAPTIVE_DEPTH_REASONS:+; reasons=${PHASE2_ADAPTIVE_DEPTH_REASONS}})"
+    echo "  Worker execution strategy: ${PHASE2_ACTIVE_WORKER_STRATEGY} (${worker_execution_reason})"
+    echo "  Effective review policy: mode=${mode}, rounds=${PHASE2_MAX_REVIEW_ROUNDS}, forced_exploration=${PHASE2_ENABLE_FORCED_EXPLORATION} (max candidates=${PHASE2_MAX_EXPLORATION_CANDIDATES})"
+    echo "  Effective timeout policy: revision=${PHASE2_REVISION_TIMEOUT_SECONDS}s, reviewer=${PHASE2_REVIEWER_TIMEOUT_SECONDS}s, exploration=${PHASE2_EXPLORATION_TIMEOUT_SECONDS}s"
 
     if [ "$resume_active" = true ]; then
         current_worker_round="$existing_worker_round"
@@ -2331,7 +2814,7 @@ run_one() {
         IFS='|' read -r tp fp rv total risk <<< "$counts"
         worker_delta_json="$(phase2_transition_meta "" "$current_worker_path")"
         append_phase2_loop_worker_event "$loop_events_path" "$current_worker_round" "$mode" "$worker_provider" "$worker_model" \
-            0 "$(root_relative_path "$current_worker_path")" "" \
+            0 "$(root_relative_path "$current_worker_path")" "$(root_relative_path "$(phase2_loop_errlog_path "$slug" worker "$worker_provider" "$current_worker_round" "$mode")")" "$(root_relative_path "$(phase2_loop_live_log_path "$slug" worker "$worker_provider" "$current_worker_round" "$mode")")" \
             "$tp" "$fp" "$rv" "$total" "$risk" "$worker_delta_json"
         echo "  Resumed worker round ${current_worker_round}: ${tp} TP, ${fp} FP, ${rv} REVIEW | Risk: ${risk}"
 
@@ -2346,7 +2829,7 @@ run_one() {
             completed_review_rounds="$existing_review_round"
             final_review_status="$review_status"
             append_phase2_loop_reviewer_event "$loop_events_path" "$existing_review_round" "$existing_review_mode" "$reviewer_provider" "$reviewer_model" \
-                0 "$(root_relative_path "$last_review_path")" "" \
+                0 "$(root_relative_path "$last_review_path")" "$(root_relative_path "$(phase2_loop_errlog_path "$slug" reviewer "$reviewer_provider" "$existing_review_round" "$existing_review_mode")")" "$(root_relative_path "$(phase2_loop_live_log_path "$slug" reviewer "$reviewer_provider" "$existing_review_round" "$existing_review_mode")")" \
                 "$review_status" "$review_finding_count" "$review_missed_count" "$review_material"
             echo "  Resumed reviewer ${existing_review_mode} round ${existing_review_round}: ${review_status} | finding_reviews=${review_finding_count}, missed_findings=${review_missed_count}"
             if [ "$existing_review_mode" = "explore" ]; then
@@ -2372,7 +2855,8 @@ run_one() {
                 "round" "1" \
                 "provider" "$worker_provider" \
                 "reason" "$(summarize_provider_errlog "$(phase2_loop_errlog_path "$slug" worker "$worker_provider" 1 "$mode")")" \
-                "log" "$(phase2_loop_errlog_path "$slug" worker "$worker_provider" 1 "$mode")"
+                "log" "$(phase2_loop_errlog_path "$slug" worker "$worker_provider" 1 "$mode")" \
+                "live_log" "$(phase2_loop_live_log_path "$slug" worker "$worker_provider" 1 "$mode")"
             RUN_RESULT="failed"
             return 1
         fi
@@ -2386,7 +2870,7 @@ run_one() {
         worker_duration="${PHASE2_LAST_DURATION_SECONDS:-0}"
         worker_delta_json="$(phase2_transition_meta "" "$current_worker_path")"
         append_phase2_loop_worker_event "$loop_events_path" 1 "$mode" "$worker_provider" "$worker_model" \
-            "$worker_duration" "$(root_relative_path "$current_worker_path")" "$(root_relative_path "$initial_worker_errlog")" \
+            "$worker_duration" "$(root_relative_path "$current_worker_path")" "$(root_relative_path "$initial_worker_errlog")" "$(root_relative_path "$(phase2_loop_live_log_path "$slug" worker "$worker_provider" 1 "$mode")")" \
             "$tp" "$fp" "$rv" "$total" "$risk" "$worker_delta_json"
         echo "  Worker round 1 results: ${tp} TP, ${fp} FP, ${rv} REVIEW | Risk: ${risk}"
     fi
@@ -2418,7 +2902,8 @@ run_one() {
                 "round" "$next_worker_round" \
                 "provider" "$worker_provider" \
                 "reason" "$(summarize_provider_errlog "$(phase2_loop_errlog_path "$slug" worker "$worker_provider" "$next_worker_round" revision)")" \
-                "log" "$(phase2_loop_errlog_path "$slug" worker "$worker_provider" "$next_worker_round" revision)"
+                "log" "$(phase2_loop_errlog_path "$slug" worker "$worker_provider" "$next_worker_round" revision)" \
+                "live_log" "$(phase2_loop_live_log_path "$slug" worker "$worker_provider" "$next_worker_round" revision)"
             RUN_RESULT="failed"
             return 1
         fi
@@ -2433,7 +2918,7 @@ run_one() {
         worker_duration="${PHASE2_LAST_DURATION_SECONDS:-0}"
         worker_delta_json="$(phase2_transition_meta "$prev_worker_path" "$current_worker_path")"
         append_phase2_loop_worker_event "$loop_events_path" "$current_worker_round" "revision" "$worker_provider" "$worker_model" \
-            "$worker_duration" "$(root_relative_path "$current_worker_path")" "$(root_relative_path "$(phase2_loop_errlog_path "$slug" worker "$worker_provider" "$current_worker_round" revision)")" \
+            "$worker_duration" "$(root_relative_path "$current_worker_path")" "$(root_relative_path "$(phase2_loop_errlog_path "$slug" worker "$worker_provider" "$current_worker_round" revision)")" "$(root_relative_path "$(phase2_loop_live_log_path "$slug" worker "$worker_provider" "$current_worker_round" revision)")" \
             "$tp" "$fp" "$rv" "$total" "$risk" "$worker_delta_json"
         echo "  Worker revision ${current_worker_round} results: ${tp} TP, ${fp} FP, ${rv} REVIEW | Risk: ${risk}"
     fi
@@ -2466,7 +2951,8 @@ run_one() {
                 "round" "$next_worker_round" \
                 "provider" "$worker_provider" \
                 "reason" "$(summarize_provider_errlog "$(phase2_loop_errlog_path "$slug" worker "$worker_provider" "$next_worker_round" expansion)")" \
-                "log" "$(phase2_loop_errlog_path "$slug" worker "$worker_provider" "$next_worker_round" expansion)"
+                "log" "$(phase2_loop_errlog_path "$slug" worker "$worker_provider" "$next_worker_round" expansion)" \
+                "live_log" "$(phase2_loop_live_log_path "$slug" worker "$worker_provider" "$next_worker_round" expansion)"
             RUN_RESULT="failed"
             return 1
         fi
@@ -2481,7 +2967,7 @@ run_one() {
         worker_duration="${PHASE2_LAST_DURATION_SECONDS:-0}"
         worker_delta_json="$(phase2_transition_meta "$prev_worker_path" "$current_worker_path")"
         append_phase2_loop_worker_event "$loop_events_path" "$current_worker_round" "expansion" "$worker_provider" "$worker_model" \
-            "$worker_duration" "$(root_relative_path "$current_worker_path")" "$(root_relative_path "$(phase2_loop_errlog_path "$slug" worker "$worker_provider" "$current_worker_round" expansion)")" \
+            "$worker_duration" "$(root_relative_path "$current_worker_path")" "$(root_relative_path "$(phase2_loop_errlog_path "$slug" worker "$worker_provider" "$current_worker_round" expansion)")" "$(root_relative_path "$(phase2_loop_live_log_path "$slug" worker "$worker_provider" "$current_worker_round" expansion)")" \
             "$tp" "$fp" "$rv" "$total" "$risk" "$worker_delta_json"
         stop_reason="forced_exploration_completed"
         echo "  Worker expansion ${current_worker_round} results: ${tp} TP, ${fp} FP, ${rv} REVIEW | Risk: ${risk}"
@@ -2514,7 +3000,8 @@ run_one() {
                 "round" "$review_round" \
                 "provider" "$reviewer_provider" \
                 "reason" "$(summarize_provider_errlog "$(phase2_loop_errlog_path "$slug" reviewer "$reviewer_provider" "$review_round" core)")" \
-                "log" "$(phase2_loop_errlog_path "$slug" reviewer "$reviewer_provider" "$review_round" core)"
+                "log" "$(phase2_loop_errlog_path "$slug" reviewer "$reviewer_provider" "$review_round" core)" \
+                "live_log" "$(phase2_loop_live_log_path "$slug" reviewer "$reviewer_provider" "$review_round" core)"
             RUN_RESULT="failed"
             return 1
         fi
@@ -2528,7 +3015,7 @@ run_one() {
         final_review_status="$review_status"
         reviewer_duration="${PHASE2_LAST_DURATION_SECONDS:-0}"
         append_phase2_loop_reviewer_event "$loop_events_path" "$review_round" "core" "$reviewer_provider" "$reviewer_model" \
-            "$reviewer_duration" "$(root_relative_path "$last_review_path")" "$(root_relative_path "$(phase2_loop_errlog_path "$slug" reviewer "$reviewer_provider" "$review_round" core)")" \
+            "$reviewer_duration" "$(root_relative_path "$last_review_path")" "$(root_relative_path "$(phase2_loop_errlog_path "$slug" reviewer "$reviewer_provider" "$review_round" core)")" "$(root_relative_path "$(phase2_loop_live_log_path "$slug" reviewer "$reviewer_provider" "$review_round" core)")" \
             "$review_status" "$review_finding_count" "$review_missed_count" "$review_material"
         echo "  Reviewer core round ${review_round} verdict: ${review_status} | finding_reviews=${review_finding_count}, missed_findings=${review_missed_count}"
 
@@ -2561,7 +3048,8 @@ run_one() {
                 "round" "$next_worker_round" \
                 "provider" "$worker_provider" \
                 "reason" "$(summarize_provider_errlog "$(phase2_loop_errlog_path "$slug" worker "$worker_provider" "$next_worker_round" revision)")" \
-                "log" "$(phase2_loop_errlog_path "$slug" worker "$worker_provider" "$next_worker_round" revision)"
+                "log" "$(phase2_loop_errlog_path "$slug" worker "$worker_provider" "$next_worker_round" revision)" \
+                "live_log" "$(phase2_loop_live_log_path "$slug" worker "$worker_provider" "$next_worker_round" revision)"
             RUN_RESULT="failed"
             return 1
         fi
@@ -2576,7 +3064,7 @@ run_one() {
         worker_duration="${PHASE2_LAST_DURATION_SECONDS:-0}"
         worker_delta_json="$(phase2_transition_meta "$prev_worker_path" "$current_worker_path")"
         append_phase2_loop_worker_event "$loop_events_path" "$current_worker_round" "revision" "$worker_provider" "$worker_model" \
-            "$worker_duration" "$(root_relative_path "$current_worker_path")" "$(root_relative_path "$(phase2_loop_errlog_path "$slug" worker "$worker_provider" "$current_worker_round" revision)")" \
+            "$worker_duration" "$(root_relative_path "$current_worker_path")" "$(root_relative_path "$(phase2_loop_errlog_path "$slug" worker "$worker_provider" "$current_worker_round" revision)")" "$(root_relative_path "$(phase2_loop_live_log_path "$slug" worker "$worker_provider" "$current_worker_round" revision)")" \
             "$tp" "$fp" "$rv" "$total" "$risk" "$worker_delta_json"
         echo "  Worker revision ${current_worker_round} results: ${tp} TP, ${fp} FP, ${rv} REVIEW | Risk: ${risk}"
     done
@@ -2599,7 +3087,7 @@ run_one() {
             final_review_status="$explore_review_status"
             explore_reviewer_duration="${PHASE2_LAST_DURATION_SECONDS:-0}"
             append_phase2_loop_reviewer_event "$loop_events_path" "$explore_review_round" "explore" "$reviewer_provider" "$reviewer_model" \
-                "$explore_reviewer_duration" "$(root_relative_path "$last_review_path")" "$(root_relative_path "$exploration_errlog")" \
+                "$explore_reviewer_duration" "$(root_relative_path "$last_review_path")" "$(root_relative_path "$exploration_errlog")" "$(root_relative_path "$(phase2_loop_live_log_path "$slug" reviewer "$reviewer_provider" "$explore_review_round" explore)")" \
                 "$explore_review_status" "$explore_review_finding_count" "$explore_review_missed_count" "$explore_review_material"
             echo "  Reviewer explore verdict: ${explore_review_status} | missed_findings=${explore_review_missed_count}"
 
@@ -2619,7 +3107,7 @@ run_one() {
                     worker_duration="${PHASE2_LAST_DURATION_SECONDS:-0}"
                     worker_delta_json="$(phase2_transition_meta "$prev_worker_path" "$current_worker_path")"
                     append_phase2_loop_worker_event "$loop_events_path" "$current_worker_round" "expansion" "$worker_provider" "$worker_model" \
-                        "$worker_duration" "$(root_relative_path "$current_worker_path")" "$(root_relative_path "$(phase2_loop_errlog_path "$slug" worker "$worker_provider" "$current_worker_round" expansion)")" \
+                        "$worker_duration" "$(root_relative_path "$current_worker_path")" "$(root_relative_path "$(phase2_loop_errlog_path "$slug" worker "$worker_provider" "$current_worker_round" expansion)")" "$(root_relative_path "$(phase2_loop_live_log_path "$slug" worker "$worker_provider" "$current_worker_round" expansion)")" \
                         "$tp" "$fp" "$rv" "$total" "$risk" "$worker_delta_json"
                     stop_reason="forced_exploration_completed"
                     echo "  Worker expansion ${current_worker_round} results: ${tp} TP, ${fp} FP, ${rv} REVIEW | Risk: ${risk}"
@@ -2676,15 +3164,23 @@ run_one() {
     fi
 
     : > "$errlog_deep"
-    local loop_errlog
+    : > "$live_log_deep"
+    local loop_errlog loop_live_log
     for loop_errlog in "${loop_errlogs[@]-}"; do
         [ -f "$loop_errlog" ] || continue
         printf '===== %s =====\n' "$(basename "$loop_errlog")" >> "$errlog_deep"
         cat "$loop_errlog" >> "$errlog_deep"
         printf '\n\n' >> "$errlog_deep"
+        loop_live_log="$(live_log_path_from_errlog "$loop_errlog")"
+        if [ -f "$loop_live_log" ]; then
+            printf '===== %s =====\n' "$(basename "$loop_live_log")" >> "$live_log_deep"
+            cat "$loop_live_log" >> "$live_log_deep"
+            printf '\n\n' >> "$live_log_deep"
+        fi
     done
     if [ "$mode" = "quick" ] && [ -f "$initial_worker_errlog" ]; then
         cp -f "$initial_worker_errlog" "$errlog_quick" 2>/dev/null || true
+        cp -f "$(live_log_path_from_errlog "$initial_worker_errlog")" "$live_log_quick" 2>/dev/null || true
     fi
 
     counts="$(phase2_counts "$output")"
@@ -2753,11 +3249,13 @@ echo "  Indexes (IR-order): [${AVAILABLE_INDEX_CSV}]"
 echo "  Already has phase2 output: [${DONE_INDEX_CSV}]"
 echo "  Force: ${FORCE}"
 echo "  Force deep: ${FORCE_DEEP}"
+echo "  Adaptive depth: enabled"
 echo "  Worker provider: ${PHASE2_WORKER_PROVIDER} ($(phase2_role_model worker "$PHASE2_WORKER_PROVIDER" || true))"
 echo "  Reviewer provider: ${PHASE2_REVIEWER_PROVIDER} ($(phase2_role_model reviewer "$PHASE2_REVIEWER_PROVIDER" || true))"
-echo "  Max review rounds: ${PHASE2_MAX_REVIEW_ROUNDS}"
+echo "  Worker execution mode: ${PHASE2_WORKER_EXECUTION_MODE} (chunk parallel limit=${PHASE2_WORKER_CHUNK_PARALLEL_LIMIT})"
+echo "  Base max review rounds: ${PHASE2_MAX_REVIEW_ROUNDS}"
 echo "  Prompt template: ${PROMPT_TEMPLATE}"
-echo "  Timeout policy: worker=${PHASE2_WORKER_TIMEOUT_SECONDS}s, revision=${PHASE2_REVISION_TIMEOUT_SECONDS}s, reviewer=${PHASE2_REVIEWER_TIMEOUT_SECONDS}s, exploration=${PHASE2_EXPLORATION_TIMEOUT_SECONDS}s"
+echo "  Base timeout policy: worker=${PHASE2_WORKER_TIMEOUT_SECONDS}s, revision=${PHASE2_REVISION_TIMEOUT_SECONDS}s, reviewer=${PHASE2_REVIEWER_TIMEOUT_SECONDS}s, exploration=${PHASE2_EXPLORATION_TIMEOUT_SECONDS}s"
 
 if [ "$INTERACTIVE" = true ]; then
     while true; do

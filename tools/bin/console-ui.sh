@@ -48,3 +48,43 @@ log_error_block() {
         shift 2
     done
 }
+
+timestamp_utc() {
+    date -u +"%Y-%m-%dT%H:%M:%SZ"
+}
+
+append_log_marker() {
+    local path="$1"
+    shift
+    [ -n "$path" ] || return 0
+    mkdir -p "$(dirname "$path")"
+    printf '[%s] %s\n' "$(timestamp_utc)" "$*" >> "$path"
+}
+
+reset_log_file() {
+    local path="$1"
+    [ -n "$path" ] || return 0
+    mkdir -p "$(dirname "$path")"
+    : > "$path"
+}
+
+live_log_path_from_errlog() {
+    local errlog="$1"
+    printf '%s\n' "${errlog%.err}.live.log"
+}
+
+run_command_with_live_logs() {
+    local live_log="$1"
+    local err_log="$2"
+    shift 2
+
+    mkdir -p "$(dirname "$live_log")" "$(dirname "$err_log")"
+
+    set +e
+    "$@" \
+        > >(tee -a "$live_log") \
+        2> >(tee -a "$err_log" "$live_log" >&2)
+    local rc=$?
+    set -e
+    return "$rc"
+}

@@ -420,7 +420,6 @@ def main() -> int:
     gate_path = layout.phase3 / f"{args.slug}-phase3.json"
     plugin_path = plugins_dir / args.slug
 
-    logs_dir = layout.logs
     phase3_dir = layout.phase3
 
     output_index = args.index if args.index > 0 else compute_ir_index(args.slug, reports_dir)
@@ -434,7 +433,8 @@ def main() -> int:
         else (phase3_dir / f"{output_index}-{args.slug}.{args.provider}.llm.md")
     )
     review_output_path = Path(args.review_output_path).resolve() if args.review_output_path else (phase3_dir / f"{args.slug}-phase3-review.json")
-    err_path = Path(args.err_path).resolve() if args.err_path else (logs_dir / f"{args.slug}-phase3.err")
+    err_path = Path(args.err_path).resolve() if args.err_path else (layout.phase3_provider_logs(args.slug) / f"{args.provider}.err")
+    err_path.parent.mkdir(parents=True, exist_ok=True)
 
     if output_path.exists() and not args.force:
         print(f"[INFO] Skip {args.slug}: phase3 markdown already exists")

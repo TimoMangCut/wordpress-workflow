@@ -11,7 +11,8 @@ New behaviour:
 - classifies candidates by bug family, sink family, surface, auth boundary
 - chunks candidates into bounded worker bundles for multi-agent Phase 2
 - writes reports/<slug>-candidate-bundle-agent-wNN.json bundle files
-- dispatch now prefers dynamic worker agents (agent-wNN) plus agent-b/c/d
+- dispatch now prefers dynamic worker agents (agent-wNN) and can optionally
+  include legacy support agents (agent-b/c/d)
 """
 
 from __future__ import annotations
@@ -63,6 +64,13 @@ SEVERITY_WEIGHTS = {"critical": 3, "high": 2, "medium": 1, "low": 0, "warning": 
 LOW_PRIV_AUTH = {"none", "subscriber", "contributor", "author", "editor", "unknown"}
 STATE_CHANGE_SINKS = {"option_update", "meta_update", "file_delete", "file_write"}
 HIGH_COMPLEXITY_SINKS = {"remote_request", "include", "sql", "file_read", "file_delete", "file_write"}
+
+
+def env_bool(name: str, default: bool) -> bool:
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() not in {"0", "false", "no", "off", ""}
 
 
 def load_schema(schema_file: str) -> dict:
@@ -574,6 +582,57 @@ def budget_for_candidate(candidate: dict) -> dict:
     return BUG_FAMILY_BUDGETS.get(candidate.get("bug_family"), BUG_FAMILY_BUDGETS["generic"])
 
 
+def packing_profile(total_candidates: int) -> str:
+    if total_candidates >= 240:
+        return "high-volume"
+    if total_candidates >= 120:
+        return "medium-volume"
+    return "default"
+
+
+def scaled_bundle_budget(candidate: dict, total_candidates: int, stream_size: int) -> dict:
+    budget = dict(budget_for_candidate(candidate))
+    profile = packing_profile(total_candidates)
+    bug_family = candidate.get("bug_family") or "generic"
+
+    if profile == "medium-volume":
+        budget["max_candidates"] += 1
+        budget["max_complexity"] += 4
+    elif profile == "high-volume":
+        budget["max_candidates"] += 2
+        budget["max_complexity"] += 6
+
+    if bug_family == "generic":
+        if profile == "medium-volume":
+            budget["max_candidates"] += 2
+            budget["max_complexity"] += 6
+        elif profile == "high-volume":
+            budget["max_candidates"] += 4
+            budget["max_complexity"] += 10
+    elif bug_family in {"authorization", "xss"} and profile == "high-volume":
+        budget["max_candidates"] += 2
+        budget["max_complexity"] += 6
+
+    if stream_size >= 24:
+        budget["max_candidates"] += 2
+        budget["max_complexity"] += 6
+    elif stream_size >= 12:
+        budget["max_candidates"] += 1
+        budget["max_complexity"] += 3
+
+    if bug_family == "generic":
+        budget["max_candidates"] = min(budget["max_candidates"], 12)
+        budget["max_complexity"] = min(budget["max_complexity"], 32)
+    elif bug_family in {"authorization", "xss"}:
+        budget["max_candidates"] = min(budget["max_candidates"], 10)
+        budget["max_complexity"] = min(budget["max_complexity"], 30)
+    else:
+        budget["max_candidates"] = min(budget["max_candidates"], 8)
+        budget["max_complexity"] = min(budget["max_complexity"], 24)
+
+    return budget
+
+
 def pack_candidate_bundles(candidates: list[dict]) -> list[dict]:
     streams = defaultdict(list)
     for candidate in candidates:
@@ -590,20 +649,20 @@ def pack_candidate_bundles(candidates: list[dict]) -> list[dict]:
     )
 
     bundles = []
-    bundle_index = 1
+    total_candidates = len(candidates)
+    stream_bundle_queues = []
     for (bug_family, surface, auth), stream_candidates in ordered_streams:
         current = []
         complexity_used = 0
-        budget = budget_for_candidate(stream_candidates[0])
+        budget = scaled_bundle_budget(stream_candidates[0], total_candidates, len(stream_candidates))
+        stream_bundles = []
         for candidate in stream_candidates:
             candidate_cost = max(1, int(candidate.get("complexity_score", 1)))
             exceeds_count = len(current) >= budget["max_candidates"]
             exceeds_complexity = current and complexity_used + candidate_cost > budget["max_complexity"]
             if exceeds_count or exceeds_complexity:
-                bundles.append(
+                stream_bundles.append(
                     {
-                        "agent_id": f"agent-w{bundle_index:02d}",
-                        "bundle_id": f"bundle-w{bundle_index:02d}",
                         "bug_family": bug_family,
                         "primary_surface": surface,
                         "auth_boundary": auth,
@@ -611,16 +670,13 @@ def pack_candidate_bundles(candidates: list[dict]) -> list[dict]:
                         "budget": budget,
                     }
                 )
-                bundle_index += 1
                 current = []
                 complexity_used = 0
             current.append(candidate)
             complexity_used += candidate_cost
         if current:
-            bundles.append(
+            stream_bundles.append(
                 {
-                    "agent_id": f"agent-w{bundle_index:02d}",
-                    "bundle_id": f"bundle-w{bundle_index:02d}",
                     "bug_family": bug_family,
                     "primary_surface": surface,
                     "auth_boundary": auth,
@@ -628,7 +684,23 @@ def pack_candidate_bundles(candidates: list[dict]) -> list[dict]:
                     "budget": budget,
                 }
             )
+        if stream_bundles:
+            stream_bundle_queues.append(stream_bundles)
+
+    bundle_index = 1
+    while any(stream_bundle_queues):
+        next_round = []
+        for queue in stream_bundle_queues:
+            if not queue:
+                continue
+            bundle = queue.pop(0)
+            bundle["agent_id"] = f"agent-w{bundle_index:02d}"
+            bundle["bundle_id"] = f"bundle-w{bundle_index:02d}"
+            bundles.append(bundle)
             bundle_index += 1
+            if queue:
+                next_round.append(queue)
+        stream_bundle_queues = next_round
     return bundles
 
 
@@ -785,9 +857,11 @@ def main() -> None:
     candidates = build_candidates(ir, normalized_semgrep, normalized_psalm)
     bundles = pack_candidate_bundles(candidates)
 
+    profile = packing_profile(len(candidates))
     inventory = {
         "plugin_slug": slug,
         "strategy": "candidate_chunk_v2",
+        "packing_profile": profile,
         "total_candidates": len(candidates),
         "total_bundles": len(bundles),
         "candidate_hypotheses": candidates,
@@ -822,6 +896,7 @@ def main() -> None:
 
     print()
     print(f"Done. Wrote {len(EP_GROUPS) * 2} legacy slice files to {args.output_dir}")
+    print(f"Packing profile: {profile}")
     print(f"Candidate inventory written → {inventory_out}")
     print(f"Candidate worker bundles: {len(worker_agent_ids)}")
 
@@ -849,7 +924,11 @@ def main() -> None:
             cluster_challenger_model = "claude-sonnet-4.6"
     default_provider = os.environ.get("PHASE2_PRIMARY_PROVIDER", "codex")
     timeout_seconds = int(os.environ.get("PHASE2_PROVIDER_TIMEOUT_SECONDS", "600"))
+    bundle_review_enabled = env_bool("PHASE2_BUNDLE_REVIEW_ENABLED", True)
+    support_agents_enabled = env_bool("PHASE2_SUPPORT_AGENTS_ENABLED", True)
     review_rounds = int(os.environ.get("PHASE2_MAX_REVIEW_ROUNDS", "1"))
+    if not bundle_review_enabled:
+        review_rounds = 0
 
     inputs = {}
     provider_map = {}
@@ -860,11 +939,12 @@ def main() -> None:
         if worker_provider == "claude" and worker_model:
             model_map[agent_id] = worker_model
 
-    inputs["agent-b"] = args.ir
-    inputs["agent-c"] = args.ir
-    inputs["agent-d"] = args.ir
-
-    agents_list = worker_agent_ids + ["agent-b", "agent-c", "agent-d"]
+    agents_list = list(worker_agent_ids)
+    if support_agents_enabled:
+        inputs["agent-b"] = args.ir
+        inputs["agent-c"] = args.ir
+        inputs["agent-d"] = args.ir
+        agents_list.extend(["agent-b", "agent-c", "agent-d"])
 
     dispatch = {
         "slug": slug,
@@ -879,7 +959,8 @@ def main() -> None:
         "default_provider": default_provider,
         "model_map": model_map,
         "bundle_inventory": os.path.join(args.output_dir, f"{slug}-candidate-inventory.json"),
-        "bundle_review_enabled": True,
+        "bundle_review_enabled": bundle_review_enabled,
+        "support_agents_enabled": support_agents_enabled,
         "reviewer_provider": reviewer_provider,
         "reviewer_model": reviewer_model,
         "review_rounds": review_rounds,
@@ -891,6 +972,7 @@ def main() -> None:
     dispatch_out = os.path.join(args.output_dir, f"{slug}-dispatch.json")
     write_json(dispatch_out, dispatch)
     print(f"Dispatch config written → {dispatch_out}")
+    print(f"  Support agents enabled: {support_agents_enabled}")
     print(f"  Agents ({len(agents_list)}): {', '.join(agents_list)}")
 
 

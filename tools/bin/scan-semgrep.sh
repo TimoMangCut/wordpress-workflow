@@ -15,11 +15,13 @@ SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 RULES_DIR="${SCRIPT_DIR}/config/semgrep-wp-rules"
 source "${SCRIPT_DIR}/bin/report-paths.sh"
+source "${SCRIPT_DIR}/bin/console-ui.sh"
 resolve_report_dirs "${ROOT_DIR}/reports"
 ensure_report_dirs
 OUTPUT="${PHASE1_DIR}/${SLUG}-semgrep.json"
-ERRLOG="${LOGS_DIR}/${SLUG}-semgrep.err"
+ERRLOG="$(logs_phase1_semgrep_err_path "$SLUG")"
 SEMGREP_VENV="${SEMGREP_VENV:-${ROOT_DIR}/tmmc/bin/activate}"
+reset_log_file "$ERRLOG"
 
 # Check rules exist
 if [ ! -d "$RULES_DIR" ] || [ -z "$(ls "$RULES_DIR"/*.yaml 2>/dev/null)" ]; then

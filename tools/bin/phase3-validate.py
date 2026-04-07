@@ -132,7 +132,6 @@ def main() -> int:
     semgrep_path = layout.phase1 / f"{args.slug}-semgrep.json"
     plugin_path = plugins_dir / args.slug
 
-    logs_dir = layout.logs
     phase3_dir = layout.phase3
 
     output_index = args.index if args.index > 0 else compute_ir_index(args.slug, reports_dir)
@@ -141,7 +140,7 @@ def main() -> int:
         return 1
 
     output_path = phase3_dir / f"{output_index}-{args.slug}.md"
-    err_path = logs_dir / f"{args.slug}-phase3.err"
+    err_path = layout.phase3_logs(args.slug) / "run.err"
 
     if output_path.exists() and not args.force:
         print(f"[=] Skip {args.slug}: phase3 markdown already exists")
@@ -199,6 +198,7 @@ def main() -> int:
         prompt,
     ]
 
+    err_path.parent.mkdir(parents=True, exist_ok=True)
     with err_path.open("w", encoding="utf-8", newline="\n") as err_file:
         result = subprocess.run(cmd, cwd=str(root_dir), stderr=err_file)
 

@@ -53,11 +53,13 @@ PSALM_VENDOR_RETRY="${PSALM_VENDOR_RETRY:-true}"  # true|false (default true)
 PSALM_SKIP_SLUGS="${PSALM_SKIP_SLUGS:-branda-white-labeling}"  # comma/space separated
 
 OUTPUT="${PHASE1_DIR}/${SLUG}-psalm.sarif"
-ERR_LOG="${LOGS_DIR}/${SLUG}-psalm.err"
+ERR_LOG="$(logs_phase1_psalm_err_path "$SLUG")"
 PHP_RUNTIME=""
 PSALM_CMD=()
 TIMEOUT_CMD=()
 TIMEOUT_BACKEND="none"
+
+reset_log_file "$ERR_LOG"
 
 resolve_php_bin() {
     local candidate

@@ -39,6 +39,7 @@ PLUGIN_DIR_INPUT=""
 PLUGIN_SLUG_INPUT=""
 FORCE=false
 FORCE_DEEP=false
+PHASE2_RESUME_EXISTING=false
 APPLY_REVIEW=false
 WITH_CLAUDE=false
 PROVIDERS_EXPLICIT=false
@@ -70,26 +71,31 @@ Usage:
   run-single-plugin.sh --slug <plugin-slug> [options]
   run-single-plugin.sh --plugin-dir <path> [options]
 
-Options:
+Core options:
   --slug <slug>          Plugin slug under plugins/.
   --plugin-dir <path>    Absolute or relative plugin directory path.
   --force                Re-run Phase 2 and Phase 3 even if canonical outputs exist.
-  --force-deep           Pass through to Phase 2 to skip quick-triage.
+  --resume-existing      Resume Phase 2 from existing worker/review artifacts when available.
+  --force-deep           Pass through to Phase 2 to override adaptive quick-triage fallback.
   --apply-review         Pass through to Phase 3 apply-review loop.
   --llm-mode <mode>      Phase 3 LLM mode: auto|off|force (default: auto).
+
+Advanced provider/model overrides:
   --with-claude          Convenience flag: run both codex and claude.
   --provider <name>      Single LLM provider shorthand: codex|claude.
   --providers <list>     Provider list, comma-separated (for example: codex,claude).
   --primary-provider <p> Canonical provider for Phase 3. Phase 2 canonical output always comes from the worker role.
+  --model <name>         Set the same model for both providers.
+  --codex-model <name>   Codex model override.
+  --claude-model <name>  Claude model override.
+
+Advanced Phase 2 tuning:
+  --worker-provider <p>  Phase 2 worker provider (default: claude).
+  --reviewer-provider <p> Phase 2 reviewer provider (default: codex).
   --worker-timeout <sec> Worker timeout for Phase 2 round 1 quick/deep analysis (default: 900).
   --revision-timeout <sec> Worker timeout for Phase 2 revision/expansion rounds (default: 600).
   --reviewer-timeout <sec> Reviewer timeout for skeptical Phase 2 review rounds (default: 600).
   --exploration-timeout <sec> Reviewer timeout for final forced exploration round (default: 240).
-  --worker-provider <p>  Phase 2 worker provider (default: claude).
-  --reviewer-provider <p> Phase 2 reviewer provider (default: codex).
-  --model <name>         Set the same model for both providers.
-  --codex-model <name>   Codex model override.
-  --claude-model <name>  Claude model override.
   --worker-codex-model <name>   Codex model for Phase 2 worker role.
   --worker-claude-model <name>  Claude model for Phase 2 worker role.
   --reviewer-codex-model <name> Codex model for Phase 2 reviewer role.
@@ -102,13 +108,18 @@ Options:
   --claude-bin <path>    Claude Code binary/path (default: env CLAUDE_BIN or claude).
   -h, --help             Show this help message.
 
+Execution model:
+  1) Phase 1 via tools/bin/scan-all.sh
+     surface map -> semgrep -> psalm -> IR extract -> threat context
+  2) Phase 2 via tools/bin/run-phase2.sh
+     worker -> reviewer_core -> worker revision -> reviewer_explore -> cluster -> consensus
+  3) Phase 3 via tools/bin/run-phase3.sh
+     deterministic gate -> optional LLM skeptic
+
 Notes:
+  - This is the canonical full-audit entrypoint for one plugin.
   - This wrapper is single-plugin only. It does not support range or interactive batch mode.
-  - Phase 1 always runs first via tools/bin/scan-all.sh.
-  - Phase 2 uses a role loop by default: Claude Sonnet worker + Codex reviewer.
-  - After the normal review loop, Phase 2 runs one forced-exploration round by default.
-  - Canonical Phase 2 now also runs deterministic cluster planning/evidence-pack/consensus by default before Phase 3.
-  - Phase 3 still uses provider-list controls; add --with-claude to include Claude there.
+  - Advanced Phase 2 tuning flags are passthrough knobs for validation/debug; the workflow topology itself is fixed here.
 EOF
 }
 
@@ -124,6 +135,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --force)
             FORCE=true
+            shift
+            ;;
+        --resume-existing)
+            PHASE2_RESUME_EXISTING=true
             shift
             ;;
         --force-deep)
@@ -332,7 +347,25 @@ PHASE1_IR="${PHASE1_DIR}/${PLUGIN_SLUG}-ir.json"
 PHASE1_SURFACE="${PHASE1_DIR}/${PLUGIN_SLUG}-surface.txt"
 PHASE1_SEMGREP="${PHASE1_DIR}/${PLUGIN_SLUG}-semgrep.json"
 PHASE1_PSALM="${PHASE1_DIR}/${PLUGIN_SLUG}-psalm.sarif"
+THREAT_CONTEXT_JSON="${REPORTS_DIR}/${PLUGIN_SLUG}-threat-context.json"
+PHASE1_ERR_LOG="$(logs_phase1_run_err_path "$PLUGIN_SLUG")"
+PHASE1_LIVE_LOG="$(logs_phase1_run_live_path "$PLUGIN_SLUG")"
 PHASE2_JSON="${PHASE2_DIR}/${PLUGIN_SLUG}-phase2.json"
+PHASE2_LOCAL_JSON="${PHASE2_DIR}/${PLUGIN_SLUG}-phase2.local.json"
+PHASE2_CONSENSUS_JSON="${PHASE2_DIR}/${PLUGIN_SLUG}-phase2.consensus.json"
+PHASE2_LOOP_SUMMARY="${PHASE2_DIR}/${PLUGIN_SLUG}-phase2.loop-summary.json"
+PHASE2_CLUSTER_PLAN="${PHASE2_DIR}/${PLUGIN_SLUG}-cluster-plan.json"
+PHASE2_ERR_LOG="$(logs_phase2_run_err_path "$PLUGIN_SLUG" deep)"
+PHASE2_LIVE_LOG="$(logs_phase2_run_live_path "$PLUGIN_SLUG" deep)"
+PHASE2_QUICK_ERR_LOG="$(logs_phase2_run_err_path "$PLUGIN_SLUG" quick)"
+PHASE2_QUICK_LIVE_LOG="$(logs_phase2_run_live_path "$PLUGIN_SLUG" quick)"
+PHASE2_CLUSTER_ERR_LOG="$(logs_phase2_cluster_run_err_path "$PLUGIN_SLUG")"
+PHASE2_CLUSTER_LIVE_LOG="$(logs_phase2_cluster_run_live_path "$PLUGIN_SLUG")"
+PHASE3_JSON="${PHASE3_DIR}/${PLUGIN_SLUG}-phase3.json"
+PHASE3_FINAL_JSON="${PHASE3_DIR}/${PLUGIN_SLUG}-phase3.final.json"
+PHASE3_REVIEW_JSON="${PHASE3_DIR}/${PLUGIN_SLUG}-phase3-review.json"
+PHASE3_ERR_LOG="$(logs_phase3_run_err_path "$PLUGIN_SLUG")"
+PHASE3_LIVE_LOG="$(logs_phase3_run_live_path "$PLUGIN_SLUG")"
 PHP_MEMORY_LIMIT="${PHP_MEMORY_LIMIT:-1024M}"
 DB_PATH="${ROOT_DIR}/data/audit.db"
 
@@ -392,7 +425,108 @@ print_artifact_status() {
     fi
 }
 
+print_preferred_artifact_status() {
+    local label="$1"
+    shift
+    local path
+    for path in "$@"; do
+        if [ -f "$path" ]; then
+            print_artifact_status "$label" "$path"
+            return 0
+        fi
+    done
+    echo "  [..] ${label}: missing"
+}
+
+print_execution_topology() {
+    echo "  Coordinator: run-single-plugin.sh"
+    echo "  Phase 1 engine: tools/bin/scan-all.sh"
+    echo "  Phase 2 engine: tools/bin/run-phase2.sh"
+    echo "    Topology: worker -> reviewer_core -> worker revision -> reviewer_explore -> cluster -> consensus"
+    echo "  Phase 3 engine: tools/bin/run-phase3.sh"
+    echo "    Topology: gate -> optional llm skeptic"
+}
+
+run_phase1_stage() {
+    echo ""
+    echo ">>> Phase 1: Deterministic Collection"
+    bash "${BIN_DIR}/scan-all.sh" "$PLUGIN_DIR"
+
+    if [ ! -f "$PHASE1_IR" ]; then
+        PHP_RUNTIME="$(resolve_php_bin || true)"
+        if [ -n "${PHP_RUNTIME:-}" ] && [ -f "${TOOLS_DIR}/vendor/autoload.php" ] && [ -f "${BIN_DIR}/extract.php" ]; then
+            echo "  [*] IR artifact missing after scan-all; retrying extract with --force"
+            "$PHP_RUNTIME" -d "memory_limit=${PHP_MEMORY_LIMIT}" "${BIN_DIR}/extract.php" "$PLUGIN_DIR" --db="${DB_PATH}" --force || true
+        fi
+    fi
+
+    if [ ! -f "$PHASE1_IR" ]; then
+        echo "[!] Phase 1 finished but required IR output is missing: ${PHASE1_IR}"
+        echo "    Check reports/logs for extractor errors before continuing."
+        return 1
+    fi
+
+    print_artifact_status "surface map" "$PHASE1_SURFACE"
+    print_artifact_status "semgrep" "$PHASE1_SEMGREP"
+    print_artifact_status "psalm" "$PHASE1_PSALM"
+    print_artifact_status "IR" "$PHASE1_IR"
+    print_artifact_status "threat context" "$THREAT_CONTEXT_JSON"
+    print_artifact_status "phase1 err log" "$PHASE1_ERR_LOG"
+    print_artifact_status "phase1 live log" "$PHASE1_LIVE_LOG"
+}
+
+run_phase2_stage() {
+    echo ""
+    echo ">>> Phase 2: Canonical Role Loop + Cluster Consensus"
+    "${PHASE2_CMD[@]}"
+
+    if [ ! -f "$PHASE2_JSON" ]; then
+        echo "[!] Phase 2 finished but canonical output is missing: ${PHASE2_JSON}"
+        return 1
+    fi
+
+    print_artifact_status "phase2 loop summary" "$PHASE2_LOOP_SUMMARY"
+    print_artifact_status "phase2 local" "$PHASE2_LOCAL_JSON"
+    print_artifact_status "phase2 consensus" "$PHASE2_CONSENSUS_JSON"
+    print_artifact_status "phase2 canonical" "$PHASE2_JSON"
+    print_artifact_status "phase2 cluster plan" "$PHASE2_CLUSTER_PLAN"
+    print_preferred_artifact_status "phase2 err log" "$PHASE2_ERR_LOG" "$PHASE2_QUICK_ERR_LOG"
+    print_preferred_artifact_status "phase2 live log" "$PHASE2_LIVE_LOG" "$PHASE2_QUICK_LIVE_LOG"
+    print_artifact_status "phase2 cluster err log" "$PHASE2_CLUSTER_ERR_LOG"
+    print_artifact_status "phase2 cluster live log" "$PHASE2_CLUSTER_LIVE_LOG"
+}
+
+run_phase3_stage() {
+    local provider provider_md
+
+    echo ""
+    echo ">>> Phase 3: Gate + Optional LLM Skeptic"
+    "${PHASE3_CMD[@]}"
+
+    PHASE3_MD="$(find_phase3_md)"
+    if [ -z "${PHASE3_MD:-}" ]; then
+        echo "[!] Phase 3 finished but deterministic markdown is missing for slug: ${PLUGIN_SLUG}"
+        return 1
+    fi
+
+    print_artifact_status "phase3 gate json" "$PHASE3_JSON"
+    print_artifact_status "phase3 final json" "$PHASE3_FINAL_JSON"
+    print_artifact_status "phase3 review json" "$PHASE3_REVIEW_JSON"
+    print_artifact_status "phase3 markdown" "$PHASE3_MD"
+    print_artifact_status "phase3 err log" "$PHASE3_ERR_LOG"
+    print_artifact_status "phase3 live log" "$PHASE3_LIVE_LOG"
+    for provider in "${LLM_PROVIDER_ARRAY[@]}"; do
+        provider_md="$(find_phase3_provider_md "$provider")"
+        if [ -n "$provider_md" ]; then
+            print_artifact_status "phase3 ${provider} llm" "$provider_md"
+        else
+            echo "  [..] phase3 ${provider} llm: missing"
+        fi
+    done
+}
+
 PHASE2_CMD=(bash "${BIN_DIR}/run-phase2.sh" --slug "$PLUGIN_SLUG" \
+    --clusters \
     --worker-timeout "$PHASE2_WORKER_TIMEOUT_SECONDS" \
     --revision-timeout "$PHASE2_REVISION_TIMEOUT_SECONDS" \
     --reviewer-timeout "$PHASE2_REVIEWER_TIMEOUT_SECONDS" \
@@ -410,6 +544,9 @@ PHASE3_CMD=(bash "${BIN_DIR}/run-phase3.sh" --slug "$PLUGIN_SLUG" --llm-mode "$L
 if [ "$FORCE" = true ]; then
     PHASE2_CMD+=(--force)
     PHASE3_CMD+=(--force)
+fi
+if [ "$PHASE2_RESUME_EXISTING" = true ]; then
+    PHASE2_CMD+=(--resume-existing)
 fi
 if [ "$FORCE_DEEP" = true ]; then
     PHASE2_CMD+=(--force-deep)
@@ -444,70 +581,28 @@ echo "  Single Plugin Pipeline"
 echo "========================================="
 echo "  Plugin slug: ${PLUGIN_SLUG}"
 echo "  Plugin dir : ${PLUGIN_DIR}"
-echo "  Phase 2 loop: worker=${PHASE2_WORKER_PROVIDER} (${PHASE2_WORKER_CODEX_MODEL}/${PHASE2_WORKER_CLAUDE_MODEL}) reviewer=${PHASE2_REVIEWER_PROVIDER} (${PHASE2_REVIEWER_CODEX_MODEL}/${PHASE2_REVIEWER_CLAUDE_MODEL}) forced_exploration=${PHASE2_ENABLE_FORCED_EXPLORATION}/${PHASE2_MAX_EXPLORATION_CANDIDATES}"
-echo "  Phase 2 timeouts: worker=${PHASE2_WORKER_TIMEOUT_SECONDS}s revision=${PHASE2_REVISION_TIMEOUT_SECONDS}s reviewer=${PHASE2_REVIEWER_TIMEOUT_SECONDS}s exploration=${PHASE2_EXPLORATION_TIMEOUT_SECONDS}s"
+print_execution_topology
+echo "  Phase 2 depth policy: adaptive (use --force-deep only to disable quick fallback)"
+echo "  Phase 2 base config: worker=${PHASE2_WORKER_PROVIDER} (${PHASE2_WORKER_CODEX_MODEL}/${PHASE2_WORKER_CLAUDE_MODEL}) reviewer=${PHASE2_REVIEWER_PROVIDER} (${PHASE2_REVIEWER_CODEX_MODEL}/${PHASE2_REVIEWER_CLAUDE_MODEL}) base_rounds=${PHASE2_MAX_REVIEW_ROUNDS} base_forced_exploration=${PHASE2_ENABLE_FORCED_EXPLORATION}/${PHASE2_MAX_EXPLORATION_CANDIDATES}"
+echo "  Phase 2 base timeouts: worker=${PHASE2_WORKER_TIMEOUT_SECONDS}s revision=${PHASE2_REVISION_TIMEOUT_SECONDS}s reviewer=${PHASE2_REVIEWER_TIMEOUT_SECONDS}s exploration=${PHASE2_EXPLORATION_TIMEOUT_SECONDS}s"
+echo "  Phase 2 resume: ${PHASE2_RESUME_EXISTING}"
 echo "  Phase 3 providers: ${LLM_PROVIDERS}"
 echo "  LLM mode   : ${LLM_MODE}"
 echo "  Reports dir: ${REPORTS_DIR}"
 
-echo ""
-echo ">>> Phase 1: Deterministic Collection"
-bash "${BIN_DIR}/scan-all.sh" "$PLUGIN_DIR"
-
-if [ ! -f "$PHASE1_IR" ]; then
-    PHP_RUNTIME="$(resolve_php_bin || true)"
-    if [ -n "${PHP_RUNTIME:-}" ] && [ -f "${TOOLS_DIR}/vendor/autoload.php" ] && [ -f "${BIN_DIR}/extract.php" ]; then
-        echo "  [*] IR artifact missing after scan-all; retrying extract with --force"
-        "$PHP_RUNTIME" -d "memory_limit=${PHP_MEMORY_LIMIT}" "${BIN_DIR}/extract.php" "$PLUGIN_DIR" --db="${DB_PATH}" --force || true
-    fi
-fi
-
-if [ ! -f "$PHASE1_IR" ]; then
-    echo "[!] Phase 1 finished but required IR output is missing: ${PHASE1_IR}"
-    echo "    Check reports/logs for extractor errors before continuing."
-    exit 1
-fi
-
-print_artifact_status "surface map" "$PHASE1_SURFACE"
-print_artifact_status "semgrep" "$PHASE1_SEMGREP"
-print_artifact_status "psalm" "$PHASE1_PSALM"
-print_artifact_status "IR" "$PHASE1_IR"
-
-echo ""
-echo ">>> Phase 2: LLM Analysis"
-"${PHASE2_CMD[@]}"
-
-if [ ! -f "$PHASE2_JSON" ]; then
-    echo "[!] Phase 2 finished but canonical output is missing: ${PHASE2_JSON}"
-    exit 1
-fi
-
-print_artifact_status "phase2 canonical" "$PHASE2_JSON"
-
-echo ""
-echo ">>> Phase 3: Gate + Optional LLM Skeptic"
-"${PHASE3_CMD[@]}"
-
-PHASE3_MD="$(find_phase3_md)"
-if [ -z "${PHASE3_MD:-}" ]; then
-    echo "[!] Phase 3 finished but deterministic markdown is missing for slug: ${PLUGIN_SLUG}"
-    exit 1
-fi
-
-print_artifact_status "phase3 markdown" "$PHASE3_MD"
-for provider in "${LLM_PROVIDER_ARRAY[@]}"; do
-    provider_md="$(find_phase3_provider_md "$provider")"
-    if [ -n "$provider_md" ]; then
-        print_artifact_status "phase3 ${provider} llm" "$provider_md"
-    else
-        echo "  [..] phase3 ${provider} llm: missing"
-    fi
-done
+run_phase1_stage
+run_phase2_stage
+run_phase3_stage
 
 echo ""
 echo "========================================="
 echo "  Pipeline Complete"
 echo "========================================="
 echo "  Phase 1 IR : ${PHASE1_IR}"
+echo "  Threat ctx : ${THREAT_CONTEXT_JSON}"
+echo "  Phase 2 local     : ${PHASE2_LOCAL_JSON}"
+echo "  Phase 2 consensus : ${PHASE2_CONSENSUS_JSON}"
 echo "  Phase 2    : ${PHASE2_JSON}"
-echo "  Phase 3    : ${PHASE3_MD}"
+echo "  Phase 3 gate      : ${PHASE3_JSON}"
+echo "  Phase 3 final     : ${PHASE3_FINAL_JSON}"
+echo "  Phase 3 markdown  : ${PHASE3_MD}"

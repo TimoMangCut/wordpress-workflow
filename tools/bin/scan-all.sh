@@ -32,6 +32,13 @@ ensure_report_dirs
 ARTIFACT_FRESHNESS_BIN="${SCRIPT_DIR}/bin/artifact_freshness.py"
 THREAT_CONTEXT_PATH="${REPORTS_DIR}/${SLUG}-threat-context.json"
 THREAT_PROFILES_PATH="${SCRIPT_DIR}/data/threat-profiles.json"
+PHASE1_ERR_LOG="$(logs_phase1_run_err_path "$SLUG")"
+PHASE1_LIVE_LOG="$(logs_phase1_run_live_path "$SLUG")"
+
+reset_log_file "$PHASE1_ERR_LOG"
+reset_log_file "$PHASE1_LIVE_LOG"
+append_log_marker "$PHASE1_ERR_LOG" "phase1 start slug=${SLUG} plugin_dir=${PLUGIN_DIR}"
+append_log_marker "$PHASE1_LIVE_LOG" "phase1 start slug=${SLUG} plugin_dir=${PLUGIN_DIR}"
 
 log_section "PHASE 1: $SLUG"
 
@@ -90,7 +97,16 @@ freshness_is_fresh() {
 # --- Step 1: Surface Map (fast grep, always run) ---
 if [ -f "${SCRIPT_DIR}/bin/surface-map.sh" ]; then
     log_stage "[1/5] Surface Map"
-    bash "${SCRIPT_DIR}/bin/surface-map.sh" "$PLUGIN_DIR" || log_warn_block "surface-map failed" "slug" "$SLUG"
+    append_log_marker "$PHASE1_ERR_LOG" "step=surface-map start"
+    append_log_marker "$PHASE1_LIVE_LOG" "step=surface-map start"
+    if ! run_command_with_live_logs "$PHASE1_LIVE_LOG" "$PHASE1_ERR_LOG" bash "${SCRIPT_DIR}/bin/surface-map.sh" "$PLUGIN_DIR"; then
+        append_log_marker "$PHASE1_ERR_LOG" "step=surface-map failed"
+        append_log_marker "$PHASE1_LIVE_LOG" "step=surface-map failed"
+        log_warn_block "surface-map failed" "slug" "$SLUG" "errlog" "$PHASE1_ERR_LOG" "live_log" "$PHASE1_LIVE_LOG"
+    else
+        append_log_marker "$PHASE1_ERR_LOG" "step=surface-map done"
+        append_log_marker "$PHASE1_LIVE_LOG" "step=surface-map done"
+    fi
 else
     log_stage "[1/5] Surface Map --- SKIPPED"
 fi
@@ -98,7 +114,16 @@ fi
 # --- Step 2: Semgrep (primary taint scanner) ---
 if [ -f "${SCRIPT_DIR}/bin/scan-semgrep.sh" ]; then
     log_stage "[2/5] Semgrep"
-    bash "${SCRIPT_DIR}/bin/scan-semgrep.sh" "$PLUGIN_DIR" || log_warn_block "semgrep failed" "slug" "$SLUG"
+    append_log_marker "$PHASE1_ERR_LOG" "step=semgrep start"
+    append_log_marker "$PHASE1_LIVE_LOG" "step=semgrep start"
+    if ! run_command_with_live_logs "$PHASE1_LIVE_LOG" "$PHASE1_ERR_LOG" bash "${SCRIPT_DIR}/bin/scan-semgrep.sh" "$PLUGIN_DIR"; then
+        append_log_marker "$PHASE1_ERR_LOG" "step=semgrep failed"
+        append_log_marker "$PHASE1_LIVE_LOG" "step=semgrep failed"
+        log_warn_block "semgrep failed" "slug" "$SLUG" "errlog" "$PHASE1_ERR_LOG" "live_log" "$PHASE1_LIVE_LOG"
+    else
+        append_log_marker "$PHASE1_ERR_LOG" "step=semgrep done"
+        append_log_marker "$PHASE1_LIVE_LOG" "step=semgrep done"
+    fi
 else
     log_stage "[2/5] Semgrep --- MISSING"
 fi
@@ -106,7 +131,16 @@ fi
 # --- Step 3: Psalm taint analysis (cross-file taint -> SARIF, non-blocking) ---
 log_stage "[3/5] Psalm Taint"
 if [ -f "${SCRIPT_DIR}/bin/scan-psalm.sh" ]; then
-    bash "${SCRIPT_DIR}/bin/scan-psalm.sh" "$PLUGIN_DIR" || log_warn_block "psalm failed (non-blocking)" "slug" "$SLUG"
+    append_log_marker "$PHASE1_ERR_LOG" "step=psalm start"
+    append_log_marker "$PHASE1_LIVE_LOG" "step=psalm start"
+    if ! run_command_with_live_logs "$PHASE1_LIVE_LOG" "$PHASE1_ERR_LOG" bash "${SCRIPT_DIR}/bin/scan-psalm.sh" "$PLUGIN_DIR"; then
+        append_log_marker "$PHASE1_ERR_LOG" "step=psalm failed"
+        append_log_marker "$PHASE1_LIVE_LOG" "step=psalm failed"
+        log_warn_block "psalm failed (non-blocking)" "slug" "$SLUG" "errlog" "$PHASE1_ERR_LOG" "live_log" "$PHASE1_LIVE_LOG"
+    else
+        append_log_marker "$PHASE1_ERR_LOG" "step=psalm done"
+        append_log_marker "$PHASE1_LIVE_LOG" "step=psalm done"
+    fi
 else
     log_warn "SKIPPED: scan-psalm.sh not found or psalm not installed"
 fi
@@ -116,7 +150,16 @@ log_stage "[4/5] IR Extract + Rules"
 if [ -f "${SCRIPT_DIR}/vendor/autoload.php" ] && [ -f "${SCRIPT_DIR}/bin/extract.php" ]; then
     PHP_RUNTIME="$(resolve_php_bin || true)"
     if [ -n "$PHP_RUNTIME" ]; then
-        "$PHP_RUNTIME" -d "memory_limit=${PHP_MEMORY_LIMIT}" "${SCRIPT_DIR}/bin/extract.php" "$PLUGIN_DIR" --db="$DB" || log_warn_block "extract failed" "slug" "$SLUG"
+        append_log_marker "$PHASE1_ERR_LOG" "step=extract start"
+        append_log_marker "$PHASE1_LIVE_LOG" "step=extract start"
+        if ! run_command_with_live_logs "$PHASE1_LIVE_LOG" "$PHASE1_ERR_LOG" "$PHP_RUNTIME" -d "memory_limit=${PHP_MEMORY_LIMIT}" "${SCRIPT_DIR}/bin/extract.php" "$PLUGIN_DIR" --db="$DB"; then
+            append_log_marker "$PHASE1_ERR_LOG" "step=extract failed"
+            append_log_marker "$PHASE1_LIVE_LOG" "step=extract failed"
+            log_warn_block "extract failed" "slug" "$SLUG" "errlog" "$PHASE1_ERR_LOG" "live_log" "$PHASE1_LIVE_LOG"
+        else
+            append_log_marker "$PHASE1_ERR_LOG" "step=extract done"
+            append_log_marker "$PHASE1_LIVE_LOG" "step=extract done"
+        fi
     else
         log_warn "SKIPPED: php runtime not found (set PHP_BIN or add php/php8.x to PATH)"
     fi
@@ -129,15 +172,27 @@ if [ -f "${SCRIPT_DIR}/bin/generate_threat_context.py" ]; then
     log_stage "[5/5] Threat Context"
     if freshness_is_fresh "$THREAT_CONTEXT_PATH" "$PLUGIN_DIR" "$THREAT_PROFILES_PATH" "${SCRIPT_DIR}/bin/generate_threat_context.py"; then
         log_info "Skip ${SLUG}: threat context is fresh"
+        append_log_marker "$PHASE1_ERR_LOG" "step=threat-context skipped freshness=true"
+        append_log_marker "$PHASE1_LIVE_LOG" "step=threat-context skipped freshness=true"
     else
-        python3 "${SCRIPT_DIR}/bin/generate_threat_context.py" "$SLUG" \
+        append_log_marker "$PHASE1_ERR_LOG" "step=threat-context start"
+        append_log_marker "$PHASE1_LIVE_LOG" "step=threat-context start"
+        if ! run_command_with_live_logs "$PHASE1_LIVE_LOG" "$PHASE1_ERR_LOG" python3 "${SCRIPT_DIR}/bin/generate_threat_context.py" "$SLUG" \
             --plugins-dir "${ROOT_DIR}/plugins" \
             --reports-dir "${REPORTS_DIR}" \
-            --profiles "${THREAT_PROFILES_PATH}" \
-            || log_warn_block "threat context generation failed" "slug" "$SLUG"
+            --profiles "${THREAT_PROFILES_PATH}"; then
+            append_log_marker "$PHASE1_ERR_LOG" "step=threat-context failed"
+            append_log_marker "$PHASE1_LIVE_LOG" "step=threat-context failed"
+            log_warn_block "threat context generation failed" "slug" "$SLUG" "errlog" "$PHASE1_ERR_LOG" "live_log" "$PHASE1_LIVE_LOG"
+        else
+            append_log_marker "$PHASE1_ERR_LOG" "step=threat-context done"
+            append_log_marker "$PHASE1_LIVE_LOG" "step=threat-context done"
+        fi
     fi
 else
     log_stage "[5/5] Threat Context --- MISSING"
 fi
 
+append_log_marker "$PHASE1_ERR_LOG" "phase1 end slug=${SLUG}"
+append_log_marker "$PHASE1_LIVE_LOG" "phase1 end slug=${SLUG}"
 log_section "DONE: $SLUG"

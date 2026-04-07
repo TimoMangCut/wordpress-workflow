@@ -9,6 +9,8 @@
 #   --timeout N             Override timeout_seconds from dispatch config (seconds)
 #   --dispatch-file PATH    Override dispatch config path (default: reports/<slug>-dispatch.json)
 #   --resume-missing-only   Skip agents whose output file already exists and is valid JSON
+#   --stop-after-merge      Exit successfully after deterministic local merge (skip cluster/consensus)
+#   --no-single-agent-fallback  Do not recurse into run-phase2.sh if all agents fail
 #   --help                  Show this help message
 #
 # Environment variables:
@@ -25,7 +27,7 @@
 #   6. Call python3 tools/bin/merge_agent_outputs.py <slug>
 #   7. Write reports/<slug>-merge-ready sentinel
 #
-# Failures are logged to reports/logs/<slug>-failures.json
+# Failures are logged to reports/logs/<slug>/phase2/chunked/failures.json
 # Source: multi-agent-plan.md:400-520
 #
 # Compatibility: POSIX sh + bash 3.2+ (no declare -A, no mapfile)
@@ -40,9 +42,14 @@ RESUME_MISSING_ONLY=0   # 0 = run all; 1 = skip agents with valid existing outpu
 POLL_INTERVAL=15        # seconds between completion polls
 TIMEOUT_OVERRIDE=""     # empty = read from dispatch config
 DISPATCH_FILE_OVERRIDE=""
+STOP_AFTER_MERGE=0
+NO_SINGLE_AGENT_FALLBACK=0
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+source "$SCRIPT_DIR/report-paths.sh"
+resolve_report_dirs "$REPO_ROOT/reports"
+ensure_report_dirs
 
 # ---------------------------------------------------------------------------
 # Usage
@@ -60,6 +67,10 @@ Options:
   --dispatch-file PATH    Path to dispatch config JSON (default: reports/<slug>-dispatch.json)
   --resume-missing-only   Skip agents whose output file already exists and is valid JSON.
                           Use after a quota-interrupted run to only rerun failed/missing agents.
+  --stop-after-merge      Stop after merge_agent_outputs.py writes phase2.local.
+                          Skip cluster synth/challenge, consensus writer, and merge-ready sentinel.
+  --no-single-agent-fallback
+                          If every bundle fails, return non-zero instead of calling run-phase2.sh.
   --help                  Show this message
 
 Environment variables:
@@ -112,6 +123,14 @@ while [[ $# -gt 0 ]]; do
       RESUME_MISSING_ONLY=1
       shift
       ;;
+    --stop-after-merge)
+      STOP_AFTER_MERGE=1
+      shift
+      ;;
+    --no-single-agent-fallback)
+      NO_SINGLE_AGENT_FALLBACK=1
+      shift
+      ;;
     -*)
       echo "ERROR: Unknown option: $1" >&2
       usage
@@ -139,16 +158,14 @@ fi
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
-REPORTS_DIR="$REPO_ROOT/reports"
-PHASE2_DIR="$REPORTS_DIR/phase2"
-LOGS_DIR="$REPORTS_DIR/logs"
 DISPATCH_FILE="${DISPATCH_FILE_OVERRIDE:-$REPORTS_DIR/${SLUG}-dispatch.json}"
-FAILURES_LOG="$LOGS_DIR/${SLUG}-failures.json"
+FAILURES_LOG="$(logs_phase2_chunked_failures_path "$SLUG")"
 MERGE_READY_SENTINEL="$REPORTS_DIR/${SLUG}-merge-ready"
 MERGE_SCRIPT="$SCRIPT_DIR/merge_agent_outputs.py"
 CLUSTER_SCRIPT="$SCRIPT_DIR/build_candidate_clusters.py"
 CLUSTER_PACK_SCRIPT="$SCRIPT_DIR/build_cluster_evidence_pack.py"
 CONSENSUS_SCRIPT="$SCRIPT_DIR/write_phase2_consensus.py"
+CLAUDE_STREAM_PARSER="$SCRIPT_DIR/claude_stream_to_text.py"
 SKILL_SETS_DIR="$REPO_ROOT/tools/config"
 REVIEW_SCHEMA="$REPO_ROOT/contracts/phase2-review-output.schema.json"
 AGENT_OUTPUT_SCHEMA="$REPO_ROOT/contracts/agent-output.schema.json"
@@ -158,7 +175,10 @@ AGENT_REVISION_PROMPT_TEMPLATE="$REPO_ROOT/tools/config/phase2-agent-revision-pr
 CLUSTER_SYNTH_PROMPT_TEMPLATE="$REPO_ROOT/tools/config/phase2-cluster-synthesis-prompt-template.md"
 CLUSTER_CHALLENGE_PROMPT_TEMPLATE="$REPO_ROOT/tools/config/phase2-cluster-challenge-prompt-template.md"
 
-mkdir -p "$LOGS_DIR" "$PHASE2_DIR"
+mkdir -p "$PHASE2_DIR" \
+  "$(logs_phase2_chunked_dir "$SLUG")" \
+  "$(logs_phase2_chunked_agents_dir "$SLUG")" \
+  "$(logs_phase2_cluster_dir "$SLUG")"
 
 # ---------------------------------------------------------------------------
 # Temp state dir (bash-3-compatible replacement for associative arrays)
@@ -497,6 +517,7 @@ TIMEOUT_SECONDS="${TIMEOUT_OVERRIDE:-$DISPATCH_TIMEOUT}"
 log_info "slug from dispatch: $DISPATCH_SLUG"
 log_info "timeout: ${TIMEOUT_SECONDS}s | parallel-limit: $PARALLEL_LIMIT | source_dir: $SOURCE_DIR"
 log_info "quota_account: ${QUOTA_ACCOUNT:-(not set)} | resume_missing_only: $RESUME_MISSING_ONLY"
+log_info "stop_after_merge: $STOP_AFTER_MERGE | no_single_agent_fallback: $NO_SINGLE_AGENT_FALLBACK"
 log_info "bundle_review_enabled: $BUNDLE_REVIEW_ENABLED | reviewer=${REVIEWER_PROVIDER} (${REVIEWER_MODEL:-<default>}) | review_rounds=${REVIEW_ROUNDS}"
 
 if [[ "$DISPATCH_SLUG" != "$SLUG" ]]; then
@@ -835,26 +856,8 @@ run_provider_prompt_sync() {
       "${claude_cmd[@]}" \
         2>>"$log_file" \
         < "$prompt_file" \
-        | python3 -u - 2>>"$log_file" \
-            > "$last_message_file" <<'PYEOF'
-import sys, json
-for raw in sys.stdin.buffer:
-    line = raw.decode("utf-8", errors="replace").rstrip("\n")
-    if not line:
-        continue
-    try:
-        obj = json.loads(line)
-    except Exception:
-        print(line, flush=True)
-        continue
-    t = obj.get("type", "")
-    if t == "content_block_delta":
-        delta = obj.get("delta", {})
-        if delta.get("type") == "text_delta":
-            print(delta.get("text", ""), end="", flush=True)
-    elif t == "message_stop":
-        print("", flush=True)
-PYEOF
+        | python3 -u "$CLAUDE_STREAM_PARSER" 2>>"$log_file" \
+            > "$last_message_file"
     ) || rc=$?
   else
     (
@@ -874,6 +877,7 @@ run_coded_prompt_with_usage_retries() {
   local provider="$1" model="$2" prompt_file="$3" log_file="$4" last_message_file="$5"
   local rc=0
   local attempt
+  mkdir -p "$(dirname "$log_file")" "$(dirname "$last_message_file")"
   for attempt in 1 2 3; do
     : > "$log_file"
     : > "$last_message_file"
@@ -908,10 +912,10 @@ run_worker_bundle_review_loop() {
   initial_snapshot="$PHASE2_DIR/${SLUG}-${agent}-worker.initial.json"
   review_path="$PHASE2_DIR/${SLUG}-${agent}-review.r1.json"
   revised_path="$PHASE2_DIR/${SLUG}-${agent}-revised.r1.json"
-  reviewer_log="$LOGS_DIR/${SLUG}-${agent}-review.r1.log"
-  reviewer_last_message="$LOGS_DIR/${SLUG}-${agent}-review.r1.last-message.txt"
-  revision_log="$LOGS_DIR/${SLUG}-${agent}-revision.r1.log"
-  revision_last_message="$LOGS_DIR/${SLUG}-${agent}-revision.r1.last-message.txt"
+  reviewer_log="$(logs_phase2_chunked_agent_review_log_path "$SLUG" "$agent" 1)"
+  reviewer_last_message="$(logs_phase2_chunked_agent_review_last_message_path "$SLUG" "$agent" 1)"
+  revision_log="$(logs_phase2_chunked_agent_revision_log_path "$SLUG" "$agent" 1)"
+  revision_last_message="$(logs_phase2_chunked_agent_revision_last_message_path "$SLUG" "$agent" 1)"
 
   cp -f "$worker_output" "$initial_snapshot"
 
@@ -975,10 +979,10 @@ run_cluster_llm_stage() {
     local synth_path challenge_path synth_log synth_last_message challenge_log challenge_last_message prompt_file rc
     synth_path="$PHASE2_DIR/${SLUG}-${cluster_id}.synth.json"
     challenge_path="$PHASE2_DIR/${SLUG}-${cluster_id}.challenge.json"
-    synth_log="$LOGS_DIR/${SLUG}-${cluster_id}.synth.log"
-    synth_last_message="$LOGS_DIR/${SLUG}-${cluster_id}.synth.last-message.txt"
-    challenge_log="$LOGS_DIR/${SLUG}-${cluster_id}.challenge.log"
-    challenge_last_message="$LOGS_DIR/${SLUG}-${cluster_id}.challenge.last-message.txt"
+    synth_log="$(logs_phase2_cluster_stage_log_path "$SLUG" "$cluster_id" synth)"
+    synth_last_message="$(logs_phase2_cluster_stage_last_message_path "$SLUG" "$cluster_id" synth)"
+    challenge_log="$(logs_phase2_cluster_stage_log_path "$SLUG" "$cluster_id" challenge)"
+    challenge_last_message="$(logs_phase2_cluster_stage_last_message_path "$SLUG" "$cluster_id" challenge)"
 
     prompt_file="$(mktemp /tmp/cluster-synth-${SLUG}-${cluster_id}.XXXXXX)"
     render_cluster_synthesis_prompt "$SLUG" "$cluster_id" "$cluster_pack_path" "$synth_path" > "$prompt_file"
@@ -1036,6 +1040,7 @@ PY
 launch_agent() {
   local agent="$1"
   local input_file out_file skill_set_file prompt_file agent_provider agent_model threat_context_path
+  local agent_log_file agent_live_log_file agent_last_message_file
 
   input_file=$(python3 -c "
 import json,sys
@@ -1048,6 +1053,14 @@ print(d.get('inputs',{}).get(sys.argv[2],''))
   agent_provider="$(provider_for_agent "$agent")"
   agent_model="$(model_for_agent "$agent")"
   threat_context_path="$(threat_context_for_run)"
+  agent_log_file="$(logs_phase2_chunked_agent_run_log_path "$SLUG" "$agent")"
+  agent_live_log_file="$(logs_phase2_chunked_agent_run_live_path "$SLUG" "$agent")"
+  agent_last_message_file="$(logs_phase2_chunked_agent_last_message_path "$SLUG" "$agent")"
+
+  mkdir -p "$(dirname "$agent_log_file")"
+  : > "$agent_log_file"
+  : > "$agent_live_log_file"
+  : > "$agent_last_message_file"
 
   log_info "Launching agent: $agent  provider=$agent_provider  model=${agent_model:-<default>}  input=$input_file  output=$out_file"
 
@@ -1103,43 +1116,26 @@ print(d.get('inputs',{}).get(sys.argv[2],''))
       AGENT_ID="$agent" \
       AGENT_SLUG="$SLUG" \
       "${claude_cmd[@]}" \
-        2>>"$LOGS_DIR/${SLUG}-${agent}.log" \
+        2> >(tee -a "$agent_log_file" "$agent_live_log_file" >&2) \
         < "$prompt_file" \
-        | python3 -u - 2>>"$LOGS_DIR/${SLUG}-${agent}.log" \
-            > "$LOGS_DIR/${SLUG}-${agent}-last-message.txt" \
-<<'PYEOF'
-import sys, json
-for raw in sys.stdin.buffer:
-    line = raw.decode("utf-8", errors="replace").rstrip("\n")
-    if not line:
-        continue
-    try:
-        obj = json.loads(line)
-    except Exception:
-        print(line, flush=True)
-        continue
-    t = obj.get("type", "")
-    if t == "content_block_delta":
-        delta = obj.get("delta", {})
-        if delta.get("type") == "text_delta":
-            print(delta.get("text", ""), end="", flush=True)
-    elif t == "message_stop":
-        print("", flush=True)
-PYEOF
-    ) &
+        | python3 -u "$CLAUDE_STREAM_PARSER" 2> >(tee -a "$agent_log_file" "$agent_live_log_file" >&2)
+    ) | tee -a "$agent_live_log_file" > "$agent_last_message_file" &
   else
     # Default: codex exec
-    AGENT_INPUT_FILE="$input_file" \
-    AGENT_OUTPUT_FILE="$out_file" \
-    AGENT_ID="$agent" \
-    AGENT_SLUG="$SLUG" \
-    codex exec \
-      --dangerously-bypass-approvals-and-sandbox \
-      -C "$REPO_ROOT" \
-      --output-last-message "$LOGS_DIR/${SLUG}-${agent}-last-message.txt" \
-      2>>"$LOGS_DIR/${SLUG}-${agent}.log" \
-      < "$prompt_file" \
-      &
+    (
+      cd "$REPO_ROOT"
+      AGENT_INPUT_FILE="$input_file" \
+      AGENT_OUTPUT_FILE="$out_file" \
+      AGENT_ID="$agent" \
+      AGENT_SLUG="$SLUG" \
+      codex exec \
+        --dangerously-bypass-approvals-and-sandbox \
+        -C "$REPO_ROOT" \
+        --output-last-message "$agent_last_message_file" \
+        < "$prompt_file" \
+        > >(tee -a "$agent_live_log_file") \
+        2> >(tee -a "$agent_log_file" "$agent_live_log_file" >&2)
+    ) &
   fi
 
   local pid=$!
@@ -1148,7 +1144,7 @@ PYEOF
   state_set "$agent" "status"   "running"
   state_set "$agent" "provider" "$agent_provider"
   state_set "$agent" "model"    "$agent_model"
-  log_info "Agent '$agent' launched with PID $pid (provider=$agent_provider model=${agent_model:-<default>} prompt=$prompt_file)"
+  log_info "Agent '$agent' launched with PID $pid (provider=$agent_provider model=${agent_model:-<default>} prompt=$prompt_file live_log=$agent_live_log_file)"
 }
 
 # ---------------------------------------------------------------------------
@@ -1232,7 +1228,7 @@ while true; do
       wait "$pid" 2>/dev/null && exit_code=$? || exit_code=$?
 
       # Read last few lines of agent log as stderr_excerpt for failure record
-      agent_log="$LOGS_DIR/${SLUG}-${agent}.log"
+      agent_log="$(logs_phase2_chunked_agent_run_log_path "$SLUG" "$agent")"
       stderr_excerpt=""
       [[ -f "$agent_log" ]] && stderr_excerpt="$(tail -5 "$agent_log" 2>/dev/null | tr '\n' ' ')"
 
@@ -1321,6 +1317,13 @@ fi
 # All-agents-fail: fallback to single-agent Phase 2 (per multi-agent-plan.md:490)
 # ---------------------------------------------------------------------------
 if [[ ${#OUTPUT_FILES[@]} -eq 0 ]]; then
+  if [[ "$NO_SINGLE_AGENT_FALLBACK" -eq 1 ]]; then
+    log_error "All agents failed and --no-single-agent-fallback is set."
+    append_failure "phase2" "ALL" "all_agents_failed" "0" "aborted" \
+      "All chunked worker agents failed; no single-agent fallback was allowed."
+    flush_failures
+    exit 2
+  fi
   log_error "All agents failed. Falling back to single-agent Phase 2 pipeline."
   FAILURES_JSON_ARRAY=$(python3 -c "
 import json, sys
@@ -1382,6 +1385,12 @@ if ! python3 "$MERGE_SCRIPT" "$SLUG" --expected-agents $EXPECTED_AGENTS_ARGS; th
   exit 1
 fi
 log_info "Merge complete."
+
+if [[ "$STOP_AFTER_MERGE" -eq 1 ]]; then
+  flush_failures
+  log_info "Stopping after deterministic local merge as requested."
+  exit 0
+fi
 
 # ---------------------------------------------------------------------------
 # Step 6.5: Deterministic cluster planning (cross-bundle synthesis prep)

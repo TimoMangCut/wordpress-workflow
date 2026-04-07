@@ -336,7 +336,19 @@ phase3_review_md_path() {
 }
 
 phase3_errlog_path() {
-    printf '%s/%s-phase3.%s.err' "$LOGS_DIR" "$1" "$2"
+    logs_phase3_provider_err_path "$1" "$2"
+}
+
+phase3_live_log_path() {
+    logs_phase3_provider_live_path "$1" "$2"
+}
+
+phase3_canonical_errlog_path() {
+    logs_phase3_run_err_path "$1"
+}
+
+phase3_canonical_live_log_path() {
+    logs_phase3_run_live_path "$1"
 }
 
 summarize_provider_errlog() {
@@ -440,21 +452,27 @@ run_phase3_provider_reviews() {
     local slug="$1"
     local idx="$2"
     local canonical_review_json="${PHASE3_DIR}/${slug}-phase3-review.json"
-    local stage_dir pids provider review_json md_path err_path model start_ts end_ts duration status
+    local stage_dir pids provider review_json md_path err_path live_path model start_ts end_ts duration status
     local selected_provider=""
     stage_dir="$(mktemp -d)"
     pids=()
     rm -f "$canonical_review_json" "${PHASE3_DIR}/${idx}-${slug}.llm.md"
+    rm -f "$(phase3_canonical_errlog_path "$slug")" "$(phase3_canonical_live_log_path "$slug")"
     for provider in codex claude; do
         rm -f "$(phase3_review_json_path "$slug" "$provider")" \
               "$(phase3_review_md_path "$slug" "$idx" "$provider")" \
-              "$(phase3_errlog_path "$slug" "$provider")"
+              "$(phase3_errlog_path "$slug" "$provider")" \
+              "$(phase3_live_log_path "$slug" "$provider")"
     done
 
     for provider in "${LLM_PROVIDER_ARRAY[@]}"; do
         review_json="$(phase3_review_json_path "$slug" "$provider")"
         md_path="$(phase3_review_md_path "$slug" "$idx" "$provider")"
         err_path="$(phase3_errlog_path "$slug" "$provider")"
+        live_path="$(phase3_live_log_path "$slug" "$provider")"
+        reset_log_file "$err_path"
+        reset_log_file "$live_path"
+        append_log_marker "$live_path" "phase3 llm start slug=${slug} provider=${provider} output_json=${review_json} output_md=${md_path}"
 
         (
             local cmd
@@ -472,7 +490,7 @@ run_phase3_provider_reviews() {
 
             start_ts="$(date +%s)"
             set +e
-            "${cmd[@]}" 2>&1
+            "${cmd[@]}" 2>&1 | tee -a "$live_path"
             llm_rc=$?
             set -e
             end_ts="$(date +%s)"
@@ -481,6 +499,7 @@ run_phase3_provider_reviews() {
             if [ "$llm_rc" -ne 0 ]; then
                 status="failed"
             fi
+            append_log_marker "$live_path" "phase3 llm end slug=${slug} provider=${provider} status=${status} rc=${llm_rc} duration_seconds=${duration}"
             append_quota_log "phase3" "$slug" "llm_skeptic" "$provider" "$model" "$status" "$duration"
             echo "$llm_rc" > "${stage_dir}/${provider}.rc"
         ) &
@@ -496,7 +515,8 @@ run_phase3_provider_reviews() {
             log_warn_block "Phase 3b ${provider} review failed (non-blocking)" \
                 "slug" "$slug" \
                 "reason" "$(summarize_provider_errlog "$(phase3_errlog_path "$slug" "$provider")")" \
-                "log" "$(phase3_errlog_path "$slug" "$provider")"
+                "log" "$(phase3_errlog_path "$slug" "$provider")" \
+                "live_log" "$(phase3_live_log_path "$slug" "$provider")"
         fi
     done
 
@@ -514,7 +534,10 @@ run_phase3_provider_reviews() {
     if [ -n "$selected_provider" ]; then
         cp -f "$(phase3_review_json_path "$slug" "$selected_provider")" "$canonical_review_json"
         if [ -f "$(phase3_errlog_path "$slug" "$selected_provider")" ]; then
-            cp -f "$(phase3_errlog_path "$slug" "$selected_provider")" "${LOGS_DIR}/${slug}-phase3.err"
+            cp -f "$(phase3_errlog_path "$slug" "$selected_provider")" "$(phase3_canonical_errlog_path "$slug")"
+        fi
+        if [ -f "$(phase3_live_log_path "$slug" "$selected_provider")" ]; then
+            cp -f "$(phase3_live_log_path "$slug" "$selected_provider")" "$(phase3_canonical_live_log_path "$slug")"
         fi
         log_info "Selected provider review: ${selected_provider}"
     fi
