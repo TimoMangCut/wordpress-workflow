@@ -70,7 +70,7 @@ run-phase3.sh --slug <slug>
    - Produces `reports/<slug>-dispatch.json`
    - Produces `reports/<slug>-candidate-bundle-agent-wNN.json` per worker bundle
    - Also produces `reports/<slug>-ir-slice-*.json` per legacy EP group
-3. Threat context available: `reports/<slug>-threat-context.json`
+3. Threat context available: `reports/context/<slug>-threat-context.json`
    - Generated automatically by `scan-all.sh`
    - Passed into agent runtime prompts during orchestration
 4. Provider CLIs on `$PATH`:
@@ -101,7 +101,7 @@ and runs Prep → Orchestrate → Merge → Gate → Report for each slug.
 bash tools/bin/scan-all.sh plugins/<slug>/
 ```
 
-This also generates `reports/<slug>-threat-context.json` when fresh output is not already available.
+This also generates `reports/context/<slug>-threat-context.json` when fresh output is not already available.
 
 **Step 2: Prepare agent inputs**
 ```bash
@@ -146,7 +146,7 @@ bash tools/bin/run-phase3.sh --slug <slug>
     "agent-d":  "reports/phase1/<slug>-ir.json"
   },
   "source_dir": "plugins/<slug>/",
-  "threat_context_path": "reports/<slug>-threat-context.json",
+  "threat_context_path": "reports/context/<slug>-threat-context.json",
   "timeout_seconds": 600,
   "quota_account": "",
   "provider_map": {

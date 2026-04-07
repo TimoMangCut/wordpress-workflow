@@ -119,7 +119,7 @@ Phase 1 — HOÀN TOÀN DETERMINISTIC (không LLM)
   ├── Psalm taint analysis (với fallback)
   ├── Threat context (keyword matching từ threat-profiles.json — deterministic)
   └── Coverage gap report (deterministic)
-  Output: -ir.json, -semgrep.json, -psalm.sarif, -threat-context.json
+  Output: -ir.json, -semgrep.json, -psalm.sarif, reports/context/<slug>-threat-context.json
 
 Phase 2 Prep — DETERMINISTIC
   └── IR Slicing: split IR thành per-group slices cho agents
@@ -221,7 +221,7 @@ Sau khi deploy gap fixes (Wave 1 + 2 + 3), Phase 1 IR output chứa:
 
 Agents phải handle gracefully khi fields này empty/missing — không crash, không assume data exists.
 
-Output files: `-ir.json`, `-semgrep.json`, `-psalm.sarif`, `-threat-context.json`
+Output files: `-ir.json`, `-semgrep.json`, `-psalm.sarif`, `reports/context/<slug>-threat-context.json`
 
 ---
 
@@ -285,7 +285,7 @@ Mỗi session nhận:
 - IR slice (filtered cho group)
 - Source code (chỉ files referenced trong IR slice)
 - Semgrep hits (filtered cho relevant files)
-- Threat context (`-threat-context.json`)
+- Threat context (`reports/context/<slug>-threat-context.json`)
 
 Output: structured JSON findings per schema.
 

@@ -531,7 +531,7 @@ IR đã được enhance bởi deterministic code fixes:
 - IR slice: `reports/<slug>-ir-slice-<group>.json` (filtered entry points + associated sources/sinks/guards)
 - Source code: `plugins/<slug>/` (chỉ đọc files referenced trong IR slice)
 - Semgrep hits: `reports/<slug>-semgrep-filtered-<group>.json`
-- Threat context: `reports/<slug>-threat-context.json`
+- Threat context: `reports/context/<slug>-threat-context.json`
 - Output schema: `contracts/agent-output.schema.json`
 
 **Tasks:**
@@ -575,7 +575,7 @@ Input files:
 - IR slice: reports/{SLUG}-ir-slice-{GROUP}.json
 - Source: plugins/{SLUG}/
 - Semgrep: reports/{SLUG}-semgrep-filtered-{GROUP}.json
-- Threat: reports/{SLUG}-threat-context.json
+- Threat: reports/context/{SLUG}-threat-context.json
 
 For each entry point in the IR slice:
 1. Read callback at file:line in source code
@@ -785,7 +785,7 @@ Output:
 
 **File:** `tools/config/threat-profiles.json`
 
-Detection: Python/Bash script scan plugin `readme.txt` + main file description cho keywords → match category → output `-threat-context.json`. Deterministic, runs as part of Phase 1.
+Detection: Python/Bash script scan plugin `readme.txt` + main file description cho keywords → match category → output `reports/context/<slug>-threat-context.json`. Deterministic, runs as part of Phase 1.
 
 ```json
 {

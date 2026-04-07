@@ -16,6 +16,7 @@ class ReportLayout:
     phase1: Path
     phase2: Path
     phase3: Path
+    context: Path
     logs: Path
     quota_ledger: Path
 
@@ -24,6 +25,7 @@ class ReportLayout:
         self.phase1.mkdir(parents=True, exist_ok=True)
         self.phase2.mkdir(parents=True, exist_ok=True)
         self.phase3.mkdir(parents=True, exist_ok=True)
+        self.context.mkdir(parents=True, exist_ok=True)
         self.logs.mkdir(parents=True, exist_ok=True)
         return self
 
@@ -63,6 +65,9 @@ class ReportLayout:
     def phase3_provider_logs(self, slug: str) -> Path:
         return self.phase3_logs(slug) / "providers"
 
+    def threat_context(self, slug: str) -> Path:
+        return self.context / f"{slug}-threat-context.json"
+
 
 def build_report_layout(reports_root: Pathish) -> ReportLayout:
     root = Path(reports_root).resolve()
@@ -71,6 +76,7 @@ def build_report_layout(reports_root: Pathish) -> ReportLayout:
         phase1=root / "phase1",
         phase2=root / "phase2",
         phase3=root / "phase3",
+        context=root / "context",
         logs=root / "logs",
         quota_ledger=(root / "logs" / "quota-ledger.jsonl"),
     )

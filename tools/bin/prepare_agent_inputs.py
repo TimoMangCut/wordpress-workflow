@@ -810,7 +810,7 @@ def main() -> None:
     slug = ir["metadata"]["plugin_slug"]
     ir_slice_schema = load_schema("ir-slice.schema.json")
     bundle_schema = load_schema("phase2-candidate-bundle.schema.json")
-    threat_context_rel = os.path.join("reports", f"{slug}-threat-context.json")
+    threat_context_rel = os.path.join("reports", "context", f"{slug}-threat-context.json")
 
     print(
         f"IR: {args.ir} (slug={slug}, "

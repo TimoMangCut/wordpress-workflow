@@ -20,7 +20,7 @@ you can go deeper without widening scope across the whole plugin.
 |------|------|
 | Candidate bundle | `reports/<slug>-candidate-bundle-agent-wNN.json` |
 | Source code | `plugins/<slug>/` |
-| Threat context | `reports/<slug>-threat-context.json` |
+| Threat context | `reports/context/<slug>-threat-context.json` |
 | Output schema | `contracts/agent-output.schema.json` |
 
 The candidate bundle already embeds:

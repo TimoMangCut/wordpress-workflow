@@ -3,7 +3,7 @@
 generate_threat_context.py — A-02: Deterministic threat context from keyword matching.
 
 Input:  plugin source code directory
-Output: reports/<slug>-threat-context.json
+Output: reports/context/<slug>-threat-context.json
 
 Logic:  keyword matching from tools/data/threat-profiles.json.
         No LLM. Purely deterministic.
@@ -14,6 +14,8 @@ import json
 import os
 import sys
 from pathlib import Path
+
+from report_paths import build_report_layout
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
 _TOOLS_DIR = _SCRIPT_DIR.parent
@@ -50,7 +52,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output",
         default="",
-        help="Override output JSON path (default: reports/<slug>-threat-context.json)",
+        help="Override output JSON path (default: reports/context/<slug>-threat-context.json)",
     )
     return parser.parse_args()
 
@@ -172,11 +174,8 @@ def main() -> int:
 
     profiles = load_profiles(profiles_path)
 
-    output_path = (
-        Path(args.output).resolve()
-        if args.output
-        else (reports_dir / f"{args.slug}-threat-context.json")
-    )
+    layout = build_report_layout(reports_dir).ensure()
+    output_path = Path(args.output).resolve() if args.output else layout.threat_context(args.slug)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     print(f"=== Threat Context: {args.slug} ===")

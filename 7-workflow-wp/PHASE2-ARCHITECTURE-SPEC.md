@@ -147,7 +147,7 @@ Inputs:
 - `reports/phase1/<slug>-ir.json`
 - `reports/phase1/<slug>-semgrep.json` if present
 - `reports/phase1/<slug>-psalm.sarif` if present
-- `reports/<slug>-threat-context.json` if present
+- `reports/context/<slug>-threat-context.json` if present
 
 Outputs:
 - `reports/<slug>-candidate-inventory.json`
@@ -486,4 +486,3 @@ Batch 4.5 is complete only when all of the following are true:
 5. `duplicator` does not show clear finding inflation
 
 Until then, the architecture is promising but not closed.
-

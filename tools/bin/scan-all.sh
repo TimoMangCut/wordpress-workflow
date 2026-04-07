@@ -30,7 +30,7 @@ source "${SCRIPT_DIR}/bin/console-ui.sh"
 resolve_report_dirs "${ROOT_DIR}/reports"
 ensure_report_dirs
 ARTIFACT_FRESHNESS_BIN="${SCRIPT_DIR}/bin/artifact_freshness.py"
-THREAT_CONTEXT_PATH="${REPORTS_DIR}/${SLUG}-threat-context.json"
+THREAT_CONTEXT_PATH="$(threat_context_path_for_slug "$SLUG")"
 THREAT_PROFILES_PATH="${SCRIPT_DIR}/data/threat-profiles.json"
 PHASE1_ERR_LOG="$(logs_phase1_run_err_path "$SLUG")"
 PHASE1_LIVE_LOG="$(logs_phase1_run_live_path "$SLUG")"

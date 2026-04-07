@@ -514,8 +514,8 @@ Layout chuẩn của `reports/`:
 - `reports/phase3` chứa toàn bộ artifact Phase 3
 - `reports/logs` chứa log và quota ledger
 
-Ngoài ba thư mục phase, top-level `reports/` còn có các artifact deterministic dùng để nối giữa các stage, ví dụ:
-- `reports/<slug>-threat-context.json`
+Ngoài ba thư mục phase, `reports/context/` và top-level `reports/` còn có các artifact deterministic dùng để nối giữa các stage, ví dụ:
+- `reports/context/<slug>-threat-context.json`
 - `reports/<slug>-dispatch.json`
 - `reports/<slug>-candidate-inventory.json`
 

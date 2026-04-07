@@ -34,7 +34,7 @@ The IR has been enhanced by deterministic code fixes before reaching you:
 | IR slice | `reports/<slug>-ir-slice-<group>.json` |
 | Source code | `plugins/<slug>/` (read only files referenced in IR slice) |
 | Semgrep hits | `reports/<slug>-semgrep-filtered-<group>.json` |
-| Threat context | `reports/<slug>-threat-context.json` |
+| Threat context | `reports/context/<slug>-threat-context.json` |
 | Output schema | `contracts/agent-output.schema.json` |
 
 ---
@@ -142,7 +142,7 @@ Input files:
 - IR slice: reports/{SLUG}-ir-slice-{GROUP}.json
 - Source: plugins/{SLUG}/
 - Semgrep: reports/{SLUG}-semgrep-filtered-{GROUP}.json
-- Threat: reports/{SLUG}-threat-context.json
+- Threat: reports/context/{SLUG}-threat-context.json
 
 For each entry point in the IR slice:
 1. Read callback at file:line in source code

@@ -1287,7 +1287,7 @@ Fix      : Python/Bash script (deterministic — NO LLM)
 
 Pipeline scan mọi plugin với cùng ruleset/weight. Payment plugin và SEO plugin nhận cùng treatment.
 
-**Fix (deterministic):** `tools/config/threat-profiles.json` chứa plugin categories → priority vuln types. Bash/Python script scan readme cho keywords → match category → output `-threat-context.json`. Feed vào Phase 2 prompt. KHÔNG cần LLM.
+**Fix (deterministic):** `tools/config/threat-profiles.json` chứa plugin categories → priority vuln types. Bash/Python script scan readme cho keywords → match category → output `reports/context/<slug>-threat-context.json`. Feed vào Phase 2 prompt. KHÔNG cần LLM.
 
 ---
 

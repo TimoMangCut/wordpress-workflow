@@ -675,7 +675,8 @@ phase2_output_is_fresh() {
     local plugin_dir="${PLUGINS_DIR}/${slug}"
     local semgrep_file="${PHASE1_DIR}/${slug}-semgrep.json"
     local psalm_file="${PHASE1_DIR}/${slug}-psalm.sarif"
-    local threat_context_file="${REPORTS_DIR}/${slug}-threat-context.json"
+    local threat_context_file
+    threat_context_file="$(threat_context_path_for_slug "$slug")"
     local -a inputs=("$ir_file" "$plugin_dir" "$PROMPT_TEMPLATE" "${BIN_DIR}/run-phase2.sh")
 
     if [ -n "$SYSTEM_PROMPT_PHASE2_PATH" ]; then
@@ -805,7 +806,7 @@ phase2_output_rel() {
 }
 
 phase2_threat_context_rel() {
-    printf 'reports/%s-threat-context.json' "$1"
+    threat_context_rel_for_slug "$1"
 }
 
 phase2_worker_output_path() {

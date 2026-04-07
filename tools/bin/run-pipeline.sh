@@ -210,7 +210,8 @@ prepare_agent_inputs_for_slug() {
 ensure_threat_context_for_slug() {
     local slug="$1"
     local plugin_dir="${PLUGINS_DIR}/${slug}"
-    local output="${REPORTS_DIR}/${slug}-threat-context.json"
+    local output
+    output="$(threat_context_path_for_slug "$slug")"
 
     if [ ! -d "$plugin_dir" ]; then
         log_warn_block "Plugin source missing for threat context generation" \

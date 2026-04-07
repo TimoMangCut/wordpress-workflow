@@ -294,7 +294,7 @@ threat_context_for_run() {
   python3 -c "
 import json, sys
 d = json.load(open(sys.argv[1]))
-print(d.get('threat_context_path', f'reports/{sys.argv[2]}-threat-context.json'))
+print(d.get('threat_context_path', f'reports/context/{sys.argv[2]}-threat-context.json'))
 " "$DISPATCH_FILE" "$SLUG"
 }
 

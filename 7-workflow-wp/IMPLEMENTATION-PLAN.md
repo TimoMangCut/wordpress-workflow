@@ -221,7 +221,7 @@ GIT HYGIENE — RULE: repo-safe shared config = tracked; machine-local/secrets =
   - Rule: phân tách shared vs local, KHÔNG ignore cả directory nếu chứa shared config
 
 ARTIFACT FRESHNESS
-[ ] reports/backwpup-threat-context.json được regenerate từ current generate_threat_context.py
+[ ] reports/context/backwpup-threat-context.json được regenerate từ current generate_threat_context.py
 [ ] benchmark/results/wave2_summary.json verdict = APPROVED
 
 Nếu không kịp hoàn thành contract minimum trước Session 12:
@@ -1025,7 +1025,7 @@ Dependencies: Session 6 PASS
 Tạo file mới: `tools/bin/generate_threat_context.py`
 ```python
 # Input: plugin source code directory
-# Output: reports/<slug>-threat-context.json
+# Output: reports/context/<slug>-threat-context.json
 # Logic: keyword matching từ threat-profiles.json (cần tạo)
 # Categories: payment, user-management, file-management, api-integration, etc.
 # Priority vulns per category (deterministic list — không LLM)

@@ -7,12 +7,21 @@ resolve_report_dirs() {
     PHASE1_DIR="${REPORTS_DIR}/phase1"
     PHASE2_DIR="${REPORTS_DIR}/phase2"
     PHASE3_DIR="${REPORTS_DIR}/phase3"
+    CONTEXT_DIR="${REPORTS_DIR}/context"
     LOGS_DIR="${REPORTS_DIR}/logs"
     QUOTA_LEDGER="${LOGS_DIR}/quota-ledger.jsonl"
 }
 
 ensure_report_dirs() {
-    mkdir -p "$REPORTS_DIR" "$PHASE1_DIR" "$PHASE2_DIR" "$PHASE3_DIR" "$LOGS_DIR"
+    mkdir -p "$REPORTS_DIR" "$PHASE1_DIR" "$PHASE2_DIR" "$PHASE3_DIR" "$CONTEXT_DIR" "$LOGS_DIR"
+}
+
+threat_context_path_for_slug() {
+    printf '%s/%s-threat-context.json\n' "$CONTEXT_DIR" "$1"
+}
+
+threat_context_rel_for_slug() {
+    printf 'reports/context/%s-threat-context.json\n' "$1"
 }
 
 logs_slug_dir() {
