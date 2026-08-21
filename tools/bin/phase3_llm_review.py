@@ -22,10 +22,20 @@ import time
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from report_paths import build_report_layout
+try:
+    from .report_paths import build_report_layout
+    from .artifact_freshness import resolve_phase2_trust_state
+    from .phase3_review_contract import normalize_phase3_review_document
+except ImportError:  # pragma: no cover - direct script execution
+    from report_paths import build_report_layout
+    from artifact_freshness import resolve_phase2_trust_state
+    from phase3_review_contract import normalize_phase3_review_document
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
 _ROOT_DIR = _SCRIPT_DIR.parent.parent  # tools/bin -> tools -> root
+CLAUDE_SAFE_TOOLS = os.environ.get("PHASE3_CLAUDE_SAFE_TOOLS", "Read,Grep,Glob")
+PHASE3_JSON_TAG = "PHASE3_REVIEW_JSON"
+PHASE3_MARKDOWN_TAG = "PHASE3_REVIEW_MARKDOWN"
 
 
 DEFAULT_TEMPLATE = """# Phase 3b LLM Skeptic Review — `{PLUGIN_SLUG}`
@@ -56,8 +66,21 @@ For each finding:
 4) Propose dynamic test steps (exact HTTP requests)
 5) Recommend: reject / downgrade / keep / upgrade
 
-Write JSON to: `{REVIEW_OUTPUT_PATH}`
-Write Markdown to: `{OUTPUT_PATH}`
+Do NOT write any files yourself.
+The orchestration layer will persist your response after parsing and validation.
+
+Return your entire answer in exactly this envelope:
+
+```text
+<PHASE3_REVIEW_JSON>
+{ ...valid JSON... }
+</PHASE3_REVIEW_JSON>
+<PHASE3_REVIEW_MARKDOWN>
+# Markdown report...
+</PHASE3_REVIEW_MARKDOWN>
+```
+
+You may optionally wrap the JSON or markdown payload inside fenced code blocks inside those tags, but do not add any prose outside the tags.
 
 JSON schema:
 {{
@@ -119,6 +142,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--review-output-path", default="", help="Optional output JSON path override")
     parser.add_argument("--err-path", default="", help="Optional stderr log path override")
     parser.add_argument("--output-path", default="", help="Optional output markdown path override")
+    parser.add_argument("--raw-path", default="", help="Optional raw provider stream/output path override")
     return parser.parse_args()
 
 
@@ -164,7 +188,7 @@ def load_system_prompt(root_dir: Path) -> str:
     for c in candidates:
         if c.exists() and c.is_file():
             return c.read_text(encoding="utf-8", errors="replace")
-    return "Hay ap dung truc tiep WordPress AppSec workflow trong prompt va project docs. Khong duoc phu thuoc vao skill auto-load."
+    return "Apply the WordPress AppSec workflow stated in the prompt and project docs directly. Do not rely on auto-loaded skills."
 
 
 def load_claude_headless_fallback(root_dir: Path) -> str:
@@ -402,6 +426,59 @@ def validate_markdown_contract(output_path: Path, expected_count: int) -> Option
     return None
 
 
+def emit_claude_stream_text(obj: Dict[str, Any], *, allow_result_fallback: bool) -> str:
+    event_type = obj.get("type", "")
+    if event_type == "content_block_delta":
+        delta = obj.get("delta", {})
+        if isinstance(delta, dict) and delta.get("type") == "text_delta":
+            return str(delta.get("text") or "")
+        return ""
+    if event_type == "assistant":
+        message = obj.get("message", {})
+        if not isinstance(message, dict):
+            return ""
+        chunks: list[str] = []
+        for block in message.get("content", []) or []:
+            if isinstance(block, dict) and block.get("type") == "text":
+                chunks.append(str(block.get("text") or ""))
+        return "".join(chunks)
+    if event_type == "result" and allow_result_fallback:
+        result_text = obj.get("result")
+        if isinstance(result_text, str):
+            return result_text
+    return ""
+
+
+def _strip_optional_code_fence(text: str) -> str:
+    candidate = (text or "").strip()
+    match = re.fullmatch(r"```(?:json|markdown)?\s*(.*?)\s*```", candidate, re.DOTALL)
+    if match:
+        return match.group(1).strip()
+    return candidate
+
+
+def extract_tagged_block(text: str, tag: str) -> str:
+    pattern = rf"<{tag}>\s*(.*?)\s*</{tag}>"
+    match = re.search(pattern, text, re.DOTALL)
+    if not match:
+        raise ValueError(f"Missing tagged phase3 block: {tag}")
+    return _strip_optional_code_fence(match.group(1))
+
+
+def materialize_phase3_response(
+    response_text: str,
+    review_output_path: Path,
+    markdown_output_path: Path,
+    *,
+    slug: Optional[str] = None,
+) -> None:
+    json_block = extract_tagged_block(response_text, PHASE3_JSON_TAG)
+    markdown_block = extract_tagged_block(response_text, PHASE3_MARKDOWN_TAG)
+    data = normalize_phase3_review_document(json.loads(json_block), slug=slug)
+    review_output_path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    markdown_output_path.write_text(markdown_block.rstrip() + "\n", encoding="utf-8")
+
+
 def main() -> int:
     args = parse_args()
 
@@ -434,7 +511,9 @@ def main() -> int:
     )
     review_output_path = Path(args.review_output_path).resolve() if args.review_output_path else (phase3_dir / f"{args.slug}-phase3-review.json")
     err_path = Path(args.err_path).resolve() if args.err_path else (layout.phase3_provider_logs(args.slug) / f"{args.provider}.err")
+    raw_path = Path(args.raw_path).resolve() if args.raw_path else (layout.phase3_provider_raw_log(args.slug, args.provider))
     err_path.parent.mkdir(parents=True, exist_ok=True)
+    raw_path.parent.mkdir(parents=True, exist_ok=True)
 
     if output_path.exists() and not args.force:
         print(f"[INFO] Skip {args.slug}: phase3 markdown already exists")
@@ -454,6 +533,14 @@ def main() -> int:
         print("[ERROR] Missing required inputs for phase 3:")
         for item in missing:
             print(f"  - {item}")
+        return 1
+
+    phase2_trust_state = resolve_phase2_trust_state(phase2_path)
+    if phase2_trust_state != "success":
+        print(
+            f"[ERROR] Phase 2 canonical is not trusted for phase3_llm_review: {phase2_path} "
+            f"(trust_state={phase2_trust_state or 'missing'})"
+        )
         return 1
 
     template_path = resolve_template(args, root_dir)
@@ -482,6 +569,7 @@ def main() -> int:
 
     with tempfile.TemporaryDirectory(prefix="phase3-review-") as temp_dir:
         review_input_path = Path(temp_dir) / f"{args.slug}-phase3-review-input.json"
+        provider_last_message_path = Path(temp_dir) / f"{args.provider}.last-message.txt"
         review_bundle = build_review_bundle(args.slug, gate_path, phase2_path, semgrep_path, psalm_path)
         review_input_path.write_text(json.dumps(review_bundle, indent=2), encoding="utf-8")
 
@@ -500,8 +588,9 @@ def main() -> int:
         for key, value in replacements.items():
             resolved_template = resolved_template.replace(key, value)
         resolved_template = normalize_prompt_for_provider(resolved_template, args.provider)
+        provider_response_text = ""
 
-        with err_path.open("w", encoding="utf-8", newline="\n") as err_file:
+        with err_path.open("w", encoding="utf-8", newline="\n") as err_file, raw_path.open("w", encoding="utf-8", newline="\n") as raw_file:
             _run_start = time.time()
             err_file.write(f"[TIMING] start={_run_start:.3f} provider={args.provider} slug={args.slug}\n")
             try:
@@ -511,8 +600,13 @@ def main() -> int:
                     cmd = [
                         claude_bin,
                         "-p",
+                        "--bare",
+                        "--disable-slash-commands",
+                        "--permission-mode",
+                        "bypassPermissions",
+                        "--tools",
+                        CLAUDE_SAFE_TOOLS,
                         "--verbose",
-                        "--dangerously-skip-permissions",
                         "--output-format",
                         "stream-json",
                         "--include-partial-messages",
@@ -531,6 +625,8 @@ def main() -> int:
                         )
                         deadline = time.time() + timeout_seconds if timeout_seconds > 0 else None
                         timed_out = False
+                        emitted_assistant_text = False
+                        assistant_text_chunks = []
                         for raw_line in proc.stdout:
                             if deadline and time.time() > deadline:
                                 proc.kill()
@@ -540,18 +636,22 @@ def main() -> int:
                             line = raw_line.decode("utf-8", errors="replace").strip()
                             if not line:
                                 continue
+                            raw_file.write(line + "\n")
+                            raw_file.flush()
                             try:
                                 obj = json.loads(line)
                             except Exception:
                                 print(line, flush=True)
                                 continue
-                            t = obj.get("type", "")
-                            if t == "content_block_delta":
-                                delta = obj.get("delta", {})
-                                if delta.get("type") == "text_delta":
-                                    print(delta.get("text", ""), end="", flush=True)
-                            elif t == "message_stop":
+                            text = emit_claude_stream_text(obj, allow_result_fallback=not emitted_assistant_text)
+                            if text:
+                                if obj.get("type") != "result":
+                                    emitted_assistant_text = True
+                                assistant_text_chunks.append(text)
+                                print(text, end="", flush=True)
+                            if obj.get("type") == "message_stop":
                                 print(flush=True)
+                        provider_response_text = "".join(assistant_text_chunks)
                         if timed_out:
                             _run_end = time.time()
                             _elapsed = _run_end - _run_start
@@ -581,7 +681,11 @@ def main() -> int:
                         codex_bin,
                         "exec",
                         "--full-auto",
+                        "--sandbox",
+                        "read-only",
                         "--skip-git-repo-check",
+                        "--output-last-message",
+                        str(provider_last_message_path),
                     ]
                     if args.model:
                         cmd.extend(["--model", args.model])
@@ -589,9 +693,19 @@ def main() -> int:
                     result = subprocess.run(
                         cmd,
                         cwd=str(root_dir),
+                        stdout=subprocess.PIPE,
+                        text=True,
                         stderr=err_file,
                         timeout=timeout_seconds if timeout_seconds > 0 else None,
                     )
+                    if result.stdout:
+                        raw_file.write(result.stdout)
+                        raw_file.flush()
+                        print(result.stdout, end="", flush=True)
+                    if provider_last_message_path.exists():
+                        provider_response_text = provider_last_message_path.read_text(encoding="utf-8", errors="replace")
+                    else:
+                        provider_response_text = result.stdout or ""
                     _run_end = time.time()
                     _elapsed = _run_end - _run_start
                     err_file.write(
@@ -608,6 +722,14 @@ def main() -> int:
 
     if result.returncode != 0:
         print(f"[ERROR] {provider_display_name(args.provider)} phase3 failed")
+        print(f"  - log: {err_path.as_posix()}")
+        return 1
+
+    try:
+        materialize_phase3_response(provider_response_text, review_output_path, output_path, slug=args.slug)
+    except Exception as exc:
+        print(f"[ERROR] Phase3 response materialization failed: {exc}")
+        print(f"  - raw: {raw_path.as_posix()}")
         print(f"  - log: {err_path.as_posix()}")
         return 1
 

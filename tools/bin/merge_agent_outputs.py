@@ -7,16 +7,16 @@ Session 17 — tools/bin/merge_agent_outputs.py (new file)
 Merges per-agent JSON outputs into a single deduplicated findings file.
 
 Pipeline position (multi-agent-plan.md:431-437):
-  1. prepare_agent_inputs.py  → per-agent IR slices
-  2. Agents run               → reports/<slug>-agent-{id}.json
-  3. THIS SCRIPT              → reports/<slug>-phase2-merged.json (archive)
+  1. prepare_agent_inputs.py  → reports/phase2/prep/<slug>/...
+  2. Agents run               → reports/phase2/agents/<slug>/<agent>.output.json
+  3. THIS SCRIPT              → reports/phase2/<slug>-phase2.merged.json (archive)
                                 reports/phase2/<slug>-phase2.local.json
-                                reports/phase2/<slug>-phase2.json   (compat canonical until consensus)
+                                canonical phase2.json remains consensus-writer only
 
 Usage:
   python3 tools/bin/merge_agent_outputs.py <slug> [--output-dir <dir>]
   python3 tools/bin/merge_agent_outputs.py --agent-a1 <file> --agent-a2 <file> ... [--slug <slug>] [--output-dir <dir>]
-  python3 tools/bin/merge_agent_outputs.py --agents "reports/<slug>-agent-*.json" [--slug <slug>] [--output-dir <dir>]
+  python3 tools/bin/merge_agent_outputs.py --agents "reports/phase2/agents/<slug>/*.output.json" [--slug <slug>] [--output-dir <dir>]
 
 Schema contracts:
   Input:  contracts/agent-output.schema.json  (per-agent, validated before merge)
@@ -31,6 +31,21 @@ import json
 import os
 import sys
 from pathlib import Path
+
+try:
+    from .report_paths import build_report_layout
+    from .normalize_agent_output import (
+        load_json_with_repair,
+        normalize_agent_output_object,
+        validate_with_schema,
+    )
+except ImportError:  # pragma: no cover - direct script execution
+    from report_paths import build_report_layout
+    from normalize_agent_output import (
+        load_json_with_repair,
+        normalize_agent_output_object,
+        validate_with_schema,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -350,6 +365,19 @@ def merge_agent_findings(agent_outputs: list[dict]) -> dict:
     }
 
 
+def apply_merge_trust_state(merged: dict) -> None:
+    stats = merged.setdefault("merge_stats", {})
+    signals: list[str] = []
+    if stats.get("agents_missing"):
+        signals.append("agents_missing")
+    if int(stats.get("schema_errors") or 0) > 0:
+        signals.append("schema_errors")
+    if int(stats.get("conflicts_flagged") or 0) > 0:
+        signals.append("conflicts_present")
+    stats["degradation_signals"] = signals
+    stats["trust_state"] = "degraded_success" if signals else "success"
+
+
 # ---------------------------------------------------------------------------
 # CLI entry point
 # ---------------------------------------------------------------------------
@@ -360,8 +388,8 @@ def _parse_args(argv=None) -> argparse.Namespace:
             "Phase 2.5 Deterministic Merge — merge per-agent findings outputs.\n\n"
             "Usage modes:\n"
             "  1. Positional slug:  merge_agent_outputs.py <slug> [--output-dir <dir>]\n"
-            "     Reads reports/<slug>-agent-*.json (present files only)\n\n"
-            "  2. Glob pattern:     merge_agent_outputs.py --agents 'reports/<slug>-agent-*.json'\n\n"
+            "     Reads reports/phase2/agents/<slug>/*.output.json (present files only)\n\n"
+            "  2. Glob pattern:     merge_agent_outputs.py --agents 'reports/phase2/agents/<slug>/*.output.json'\n\n"
             "  3. Explicit files:   merge_agent_outputs.py --agent-a1 <f> --agent-a2 <f> ...\n"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -369,7 +397,7 @@ def _parse_args(argv=None) -> argparse.Namespace:
     parser.add_argument(
         "slug",
         nargs="?",
-        help="Plugin slug. Resolves input files as reports/<slug>-agent-*.json",
+        help="Plugin slug. Resolves input files as reports/phase2/agents/<slug>/*.output.json",
     )
     parser.add_argument(
         "--slug",
@@ -399,6 +427,11 @@ def _parse_args(argv=None) -> argparse.Namespace:
         nargs="*",
         default=None,
         help="List of expected agent IDs (e.g. agent-w01 agent-b). Used to populate agents_missing.",
+    )
+    parser.add_argument(
+        "--write-canonical",
+        action="store_true",
+        help="Deprecated. Canonical phase2.json is now consensus-writer only and this flag will fail.",
     )
     return parser.parse_args(argv)
 
@@ -431,8 +464,8 @@ def _collect_input_files(args: argparse.Namespace, project_root: Path) -> list[P
     # Slug-based auto-discovery
     slug = args.slug or args.slug_flag
     if slug and not files:
-        reports_dir = project_root / "reports"
-        matched = sorted(glob_module.glob(str(reports_dir / f"{slug}-agent-*.json")))
+        layout = build_report_layout(project_root / "reports")
+        matched = sorted(glob_module.glob(str(layout.phase2_agents(slug) / "*.output.json")))
         files.extend(Path(p) for p in matched)
 
     # Deduplicate while preserving order
@@ -449,10 +482,18 @@ def _collect_input_files(args: argparse.Namespace, project_root: Path) -> list[P
 
 def main(argv=None) -> int:
     args = _parse_args(argv)
+    if args.write_canonical:
+        print(
+            "[ERROR] --write-canonical is no longer supported. "
+            "Use write_phase2_consensus.py to publish canonical phase2.json.",
+            file=sys.stderr,
+        )
+        return 2
 
     slug = args.slug or args.slug_flag
     project_root = _find_project_root()
-    output_dir = Path(args.output_dir) if args.output_dir else (project_root / "reports")
+    reports_root = Path(args.output_dir) if args.output_dir else (project_root / "reports")
+    layout = build_report_layout(reports_root).ensure()
 
     # Resolve input files
     input_files = _collect_input_files(args, project_root)
@@ -482,29 +523,24 @@ def main(argv=None) -> int:
             print(f"[WARN] Agent file not found, skipping: {path}", file=sys.stderr)
             continue
         try:
-            with open(path) as f:
-                data = json.load(f)
-        except json.JSONDecodeError as exc:
-            print(f"[ERROR] Invalid JSON in {path}: {exc} — skipping", file=sys.stderr)
-            schema_error_count += 1
-            continue
-
-        # Schema validate — reject malformed, log error, continue with valid
-        errors = _validate(data, agent_schema, str(path))
-        if errors:
-            print(
-                f"[ERROR] Schema validation failed for {path} "
-                f"({len(errors)} error(s)) — skipping:",
-                file=sys.stderr,
+            payload, repair_notes = load_json_with_repair(path)
+            data = normalize_agent_output_object(
+                payload,
+                expected_plugin_slug=slug,
             )
-            for e in errors[:5]:  # limit noise
-                print(f"  • {e}", file=sys.stderr)
+            errors = validate_with_schema(data, agent_schema)
+            if errors:
+                raise ValueError("; ".join(errors[:10]))
+        except Exception as exc:
+            print(f"[ERROR] Invalid or unrecoverable agent output in {path}: {exc} — skipping", file=sys.stderr)
             schema_error_count += 1
             continue
 
         agent_id = data.get("agent_id", path.stem)
         agents_seen.append(agent_id)
         agent_outputs.append(data)
+        if repair_notes:
+            print(f"[INFO] Normalized {path}: {', '.join(repair_notes)}")
         print(f"[OK] Loaded {path} ({agent_id}, {len(data.get('findings', []))} findings)")
 
     if not agent_outputs:
@@ -525,6 +561,7 @@ def main(argv=None) -> int:
         missing = [a for a in expected if a not in agents_seen]
         merged["merge_stats"]["agents_missing"] = missing
     merged["merge_stats"]["schema_errors"] = schema_error_count
+    apply_merge_trust_state(merged)
 
     # Schema validate merged output — hard error on mismatch
     merge_errors = _validate(merged, merge_schema, "merged output")
@@ -539,18 +576,14 @@ def main(argv=None) -> int:
         return 1
 
     # Write output files
-    # archive: reports/<slug>-phase2-merged.json  (raw merge, for reference)
+    # archive: reports/phase2/<slug>-phase2.merged.json  (raw merge, for reference)
     # local:   reports/phase2/<slug>-phase2.local.json
-    # canonical compatibility: reports/phase2/<slug>-phase2.json
-    output_dir.mkdir(parents=True, exist_ok=True)
-    archive_path = output_dir / f"{slug}-phase2-merged.json"
+    # Phase 2 canonical is consensus-writer only; this merge stays local/archive.
+    layout.phase2.mkdir(parents=True, exist_ok=True)
+    archive_path = layout.phase2_merged_archive(slug)
 
     import shutil
-    from report_paths import build_report_layout
-    canonical_dir = build_report_layout(output_dir.parent if output_dir.name != "reports" else output_dir).phase2
-    canonical_dir.mkdir(parents=True, exist_ok=True)
-    local_path = canonical_dir / f"{slug}-phase2.local.json"
-    canonical_path = canonical_dir / f"{slug}-phase2.json"
+    local_path = layout.phase2 / f"{slug}-phase2.local.json"
 
     with open(archive_path, "w") as f:
         json.dump(merged, f, indent=2)
@@ -559,8 +592,10 @@ def main(argv=None) -> int:
     shutil.copy2(archive_path, local_path)
     print(f"[OK] Local Phase 2 written: {local_path}")
 
-    shutil.copy2(local_path, canonical_path)
-    print(f"[OK] Canonical compatibility written: {canonical_path}")
+    canonical_path = layout.phase2 / f"{slug}-phase2.json"
+    if canonical_path.exists():
+        canonical_path.unlink()
+        print(f"[OK] Removed stale canonical Phase 2: {canonical_path}")
 
     # Summary
     stats = merged["merge_stats"]
@@ -572,10 +607,13 @@ def main(argv=None) -> int:
         f"  Duplicates merged:  {stats['duplicates_merged']}\n"
         f"  Conflicts flagged:  {stats['conflicts_flagged']}\n"
         f"  Schema errors:      {stats['schema_errors']}\n"
-        f"  TP / FP / REVIEW:   {stats['tp_count']} / {stats['fp_count']} / {stats['review_count']}"
+        f"  TP / FP / REVIEW:   {stats['tp_count']} / {stats['fp_count']} / {stats['review_count']}\n"
+        f"  Trust state:        {stats.get('trust_state', 'unknown')}"
     )
     if stats.get("agents_missing"):
         print(f"  [WARN] Agents missing: {stats['agents_missing']}", file=sys.stderr)
+    if stats.get("degradation_signals"):
+        print(f"  [WARN] Degradation signals: {stats['degradation_signals']}", file=sys.stderr)
 
     return 0
 

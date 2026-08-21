@@ -12,7 +12,12 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from report_paths import build_report_layout
+try:
+    from .report_paths import build_report_layout
+    from .artifact_freshness import resolve_phase2_trust_state
+except ImportError:  # pragma: no cover - direct script execution
+    from report_paths import build_report_layout
+    from artifact_freshness import resolve_phase2_trust_state
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
 _ROOT_DIR = _SCRIPT_DIR.parent.parent  # tools/bin -> tools -> root
@@ -160,6 +165,14 @@ def main() -> int:
             print(f"    - {item}")
         return 1
 
+    phase2_trust_state = resolve_phase2_trust_state(phase2_path)
+    if phase2_trust_state != "success":
+        print(
+            f"[!] Phase 2 canonical is not trusted for phase3-validate: {phase2_path} "
+            f"(trust_state={phase2_trust_state or 'missing'})"
+        )
+        return 1
+
     template_path = resolve_template(args, root_dir)
     template = load_template(template_path)
 
@@ -176,8 +189,8 @@ def main() -> int:
         template = template.replace(key, value)
 
     provider_hint = (
-        "Hay ap dung truc tiep WordPress AppSec workflow trong prompt va project docs. "
-        "Khong duoc phu thuoc vao skill auto-load."
+        "Apply the WordPress AppSec workflow stated in the prompt and project docs directly. "
+        "Do not rely on auto-loaded skills."
     )
     prompt = f"{provider_hint}\n\n{template}"
 

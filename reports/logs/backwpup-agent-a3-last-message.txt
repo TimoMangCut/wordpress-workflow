@@ -1,5 +1,0 @@
-Wrote the report to [backwpup-agent-a3.json](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/backwpup-agent-a3.json).
-
-It covers all 25 REST entry points in the slice: 15 `TP`, 9 `FP`, 1 `REVIEW`. The strongest issue is `/getblock`, which lets any `backwpup` user load arbitrary admin partials and read decrypted storage credentials. The recurring pattern is overbroad `current_user_can('backwpup')` checks on mutating job, storage, and backup-start routes where the plugin’s own role model defines narrower capabilities. `process_bulk_actions` stayed `REVIEW` because the low-privileged role may not be able to obtain the backup identifiers needed to reach deletion.
-
-Validation passed: JSON syntax is valid, schema validation succeeded, and the output covers every IR entry-point ID with no extras.

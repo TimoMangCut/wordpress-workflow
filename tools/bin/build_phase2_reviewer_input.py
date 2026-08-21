@@ -42,6 +42,7 @@ def normalize_review_mode(review_mode: str) -> str:
         "forced_exploration": "explore",
         "core": "core",
         "explore": "explore",
+        "terminal_core": "terminal_core",
     }
     normalized = mapping.get(str(review_mode).strip().lower())
     if not normalized:
@@ -67,6 +68,8 @@ def relative_to_root(path: Path, root: Path) -> str:
 
 def review_output_schema_path(root: Path, review_mode: str) -> Path:
     review_mode = normalize_review_mode(review_mode)
+    if review_mode == "terminal_core":
+        return root / "contracts" / "phase2-review-terminal-core-output.schema.json"
     if review_mode == "core":
         return root / "contracts" / "phase2-review-core-output.schema.json"
     return root / "contracts" / "phase2-review-explore-output.schema.json"
@@ -325,6 +328,51 @@ def worker_summary(worker_output: dict) -> dict:
     }
 
 
+def summarized_worker_summary(findings_summary: list[dict], worker_output: dict) -> dict:
+    tp = sum(1 for item in findings_summary if str(item.get("verdict") or "").upper() == "TP")
+    fp = sum(1 for item in findings_summary if str(item.get("verdict") or "").upper() == "FP")
+    review = sum(1 for item in findings_summary if str(item.get("verdict") or "").upper() == "REVIEW")
+    return {
+        "total_findings": len(findings_summary),
+        "true_positive_count": tp,
+        "false_positive_count": fp,
+        "needs_review_count": review,
+        "negative_findings_count": 0,
+        "overall_risk": worker_output.get("overall_risk"),
+        "analysis_summary": worker_output.get("analysis_summary"),
+    }
+
+
+def unresolved_review_targets(review_doc: dict) -> tuple[set[str], set[str]]:
+    packet_ids: set[str] = set()
+    parent_finding_ids: set[str] = set()
+    for item in review_doc.get("finding_reviews") or []:
+        assessment = optional_string(item.get("assessment"))
+        if not assessment:
+            continue
+        if assessment.lower() in {"keep", "field_fix"}:
+            continue
+        packet_id = optional_string(item.get("packet_id")) or optional_string(item.get("finding_id"))
+        parent_finding_id = optional_string(item.get("parent_finding_id")) or optional_string(item.get("finding_id"))
+        if packet_id:
+            packet_ids.add(packet_id)
+        if parent_finding_id:
+            parent_finding_ids.add(parent_finding_id)
+    return packet_ids, parent_finding_ids
+
+
+def current_review_finding_targets(worker_output: dict) -> set[str]:
+    finding_ids: set[str] = set()
+    for item in worker_output.get("findings") or []:
+        if not isinstance(item, dict):
+            continue
+        finding_id = optional_string(item.get("finding_id"))
+        verdict = optional_string(item.get("verdict"))
+        if finding_id and verdict and verdict.upper() == "REVIEW":
+            finding_ids.add(finding_id)
+    return finding_ids
+
+
 def phase1_context(ir_doc: dict, related_entry_point_ids: set[str], review_mode: str) -> dict:
     review_mode = normalize_review_mode(review_mode)
     entry_points = ir_doc.get("entry_points", [])
@@ -427,9 +475,23 @@ def compact_text_list(values: object, limit: int = 3) -> list[str]:
     return result
 
 
+def extract_reasoning_object(raw_finding: dict | None) -> dict:
+    if not isinstance(raw_finding, dict):
+        return {}
+    reasoning = raw_finding.get("reasoning")
+    return reasoning if isinstance(reasoning, dict) else {}
+
+
+def extract_reasoning_fallback(raw_finding: dict | None) -> str | None:
+    if not isinstance(raw_finding, dict):
+        return None
+    return optional_string(raw_finding.get("reasoning"))
+
+
 def build_worker_context(raw_finding: dict | None) -> dict:
     raw_finding = raw_finding or {}
-    reasoning = raw_finding.get("reasoning") if isinstance(raw_finding.get("reasoning"), dict) else {}
+    reasoning = extract_reasoning_object(raw_finding)
+    reasoning_fallback = extract_reasoning_fallback(raw_finding)
     return {
         "source_function": optional_string(raw_finding.get("source_function")),
         "sink_function": optional_string(raw_finding.get("sink_function")),
@@ -439,7 +501,7 @@ def build_worker_context(raw_finding: dict | None) -> dict:
             "trace": optional_string(reasoning.get("trace")),
             "defenses": compact_text_list(reasoning.get("defenses")),
             "refutation": compact_text_list(reasoning.get("refutation")),
-            "conclusion": optional_string(reasoning.get("conclusion")),
+            "conclusion": optional_string(reasoning.get("conclusion")) or reasoning_fallback,
         },
     }
 
@@ -593,7 +655,11 @@ def build_packet_worker_context(
     reasoning_excerpt = base_context.get("reasoning_excerpt") or {}
     defenses = compact_text_list(reasoning_excerpt.get("defenses"), limit=2)
     if not defenses:
-        defenses = compact_text_list((raw_finding or {}).get("reasoning", {}).get("defenses"), limit=2)
+        defenses = compact_text_list(extract_reasoning_object(raw_finding).get("defenses"), limit=2)
+    if not defenses:
+        fallback_reasoning = extract_reasoning_fallback(raw_finding)
+        if fallback_reasoning:
+            defenses = [fallback_reasoning]
     extra_defense = "Keep critique packet-local; do not reuse sibling-surface defenses or conclusions without code evidence in this packet."
     if sink_semantics == "hook_dispatch":
         extra_defense = "Treat downstream hook consumers as missing evidence unless a concrete consumer is already shown in the packet."
@@ -1135,6 +1201,7 @@ def build_reviewer_input(
     input_output_path: Path,
     max_candidates: int | None = None,
     threat_context_path: Path | None = None,
+    source_review_path: Path | None = None,
 ) -> dict:
     review_mode = normalize_review_mode(review_mode)
     reports_dir = root / "reports"
@@ -1151,7 +1218,30 @@ def build_reviewer_input(
 
     findings_summary, related_entry_point_ids = summarize_worker_findings(worker_output)
     raw_findings = worker_findings_by_id(worker_output)
-    if review_mode == "core":
+    terminal_review_packet_ids: set[str] = set()
+    terminal_review_finding_ids: set[str] = set()
+    if review_mode == "terminal_core":
+        if source_review_path is None or not source_review_path.exists():
+            raise ValueError("terminal_core review requires an existing source review artifact")
+        source_review_doc = load_json(source_review_path)
+        current_review_targets = current_review_finding_targets(worker_output)
+        if current_review_targets:
+            terminal_review_packet_ids = set(current_review_targets)
+            terminal_review_finding_ids = set(current_review_targets)
+        else:
+            raise ValueError("terminal_core review has no current REVIEW findings to close")
+        if not terminal_review_packet_ids and not terminal_review_finding_ids:
+            raise ValueError("terminal_core review has no unresolved packets to close")
+        findings_summary = [
+            item for item in findings_summary
+            if optional_string(item.get("finding_id")) in terminal_review_finding_ids
+        ]
+        related_entry_point_ids = {
+            optional_string(item.get("entry_point_id"))
+            for item in findings_summary
+            if optional_string(item.get("entry_point_id"))
+        }
+    if review_mode in {"core", "terminal_core"}:
         goal = "Challenge the worker output packet-by-packet with concrete counter-evidence, field corrections, and explicit missing-evidence notes."
         constraints = [
             "Treat each finding packet as the unit of review; do not restart whole-plugin auditing.",
@@ -1160,8 +1250,15 @@ def build_reviewer_input(
             "Refute before confirm; keep objections evidence-bound with file:line anchors.",
             "Do not rewrite the full findings set; produce critique JSON only.",
         ]
-        constraints.append("Default to packet-local critique only. Focus on finding_reviews plus field corrections for the existing finding packets.")
-        constraints.append("Treat finding_packets as the reviewer core evidence pack. If packet-local evidence is insufficient, prefer needs_more_evidence over broad exploration.")
+        if review_mode == "terminal_core":
+            goal = "Close each surviving unresolved finding packet as TP or FP using bounded packet-local evidence, without preserving REVIEW ambiguity."
+            constraints.append("Terminal core review is final-round packet closure only; do not broad-explore or relitigate already-closed packets.")
+            constraints.append("You must emit one finding_reviews item per terminal packet and every item must carry closure_verdict=TP or closure_verdict=FP.")
+            constraints.append("Do not emit needs_more_evidence in terminal_core mode. If exploitability is still unproven after bounded packet-local review, close the packet as FP and use missing_evidence as reopen conditions.")
+            constraints.append("Do not preserve a REVIEW packet with assessment=keep unless closure_verdict=TP.")
+        else:
+            constraints.append("Default to packet-local critique only. Focus on finding_reviews plus field corrections for the existing finding packets.")
+            constraints.append("Treat finding_packets as the reviewer core evidence pack. If packet-local evidence is insufficient, prefer needs_more_evidence over broad exploration.")
     else:
         goal = "Search for uncovered high-value candidates outside the worker's current coverage after the core review, without relitigating already-reviewed packets."
         constraints = [
@@ -1176,7 +1273,7 @@ def build_reviewer_input(
 
     packet_phase1_context = phase1_context(ir_doc, related_entry_point_ids, review_mode)
     payload_phase1_context = dict(packet_phase1_context)
-    if review_mode == "core":
+    if review_mode in {"core", "terminal_core"}:
         payload_phase1_context["top_anomalies"] = []
         payload_phase1_context["unresolved_hooks"] = []
     else:
@@ -1192,7 +1289,13 @@ def build_reviewer_input(
         "review_round": review_round,
         "review_mode": review_mode,
         "task": {
-            "role": "phase2_reviewer_core" if review_mode == "core" else "phase2_reviewer_explore",
+            "role": (
+                "phase2_reviewer_terminal_core"
+                if review_mode == "terminal_core"
+                else "phase2_reviewer_core"
+                if review_mode == "core"
+                else "phase2_reviewer_explore"
+            ),
             "goal": goal,
             "output_schema": relative_to_root(output_schema_path, root),
             "output_path": relative_to_root(review_output_path, root),
@@ -1216,7 +1319,7 @@ def build_reviewer_input(
         "evidence": None,
         "threat_context_summary": threat_context_summary(threat_doc),
     }
-    if review_mode == "core":
+    if review_mode in {"core", "terminal_core"}:
         payload["evidence"] = build_reviewer_evidence(
             root=root,
             slug=slug,
@@ -1235,6 +1338,24 @@ def build_reviewer_input(
             top_anomalies=packet_phase1_context["top_anomalies"],
             unresolved_hooks=packet_phase1_context["unresolved_hooks"],
         )
+        if review_mode == "terminal_core":
+            payload["finding_packets"] = [
+                item for item in payload["finding_packets"]
+                if optional_string(item.get("packet_id")) in terminal_review_packet_ids
+                or optional_string(item.get("parent_finding_id")) in terminal_review_finding_ids
+            ]
+            finding_ids_in_packets = {
+                optional_string(item.get("parent_finding_id"))
+                for item in payload["finding_packets"]
+                if optional_string(item.get("parent_finding_id"))
+            }
+            payload["worker_findings"] = [
+                item for item in payload["worker_findings"]
+                if optional_string(item.get("finding_id")) in finding_ids_in_packets
+            ]
+            payload["worker_summary"] = summarized_worker_summary(payload["worker_findings"], worker_output)
+            if not payload["finding_packets"]:
+                raise ValueError("terminal_core review built no unresolved packets")
     else:
         payload["evidence"] = build_explore_evidence(
             root=root,
@@ -1257,10 +1378,11 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Build JSON-first reviewer input for Phase 2 review rounds.")
     parser.add_argument("slug", help="Plugin slug")
     parser.add_argument("--round", type=int, required=True, help="Review round number")
-    parser.add_argument("--review-mode", choices=["core", "explore", "skeptical", "forced_exploration"], required=True)
+    parser.add_argument("--review-mode", choices=["core", "terminal_core", "explore", "skeptical", "forced_exploration"], required=True)
     parser.add_argument("--worker-output", required=True, help="Path to worker output JSON")
     parser.add_argument("--review-output", required=True, help="Path to review output JSON")
     parser.add_argument("--output", required=True, help="Path to reviewer input JSON")
+    parser.add_argument("--source-review", default=None, help="Optional prior review JSON path for terminal_core mode")
     parser.add_argument("--threat-context", default=None, help="Optional threat context JSON path")
     parser.add_argument("--max-candidates", type=int, default=None, help="Exploration candidate cap")
     return parser.parse_args()
@@ -1279,6 +1401,7 @@ def main() -> int:
         input_output_path=Path(args.output),
         max_candidates=args.max_candidates,
         threat_context_path=Path(args.threat_context) if args.threat_context else None,
+        source_review_path=Path(args.source_review) if args.source_review else None,
     )
     print(f"[OK] Reviewer input written: {args.output}")
     return 0

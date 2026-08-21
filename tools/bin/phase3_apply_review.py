@@ -12,7 +12,14 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from report_paths import build_report_layout
+try:
+    from .report_paths import build_report_layout
+    from .artifact_freshness import resolve_phase2_trust_state
+    from .phase3_review_contract import normalize_phase3_review_document
+except ImportError:  # pragma: no cover - direct script execution
+    from report_paths import build_report_layout
+    from artifact_freshness import resolve_phase2_trust_state
+    from phase3_review_contract import normalize_phase3_review_document
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
 _ROOT_DIR = _SCRIPT_DIR.parent.parent  # tools/bin -> tools -> root
@@ -154,6 +161,18 @@ def main() -> int:
     if not phase2:
         print(f"[!] Missing phase2 json: {phase2_path}")
         return 1
+    phase2_trust_state = resolve_phase2_trust_state(phase2_path)
+    if phase2_trust_state != "success":
+        print(
+            f"[!] Phase 2 canonical is not trusted for apply-review: {phase2_path} "
+            f"(trust_state={phase2_trust_state or 'missing'})"
+        )
+        return 1
+    try:
+        review = normalize_phase3_review_document(review, slug=slug)
+    except Exception as exc:
+        print(f"[!] Invalid review contract: {review_path} ({exc})")
+        return 0
 
     ir_path = os.path.join(layout.phase1, f"{slug}-ir.json")
     ir = load_json(ir_path) or {}

@@ -73,6 +73,16 @@ def load_json(path: str) -> Optional[dict]:
         return None
 
 
+def resolve_phase2_trust_state(doc: dict) -> Optional[str]:
+    for container in (doc, doc.get("consensus"), doc.get("merge_stats")):
+        if not isinstance(container, dict):
+            continue
+        trust_state = container.get("trust_state")
+        if isinstance(trust_state, str) and trust_state.strip():
+            return trust_state.strip()
+    return None
+
+
 def _norm_path(p: str) -> str:
     if not p:
         return ""
@@ -1495,6 +1505,13 @@ def main() -> int:
     phase2 = load_json(str(phase2_path))
     if not phase2:
         print(f"[ERROR] Phase 2 not found: {phase2_path}")
+        return 1
+    phase2_trust_state = resolve_phase2_trust_state(phase2)
+    if phase2_trust_state != "success":
+        print(
+            f"[ERROR] Phase 2 canonical is not trusted for Phase 3: {phase2_path} "
+            f"(trust_state={phase2_trust_state or 'missing'})"
+        )
         return 1
 
     semgrep = load_json(str(semgrep_path))

@@ -1,7 +1,7 @@
 # SKILL SET — Agent W: Candidate Bundle Analysis
 
 > **File location:** tools/config/skill-set-agent-worker.md
-> **Model:** Claude Sonnet 4.6 (preferred worker)
+> **Model:** Provider-agnostic worker bundle analysis (Claude or Codex)
 > **Runs:** Multiple sessions — one per candidate bundle
 
 ---

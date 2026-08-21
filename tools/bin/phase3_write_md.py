@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import shutil
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -209,6 +210,7 @@ def main() -> int:
     gate_path = resolve_canonical_phase3_path(layout.phase3, slug)
     phase2_path = layout.phase2 / f"{slug}-phase2.json"
     phase3_dir = layout.phase3
+    final_dir = layout.final
 
     idx = args.index if args.index > 0 else compute_ir_index(slug, reports_dir)
     if idx <= 0:
@@ -216,6 +218,7 @@ def main() -> int:
         return 1
 
     out_path = phase3_dir / f"{idx}-{slug}.md"
+    final_path = final_dir / f"{idx}-{slug}.md"
 
     if gate_path is None:
         print(f"[ERROR] Phase 3 artifact missing for slug: {slug}")
@@ -322,7 +325,9 @@ def main() -> int:
             pass
 
     out_path.write_text("\n".join(lines), encoding="utf-8")
+    shutil.copy2(out_path, final_path)
     print(f"[OK] Gate markdown written: {out_path}")
+    print(f"[OK] Final report written: {final_path}")
     return 0
 
 

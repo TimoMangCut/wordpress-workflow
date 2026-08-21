@@ -13,27 +13,30 @@ Prep now computes candidate hypotheses from IR + Semgrep + Psalm, classifies the
 by bug family / sink family / trust boundary, and packs bounded worker bundles
 (`agent-wNN`). Legacy per-entry-point-group slices are still written for compatibility,
 but dispatch prefers bundle workers plus the specialized full-IR agents B/C/D.
-Provider is configurable per agent (Codex CLI or Claude Code CLI). Outputs are
-merged by `merge_agent_outputs.py`, refined through deterministic cluster/consensus
+Provider is configurable per agent (Codex CLI or Claude Code CLI). Wave 6 keeps
+Codex as the baseline provider and only routes Claude into selective
+contradiction-heavy stages when `reports/phase2/<slug>-provider-policy.json`
+records a high-value potential or post-review escalation. Outputs are merged by
+`merge_agent_outputs.py`, refined through deterministic cluster/consensus
 stages, and then consumed by the Phase 3 gate.
 
 ```
 prepare_agent_inputs.py
         ↓
-  <slug>-dispatch.json           (dispatch config, written by prep step)
+  reports/phase2/prep/<slug>/dispatch.json
         ↓
 orchestrate-agents.sh <slug>
         ↓
-  agent-w01 [claude -p] ─┐
-  agent-w02 [claude -p]  │  (default: 4-way concurrency; tune with --parallel-limit)
-  agent-b   [codex exec] │  (provider per-agent from dispatch provider_map)
-  agent-c   [claude -p] ─┘
+  agent-w01 [codex exec] ─┐
+  agent-w02 [codex exec]  │  (default: 4-way concurrency; tune with --parallel-limit)
+  agent-b   [codex exec]  │  (provider per-agent from dispatch provider_map / provider policy)
+  agent-c   [claude -p] ──┘  (only when provider policy escalates a selective stage)
         ↓
-  <slug>-agent-*.json           (one file per agent, in reports/)
+  reports/phase2/agents/<slug>/*.output.json
         ↓
 merge_agent_outputs.py <slug>
         ↓
-  reports/<slug>-phase2-merged.json         (archive, top-level reports/)
+  reports/phase2/<slug>-phase2.merged.json  (archive)
   reports/phase2/<slug>-phase2.local.json   (local merged result)
         ↓
 build_candidate_clusters.py <slug>
@@ -67,10 +70,11 @@ run-phase3.sh --slug <slug>
 
 1. Phase 1 scan complete: `reports/phase1/<slug>-ir.json` exists.
 2. Agent inputs prepared: `python3 tools/bin/prepare_agent_inputs.py <slug>`
-   - Produces `reports/<slug>-dispatch.json`
-   - Produces `reports/<slug>-candidate-bundle-agent-wNN.json` per worker bundle
-   - Also produces `reports/<slug>-ir-slice-*.json` per legacy EP group
-3. Threat context available: `reports/context/<slug>-threat-context.json`
+   - Produces `reports/phase2/prep/<slug>/dispatch.json`
+   - Produces `reports/phase2/prep/<slug>/candidate-bundles/agent-wNN.input.json` per worker bundle
+   - Also produces `reports/phase2/prep/<slug>/legacy-slices/<slug>-ir-slice-*.json` per legacy EP group
+3. Provider routing is authority-driven by `reports/phase2/<slug>-provider-policy.json`; `--with-claude` should be read as explicit shorthand for `--providers codex,claude`, not as a best-effort hint.
+4. Threat context available: `reports/context/<slug>-threat-context.json`
    - Generated automatically by `scan-all.sh`
    - Passed into agent runtime prompts during orchestration
 4. Provider CLIs on `$PATH`:
@@ -85,14 +89,21 @@ run-phase3.sh --slug <slug>
 
 ```bash
 bash tools/bin/run-pipeline.sh <slug> --multi-agent
+bash tools/bin/run-pipeline.sh <slug> --multi-agent --resume
 ```
 
-For a specific slug, this runs:
-Phase 1 → Threat Context → Prep → Orchestrate → Merge → Gate → Report
+For a specific slug, this now runs the canonical coordinator path with chunked
+worker mode forced inside `run-phase2.sh`:
+Phase 1 → Threat Context → canonical chunked Phase 2 → Gate → Report
+
+`--resume` là public recovery flag cho wrapper này:
+- giữ nguyên adaptive parallelism hiện có
+- không bypass quota preflight
+- map nội bộ xuống `run-phase2.sh --resume-existing` và `PHASE2_CHUNKED_RESUME_MISSING_ONLY=true`
 
 If you omit `<slug>`, multi-agent mode uses existing `reports/phase1/*-ir.json`
 artifacts, refreshes threat context per slug when plugin source is present,
-and runs Prep → Orchestrate → Merge → Gate → Report for each slug.
+and runs canonical chunked Phase 2 → Gate → Report for each slug.
 
 ### Manual Mode (quota-controlled)
 
@@ -117,9 +128,12 @@ bash tools/bin/orchestrate-agents.sh <slug> --timeout 1200        # longer timeo
 bash tools/bin/orchestrate-agents.sh <slug> --resume-missing-only # skip already-completed agents
 ```
 
-**Step 4: Verify merge output**
+**Step 4: Verify state and merge output**
 ```bash
-cat reports/phase2/<slug>-phase2.json | python3 -m json.tool > /dev/null && echo "Valid"
+cat reports/phase2/<slug>-phase2.state.json | python3 -m json.tool
+cat reports/phase2/<slug>-phase2.local.json | python3 -m json.tool > /dev/null && echo "Local merge valid"
+# Canonical only exists after consensus-authoritative publish:
+cat reports/phase2/<slug>-phase2.json | python3 -m json.tool > /dev/null && echo "Canonical valid"
 ```
 
 **Step 5: Gate + Report**
@@ -131,7 +145,7 @@ bash tools/bin/run-phase3.sh --slug <slug>
 
 ## Dispatch Config Format
 
-`reports/<slug>-dispatch.json`:
+`reports/phase2/prep/<slug>/dispatch.json`:
 
 ```json
 {
@@ -139,8 +153,8 @@ bash tools/bin/run-phase3.sh --slug <slug>
   "strategy": "candidate_chunk_v2",
   "agents": ["agent-w01", "agent-w02", "agent-b", "agent-c", "agent-d"],
   "inputs": {
-    "agent-w01": "reports/<slug>-candidate-bundle-agent-w01.json",
-    "agent-w02": "reports/<slug>-candidate-bundle-agent-w02.json",
+    "agent-w01": "reports/phase2/prep/<slug>/candidate-bundles/agent-w01.input.json",
+    "agent-w02": "reports/phase2/prep/<slug>/candidate-bundles/agent-w02.input.json",
     "agent-b":  "reports/phase1/<slug>-ir.json",
     "agent-c":  "reports/phase1/<slug>-ir.json",
     "agent-d":  "reports/phase1/<slug>-ir.json"
@@ -149,24 +163,20 @@ bash tools/bin/run-phase3.sh --slug <slug>
   "threat_context_path": "reports/context/<slug>-threat-context.json",
   "timeout_seconds": 600,
   "quota_account": "",
-  "provider_map": {
-    "agent-w01": "claude",
-    "agent-w02": "claude"
-  },
+  "provider_map": {},
   "default_provider": "codex",
-  "model_map": {
-    "agent-w01": "claude-sonnet-4.6",
-    "agent-w02": "claude-sonnet-4.6"
-  },
-  "bundle_inventory": "reports/<slug>-candidate-inventory.json"
+  "model_map": {},
+  "bundle_inventory": "reports/phase2/prep/<slug>/candidate-inventory.json",
+  "agent_output_dir": "reports/phase2/agents/<slug>",
+  "phase2_state_path": "reports/phase2/<slug>-phase2.state.json",
   "bundle_review_enabled": true,
   "reviewer_provider": "codex",
   "reviewer_model": "gpt-5.4",
   "review_rounds": 1,
   "cluster_synth_provider": "codex",
   "cluster_synth_model": "gpt-5.4",
-  "cluster_challenger_provider": "claude",
-  "cluster_challenger_model": "claude-sonnet-4.6"
+  "cluster_challenger_provider": "codex",
+  "cluster_challenger_model": "gpt-5.4"
 }
 ```
 
@@ -179,6 +189,9 @@ bash tools/bin/run-phase3.sh --slug <slug>
 ---
 
 ## orchestrate-agents.sh Options
+
+`orchestrate-agents.sh` remains available for manual debugging/recovery, but it is
+no longer the public authority behind `run-pipeline.sh --multi-agent`.
 
 ```
 Usage: orchestrate-agents.sh <slug> [options]
@@ -217,11 +230,17 @@ share the same failure log format.
 
 | File | Description |
 |------|-------------|
-| `reports/<slug>-candidate-bundle-agent-wNN.json` | Bounded worker bundle with embedded IR/Semgrep/Psalm subset |
-| `reports/<slug>-candidate-inventory.json` | Candidate list + bundle plan emitted by prep |
-| `reports/<slug>-agent-{id}.json` | Raw output from each agent |
-| `reports/<slug>-phase2-merged.json` | Merged archive (pre-verify, top-level reports/) |
+| `reports/phase2/prep/<slug>/candidate-bundles/agent-wNN.input.json` | Bounded worker bundle with embedded IR/Semgrep/Psalm subset |
+| `reports/phase2/prep/<slug>/candidate-inventory.json` | Candidate list + bundle plan emitted by prep |
+| `reports/phase2/agents/<slug>/<agent>.output.json` | Canonical normalized output from each worker/support agent |
+| `reports/phase2/agents/<slug>/attempts/<agent>.attempt-XX.output.json` | Attempt-local raw output used for safe retry promotion |
+| `reports/phase2/agents/<slug>/attempts/<agent>.attempt-XX.normalized.json` | Attempt-local normalized output used for validation/promote decisions |
+| `reports/phase2/agents/<slug>/<agent>.review.r1.json` | Bundle-local reviewer output |
+| `reports/phase2/agents/<slug>/<agent>.revision.r1.json` | Bundle-local revision output |
+| `reports/phase2/<slug>-phase2.merged.json` | Merged archive before cluster/consensus |
 | `reports/phase2/<slug>-phase2.local.json` | Deterministic merge result before cluster/consensus stages |
+| `reports/phase2/<slug>-phase2.state.json` | Phase-level runtime state and trust summary |
+| `reports/phase2/<slug>-provider-policy.json` | Provider tier, trigger reasons, stage providers, and Phase 3 recommendation |
 | `reports/phase2/<slug>-phase2.json` | Canonical Phase 2 output after consensus (gate reads this) |
 | `reports/phase2/<slug>-cluster-plan.json` | Deterministic cross-bundle synthesis plan |
 | `reports/phase2/<slug>-cluster-cNN.json` | Cluster artifact for later synth/challenge rounds |
@@ -230,9 +249,47 @@ share the same failure log format.
 | `reports/phase2/<slug>-cluster-cNN.synth.json` | Cluster synthesizer output (LLM, bounded to one cluster) |
 | `reports/phase2/<slug>-cluster-cNN.challenge.json` | Cluster challenger output (LLM, bounded to one cluster) |
 | `reports/phase2/<slug>-phase2.consensus.json` | Deterministic consensus artifact used to rewrite canonical Phase 2 |
-| `reports/<slug>-merge-ready` | Sentinel — written after successful merge |
-| `reports/logs/<slug>-failures.json` | Failure log (see FAILURE-MODES.md) |
-| `reports/logs/<slug>-agent-{id}.log` | Per-agent stderr log |
+| `reports/phase2/agents/<slug>/merge-ready` | Sentinel — written after successful merge |
+| `reports/logs/<slug>/phase2/run.live.log` | Phase 2 envelope / coordinator progress |
+| `reports/logs/<slug>/phase2/run.err` | Phase 2 envelope warnings/errors |
+| `reports/logs/<slug>/phase2/chunked/run.live.log` | Chunked scheduler progress |
+| `reports/logs/<slug>/phase2/chunked/run.err` | Chunked scheduler warnings/errors |
+| `reports/logs/<slug>/phase2/chunked/failures.json` | Failure log (see FAILURE-MODES.md) |
+| `reports/logs/<slug>/phase2/chunked/agents/<agent>/attempt-XX/assistant.live.log` | Parsed assistant stream for that attempt |
+| `reports/logs/<slug>/phase2/chunked/agents/<agent>/attempt-XX/provider.raw.log` | Raw provider stream / stderr for that attempt |
+| `reports/logs/<slug>/phase2/chunked/agents/<agent>/attempt-XX/stderr.err` | Provider stderr for that attempt |
+| `reports/cost/<slug>/<run_id>.cost.json` | Per-run cost and token accountability summary |
+
+---
+
+## State and Trust
+
+`reports/phase2/<slug>-phase2.state.json` is the phase-level runtime state file.
+
+Important fields:
+- `stage`
+- `status`
+- `role`
+- `round`
+- `provider`
+- `model`
+- `output_path`
+- `errlog_path`
+- `live_log_path`
+- `trust_state`
+- `details`
+
+Current trust values:
+- `success`
+- `degraded_success`
+- `partial_success`
+- `failed`
+- `in_progress` (runtime only)
+
+Canonical publish rule:
+- `reports/phase2/<slug>-phase2.local.json` is a deterministic local merge, not downstream truth.
+- `reports/phase2/<slug>-phase2.json` becomes authoritative only after the consensus writer succeeds.
+- Degraded runs surface `trust_state` and `degradation_signals` directly in the state file and consensus artifact.
 
 ---
 
@@ -291,17 +348,23 @@ runs the remaining agents serially.
 Watch orchestration progress in real time:
 
 ```bash
-# Watch orchestrator log (stdout)
-bash tools/bin/orchestrate-agents.sh woocommerce 2>&1 | tee /tmp/orch-woocommerce.log
+# Watch chunked scheduler progress
+tail -f reports/logs/woocommerce/phase2/chunked/run.live.log
 
-# Watch a specific worker log
-tail -f reports/logs/woocommerce-agent-w01.log
+# Watch one worker assistant stream
+tail -f reports/logs/woocommerce/phase2/chunked/agents/agent-w01/attempt-01/assistant.live.log
 
-# Check which output files have arrived
-ls -la reports/woocommerce-agent-*.json
+# Watch one raw provider stream
+tail -f reports/logs/woocommerce/phase2/chunked/agents/agent-w01/attempt-01/provider.raw.log
 
-# Check merge-ready sentinel
-ls -la reports/woocommerce-merge-ready
+# Check structured failures
+cat reports/logs/woocommerce/phase2/chunked/failures.json | python3 -m json.tool
+
+# Check current phase state
+cat reports/phase2/woocommerce-phase2.state.json | python3 -m json.tool
+
+# Check per-run cost accountability
+python3 tools/bin/quota-report.py --run-id <run_id> --days 30
 ```
 
 ---
@@ -311,4 +374,4 @@ ls -la reports/woocommerce-merge-ready
 - `docs/FAILURE-MODES.md` — How the orchestrator handles errors
 - `7-workflow-wp/multi-agent-plan.md` — Architecture specification
 - `tools/bin/prepare_agent_inputs.py` — Generates dispatch config + IR slices
-- `tools/bin/merge_agent_outputs.py` — Merges agent outputs into Phase 2 canonical
+- `tools/bin/merge_agent_outputs.py` — Merges agent outputs into local Phase 2 artifacts

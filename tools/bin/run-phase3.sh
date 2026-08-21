@@ -15,6 +15,8 @@ source "${TOOLS_DIR}/bin/console-ui.sh"
 resolve_report_dirs "${ROOT_DIR}/reports"
 PLUGINS_DIR="${ROOT_DIR}/plugins"
 ARTIFACT_FRESHNESS_BIN="${BIN_DIR}/artifact_freshness.py"
+COST_TELEMETRY_BIN="${BIN_DIR}/cost_telemetry.py"
+PHASE3_REVIEW_CONTRACT_BIN="${BIN_DIR}/phase3_review_contract.py"
 
 apply_project_claude_env_defaults() {
     local helper="${BIN_DIR}/load_claude_env.py"
@@ -212,6 +214,78 @@ provider_in_list() {
     return 1
 }
 
+phase3_pipeline_progress_enabled() {
+    [ "${PIPELINE_PROGRESS_MODE:-off}" != "off" ] && [ "${PIPELINE_PROGRESS_PHASE3_WEIGHT:-0}" -gt 0 ] 2>/dev/null
+}
+
+phase3_pipeline_overall_percent() {
+    local phase_percent="${1:-0}"
+    local phase1_weight="${PIPELINE_PROGRESS_PHASE1_WEIGHT:-0}"
+    local phase2_weight="${PIPELINE_PROGRESS_PHASE2_WEIGHT:-0}"
+    local phase3_weight="${PIPELINE_PROGRESS_PHASE3_WEIGHT:-0}"
+    local overall=$(( phase1_weight + phase2_weight + (phase3_weight * phase_percent) / 100 ))
+    if [ "$overall" -gt 100 ]; then
+        overall=100
+    fi
+    printf '%s' "$overall"
+}
+
+phase3_progress_format_seconds() {
+    local seconds="${1:-0}"
+    local hours minutes
+    if [ "$seconds" -lt 60 ] 2>/dev/null; then
+        printf '%ss' "$seconds"
+        return 0
+    fi
+    if [ "$seconds" -lt 3600 ] 2>/dev/null; then
+        minutes=$((seconds / 60))
+        printf '%sm' "$minutes"
+        return 0
+    fi
+    hours=$((seconds / 3600))
+    minutes=$(((seconds % 3600) / 60))
+    if [ "$minutes" -gt 0 ] 2>/dev/null; then
+        printf '%sh%sm' "$hours" "$minutes"
+    else
+        printf '%sh' "$hours"
+    fi
+}
+
+phase3_progress_eta_suffix() {
+    local overall="${1:-0}"
+    local now elapsed estimated_total remaining
+
+    phase3_pipeline_progress_enabled || return 0
+    [ -n "${PIPELINE_PROGRESS_START_TS:-}" ] || return 0
+    if [ "$overall" -le 0 ] 2>/dev/null; then
+        return 0
+    fi
+    if [ "$overall" -ge 100 ] 2>/dev/null; then
+        printf ' | ETA 0s'
+        return 0
+    fi
+
+    now="$(date +%s)"
+    elapsed=$((now - PIPELINE_PROGRESS_START_TS))
+    if [ "$elapsed" -lt 1 ] 2>/dev/null; then
+        elapsed=1
+    fi
+    estimated_total=$(( (elapsed * 100 + overall - 1) / overall ))
+    remaining=$((estimated_total - elapsed))
+    if [ "$remaining" -lt 0 ] 2>/dev/null; then
+        remaining=0
+    fi
+    printf ' | ETA ~%s' "$(phase3_progress_format_seconds "$remaining")"
+}
+
+phase3_progress_suffix() {
+    local phase_percent="${1:-0}"
+    local overall
+    phase3_pipeline_progress_enabled || return 0
+    overall="$(phase3_pipeline_overall_percent "$phase_percent")"
+    printf ' | Phase 3 ~%s%% | Pipeline ~%s%%%s' "$phase_percent" "$overall" "$(phase3_progress_eta_suffix "$overall")"
+}
+
 if ! provider_in_list "$PHASE3_PRIMARY_PROVIDER"; then
     PHASE3_PRIMARY_PROVIDER="${LLM_PROVIDER_ARRAY[0]}"
 fi
@@ -235,6 +309,16 @@ phase3_canonical_path() {
     python3 "$ARTIFACT_FRESHNESS_BIN" canonical-phase3 --phase3-dir "$PHASE3_DIR" --slug "$1" 2>/dev/null || true
 }
 
+phase2_output_trust_state() {
+    local phase2_file="$1"
+    python3 "$ARTIFACT_FRESHNESS_BIN" phase2-trust-state --path "$phase2_file" 2>/dev/null || true
+}
+
+phase2_output_is_trusted() {
+    local phase2_file="$1"
+    python3 "$ARTIFACT_FRESHNESS_BIN" phase2-is-trusted --path "$phase2_file" >/dev/null 2>&1
+}
+
 phase3_gate_is_fresh() {
     local slug="$1"
     local phase2_file="${PHASE2_DIR}/${slug}-phase2.json"
@@ -254,6 +338,7 @@ phase3_gate_is_fresh() {
     if [ -f "$psalm_file" ]; then
         inputs+=("$psalm_file")
     fi
+    phase2_output_is_trusted "$phase2_file" || return 1
     freshness_is_fresh "$gate_output" "${inputs[@]}"
 }
 
@@ -272,6 +357,7 @@ phase3_reviews_are_fresh() {
     if ! freshness_is_fresh "$canonical_review_json" "${inputs[@]}"; then
         return 1
     fi
+    phase3_review_json_is_valid "$slug" "$canonical_review_json" || return 1
 
     local provider
     for provider in "${LLM_PROVIDER_ARRAY[@]}"; do
@@ -280,6 +366,7 @@ phase3_reviews_are_fresh() {
         if ! freshness_is_fresh "$review_json" "${inputs[@]}"; then
             return 1
         fi
+        phase3_review_json_is_valid "$slug" "$review_json" || return 1
         if ! freshness_is_fresh "$md_path" "${inputs[@]}"; then
             return 1
         fi
@@ -294,6 +381,7 @@ phase3_final_is_fresh() {
     local review_json="${PHASE3_DIR}/${slug}-phase3-review.json"
     local final_output="${PHASE3_DIR}/${slug}-phase3.final.json"
     local -a inputs=("$gate_output" "$review_json" "${BIN_DIR}/phase3_apply_review.py" "${BIN_DIR}/run-phase3.sh")
+    phase3_review_json_is_valid "$slug" "$review_json" || return 1
     freshness_is_fresh "$final_output" "${inputs[@]}"
 }
 
@@ -302,13 +390,15 @@ phase3_markdown_is_fresh() {
     local idx="$2"
     local phase2_file="${PHASE2_DIR}/${slug}-phase2.json"
     local markdown_path="${PHASE3_DIR}/${idx}-${slug}.md"
+    local final_report_path="${REPORTS_DIR}/final/${idx}-${slug}.md"
     local canonical_path
     canonical_path="$(phase3_canonical_path "$slug")"
     if [ -z "$canonical_path" ]; then
         return 1
     fi
     local -a inputs=("$canonical_path" "$phase2_file" "${BIN_DIR}/phase3_write_md.py")
-    freshness_is_fresh "$markdown_path" "${inputs[@]}"
+    freshness_is_fresh "$markdown_path" "${inputs[@]}" || return 1
+    freshness_is_fresh "$final_report_path" "${inputs[@]}"
 }
 
 provider_model() {
@@ -343,12 +433,23 @@ phase3_live_log_path() {
     logs_phase3_provider_live_path "$1" "$2"
 }
 
+phase3_raw_log_path() {
+    logs_phase3_provider_raw_path "$1" "$2"
+}
+
 phase3_canonical_errlog_path() {
     logs_phase3_run_err_path "$1"
 }
 
 phase3_canonical_live_log_path() {
     logs_phase3_run_live_path "$1"
+}
+
+phase3_review_json_is_valid() {
+    local slug="$1"
+    local review_json="$2"
+    [ -f "$review_json" ] || return 1
+    python3 "$PHASE3_REVIEW_CONTRACT_BIN" validate-file --path "$review_json" --slug "$slug" --write-normalized >/dev/null 2>&1
 }
 
 summarize_provider_errlog() {
@@ -415,10 +516,27 @@ append_quota_log() {
     local model="$5"
     local status="$6"
     local duration="$7"
-    local ts
-    ts="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-    printf '{"ts":"%s","phase":"%s","slug":"%s","mode":"%s","provider":"%s","model":"%s","status":"%s","duration_sec":%s}\n' \
-        "$ts" "$phase" "$slug" "$mode" "$provider" "$model" "$status" "$duration" >> "$QUOTA_LEDGER"
+    local component="${8:-}"
+    local role="${9:-}"
+    local errlog_path="${10:-}"
+    local live_log_path="${11:-}"
+    local raw_log_path="${12:-}"
+
+    python3 "$COST_TELEMETRY_BIN" append-event \
+        --ledger "$QUOTA_LEDGER" \
+        --phase "$phase" \
+        --slug "$slug" \
+        --run-id "${AUDIT_RUN_ID:-}" \
+        --mode "$mode" \
+        --provider "$provider" \
+        --model "$model" \
+        --status "$status" \
+        --duration "$duration" \
+        --component "$component" \
+        --role "$role" \
+        --errlog-path "$errlog_path" \
+        --live-log-path "$live_log_path" \
+        --raw-log-path "$raw_log_path" >/dev/null
 }
 
 IR_FILES=()
@@ -452,7 +570,7 @@ run_phase3_provider_reviews() {
     local slug="$1"
     local idx="$2"
     local canonical_review_json="${PHASE3_DIR}/${slug}-phase3-review.json"
-    local stage_dir pids provider review_json md_path err_path live_path model start_ts end_ts duration status
+    local stage_dir pids provider review_json md_path err_path live_path raw_path model start_ts end_ts duration status
     local selected_provider=""
     stage_dir="$(mktemp -d)"
     pids=()
@@ -470,13 +588,15 @@ run_phase3_provider_reviews() {
         md_path="$(phase3_review_md_path "$slug" "$idx" "$provider")"
         err_path="$(phase3_errlog_path "$slug" "$provider")"
         live_path="$(phase3_live_log_path "$slug" "$provider")"
+        raw_path="$(phase3_raw_log_path "$slug" "$provider")"
         reset_log_file "$err_path"
         reset_log_file "$live_path"
+        reset_log_file "$raw_path"
         append_log_marker "$live_path" "phase3 llm start slug=${slug} provider=${provider} output_json=${review_json} output_md=${md_path}"
 
         (
             local cmd
-            cmd=(python3 "${BIN_DIR}/phase3_llm_review.py" "$slug" --reports-dir "$REPORTS_DIR" --plugins-dir "$PLUGINS_DIR" --index "$idx" --provider "$provider" --codex-bin "$CODEX_BIN" --claude-bin "$CLAUDE_BIN" --review-output-path "$review_json" --output-path "$md_path" --err-path "$err_path")
+            cmd=(python3 "${BIN_DIR}/phase3_llm_review.py" "$slug" --reports-dir "$REPORTS_DIR" --plugins-dir "$PLUGINS_DIR" --index "$idx" --provider "$provider" --codex-bin "$CODEX_BIN" --claude-bin "$CLAUDE_BIN" --review-output-path "$review_json" --output-path "$md_path" --err-path "$err_path" --raw-path "$raw_path")
             model="$(provider_model "$provider")"
             if [ -n "$model" ]; then
                 cmd+=(--model "$model")
@@ -490,7 +610,7 @@ run_phase3_provider_reviews() {
 
             start_ts="$(date +%s)"
             set +e
-            "${cmd[@]}" 2>&1 | tee -a "$live_path"
+            "${cmd[@]}" >>"$live_path" 2>>"$live_path"
             llm_rc=$?
             set -e
             end_ts="$(date +%s)"
@@ -500,7 +620,8 @@ run_phase3_provider_reviews() {
                 status="failed"
             fi
             append_log_marker "$live_path" "phase3 llm end slug=${slug} provider=${provider} status=${status} rc=${llm_rc} duration_seconds=${duration}"
-            append_quota_log "phase3" "$slug" "llm_skeptic" "$provider" "$model" "$status" "$duration"
+            append_quota_log "phase3" "$slug" "llm_skeptic" "$provider" "$model" "$status" "$duration" \
+                "phase3_llm_review" "reviewer" "$err_path" "$live_path" "$raw_path"
             echo "$llm_rc" > "${stage_dir}/${provider}.rc"
         ) &
         pids+=($!)
@@ -521,12 +642,18 @@ run_phase3_provider_reviews() {
     done
 
     if provider_in_list "$PHASE3_PRIMARY_PROVIDER" && [ -f "$(phase3_review_json_path "$slug" "$PHASE3_PRIMARY_PROVIDER")" ]; then
-        selected_provider="$PHASE3_PRIMARY_PROVIDER"
+        if phase3_review_json_is_valid "$slug" "$(phase3_review_json_path "$slug" "$PHASE3_PRIMARY_PROVIDER")"; then
+            selected_provider="$PHASE3_PRIMARY_PROVIDER"
+        else
+            log_warn "Primary provider review artifact is invalid and will not be selected: $(phase3_review_json_path "$slug" "$PHASE3_PRIMARY_PROVIDER")"
+        fi
     else
         for provider in "${LLM_PROVIDER_ARRAY[@]}"; do
-            if [ -f "$(phase3_review_json_path "$slug" "$provider")" ]; then
+            if phase3_review_json_is_valid "$slug" "$(phase3_review_json_path "$slug" "$provider")"; then
                 selected_provider="$provider"
                 break
+            elif [ -f "$(phase3_review_json_path "$slug" "$provider")" ]; then
+                log_warn "Skipping invalid Phase 3 review artifact: $(phase3_review_json_path "$slug" "$provider")"
             fi
         done
     fi
@@ -557,12 +684,29 @@ run_one() {
         idx="$(ir_index_for_slug "$slug" 2>/dev/null || true)"
     fi
     local gate_md="${PHASE3_DIR}/${idx}-${slug}.md"
+    local final_report="${REPORTS_DIR}/final/${idx}-${slug}.md"
     local did_work=false
+
+    if [ -z "${AUDIT_RUN_ID:-}" ]; then
+        AUDIT_RUN_ID="${slug}-phase3-$(date -u +%Y%m%dT%H%M%SZ)-$$"
+        export AUDIT_RUN_ID
+    fi
 
     if [ ! -f "$phase2_file" ]; then
         log_error_block "Phase 2 output not found" \
             "slug" "$slug" \
             "path" "$phase2_file"
+        RUN_RESULT="failed"
+        return 1
+    fi
+
+    local phase2_trust_state
+    phase2_trust_state="$(phase2_output_trust_state "$phase2_file")"
+    if ! phase2_output_is_trusted "$phase2_file"; then
+        log_error_block "Phase 2 canonical is not trusted for Phase 3" \
+            "slug" "$slug" \
+            "path" "$phase2_file" \
+            "trust_state" "${phase2_trust_state:-missing}"
         RUN_RESULT="failed"
         return 1
     fi
@@ -610,7 +754,7 @@ run_one() {
 
     # Step 1: deterministic gate (authoritative).
     if [ "$FORCE" = true ] || ! phase3_gate_is_fresh "$slug"; then
-        log_stage "Phase 3a: Deterministic Gate"
+        log_stage "Phase 3a: Deterministic Gate$(phase3_progress_suffix 10)"
         python3 "${BIN_DIR}/phase3_gate.py" "$slug" \
             --reports-dir "$REPORTS_DIR" \
             --plugins-dir "$PLUGINS_DIR" || {
@@ -646,7 +790,7 @@ d = json.load(open('${gate_output}'))
 print(int(d.get('phase3_summary', {}).get('confirmed', 0)))
 " 2>/dev/null || echo "0")
 
-    log_info "Gate results: ${confirmed} confirmed, ${needs_llm} need LLM review"
+    log_info "Gate results: ${confirmed} confirmed, ${needs_llm} need LLM review$(phase3_progress_suffix 55)"
 
     # Step 2: optional LLM skeptic review.
     local run_llm=false
@@ -660,19 +804,19 @@ print(int(d.get('phase3_summary', {}).get('confirmed', 0)))
 
     if [ "$run_llm" = true ]; then
         if [ "$FORCE" = true ] || ! phase3_reviews_are_fresh "$slug" "$idx"; then
-            log_stage "Phase 3b: LLM Skeptic Review"
+            log_stage "Phase 3b: LLM Skeptic Review$(phase3_progress_suffix 70)"
             run_phase3_provider_reviews "$slug" "$idx"
             did_work=true
         else
             log_info "Reuse ${slug}: phase3 review artifacts are fresh"
         fi
     else
-        log_stage "Phase 3b: SKIPPED (llm-mode=${LLM_MODE}, needs_llm=${needs_llm})"
+        log_stage "Phase 3b: SKIPPED (llm-mode=${LLM_MODE}, needs_llm=${needs_llm})$(phase3_progress_suffix 90)"
     fi
 
     if [ "$APPLY_REVIEW" = true ] && [ -f "${BIN_DIR}/phase3_apply_review.py" ] && [ -f "$canonical_review_json" ]; then
         if [ "$FORCE" = true ] || ! phase3_final_is_fresh "$slug"; then
-            log_stage "Applying review corrections (optional)"
+            log_stage "Applying review corrections (optional)$(phase3_progress_suffix 90)"
             python3 "${BIN_DIR}/phase3_apply_review.py" "$slug" \
                 --reports-dir "$REPORTS_DIR" \
                 --plugins-dir "$PLUGINS_DIR" || true
@@ -701,7 +845,15 @@ print(int(d.get('phase3_summary', {}).get('confirmed', 0)))
     fi
 
     echo "  Deterministic report: ${gate_md}"
+    echo "  Final report: ${final_report}"
     echo "  Canonical Phase 3 artifact: ${canonical_path}"
+    if [ ! -f "$final_report" ]; then
+        log_error_block "Final report not generated" \
+            "slug" "$slug" \
+            "path" "$final_report"
+        RUN_RESULT="failed"
+        return 1
+    fi
     local provider_md
     for provider in "${LLM_PROVIDER_ARRAY[@]}"; do
         provider_md="$(phase3_review_md_path "$slug" "$idx" "$provider")"
@@ -709,6 +861,9 @@ print(int(d.get('phase3_summary', {}).get('confirmed', 0)))
             echo "  LLM skeptic report (${provider}): ${provider_md}"
         fi
     done
+    if phase3_pipeline_progress_enabled; then
+        echo "  Pipeline progress: $(phase3_pipeline_overall_percent 100)% (Phase 3 complete)"
+    fi
     if [ "$did_work" = true ]; then
         RUN_RESULT="done"
     else
@@ -724,7 +879,7 @@ if [ -n "$SPECIFIC_SLUG" ]; then
     exit $?
 fi
 
-# Collect Phase2 outputs with IR-order index.
+# Collect trusted Phase 2 outputs with IR-order index.
 PHASE2_FILES=()
 while IFS= read -r phase2_file; do
     PHASE2_FILES+=("$phase2_file")
@@ -737,11 +892,18 @@ fi
 INDEXED_FILE="$(mktemp)"
 trap 'rm -f "${INDEXED_FILE:-}" "${WORKER_FILE:-}" "${STATUS_FILE:-}" "${SELECTED_FILE:-}"' EXIT
 
+UNTRUSTED_COUNT=0
+
 for phase2_file in "${PHASE2_FILES[@]}"; do
     slug="$(basename "$phase2_file" -phase2.json)"
     case "$slug" in
         plugin-*) continue ;;
     esac
+
+    if ! phase2_output_is_trusted "$phase2_file"; then
+        UNTRUSTED_COUNT=$((UNTRUSTED_COUNT + 1))
+        continue
+    fi
 
     idx="$(ir_index_for_slug "$slug" 2>/dev/null || true)"
     if [ -z "$idx" ]; then
@@ -751,7 +913,7 @@ for phase2_file in "${PHASE2_FILES[@]}"; do
 done
 
 if [ ! -s "$INDEXED_FILE" ]; then
-    log_error "No Phase 2 outputs matched Phase 1 index map"
+    log_error "No trusted Phase 2 outputs matched Phase 1 index map"
     exit 1
 fi
 
@@ -774,7 +936,8 @@ done
 AVAILABLE_INDEX_CSV="${AVAILABLE_INDEX_CSV%,}"
 
 log_section "Phase 3 Batch (Interactive)"
-echo "  Phase2 outputs available: ${AVAILABLE_COUNT}"
+echo "  Trusted Phase2 outputs available: ${AVAILABLE_COUNT}"
+echo "  Untrusted Phase2 outputs skipped: ${UNTRUSTED_COUNT}"
 echo "  Indexes (IR-order): [${AVAILABLE_INDEX_CSV}]"
 echo "  Force overwrite: ${FORCE}"
 echo "  Apply review corrections: ${APPLY_REVIEW}"

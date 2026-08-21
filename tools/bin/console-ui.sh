@@ -73,6 +73,11 @@ live_log_path_from_errlog() {
     printf '%s\n' "${errlog%.err}.live.log"
 }
 
+raw_log_path_from_errlog() {
+    local errlog="$1"
+    printf '%s\n' "${errlog%.err}.raw.log"
+}
+
 run_command_with_live_logs() {
     local live_log="$1"
     local err_log="$2"
@@ -83,7 +88,41 @@ run_command_with_live_logs() {
     set +e
     "$@" \
         > >(tee -a "$live_log") \
-        2> >(tee -a "$err_log" "$live_log" >&2)
+        2> >(tee -a "$err_log" >&2)
+    local rc=$?
+    set -e
+    return "$rc"
+}
+
+run_command_with_file_logs() {
+    local live_log="$1"
+    local err_log="$2"
+    shift 2
+
+    mkdir -p "$(dirname "$live_log")" "$(dirname "$err_log")"
+
+    set +e
+    "$@" \
+        > >(tee -a "$live_log" >/dev/null) \
+        2> >(tee -a "$err_log" >/dev/null)
+    local rc=$?
+    set -e
+    return "$rc"
+}
+
+run_command_with_filtered_console_logs() {
+    local live_log="$1"
+    local err_log="$2"
+    local stdout_pattern="$3"
+    local stderr_pattern="$4"
+    shift 4
+
+    mkdir -p "$(dirname "$live_log")" "$(dirname "$err_log")"
+
+    set +e
+    "$@" \
+        > >(tee -a "$live_log" | { grep -E "$stdout_pattern" || true; }) \
+        2> >(tee -a "$err_log" | { grep -E "$stderr_pattern" >&2 || true; })
     local rc=$?
     set -e
     return "$rc"

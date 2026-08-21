@@ -1,3 +1,0 @@
-No confirmed A5 issues survived refutation. I wrote the misc-entry-point report to [pretty-link-agent-a5.json](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/pretty-link-agent-a5.json): 6 FP findings covering the authenticator sinks and CSV export route, plus 4 negative coverage notes for the remaining reviewed callbacks.
-
-The file validates against [agent-output.schema.json](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/contracts/agent-output.schema.json). The prompt’s `reports/pretty-link-threat-context.json` was not present, so runtime privilege assumptions stayed conservative where `PrliUtils::get_minimum_role()` is configurable.

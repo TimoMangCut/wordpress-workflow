@@ -20,7 +20,7 @@
   "properties": {
     "plugin_slug": { "type": "string" },
     "review_round": { "type": "integer", "minimum": 1 },
-    "review_mode": { "enum": ["core", "explore", "skeptical", "forced_exploration"] },
+    "review_mode": { "enum": ["core", "terminal_core", "explore", "skeptical", "forced_exploration"] },
     "task": {
       "type": "object",
       "required": ["role", "goal", "output_schema", "output_path", "constraints", "packet_schema", "allow_missed_findings"],

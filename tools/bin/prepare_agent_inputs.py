@@ -2,15 +2,11 @@
 """
 prepare_agent_inputs.py — candidate-based multi-agent prep
 
-Legacy behaviour is preserved for compatibility:
-- still writes per-EP-group IR slices and Semgrep subsets
-- still writes reports/<slug>-dispatch.json
-
 New behaviour:
 - normalizes IR / Semgrep / Psalm signals into candidate hypotheses
 - classifies candidates by bug family, sink family, surface, auth boundary
 - chunks candidates into bounded worker bundles for multi-agent Phase 2
-- writes reports/<slug>-candidate-bundle-agent-wNN.json bundle files
+- writes prep artifacts under reports/phase2/prep/<slug>/
 - dispatch now prefers dynamic worker agents (agent-wNN) and can optionally
   include legacy support agents (agent-b/c/d)
 """
@@ -18,7 +14,6 @@ New behaviour:
 from __future__ import annotations
 
 import argparse
-import glob
 import json
 import os
 import re
@@ -27,6 +22,18 @@ from collections import defaultdict
 from pathlib import Path
 
 import jsonschema
+
+try:
+    from .phase2_dispatch_manifest import (
+        build_dispatch_manifest,
+        dispatch_input_entry,
+        repo_relative_path,
+    )
+    from .report_paths import build_report_layout
+except ImportError:  # pragma: no cover - direct script execution
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from phase2_dispatch_manifest import build_dispatch_manifest, dispatch_input_entry, repo_relative_path
+    from report_paths import build_report_layout
 
 
 EP_GROUPS = [
@@ -755,10 +762,10 @@ def build_bundle_document(bundle: dict, ir: dict, semgrep_hits: list[dict], psal
     }
 
 
-def remove_stale_candidate_bundles(output_dir: str, slug: str) -> None:
-    for path in glob.glob(os.path.join(output_dir, f"{slug}-candidate-bundle-agent-w*.json")):
+def remove_stale_candidate_bundles(bundle_dir: Path) -> None:
+    for path in bundle_dir.glob("agent-w*.input.json"):
         try:
-            os.remove(path)
+            path.unlink()
         except OSError:
             pass
 
@@ -767,7 +774,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Prepare multi-agent Phase 2 inputs with candidate-based chunking."
     )
-    parser.add_argument("slug", nargs="?", help="Plugin slug shorthand (uses reports/phase1/<slug>-*.json and writes into reports/)")
+    parser.add_argument("slug", nargs="?", help="Plugin slug shorthand (uses reports/phase1/<slug>-*.json and writes into reports/phase2/prep/<slug>/)")
     parser.add_argument("--ir", help="Path to <slug>-ir.json")
     parser.add_argument("--semgrep", help="Path to <slug>-semgrep.json (missing path falls back to empty results)")
     parser.add_argument("--psalm", help="Path to <slug>-psalm.sarif (missing path falls back to empty results)")
@@ -807,7 +814,17 @@ def main() -> None:
         with open(args.psalm, encoding="utf-8") as fh:
             psalm_data = json.load(fh)
 
+    reports_root = Path(args.output_dir).resolve()
+    layout = build_report_layout(reports_root).ensure()
+
     slug = ir["metadata"]["plugin_slug"]
+    prep_dir = layout.phase2_prep(slug)
+    bundle_dir = layout.phase2_prep_candidate_bundles(slug)
+    legacy_slices_dir = layout.phase2_prep_legacy_slices(slug)
+    agents_dir = layout.phase2_agents(slug)
+    for path in (prep_dir, bundle_dir, legacy_slices_dir, agents_dir, layout.phase2_agent_attempts(slug)):
+        path.mkdir(parents=True, exist_ok=True)
+
     ir_slice_schema = load_schema("ir-slice.schema.json")
     bundle_schema = load_schema("phase2-candidate-bundle.schema.json")
     threat_context_rel = os.path.join("reports", "context", f"{slug}-threat-context.json")
@@ -820,15 +837,16 @@ def main() -> None:
     )
     print(f"Semgrep: {args.semgrep} ({'missing -> using empty results' if semgrep_missing else str(len(semgrep.get('results', []))) + ' results'})")
     print(f"Psalm: {args.psalm or '(not set)'} ({'missing -> using empty results' if psalm_missing else str(sum(len(run.get('results', [])) for run in psalm_data.get('runs', []))) + ' results'})")
-    print(f"Output dir: {args.output_dir}")
+    print(f"Reports root: {reports_root}")
+    print(f"Prep dir: {prep_dir}")
     print()
 
     for group_name, ep_types in EP_GROUPS:
         slice_data = slice_ir_for_group(ir, ep_types)
         validate_slice(slice_data, ir_slice_schema, group_name)
 
-        ir_out = os.path.join(args.output_dir, f"{slug}-ir-slice-{group_name}.json")
-        write_json(ir_out, slice_data)
+        ir_out = layout.phase2_legacy_ir_slice(slug, group_name)
+        write_json(str(ir_out), slice_data)
 
         ep_files = set()
         for ep in slice_data["entry_points"]:
@@ -839,8 +857,8 @@ def main() -> None:
                 ep_files.add(cb["file"])
 
         semgrep_slice = filter_semgrep_for_group(semgrep, ep_files, slug)
-        sg_out = os.path.join(args.output_dir, f"{slug}-semgrep-filtered-{group_name}.json")
-        write_json(sg_out, semgrep_slice)
+        sg_out = layout.phase2_legacy_semgrep_slice(slug, group_name)
+        write_json(str(sg_out), semgrep_slice)
 
         print(
             f"  [{group_name}] eps={len(slice_data['entry_points'])} "
@@ -877,16 +895,16 @@ def main() -> None:
             for bundle in bundles
         ],
     }
-    inventory_out = os.path.join(args.output_dir, f"{slug}-candidate-inventory.json")
-    write_json(inventory_out, inventory)
+    inventory_out = layout.phase2_candidate_inventory(slug)
+    write_json(str(inventory_out), inventory)
 
-    remove_stale_candidate_bundles(args.output_dir, slug)
+    remove_stale_candidate_bundles(bundle_dir)
     worker_agent_ids = []
     for bundle in bundles:
         bundle_doc = build_bundle_document(bundle, ir, normalized_semgrep, normalized_psalm)
         validate_bundle(bundle_doc, bundle_schema, bundle["bundle_id"])
-        bundle_out = os.path.join(args.output_dir, f"{slug}-candidate-bundle-{bundle['agent_id']}.json")
-        write_json(bundle_out, bundle_doc)
+        bundle_out = layout.phase2_candidate_bundle(slug, bundle["agent_id"])
+        write_json(str(bundle_out), bundle_doc)
         worker_agent_ids.append(bundle["agent_id"])
         print(
             f"  [bundle {bundle['agent_id']}] family={bundle['bug_family']} "
@@ -895,13 +913,16 @@ def main() -> None:
         )
 
     print()
-    print(f"Done. Wrote {len(EP_GROUPS) * 2} legacy slice files to {args.output_dir}")
+    print(f"Done. Wrote {len(EP_GROUPS) * 2} legacy slice files to {legacy_slices_dir}")
     print(f"Packing profile: {profile}")
     print(f"Candidate inventory written → {inventory_out}")
     print(f"Candidate worker bundles: {len(worker_agent_ids)}")
 
-    worker_provider = os.environ.get("PHASE2_WORKER_PROVIDER", "claude")
-    worker_model = os.environ.get("PHASE2_WORKER_CLAUDE_MODEL", "claude-sonnet-4.6")
+    worker_provider = os.environ.get("PHASE2_WORKER_PROVIDER", "codex")
+    if worker_provider == "codex":
+        worker_model = os.environ.get("PHASE2_WORKER_CODEX_MODEL", "gpt-5.4")
+    else:
+        worker_model = os.environ.get("PHASE2_WORKER_CLAUDE_MODEL", "claude-sonnet-4.6")
     reviewer_provider = os.environ.get("PHASE2_REVIEWER_PROVIDER", "codex")
     reviewer_model = ""
     if reviewer_provider == "codex":
@@ -915,7 +936,7 @@ def main() -> None:
         cluster_synth_model = os.environ.get("PHASE2_CLUSTER_SYNTH_CLAUDE_MODEL", "claude-sonnet-4.6")
         if "opus" in cluster_synth_model.lower():
             cluster_synth_model = "claude-sonnet-4.6"
-    cluster_challenger_provider = os.environ.get("PHASE2_CLUSTER_CHALLENGER_PROVIDER", "claude")
+    cluster_challenger_provider = os.environ.get("PHASE2_CLUSTER_CHALLENGER_PROVIDER", "codex")
     if cluster_challenger_provider == "codex":
         cluster_challenger_model = os.environ.get("PHASE2_CLUSTER_CHALLENGER_CODEX_MODEL", "gpt-5.4")
     else:
@@ -934,16 +955,17 @@ def main() -> None:
     provider_map = {}
     model_map = {}
     for agent_id in worker_agent_ids:
-        inputs[agent_id] = os.path.join(args.output_dir, f"{slug}-candidate-bundle-{agent_id}.json")
+        inputs[agent_id] = repo_relative_path(layout.phase2_candidate_bundle(slug, agent_id), root_dir)
         provider_map[agent_id] = worker_provider
         if worker_provider == "claude" and worker_model:
             model_map[agent_id] = worker_model
 
     agents_list = list(worker_agent_ids)
     if support_agents_enabled:
-        inputs["agent-b"] = args.ir
-        inputs["agent-c"] = args.ir
-        inputs["agent-d"] = args.ir
+        ir_rel = repo_relative_path(Path(args.ir).resolve(), root_dir)
+        inputs["agent-b"] = ir_rel
+        inputs["agent-c"] = ir_rel
+        inputs["agent-d"] = ir_rel
         agents_list.extend(["agent-b", "agent-c", "agent-d"])
 
     dispatch = {
@@ -958,7 +980,9 @@ def main() -> None:
         "provider_map": provider_map,
         "default_provider": default_provider,
         "model_map": model_map,
-        "bundle_inventory": os.path.join(args.output_dir, f"{slug}-candidate-inventory.json"),
+        "bundle_inventory": repo_relative_path(layout.phase2_candidate_inventory(slug), root_dir),
+        "agent_output_dir": repo_relative_path(layout.phase2_agents(slug), root_dir),
+        "phase2_state_path": repo_relative_path(layout.phase2_state(slug), root_dir),
         "bundle_review_enabled": bundle_review_enabled,
         "support_agents_enabled": support_agents_enabled,
         "reviewer_provider": reviewer_provider,
@@ -969,9 +993,39 @@ def main() -> None:
         "cluster_challenger_provider": cluster_challenger_provider,
         "cluster_challenger_model": cluster_challenger_model,
     }
-    dispatch_out = os.path.join(args.output_dir, f"{slug}-dispatch.json")
-    write_json(dispatch_out, dispatch)
+    dispatch_out = layout.phase2_dispatch(slug)
+    write_json(str(dispatch_out), dispatch)
+    manifest_inputs = []
+    for agent_id in agents_list:
+        rel_path = inputs.get(agent_id)
+        if not rel_path:
+            continue
+        manifest_inputs.append(
+            dispatch_input_entry(
+                root_dir,
+                agent_id,
+                root_dir / rel_path,
+                origin="bundle" if agent_id.startswith("agent-w") else "support_ir",
+            )
+        )
+    manifest = build_dispatch_manifest(
+        repo_root=root_dir,
+        slug=slug,
+        source_dir=dispatch["source_dir"],
+        run_id=os.environ.get("AUDIT_RUN_ID"),
+        dispatch_path=dispatch_out,
+        inventory_path=inventory_out,
+        ir_path=Path(args.ir).resolve(),
+        semgrep_path=Path(args.semgrep).resolve() if not semgrep_missing else None,
+        psalm_path=Path(args.psalm).resolve() if args.psalm else None,
+        threat_context_path=((root_dir / threat_context_rel).resolve() if threat_context_rel and (root_dir / threat_context_rel).is_file() else None),
+        provider_policy_path=layout.phase2_provider_policy(slug) if layout.phase2_provider_policy(slug).is_file() else None,
+        dispatch_inputs=manifest_inputs,
+    )
+    manifest_out = layout.phase2_dispatch_manifest(slug)
+    write_json(str(manifest_out), manifest)
     print(f"Dispatch config written → {dispatch_out}")
+    print(f"Dispatch manifest written → {manifest_out}")
     print(f"  Support agents enabled: {support_agents_enabled}")
     print(f"  Agents ({len(agents_list)}): {', '.join(agents_list)}")
 

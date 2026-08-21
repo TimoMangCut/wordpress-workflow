@@ -16,6 +16,13 @@ from pathlib import Path
 
 import jsonschema
 
+try:
+    from .report_paths import build_report_layout
+    from .artifact_freshness import resolve_phase2_trust_state
+except ImportError:  # pragma: no cover - direct script execution
+    from report_paths import build_report_layout
+    from artifact_freshness import resolve_phase2_trust_state
+
 
 FAMILY_MAP = {
     "broken_access_control": "authorization",
@@ -445,12 +452,22 @@ def main() -> int:
     args = parse_args()
     root = find_project_root()
     reports_dir = Path(args.reports_dir) if args.reports_dir else (root / "reports")
-    phase2_dir = reports_dir / "phase2"
-    phase2_json = Path(args.phase2_json) if args.phase2_json else (phase2_dir / f"{args.slug}-phase2.json")
-    dispatch_path = reports_dir / f"{args.slug}-dispatch.json"
+    layout = build_report_layout(reports_dir).ensure()
+    phase2_dir = layout.phase2
+    canonical_phase2_json = (phase2_dir / f"{args.slug}-phase2.json").resolve()
+    phase2_json = Path(args.phase2_json).resolve() if args.phase2_json else canonical_phase2_json
+    dispatch_path = layout.phase2_dispatch(args.slug)
     if not phase2_json.exists():
         print(f"[ERROR] Phase 2 canonical file not found: {phase2_json}")
         return 1
+    if phase2_json == canonical_phase2_json:
+        phase2_trust_state = resolve_phase2_trust_state(phase2_json)
+        if phase2_trust_state != "success":
+            print(
+                f"[ERROR] Phase 2 canonical is not trusted for cluster planning: {phase2_json} "
+                f"(trust_state={phase2_trust_state or 'missing'})"
+            )
+            return 1
 
     merged = load_json(phase2_json)
     dispatch = load_json(dispatch_path) if dispatch_path.exists() else {}
@@ -463,7 +480,7 @@ def main() -> int:
     cluster_schema = load_schema(root, "phase2-cluster.schema.json")
     cluster_input_schema = load_schema(root, "phase2-cluster-input.schema.json")
     synth_provider = (dispatch.get("cluster_synth_provider") or os.environ.get("PHASE2_CLUSTER_SYNTH_PROVIDER", "codex")).lower()
-    challenger_provider = (dispatch.get("cluster_challenger_provider") or os.environ.get("PHASE2_CLUSTER_CHALLENGER_PROVIDER", "claude")).lower()
+    challenger_provider = (dispatch.get("cluster_challenger_provider") or os.environ.get("PHASE2_CLUSTER_CHALLENGER_PROVIDER", "codex")).lower()
 
     components = connected_components(active_findings)
     components.sort(
@@ -492,7 +509,7 @@ def main() -> int:
         cluster_input_paths.append(cluster_input_path)
         cluster_documents.append(cluster_doc)
 
-    inventory_path = reports_dir / f"{args.slug}-candidate-inventory.json"
+    inventory_path = layout.phase2_candidate_inventory(args.slug)
     uncovered_worker_agents: list[str] = []
     if inventory_path.exists():
         inventory = load_json(inventory_path)

@@ -1,5 +1,0 @@
-No Agent B finding is justified for CartFlows from the cross-entry-point review. I wrote the result to [cartflows-agent-b.json](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/cartflows-agent-b.json).
-
-The artifact contains `findings: []` plus four reviewed-safe areas covering `_cartflows_global_scripts`, per-flow/per-step custom JS/CSS/script meta, `cartflows_add_to_cart_text`, and second-order SQLi coverage. The main refutations were that the raw script sinks are only reachable from admin or admin-delegated write paths, while the other stored-value flows sanitize on write or escape on read.
-
-Verification: the JSON is well-formed and validates against [agent-output.schema.json](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/contracts/agent-output.schema.json).

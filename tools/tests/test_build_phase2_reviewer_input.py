@@ -21,8 +21,10 @@ class BuildPhase2ReviewerInputTests(unittest.TestCase):
             (root / "contracts" / "phase2-reviewer-packet.schema.json").write_text(packet_schema_src.read_text(encoding="utf-8"), encoding="utf-8")
             core_output_schema_src = repo_root / "contracts" / "phase2-review-core-output.schema.json"
             explore_output_schema_src = repo_root / "contracts" / "phase2-review-explore-output.schema.json"
+            terminal_output_schema_src = repo_root / "contracts" / "phase2-review-terminal-core-output.schema.json"
             (root / "contracts" / "phase2-review-core-output.schema.json").write_text(core_output_schema_src.read_text(encoding="utf-8"), encoding="utf-8")
             (root / "contracts" / "phase2-review-explore-output.schema.json").write_text(explore_output_schema_src.read_text(encoding="utf-8"), encoding="utf-8")
+            (root / "contracts" / "phase2-review-terminal-core-output.schema.json").write_text(terminal_output_schema_src.read_text(encoding="utf-8"), encoding="utf-8")
             (plugin_dir / "demo.php").write_text(
                 "\n".join(f"<?php // line {line}" for line in range(1, 81)) + "\n",
                 encoding="utf-8",
@@ -140,6 +142,100 @@ class BuildPhase2ReviewerInputTests(unittest.TestCase):
             self.assertTrue(packet["review_questions"]["authorization"])
             self.assertTrue(reviewer_input.exists())
 
+    def test_build_reviewer_input_accepts_string_reasoning_without_crashing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "contracts").mkdir(parents=True)
+            plugin_dir = root / "plugins" / "demo"
+            plugin_dir.mkdir(parents=True)
+            repo_root = Path(__file__).resolve().parents[2]
+            for name in (
+                "phase2-reviewer-input.schema.json",
+                "phase2-reviewer-packet.schema.json",
+                "phase2-review-core-output.schema.json",
+                "phase2-review-explore-output.schema.json",
+                "phase2-review-terminal-core-output.schema.json",
+            ):
+                src = repo_root / "contracts" / name
+                (root / "contracts" / name).write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+            (plugin_dir / "demo.php").write_text("<?php\n// demo\n", encoding="utf-8")
+
+            reports = root / "reports"
+            phase1 = reports / "phase1"
+            phase2 = reports / "phase2"
+            phase1.mkdir(parents=True)
+            phase2.mkdir(parents=True)
+
+            (phase1 / "demo-ir.json").write_text(
+                json.dumps(
+                    {
+                        "entry_points": [
+                            {
+                                "id": "ep_demo",
+                                "type": "ajax",
+                                "hook_name": "wp_ajax_demo",
+                                "auth_level": "none",
+                                "file": "demo.php",
+                                "line": 10,
+                                "callback": {"name": "handle_demo", "class": None},
+                            }
+                        ],
+                        "anomalies": [],
+                        "unresolved_hooks": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            worker_output = phase2 / "demo-phase2.worker.r1.json"
+            worker_output.write_text(
+                json.dumps(
+                    {
+                        "plugin_slug": "demo",
+                        "overall_risk": "medium",
+                        "analysis_summary": "demo summary",
+                        "findings": [
+                            {
+                                "finding_id": "demo-f1",
+                                "verdict": "REVIEW",
+                                "vuln_type": "broken_access_control",
+                                "severity": "medium",
+                                "auth_required": "none",
+                                "confidence": 0.72,
+                                "entry_point_id": "ep_demo",
+                                "source_file_path": "demo.php",
+                                "source_line_number": 10,
+                                "sink_file_path": "demo.php",
+                                "sink_line_number": 20,
+                                "reasoning": "Packet-local reviewer should preserve this string reasoning instead of crashing.",
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            payload = build_reviewer_input(
+                root=root,
+                slug="demo",
+                review_round=1,
+                review_mode="core",
+                worker_output_path=worker_output,
+                review_output_path=phase2 / "demo-phase2.review.r1.json",
+                input_output_path=phase2 / "demo-phase2.review.r1.core.input.json",
+            )
+
+            packet = payload["finding_packets"][0]
+            self.assertIn(
+                "Packet-local reviewer should preserve this string reasoning",
+                packet["worker_context"]["reasoning_excerpt"]["defenses"][0],
+            )
+            self.assertIn(
+                "Packet-local reviewer should preserve this string reasoning",
+                packet["worker_context"]["original_reasoning_excerpt"]["conclusion"],
+            )
+            self.assertTrue(packet["worker_context"]["reasoning_excerpt"]["defenses"])
+
     def test_build_reviewer_input_explore_keeps_optional_evidence_and_explore_schema(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -152,6 +248,7 @@ class BuildPhase2ReviewerInputTests(unittest.TestCase):
                 "phase2-reviewer-packet.schema.json",
                 "phase2-review-core-output.schema.json",
                 "phase2-review-explore-output.schema.json",
+                "phase2-review-terminal-core-output.schema.json",
             ):
                 src = repo_root / "contracts" / name
                 (root / "contracts" / name).write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
@@ -249,6 +346,265 @@ class BuildPhase2ReviewerInputTests(unittest.TestCase):
             self.assertTrue(payload["phase1_context"]["top_anomalies"])
             self.assertTrue(reviewer_input.exists())
 
+    def test_build_reviewer_input_terminal_core_targets_current_review_findings(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "contracts").mkdir(parents=True)
+            plugin_dir = root / "plugins" / "demo"
+            plugin_dir.mkdir(parents=True)
+            repo_root = Path(__file__).resolve().parents[2]
+            for name in (
+                "phase2-reviewer-input.schema.json",
+                "phase2-reviewer-packet.schema.json",
+                "phase2-review-core-output.schema.json",
+                "phase2-review-explore-output.schema.json",
+                "phase2-review-terminal-core-output.schema.json",
+            ):
+                src = repo_root / "contracts" / name
+                (root / "contracts" / name).write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+            (plugin_dir / "demo.php").write_text(
+                "\n".join(f"<?php // line {line}" for line in range(1, 81)) + "\n",
+                encoding="utf-8",
+            )
+
+            reports = root / "reports"
+            phase1 = reports / "phase1"
+            phase2 = reports / "phase2"
+            phase1.mkdir(parents=True)
+            phase2.mkdir(parents=True)
+
+            (phase1 / "demo-ir.json").write_text(
+                json.dumps(
+                    {
+                        "entry_points": [
+                            {
+                                "id": "ep_demo",
+                                "type": "ajax",
+                                "hook_name": "wp_ajax_demo",
+                                "auth_level": "none",
+                                "file": "demo.php",
+                                "line": 10,
+                                "callback": {"name": "handle_demo", "class": None},
+                            }
+                        ],
+                        "anomalies": [],
+                        "unresolved_hooks": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            worker_output = phase2 / "demo-phase2.worker.r3.json"
+            worker_output.write_text(
+                json.dumps(
+                    {
+                        "plugin_slug": "demo",
+                        "overall_risk": "review",
+                        "analysis_summary": "demo summary",
+                        "findings": [
+                            {
+                                "finding_id": "demo-f1",
+                                "verdict": "REVIEW",
+                                "vuln_type": "broken_access_control",
+                                "severity": "medium",
+                                "auth_required": "none",
+                                "confidence": 0.72,
+                                "entry_point_id": "ep_demo",
+                                "source_file_path": "demo.php",
+                                "source_line_number": 10,
+                                "sink_file_path": "demo.php",
+                                "sink_line_number": 30,
+                            },
+                            {
+                                "finding_id": "demo-f2",
+                                "verdict": "FP",
+                                "vuln_type": "csrf",
+                                "severity": "low",
+                                "auth_required": "admin",
+                                "confidence": 0.80,
+                                "entry_point_id": "ep_demo",
+                                "source_file_path": "demo.php",
+                                "source_line_number": 10,
+                                "sink_file_path": "demo.php",
+                                "sink_line_number": 40,
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            source_review = phase2 / "demo-phase2.review.r2.json"
+            source_review.write_text(
+                json.dumps(
+                    {
+                        "plugin_slug": "demo",
+                        "review_round": 2,
+                        "review_mode": "core",
+                        "review_status": "needs_revision",
+                        "summary": {
+                            "worker_findings_reviewed": 2,
+                            "material_issues_found": True,
+                            "new_candidate_count": 0,
+                            "notes": "demo unresolved packet remains",
+                        },
+                        "finding_reviews": [
+                            {
+                                "finding_id": "demo-stale",
+                                "packet_id": "demo-stale",
+                                "parent_finding_id": "demo-stale",
+                                "assessment": "needs_more_evidence",
+                                "reason": "Stale unresolved packet from prior round.",
+                                "required_changes": [],
+                                "counter_evidence": [],
+                                "missing_evidence": ["Concrete exploit proof."],
+                                "expansion_attempts": [],
+                            },
+                            {
+                                "finding_id": "demo-f1",
+                                "packet_id": "demo-f1",
+                                "parent_finding_id": "demo-f1",
+                                "assessment": "keep",
+                                "reason": "Current worker REVIEW still needs terminal closure.",
+                                "required_changes": [],
+                                "counter_evidence": [],
+                                "missing_evidence": [],
+                                "expansion_attempts": [],
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            payload = build_reviewer_input(
+                root=root,
+                slug="demo",
+                review_round=3,
+                review_mode="terminal_core",
+                worker_output_path=worker_output,
+                review_output_path=phase2 / "demo-phase2.review.r3.json",
+                input_output_path=phase2 / "demo-phase2.review.r3.terminal_core.input.json",
+                source_review_path=source_review,
+            )
+
+            self.assertEqual(payload["review_mode"], "terminal_core")
+            self.assertEqual(payload["task"]["role"], "phase2_reviewer_terminal_core")
+            self.assertEqual(payload["task"]["output_schema"], "contracts/phase2-review-terminal-core-output.schema.json")
+            self.assertEqual([item["finding_id"] for item in payload["worker_findings"]], ["demo-f1"])
+            self.assertEqual([item["packet_id"] for item in payload["finding_packets"]], ["demo-f1"])
+            self.assertEqual(payload["worker_summary"]["total_findings"], 1)
+            self.assertTrue(any("closure_verdict" in item for item in payload["task"]["constraints"]))
+            self.assertTrue(any("Do not emit needs_more_evidence" in item for item in payload["task"]["constraints"]))
+
+    def test_terminal_core_rejects_worker_without_current_review_findings(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "contracts").mkdir(parents=True)
+            plugin_dir = root / "plugins" / "demo"
+            plugin_dir.mkdir(parents=True)
+            repo_root = Path(__file__).resolve().parents[2]
+            for name in (
+                "phase2-reviewer-input.schema.json",
+                "phase2-reviewer-packet.schema.json",
+                "phase2-review-core-output.schema.json",
+                "phase2-review-explore-output.schema.json",
+                "phase2-review-terminal-core-output.schema.json",
+            ):
+                src = repo_root / "contracts" / name
+                (root / "contracts" / name).write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+            (plugin_dir / "demo.php").write_text("<?php\n// demo\n", encoding="utf-8")
+
+            reports = root / "reports"
+            phase1 = reports / "phase1"
+            phase2 = reports / "phase2"
+            phase1.mkdir(parents=True)
+            phase2.mkdir(parents=True)
+
+            (phase1 / "demo-ir.json").write_text(
+                json.dumps(
+                    {
+                        "entry_points": [],
+                        "anomalies": [],
+                        "unresolved_hooks": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            worker_output = phase2 / "demo-phase2.worker.r4.json"
+            worker_output.write_text(
+                json.dumps(
+                    {
+                        "plugin_slug": "demo",
+                        "overall_risk": "low",
+                        "analysis_summary": "already terminally closed",
+                        "true_positives": 0,
+                        "false_positives": 1,
+                        "needs_review": 0,
+                        "total_findings_analyzed": 1,
+                        "phase2_terminal_closure": {
+                            "version": "v2-terminal-review-authoritative",
+                            "closed_finding_ids": ["demo-f1"],
+                        },
+                        "findings": [
+                            {
+                                "finding_id": "demo-f1",
+                                "verdict": "FP",
+                                "vuln_type": "broken_access_control",
+                                "severity": "informational",
+                                "auth_required": "none",
+                                "confidence": 0.2,
+                                "source_file_path": "demo.php",
+                                "source_line_number": 10,
+                                "sink_file_path": "demo.php",
+                                "sink_line_number": 20,
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            source_review = phase2 / "demo-phase2.review.r3.json"
+            source_review.write_text(
+                json.dumps(
+                    {
+                        "plugin_slug": "demo",
+                        "review_round": 3,
+                        "review_mode": "terminal_core",
+                        "review_status": "stable",
+                        "finding_reviews": [
+                            {
+                                "finding_id": "demo-f1",
+                                "packet_id": "demo-f1",
+                                "parent_finding_id": "demo-f1",
+                                "assessment": "retract",
+                                "closure_verdict": "FP",
+                                "reason": "already closed",
+                                "required_changes": [],
+                                "counter_evidence": [],
+                                "missing_evidence": [],
+                                "expansion_attempts": [],
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(ValueError, "no current REVIEW findings to close"):
+                build_reviewer_input(
+                    root=root,
+                    slug="demo",
+                    review_round=4,
+                    review_mode="terminal_core",
+                    worker_output_path=worker_output,
+                    review_output_path=phase2 / "demo-phase2.review.r4.json",
+                    input_output_path=phase2 / "demo-phase2.review.r4.terminal_core.input.json",
+                    source_review_path=source_review,
+                )
+
     def test_build_reviewer_input_atomizes_aggregate_multi_surface_findings(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -263,6 +619,7 @@ class BuildPhase2ReviewerInputTests(unittest.TestCase):
                 "phase2-reviewer-packet.schema.json",
                 "phase2-review-core-output.schema.json",
                 "phase2-review-explore-output.schema.json",
+                "phase2-review-terminal-core-output.schema.json",
             ):
                 src = repo_root / "contracts" / name
                 (root / "contracts" / name).write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
@@ -383,6 +740,7 @@ class BuildPhase2ReviewerInputTests(unittest.TestCase):
                 "phase2-reviewer-packet.schema.json",
                 "phase2-review-core-output.schema.json",
                 "phase2-review-explore-output.schema.json",
+                "phase2-review-terminal-core-output.schema.json",
             ):
                 src = repo_root / "contracts" / name
                 (root / "contracts" / name).write_text(src.read_text(encoding="utf-8"), encoding="utf-8")

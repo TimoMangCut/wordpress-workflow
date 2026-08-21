@@ -12,6 +12,7 @@ attempt to fingerprint the full runtime environment.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 from pathlib import Path
 from typing import Iterable, Optional, Sequence, Union
@@ -110,6 +111,61 @@ def resolve_canonical_phase3_path(phase3_dir: Pathish, slug: str) -> Optional[Pa
     return None
 
 
+def load_json_object(path: Pathish) -> Optional[dict]:
+    target = _coerce_path(path)
+    if not target.exists():
+        return None
+    try:
+        data = json.loads(target.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    return data if isinstance(data, dict) else None
+
+
+def resolve_phase2_trust_state(path: Pathish) -> Optional[str]:
+    data = load_json_object(path)
+    if not data:
+        return None
+    for container in (data, data.get("consensus"), data.get("merge_stats")):
+        if not isinstance(container, dict):
+            continue
+        trust_state = container.get("trust_state")
+        if isinstance(trust_state, str) and trust_state.strip():
+            return trust_state.strip()
+    return None
+
+
+def resolve_phase2_closure_complete(path: Pathish) -> Optional[bool]:
+    data = load_json_object(path)
+    if not data:
+        return None
+    for container in (data, data.get("consensus"), data.get("merge_stats")):
+        if not isinstance(container, dict):
+            continue
+        closure_complete = container.get("closure_complete")
+        if isinstance(closure_complete, bool):
+            return closure_complete
+    needs_review = data.get("needs_review")
+    if isinstance(needs_review, int):
+        return needs_review == 0
+    findings = data.get("findings")
+    if isinstance(findings, list):
+        for finding in findings:
+            if not isinstance(finding, dict):
+                continue
+            if str(finding.get("verdict") or "").strip().upper() == "REVIEW":
+                return False
+        return True
+    return None
+
+
+def is_trusted_phase2_output(path: Pathish) -> bool:
+    if resolve_phase2_trust_state(path) != "success":
+        return False
+    closure_complete = resolve_phase2_closure_complete(path)
+    return closure_complete is not False
+
+
 def _cmd_newest_mtime(args: argparse.Namespace) -> int:
     newest = newest_input_mtime(args.path)
     if newest is None:
@@ -134,6 +190,22 @@ def _cmd_canonical_phase3(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_phase2_trust_state(args: argparse.Namespace) -> int:
+    trust_state = resolve_phase2_trust_state(args.path)
+    if not trust_state:
+        return 1
+    print(trust_state)
+    return 0
+
+
+def _cmd_phase2_is_trusted(args: argparse.Namespace) -> int:
+    if is_trusted_phase2_output(args.path):
+        print("trusted")
+        return 0
+    print("untrusted")
+    return 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Artifact freshness helper")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -151,6 +223,14 @@ def build_parser() -> argparse.ArgumentParser:
     canonical_parser.add_argument("--phase3-dir", required=True)
     canonical_parser.add_argument("--slug", required=True)
     canonical_parser.set_defaults(func=_cmd_canonical_phase3)
+
+    phase2_trust_parser = subparsers.add_parser("phase2-trust-state", help="Print trust_state for a Phase 2 canonical artifact")
+    phase2_trust_parser.add_argument("--path", required=True)
+    phase2_trust_parser.set_defaults(func=_cmd_phase2_trust_state)
+
+    phase2_is_trusted_parser = subparsers.add_parser("phase2-is-trusted", help="Exit 0 when a Phase 2 canonical artifact has trust_state=success")
+    phase2_is_trusted_parser.add_argument("--path", required=True)
+    phase2_is_trusted_parser.set_defaults(func=_cmd_phase2_is_trusted)
 
     return parser
 

@@ -29,9 +29,25 @@ All `source_file_path` and `sink_file_path` values must stay relative to the plu
 4. **Propose dynamic tests**: exact HTTP requests to verify the finding
 5. **Recommend verdict change**: reject, downgrade, keep, or (rarely) upgrade
 
-## Output — MUST be JSON first
+## Output Contract
 
-Write structured JSON to: `{REVIEW_OUTPUT_PATH}`
+Do NOT write any files yourself.
+The orchestration layer will persist your response after parsing and validation.
+
+Return your entire answer in exactly this envelope:
+
+```text
+<PHASE3_REVIEW_JSON>
+{ ...valid JSON... }
+</PHASE3_REVIEW_JSON>
+<PHASE3_REVIEW_MARKDOWN>
+# Markdown report...
+</PHASE3_REVIEW_MARKDOWN>
+```
+
+You may optionally wrap the JSON or markdown payload inside fenced code blocks inside those tags, but do not add any prose outside the tags.
+
+`<PHASE3_REVIEW_JSON>` must contain:
 
 ```json
 {{
@@ -71,7 +87,7 @@ If `reviewable_findings` is empty in `{REVIEW_INPUT_PATH}`, write:
 - Markdown with Plugin Overview, Validation Summary showing zero reviewed findings, Negative Findings, and Overall Assessment
 - Do not invent findings
 
-Then ALSO write human-readable Markdown report to: `{OUTPUT_PATH}`
+`<PHASE3_REVIEW_MARKDOWN>` must contain the human-readable Markdown report.
 
 Required Markdown sections:
 1. Plugin Overview

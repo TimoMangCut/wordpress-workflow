@@ -1,319 +1,279 @@
-# FAILURE-MODES.md — Multi-Agent Orchestration Failure Handling
+# FAILURE-MODES.md — Phase 2 Failure Handling and Trust Signals
 
-> Source authority: `7-workflow-wp/multi-agent-plan.md:483-512`
-> This document describes how `orchestrate-agents.sh` handles each failure condition
-> and what the downstream impact is.
+This document describes the current Phase 2 failure-handling contract after
+Wave 1 and Wave 2 hardening.
+
+It covers:
+- where failures are logged
+- which log family contains which class of information
+- how to read trust state from Phase 2 artifacts
+- what each major failure mode means downstream
 
 ---
 
 ## Failure Log Location
 
-All failures are appended to:
+Chunked orchestration failures are appended to:
 
-```
-reports/logs/<slug>-failures.json
+```text
+reports/logs/<slug>/phase2/chunked/failures.json
 ```
 
-Format:
+The file is written at the end of orchestration runs, including clean runs with
+an empty `failures` array.
+
+Example shape:
 
 ```json
 {
   "failures": [
     {
       "phase": "phase2",
-      "agent": "agent-a2",
+      "agent": "agent-w09",
       "failure_type": "timeout",
-      "timestamp": "2025-01-15T10:30:00Z",
+      "timestamp": "2026-04-08T10:30:00Z",
       "retry_count": 1,
       "resolution": "skipped",
-      "impact": "AJAX auth findings may be incomplete",
-      "provider": "codex",
-      "quota_account": "acct-abc123",
-      "preflight_exit_code": 0,
-      "stderr_excerpt": "…first 500 chars of agent stderr…"
+      "impact": "Bundle findings may be absent from local merge",
+      "provider": "claude",
+      "quota_account": "",
+      "stderr_excerpt": "..."
     }
   ]
 }
 ```
 
-**Optional fields** (present only when non-empty):
-- `provider` — which CLI ran the agent: `"codex"` or `"claude"`
-- `quota_account` — value of `CODEX_QUOTA_ACCOUNT` env var at run time (traceability)
-- `preflight_exit_code` — exit code from pre-run quota probe (quota_exhausted_preflight only)
-- `stderr_excerpt` — first 500 chars of agent stderr (quota_exhausted_mid_run, timeout)
+---
 
-The file is written at the end of every orchestration run, even on success (empty `failures` array).
+## Log Families
+
+Phase 2 now separates scheduler, provider, assistant, and stderr channels.
+
+| Path | Message Class |
+|------|---------------|
+| `reports/logs/<slug>/phase2/run.live.log` | Phase 2 envelope / coordinator progress |
+| `reports/logs/<slug>/phase2/run.err` | Phase 2 envelope warnings/errors |
+| `reports/logs/<slug>/phase2/chunked/run.live.log` | Chunked scheduler progress |
+| `reports/logs/<slug>/phase2/chunked/run.err` | Chunked scheduler warnings/errors |
+| `reports/logs/<slug>/phase2/chunked/failures.json` | Structured chunked failure audit trail |
+| `reports/logs/<slug>/phase2/chunked/agents/<agent>/attempt-XX/assistant.live.log` | Parsed assistant text stream for one worker attempt |
+| `reports/logs/<slug>/phase2/chunked/agents/<agent>/attempt-XX/provider.raw.log` | Raw provider output for one worker attempt |
+| `reports/logs/<slug>/phase2/chunked/agents/<agent>/attempt-XX/stderr.err` | Provider stderr for one worker attempt |
+| `reports/logs/<slug>/phase2/chunked/agents/<agent>/attempt-XX/last-message.txt` | Last assistant message snapshot for one worker attempt |
+| `reports/logs/<slug>/phase2/chunked/agents/<agent>/review.r1.live.log` | Reviewer live text |
+| `reports/logs/<slug>/phase2/chunked/agents/<agent>/review.r1.raw.log` | Reviewer raw provider log |
+| `reports/logs/<slug>/phase2/chunked/agents/<agent>/revision.r1.live.log` | Revision live text |
+| `reports/logs/<slug>/phase2/chunked/agents/<agent>/revision.r1.raw.log` | Revision raw provider log |
+| `reports/logs/<slug>/phase2/cluster/run.live.log` | Cluster scheduler progress |
+| `reports/logs/<slug>/phase2/cluster/run.err` | Cluster warnings/errors |
+
+Rule of thumb:
+- read `run.live.log` when you want scheduler progress
+- read `assistant.live.log` when you want the LLM's text stream
+- read `provider.raw.log` when you need low-level provider facts
+- read `stderr.err` when you suspect CLI/runtime failures
 
 ---
 
-## Failure Mode Reference
+## Trust State
 
-### 1. Agent Timeout
+Phase 2 now emits explicit trust semantics instead of forcing operators to infer
+trust from warning tone alone.
 
-**Condition:** Agent does not write a valid output file within `timeout_seconds`
-(from dispatch config, or `--timeout` override).
+Primary artifacts:
 
-**Action:**
-1. Kill the agent process.
-2. Retry once (same agent, same input).
-3. If retry also times out → skip agent, log `failure_type: "timeout"`, `retry_count: 1`.
-
-**Downstream impact:** Findings for the timed-out agent's EP group are absent from
-the merge. The merge proceeds with the remaining agents' output.
-
-**Log entry example:**
-```json
-{
-  "failure_type": "timeout",
-  "agent": "agent-a2",
-  "retry_count": 1,
-  "resolution": "skipped",
-  "impact": "AJAX auth findings may be incomplete"
-}
+```text
+reports/phase2/<slug>-phase2.state.json
+reports/phase2/<slug>-phase2.local.json
+reports/phase2/<slug>-phase2.consensus.json
+reports/phase2/<slug>-phase2.json
 ```
 
-**Recovery:** Re-run the single agent manually and re-merge, or accept findings
-for the remaining groups as partial coverage.
+Current values:
+
+| Value | Meaning |
+|-------|---------|
+| `success` | Required validation layers completed without known degradation |
+| `degraded_success` | Output was produced, but degradation signals were recorded |
+| `partial_success` | The phase produced partial output but did not complete the full contract |
+| `failed` | The phase failed and the output must not be treated as canonical |
+| `in_progress` | Runtime state only; work is still active |
+
+Common degradation signals:
+- `agents_missing`
+- `schema_errors`
+- `conflicts_present`
+- `unresolved_clusters`
+- `open_questions_present`
+- `missing_evidence_present`
+- `cluster_synthesis_incomplete`
+- `cluster_challenge_incomplete`
+- `cluster_plan_missing`
+
+Canonical publish rule:
+- `reports/phase2/<slug>-phase2.json` is authoritative only after the consensus
+  writer succeeds.
+- `reports/phase2/<slug>-phase2.local.json` is a local merge artifact, not
+  downstream truth.
 
 ---
 
-### 2. Agent Malformed / Invalid JSON Output
+## Failure Modes
 
-**Condition:** Agent writes an output file but it is not valid JSON.
+### 1. Empty Execution Surface
 
-**Action:**
-1. Attempt JSON repair via Python (load with error handling).
-2. If repair succeeds → treat as done.
-3. If repair fails → reject agent output, log `failure_type: "invalid_json"`.
-   Merge continues with remaining valid outputs.
+Condition:
+- dispatch produced no runnable agents
 
-**Downstream impact:** The offending agent's findings are excluded from the merge.
-Other agents' findings are unaffected.
+Current behavior:
+- if prep metadata indicates `total_bundles=0`, orchestration exits cleanly as a
+  justified no-op
+- if the dispatch is broken and still claims runnable work, orchestration fails
+  closed with `failure_type: "empty_execution_surface"`
 
-**Log entry example:**
-```json
-{
-  "failure_type": "invalid_json",
-  "agent": "agent-b",
-  "retry_count": 0,
-  "resolution": "rejected",
-  "impact": "Full-IR agent output rejected — stored XSS / SQLi findings for other EPs may be absent"
-}
-```
+Downstream impact:
+- broken dispatch: no merge, no canonical Phase 2 output
+- explicit zero-bundle workload: no-op, not an integrity failure
 
-**Recovery:** Inspect `reports/logs/<slug>-agent-b.log` for the agent's stderr.
-Re-run the agent with a longer timeout or adjusted prompt, then re-merge.
+### 2. Worker Timeout
 
----
+Condition:
+- a bundle does not produce a valid attempt-local output before timeout
 
-### 3. Agent Missing Output File
+Current behavior:
+1. mark attempt timeout
+2. kill process tree
+3. retry once with a new attempt-local output path
+4. if both attempts fail, record `failure_type: "timeout"`
 
-**Condition:** Agent process exits (any exit code) without creating the expected
-`reports/<slug>-agent-{id}.json` file.
+Downstream impact:
+- the affected bundle may be absent from local merge
+- merge trust state should surface degradation if expected bundles are missing
 
-**Action:**
-- Log `failure_type: "missing_output"`, `resolution: "skipped"`.
-- Merge proceeds with remaining agents' output.
+### 3. Invalid or Drifted Worker Output
 
-**Downstream impact:** Same as timeout — findings for this EP group absent.
+Condition:
+- provider output exists but fails JSON/schema expectations
 
-**Log entry example:**
-```json
-{
-  "failure_type": "missing_output",
-  "agent": "agent-c",
-  "retry_count": 0,
-  "resolution": "skipped",
-  "impact": "Shortcode EP findings absent from merge"
-}
-```
+Current behavior:
+1. keep raw provider artifact
+2. normalize into attempt-local normalized output
+3. promote only if normalized output validates
+4. otherwise record failure and skip bundle
 
-**Note:** If the IR slice for this agent was empty (no EPs in group), an absent
-output file is expected and is logged as `missing_input_file` at startup — not
-a failure.
+Downstream impact:
+- raw evidence remains available for repair/debug
+- canonical per-agent output is not promoted from malformed data
 
----
+### 4. Reviewer or Revision Drift
 
-### 4. Agent Missing Input / Empty IR Slice
+Condition:
+- reviewer/revision returns structurally valid JSON that still drifts from
+  `agent-output.schema.json`
 
-**Condition:** The dispatch config lists an agent but its input file does not
-exist, or the file is empty / not found on disk.
+Current behavior:
+- revision artifacts are normalized before promotion
+- if normalization still cannot satisfy the schema, the original worker output
+  is preserved and the run emits warnings
 
-**Action:**
-- Skip the agent before launch (no Codex CLI call made).
-- Log `failure_type: "missing_input_file"`, `resolution: "skipped"`.
+Downstream impact:
+- the bundle remains mergeable, but the revised view is not adopted
+- trust may degrade if the resulting merge misses expected coverage
 
-**Downstream impact:** None — an absent IR slice means no EPs in that group.
-This is expected behavior, not an error.
+### 5. Quota or Usage Exhaustion
 
-**Log entry example:**
-```json
-{
-  "failure_type": "missing_input_file",
-  "agent": "agent-d",
-  "retry_count": 0,
-  "resolution": "skipped",
-  "impact": "REST EP findings absent from merge — IR slice empty (no REST endpoints)"
-}
-```
+Condition:
+- provider exits early or signals usage exhaustion
 
----
+Current behavior:
+- record failure entry with provider/quota context
+- keep prior valid outputs
+- resume path is:
 
-### 5. Quota Exhausted (Mid-Run)
-
-**Condition:** An agent process exits early (non-zero exit, no output file) and
-its stderr contains keywords `usage limit`, `usage exhausted`, `rate limit`, or
-`quota`.
-
-**Action:**
-1. Log `failure_type: "quota_exhausted_mid_run"`, `resolution: "skipped"`.
-2. Include `provider`, `quota_account`, and `stderr_excerpt` (first 500 chars)
-   in the failure entry for traceability.
-3. Emit a `log_warn` with resume instructions.
-4. Remaining pending agents in the current run are still launched (do not abort).
-
-**Downstream impact:** Findings for this agent's EP group absent from merge.
-Other agents are unaffected.
-
-**Log entry example:**
-```json
-{
-  "failure_type": "quota_exhausted_mid_run",
-  "agent": "agent-c",
-  "retry_count": 0,
-  "resolution": "skipped",
-  "impact": "Agent-C (anomaly scan) absent — anomaly findings missing from phase2",
-  "provider": "codex",
-  "quota_account": "acct-abc123",
-  "stderr_excerpt": "Error: usage exhausted for this account. Please try again…"
-}
-```
-
-**Recovery:**
 ```bash
-# After quota resets:
 bash tools/bin/orchestrate-agents.sh <slug> --resume-missing-only
 ```
 
+Downstream impact:
+- unaffected bundles still merge
+- cost ledger still records the failed call if the provider surfaced telemetry
+
+### 6. All Agents Failed
+
+Condition:
+- no bundle produced a valid canonical per-agent output
+
+Current behavior:
+- record `failure_type: "all_agents_failed"`
+- unless `--no-single-agent-fallback` is set, recurse into `run-phase2.sh`
+
+Downstream impact:
+- successful fallback yields a single-agent Phase 2 path
+- failed fallback yields no canonical Phase 2 output
+
+### 7. Merge Failure
+
+Condition:
+- `merge_agent_outputs.py` returns non-zero
+
+Current behavior:
+- orchestrator records `failure_type: "merge_failed"` and exits non-zero
+
+Downstream impact:
+- no local merge artifact is produced
+- no consensus/canonical publish can occur
+
+### 8. Cluster or Consensus Degradation
+
+Condition:
+- cluster planning, pack building, synth/challenge, or consensus writing fails
+
+Current behavior:
+- cluster-stage failures are recorded
+- trust/degradation signals are propagated into summary artifacts when output is
+  still produced
+- consensus failure in the canonical Phase 2 coordinator must fail closed and
+  block `phase2.json`
+
+Downstream impact:
+- local merge may exist
+- canonical publish must not proceed if consensus-authoritative write fails
+
 ---
 
-### 6. All Agents Fail
+## Recovery Checklist
 
-**Condition:** Every agent in the dispatch config either times out, writes no
-output, or writes malformed JSON.
-
-**Action:**
-- Writes a failure log entry with `failure_type: "all_agents_failed"` and the
-  structured field `multi_agent_fallback: true` (JSON boolean — queryable by tooling
-  without parsing free-text).
-- **Automatically invokes** `run-phase2.sh <slug>` (single-agent Phase 2 fallback).
-- Sentinel file is NOT written by the orchestrator (run-phase2.sh manages its own output).
-
-**Exit codes:**
-- `0` — fallback succeeded (pipeline continues from run-phase2.sh output).
-- `2` — fallback script not found, or fallback itself failed.
-
-**Downstream impact:** If fallback succeeds, Phase 2 output is produced by the
-single-agent pipeline (lower coverage, no per-EP-group parallelism). If fallback
-also fails, no `<slug>-phase2.json` is written and the gate cannot run.
-
-**Manual re-run (if needed):**
 ```bash
-bash tools/bin/run-phase2.sh <slug>
+# 1. Read structured failures
+cat reports/logs/<slug>/phase2/chunked/failures.json | python3 -m json.tool
+
+# 2. Read scheduler progress
+tail -f reports/logs/<slug>/phase2/chunked/run.live.log
+
+# 3. Read one agent's assistant stream
+tail -f reports/logs/<slug>/phase2/chunked/agents/<agent>/attempt-01/assistant.live.log
+
+# 4. Read one agent's raw provider stream
+tail -f reports/logs/<slug>/phase2/chunked/agents/<agent>/attempt-01/provider.raw.log
+
+# 5. Inspect state and trust
+cat reports/phase2/<slug>-phase2.state.json | python3 -m json.tool
+cat reports/phase2/<slug>-phase2.local.json | python3 -m json.tool
+cat reports/phase2/<slug>-phase2.consensus.json | python3 -m json.tool
 ```
 
-**Detecting fallback in tooling:** Check `multi_agent_fallback: true` in
-`reports/logs/<slug>-failures.json` — this field is a JSON boolean, not a text note.
-
----
-
-### 7. Merge Script Failure
-
-**Condition:** `merge_agent_outputs.py` returns a non-zero exit code.
-
-**Action:**
-- Orchestrator logs `failure_type: "merge_failed"`, exits with code `1`.
-- Sentinel file is NOT written.
-
-**Downstream impact:** No canonical `<slug>-phase2.json` written. Gate cannot run.
-
-**Recovery:** Inspect agent output files manually. Re-run merge:
-```bash
-python3 tools/bin/merge_agent_outputs.py <slug>
-```
-
----
-
-### 8. Claude Code Verify Fail / Timeout (Phase 2.9)
-
-**Condition:** The optional Claude Code verify step (Session 21) fails or times out.
-
-**Action (handled outside this script):**
-- Accept `<slug>-phase2.json` as produced by merge (unverified output).
-- Flag `unverified: true` in the run manifest.
-- Gate runs on merged output.
-
-**Note:** This script writes `<slug>-merge-ready` sentinel after successful merge.
-The verify step runs after the sentinel is present. If verify is skipped or fails,
-the gate still has the merged output to work with.
-
----
-
-### 9. High Conflict Rate in Merge
-
-**Condition (detected by merge_agent_outputs.py):** More than 50% of findings
-have conflicting verdicts across agents.
-
-**Action (handled by merge script):**
-- Flag `high_conflict_rate: true` in the merged output.
-- Escalate: Claude Code performs full review instead of spot-check.
-
-**Downstream impact:** Increased Claude Code review time and token cost, but
-higher output quality.
-
-**This orchestrator's role:** None beyond writing the sentinel. The merge script
-handles conflict detection and escalation flagging.
-
----
-
-## Quick Reference
-
-| Failure Type | Retry? | Merge Continues? | Sentinel Written? | Exit Code |
-|--------------|--------|-----------------|-------------------|-----------|
-| timeout | 1x | Yes (if others ok) | Yes (if merge ok) | 0 |
-| invalid_json | No | Yes (if others ok) | Yes (if merge ok) | 0 |
-| missing_output | No | Yes (if others ok) | Yes (if merge ok) | 0 |
-| missing_input_file | No (skip at start) | Yes | Yes (if merge ok) | 0 |
-| quota_exhausted_mid_run | No | Yes (if others ok) | Yes (if merge ok) | 0 |
-| all_agents_failed | — | No (fallback invoked) | **No** | **0** (fallback ok) / **2** (fallback fails) |
-| merge_failed | No | — | **No** | **1** |
-
----
-
-## Diagnosing Failures
+For per-run cost accountability:
 
 ```bash
-# View failure log
-cat reports/logs/<slug>-failures.json | python3 -m json.tool
-
-# View per-agent stderr
-cat reports/logs/<slug>-agent-<id>.log
-
-# Check which agents produced output
-ls -la reports/<slug>-agent-*.json
-
-# Check if merge-ready sentinel was written
-ls -la reports/<slug>-merge-ready
-
-# Check merged output validity
-python3 -c "import json; json.load(open('reports/<slug>-phase2.json'))" && echo "Valid"
+python3 tools/bin/quota-report.py --run-id <run_id> --days 30
 ```
 
 ---
 
 ## See Also
 
-- `docs/ORCHESTRATION.md` — Pipeline usage guide
-- `7-workflow-wp/multi-agent-plan.md:483-512` — Failure mode specification
-- `tools/bin/orchestrate-agents.sh` — Orchestrator implementation
-- `tools/bin/merge_agent_outputs.py` — Merge script
+- `/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/docs/ORCHESTRATION.md`
+- `/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/WORKFLOW-GUIDE.md`
+- `/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/tools/bin/orchestrate-agents.sh`
+- `/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/tools/bin/merge_agent_outputs.py`
+- `/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/tools/bin/write_phase2_consensus.py`

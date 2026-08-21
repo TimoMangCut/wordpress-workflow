@@ -1,3 +1,0 @@
-[TIMING] start=1775350605.134 provider=claude slug=backwpup
-[ERROR] provider timed out after 1200s
-[TIMING] end=1775351830.645 elapsed=1225.5s exit=timeout

@@ -38,8 +38,10 @@
         "clusters_total": { "type": "integer", "minimum": 0 },
         "synth_ok_count": { "type": "integer", "minimum": 0 },
         "challenge_ok_count": { "type": "integer", "minimum": 0 },
+        "closure_packets_total": { "type": "integer", "minimum": 0 },
         "open_questions_total": { "type": "integer", "minimum": 0 },
         "missing_evidence_total": { "type": "integer", "minimum": 0 },
+        "closure_complete": { "type": "boolean" },
         "unresolved_cluster_ids": {
           "type": "array",
           "items": { "type": "string" }

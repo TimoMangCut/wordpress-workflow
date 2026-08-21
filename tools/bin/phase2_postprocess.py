@@ -31,7 +31,12 @@ try:
 except ImportError:
     _JSONSCHEMA_AVAILABLE = False
 
-from report_paths import build_report_layout
+try:
+    from .report_paths import build_report_layout
+    from .artifact_freshness import resolve_phase2_trust_state
+except ImportError:  # pragma: no cover - direct script execution
+    from report_paths import build_report_layout
+    from artifact_freshness import resolve_phase2_trust_state
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
 _ROOT_DIR = _SCRIPT_DIR.parent.parent  # tools/bin -> tools -> root
@@ -297,6 +302,11 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--phase2-path", default="", help="Override path to phase2 JSON file")
     p.add_argument("--semgrep-report", default="", help="Path to semgrep JSON report (for dismissed_signals)")
     p.add_argument("--in-place", action="store_true", help="Overwrite reports/phase2/<slug>-phase2.json")
+    p.add_argument(
+        "--allow-canonical-phase2",
+        action="store_true",
+        help="Allow direct postprocess writes to canonical reports/phase2/<slug>-phase2.json",
+    )
     return p.parse_args()
 
 
@@ -304,6 +314,15 @@ def main() -> int:
     args = parse_args()
     layout = build_report_layout(args.reports_dir).ensure()
     phase2_path = args.phase2_path or str(layout.phase2 / f"{args.slug}-phase2.json")
+    canonical_phase2_path = str(layout.phase2 / f"{args.slug}-phase2.json")
+    if os.path.normpath(phase2_path) == os.path.normpath(canonical_phase2_path) and not args.allow_canonical_phase2:
+        trust_state = resolve_phase2_trust_state(phase2_path)
+        print(
+            "[ERROR] Refusing to postprocess canonical Phase 2 without explicit approval: "
+            f"{phase2_path} (trust_state={trust_state or 'missing'})"
+        )
+        print("        Pass --allow-canonical-phase2 only for deliberate manual recovery workflows.")
+        return 1
     data = load_json(phase2_path)
     if not data:
         print(f"[ERROR] Missing/invalid phase2 json: {phase2_path}")

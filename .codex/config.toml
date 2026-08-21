@@ -4,6 +4,15 @@ model_provider = "codex-lb"
 personality = "pragmatic"
 project_doc_max_bytes = 131072
 
+[projects."/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH"]
+trust_level = "trusted"
+
+[projects."/Volumes/External_Disk/timo/projects/vnindex-trading-skills"]
+trust_level = "trusted"
+
+[plugins."github@openai-curated"]
+enabled = false
+
 [shell_environment_policy]
 inherit = "core"
 
@@ -17,4 +26,5 @@ name = "OpenAI"
 base_url = "http://127.0.0.1:2455/backend-api/codex"
 wire_api = "responses"
 supports_websockets = true
-requires_openai_auth = true  # required for codex app
+env_key = "CODEX_LB_API_KEY"
+requires_openai_auth = false

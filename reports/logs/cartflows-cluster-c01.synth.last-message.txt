@@ -1,3 +1,0 @@
-Wrote the synthesis to [cartflows-cluster-c01.synth.json](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/reports/phase2/cartflows-cluster-c01.synth.json).
-
-The result is `status: "mixed"`: four upload-related members collapse into one public checkout upload surface, while the checkout-layout include path and the email-enumeration endpoint do not currently support a stronger cross-bundle chain. The JSON passed both `jq` parsing and schema validation against [phase2-cluster-output.schema.json](/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH/contracts/phase2-cluster-output.schema.json).

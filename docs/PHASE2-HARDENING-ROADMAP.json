@@ -1,0 +1,3429 @@
+{
+  "document_id": "phase2-hardening-roadmap",
+  "version": "1.22.1",
+  "generated_at": "2026-04-14T00:00:00Z",
+  "workspace": "/Volumes/External_Disk/timo/WORDPRESS-PLUGIN-RESEARCH",
+  "purpose": [
+    "Capture the next enhancement waves for Phase 2 pipeline hardening.",
+    "Preserve observed failure context so later chat sessions can continue without reconstructing the same evidence.",
+    "Provide a reusable execution and validation checklist for workflow integrity, observability, and cost tracing."
+  ],
+  "scope": {
+    "in_scope": [
+      "run-single-plugin.sh canonical full-audit flow",
+      "run-phase2.sh local Phase 2 coordinator",
+      "orchestrate-agents.sh chunked worker orchestration",
+      "merge_agent_outputs.py deterministic local merge",
+      "write_phase2_consensus.py canonical Phase 2 publish step",
+      "phase2 reviewer input/builders",
+      "Phase 2 logs, state, and cost telemetry"
+    ],
+    "out_of_scope_for_now": [
+      "hard quota gate enforcement",
+      "stop-loss mid-run termination policy",
+      "major Phase 1 architecture changes",
+      "major Phase 3 architecture changes"
+    ]
+  },
+  "ground_truth": {
+    "workspace_docs": [
+      "docs/wp-context.md",
+      "docs/bug-bounty-rules-summary.md",
+      "WORKFLOW-GUIDE.md",
+      "docs/ORCHESTRATION.md",
+      "7-workflow-wp/PHASE2-ARCHITECTURE-SPEC.md"
+    ],
+    "key_contracts": [
+      "contracts/agent-output.schema.json",
+      "contracts/phase2-reviewer-input.schema.json",
+      "contracts/phase2-reviewer-packet.schema.json",
+      "contracts/phase2-consensus.schema.json"
+    ]
+  },
+  "observed_failures_reference": {
+    "primary_case": "backwpup",
+    "observed_artifacts": [
+      "reports/logs/backwpup/phase2/run.err",
+      "reports/logs/backwpup/phase2/chunked/run.err",
+      "reports/logs/backwpup/phase2/chunked/run.live.log",
+      "reports/logs/backwpup/phase2/reviewer/r1.codex.core.err",
+      "reports/phase2/backwpup-phase2.state.json",
+      "reports/phase2/backwpup-phase2.worker.r1.json",
+      "reports/phase2/agents/backwpup/agent-w09.output.json"
+    ],
+    "observed_failures": [
+      {
+        "id": "F-001",
+        "title": "Reviewer core input builder crashed on mixed reasoning shapes",
+        "symptom": "AttributeError: 'str' object has no attribute 'get'",
+        "impact": "Reviewer core aborted before critique output existed.",
+        "status_after_patch": "patched_and_artifact_replayed"
+      },
+      {
+        "id": "F-002",
+        "title": "Bundle revision outputs drifted from agent-output schema",
+        "symptom": "Revision outputs were rejected despite reviewer and revision steps having consumed quota.",
+        "impact": "Original worker outputs were preserved; revised outputs were lost.",
+        "status_after_patch": "patched_and_artifact_replayed"
+      },
+      {
+        "id": "F-003",
+        "title": "Chunked bundle output could be malformed JSON after provider success",
+        "symptom": "agent-w09 produced successful raw provider output but canonical JSON contained invalid escape sequences.",
+        "impact": "Local merge skipped the bundle.",
+        "status_after_patch": "patched_and_artifact_replayed"
+      },
+      {
+        "id": "F-004",
+        "title": "Local merge wrote canonical phase2.json too early",
+        "symptom": "phase2.json existed before reviewer core and consensus had succeeded.",
+        "impact": "Downstream could consume a misleading Phase 2 artifact.",
+        "status_after_patch": "partially_patched_but_requires_full_wave1_completion"
+      },
+      {
+        "id": "F-005",
+        "title": "Phase 2 state/details JSON was brittle under shell interpolation",
+        "symptom": "details_parse_error remained in phase2.state.json.",
+        "impact": "Phase-level observability and traceability were degraded.",
+        "status_after_patch": "partially_patched_needs_structural_fix"
+      }
+    ]
+  },
+  "wave_3_input_risks": [
+    {
+      "id": "R-001",
+      "state": "risk_note",
+      "title": "Canonical phase2.json can still be published before cluster/consensus fully complete",
+      "why_it_matters": "The final downstream artifact can appear authoritative even if cross-bundle validation layers are degraded or skipped."
+    },
+    {
+      "id": "R-002",
+      "state": "risk_note",
+      "title": "Normalizer may preserve TP findings that should be downgraded to REVIEW",
+      "why_it_matters": "Robustness repairs can accidentally over-preserve confidence if evidence completeness is not enforced."
+    },
+    {
+      "id": "R-003",
+      "state": "uncertain",
+      "title": "Chunked completion logic may still have a process/output race window",
+      "why_it_matters": "A syntactically valid file may be promoted before the provider process fully exits cleanly."
+    },
+    {
+      "id": "R-004",
+      "state": "risk_note",
+      "title": "Resume mode mutates canonical agent outputs in place during validation",
+      "why_it_matters": "This weakens provenance and makes raw-vs-normalized evidence less clear."
+    },
+    {
+      "id": "R-005",
+      "state": "risk_note",
+      "title": "State/log contracts remain partially stringly-typed",
+      "why_it_matters": "Phase-level observability can drift again even if core execution succeeds."
+    },
+    {
+      "wave_id": "wave_10_forced_exploration_completion_boundary",
+      "title": "Forced Exploration Completion Boundary",
+      "goal": "Keep Phase 2 completion semantics honest when the post-review worker artifact still carries unresolved core-review feedback, and avoid spending selective-provider time on an explore round that cannot legitimately close that gap.",
+      "priority": "high",
+      "status": "completed_with_nonheavy_validation",
+      "last_reviewed_at": "2026-04-14",
+      "status_summary": "Wave 10 now stops before reviewer explore when the latest core review still contains unresolved non-field-fix feedback after the final worker revision. The pipeline records a truthful partial outcome instead of blaming a Claude explore timeout for a still-unreviewed post-revision worker artifact.",
+      "tasks": [
+        {
+          "task_id": "W10-T1",
+          "title": "Gate forced exploration behind resolved core feedback",
+          "status": "completed",
+          "status_notes": [
+            "run-phase2.sh now summarizes the last core review assessments before launching forced exploration.",
+            "If the current worker artifact is newer than the last completed core review and that last core review still has unresolved assessments beyond field_fix, the explore round is skipped and the run stops partial with an explicit stop_reason."
+          ]
+        },
+        {
+          "task_id": "W10-T2",
+          "title": "Make stop_reason and logs reflect the real boundary",
+          "status": "completed",
+          "status_notes": [
+            "The inline console and err/live markers now say forced exploration was skipped because unresolved core feedback remained after the final worker revision.",
+            "This removes the previous false narrative where a Claude explore timeout appeared to be the primary reason canonical Phase 2 was not published."
+          ]
+        }
+      ],
+      "validation_plan": [
+        {
+          "validation_id": "W10-V1",
+          "title": "Forced exploration boundary regression validation",
+          "status": "completed",
+          "purpose": "Prove that a resumed run with worker.r2 + review.r2(needs_revision) performs worker.r3, then skips reviewer explore when unresolved core feedback remains, recording a truthful partial stop reason."
+        }
+      ],
+      "wave_exit_criteria": [
+        "Forced exploration does not launch when the latest core review still contains unresolved non-field-fix feedback for a newer post-review worker artifact.",
+        "Phase 2 stop_reason and logs distinguish unresolved core feedback from selective-provider explore failures."
+      ]
+    },
+    {
+      "wave_id": "wave_11_single_plugin_entrypoint_convergence",
+      "title": "Single-Plugin Entrypoint Convergence",
+      "goal": "Make run-single-plugin.sh a sufficient public entrypoint for single-plugin recovery and Phase 2-focused debugging, while keeping run-phase2.sh as the engine authority behind it.",
+      "priority": "medium",
+      "status": "completed_with_nonheavy_validation",
+      "last_reviewed_at": "2026-04-14",
+      "status_summary": "run-single-plugin.sh now supports a truthful Phase 2-only execution mode and forwards Phase 2 cluster toggles, so operators can use one public single-plugin command for both full pipeline and Phase 2 recovery workflows.",
+      "tasks": [
+        {
+          "task_id": "W11-T1",
+          "title": "Add Phase 2-only public mode to run-single-plugin.sh",
+          "status": "completed",
+          "status_notes": [
+            "The single-plugin wrapper now accepts --phase2-only and stops cleanly before Phase 3.",
+            "Resume and Phase 1 reuse semantics remain unchanged."
+          ]
+        },
+        {
+          "task_id": "W11-T2",
+          "title": "Forward Phase 2 cluster toggles through the single-plugin wrapper",
+          "status": "completed",
+          "status_notes": [
+            "run-single-plugin.sh now accepts --clusters and --no-clusters and forwards them to run-phase2.sh."
+          ]
+        }
+      ],
+      "validation_plan": [
+        {
+          "validation_id": "W11-V1",
+          "title": "Single-plugin Phase 2-only wrapper validation",
+          "status": "completed",
+          "purpose": "Prove that run-single-plugin.sh --resume --phase2-only stops before Phase 3 and forwards Phase 2 cluster toggles correctly."
+        }
+      ],
+      "wave_exit_criteria": [
+        "Operators can use run-single-plugin.sh as the public single-plugin entrypoint for both full pipeline and Phase 2-only recovery paths.",
+        "Phase 2 cluster toggles remain controllable from the single-plugin wrapper without bypassing run-phase2.sh authority."
+      ]
+    },
+    {
+      "wave_id": "wave_12_terminal_core_closure",
+      "title": "Terminal Core Closure For Bounded Phase 2 Loops",
+      "goal": "Force a deterministic conclusion when bounded Phase 2 worker/reviewer rounds exhaust without proving the remaining core-review packets, so the pipeline stops on evidence rather than lingering in a local-only partial state.",
+      "priority": "high",
+      "status": "completed_with_nonheavy_validation",
+      "last_reviewed_at": "2026-04-14",
+      "status_summary": "Phase 2 now applies a deterministic terminal-closure round after the final worker revision when the last core review still contains unresolved non-field-fix packets. Those unproven packets are closed as FP with reviewer-backed reopen conditions, allowing Phase 2 to publish a canonical artifact instead of stalling at partial_success.",
+      "tasks": [
+        {
+          "task_id": "W12-T1",
+          "title": "Add a deterministic terminal-closure helper for unresolved core-review packets",
+          "status": "completed",
+          "status_notes": [
+            "Added phase2_terminal_closure.py, which consumes the latest worker artifact plus the last core review and converts only unresolved non-field-fix review items into FP outcomes.",
+            "The closure helper preserves existing findings, annotates reopen conditions, updates top-level counts, and records phase2_terminal_closure metadata for downstream provenance."
+          ],
+          "target_files": [
+            "tools/bin/phase2_terminal_closure.py"
+          ]
+        },
+        {
+          "task_id": "W12-T2",
+          "title": "Replace partial stop-after-final-revision with terminal closure in run-phase2.sh",
+          "status": "completed",
+          "status_notes": [
+            "run-phase2.sh now inserts a deterministic worker-style terminal_closure round instead of stopping partial when unresolved core feedback remains after the final worker revision.",
+            "The loop now records a truthful success path with stop_reason=terminal_core_closure_applied, skips the explore round, and continues to canonical publication from the closure artifact."
+          ],
+          "target_files": [
+            "tools/bin/run-phase2.sh"
+          ]
+        },
+        {
+          "task_id": "W12-T3",
+          "title": "Lock the new closure semantics with regression coverage",
+          "status": "completed",
+          "status_notes": [
+            "Updated the resume regression to prove that a resumed run with unresolved core feedback now succeeds through a deterministic closure round instead of stopping partial.",
+            "Added a dedicated terminal-closure unit test to prove unresolved findings are closed as FP while non-target findings remain untouched."
+          ],
+          "target_files": [
+            "tools/tests/test_resume_wrappers.py",
+            "tools/tests/test_phase2_terminal_closure.py"
+          ]
+        }
+      ],
+      "validation_plan": [
+        {
+          "validation_id": "W12-V1",
+          "title": "Terminal closure helper validation",
+          "status": "completed",
+          "purpose": "Prove that unresolved core-review items become deterministic FP outcomes with closure metadata, while unrelated findings keep their original verdicts."
+        },
+        {
+          "validation_id": "W12-V2",
+          "title": "Resume regression validation for post-review terminal closure",
+          "status": "completed",
+          "purpose": "Prove that a resumed run with worker.r3 plus review.r2(needs_more_evidence) performs a deterministic terminal closure round, skips reviewer explore, and finishes Phase 2 successfully."
+        }
+      ],
+      "wave_exit_criteria": [
+        "Phase 2 no longer stops partial solely because the last core review still contains unresolved non-field-fix packets after the final worker revision.",
+        "Bounded review exhaustion closes unproven packets deterministically as FP with reopen conditions instead of leaving them as unresolved blockers.",
+        "Canonical publication can proceed from the terminal-closure artifact without forcing an extra selective-provider explore round."
+      ]
+    },
+    {
+      "wave_id": "wave_13_terminal_core_reviewer_contract",
+      "title": "Terminal Core Reviewer Contract",
+      "goal": "Redesign the terminal Phase 2 reviewer contract so the final core-review pass must close every surviving packet as TP or FP, instead of permitting REVIEW ambiguity to survive behind assessment=keep or needs_more_evidence.",
+      "priority": "high",
+      "status": "completed_with_nonheavy_validation",
+      "last_reviewed_at": "2026-04-14",
+      "status_summary": "Wave 13 is complete with non-heavy validation. Phase 2 now has a first-class terminal_core reviewer mode with a dedicated prompt, system prompt, input builder path, and output schema. The terminal round only receives unresolved packets, forbids needs_more_evidence, rejects keep+REVIEW ambiguity, and drives reviewer-authored TP/FP closure into the terminal-closure helper. The old deterministic unresolved->FP path now survives only as a controlled fallback when the terminal reviewer round fails structurally.",
+      "design_objectives": [
+        "The final core-review authority must not be able to preserve a REVIEW verdict through assessment=keep.",
+        "needs_more_evidence is valid only in intermediate rounds, not in the terminal reviewer round.",
+        "The terminal reviewer round must remain packet-local, evidence-first, and bounded rather than becoming a new broad explorer pass.",
+        "When exploitability still cannot be proved after bounded tracing, the packet must close as FP with explicit reopen conditions."
+      ],
+      "implementation_plan": [
+        {
+          "step_id": "W13-S1",
+          "title": "Split core review into intermediate and terminal modes",
+          "detail": "Add a terminal reviewer mode that only receives unresolved packets and uses a stricter contract than normal core review."
+        },
+        {
+          "step_id": "W13-S2",
+          "title": "Forbid terminal ambiguity in prompt and schema",
+          "detail": "Remove REVIEW-preserving outcomes from the terminal mode and force TP/FP closure with packet-local reasoning, counter-evidence, or reopen_if notes."
+        },
+        {
+          "step_id": "W13-S3",
+          "title": "Replace deterministic fallback closure with first-class terminal reviewer closure",
+          "detail": "Route post-revision unresolved packets into terminal core review, and keep the deterministic closure helper only as a controlled safety net if the terminal reviewer round fails structurally."
+        }
+      ],
+      "tasks": [
+        {
+          "task_id": "W13-T1",
+          "title": "Add terminal_core reviewer mode to Phase 2 review contract",
+          "status": "completed",
+          "target_files": [
+            "contracts/phase2-reviewer-input.schema.json",
+            "contracts/phase2-review-terminal-core-output.schema.json",
+            "tools/config/phase2-terminal-review-prompt-template.md",
+            "tools/config/system-prompt-phase2-review-terminal.md",
+            "tools/bin/build_phase2_reviewer_input.py"
+          ]
+        },
+        {
+          "task_id": "W13-T2",
+          "title": "Teach run-phase2.sh to launch terminal core review for unresolved packets",
+          "status": "completed",
+          "target_files": [
+            "tools/bin/run-phase2.sh"
+          ]
+        },
+        {
+          "task_id": "W13-T3",
+          "title": "Reject keep+REVIEW and needs_more_evidence in terminal review mode",
+          "status": "completed",
+          "target_files": [
+            "tools/bin/run-phase2.sh",
+            "contracts/phase2-review-terminal-core-output.schema.json"
+          ]
+        },
+        {
+          "task_id": "W13-T4",
+          "title": "Retain deterministic closure only as structural failure fallback",
+          "status": "completed",
+          "target_files": [
+            "tools/bin/run-phase2.sh",
+            "tools/bin/phase2_terminal_closure.py"
+          ]
+        }
+      ],
+      "validation_plan": [
+        {
+          "validation_id": "W13-V1",
+          "title": "Terminal review contract unit validation",
+          "status": "completed",
+          "purpose": "Prove that terminal reviewer output cannot serialize keep+REVIEW or needs_more_evidence as a valid final-round outcome."
+        },
+        {
+          "validation_id": "W13-V2",
+          "title": "Representative unresolved-packet resume replay",
+          "status": "completed",
+          "purpose": "Prove via a resume-path integration replay modeled on the litespeed-cache failure shape that unresolved post-review packets are forced through terminal_core review and emerge as TP or FP rather than REVIEW."
+        }
+      ],
+      "reverification_checks": [
+        "Can a final-round review artifact still contain assessment=keep while the corresponding worker finding stays REVIEW?",
+        "Can a terminal reviewer round still emit needs_more_evidence without causing a hard validation failure?",
+        "After terminal core review, does the canonical worker artifact still contain any REVIEW findings that originated from the final core-review set?",
+        "If a packet closes as FP, does it contain a concrete reopen condition rather than only vague uncertainty prose?"
+      ],
+      "wave_exit_criteria": [
+        "The terminal core-review round can only close packets as TP or FP.",
+        "The final core-review authority no longer preserves REVIEW ambiguity through assessment=keep.",
+        "Post-review terminal closure no longer depends on deterministic fallback for ordinary unresolved packets."
+      ]
+    },
+    {
+      "wave_id": "wave_14_cluster_authority_realignment",
+      "title": "Cluster Authority Realignment",
+      "goal": "Demote cluster synth/challenge from 'final ambiguity carrier' to a bounded advisory/refutation layer that either supports a closure decision or returns packets to a dedicated closure path, rather than letting open questions survive into the canonical artifact.",
+      "priority": "high",
+      "status": "completed_with_nonheavy_validation",
+      "last_reviewed_at": "2026-04-14",
+      "status_summary": "Wave 14 is complete with non-heavy validation. Cluster synthesis/challenge now treat remaining ambiguity as either advisory-only metadata or explicit closure-routing packets. The cluster output contract gained closure_packets, materializers now normalize closure routing counts, and consensus no longer degrades trust simply because advisory open_questions or missing_evidence exist. Instead, a cluster only remains unresolved when its outputs are structurally missing or when a needs_followup/mixed result fails to emit the required closure-routing packet.",
+      "design_objectives": [
+        "Cluster outputs should remain bounded to evidence-pack reasoning and refutation, not become a second ambiguous review loop.",
+        "Cluster ambiguity should be routable back into a closure packet, not remain a blocker embedded in consensus.",
+        "A cluster may challenge or split a hypothesis, but it should not preserve REVIEW as a terminal artifact state."
+      ],
+      "implementation_plan": [
+        {
+          "step_id": "W14-S1",
+          "title": "Redefine cluster synth/challenge outputs around closure routing",
+          "detail": "Turn open_questions and missing_evidence from terminal states into bounded advisory metadata or closure routing hints."
+        },
+        {
+          "step_id": "W14-S2",
+          "title": "Introduce cluster-to-closure packet handoff",
+          "detail": "When a cluster still has material ambiguity, emit a closure packet or explicit refutation instead of leaving unresolved cluster state inside consensus."
+        },
+        {
+          "step_id": "W14-S3",
+          "title": "Update canonical Phase 2 flow to treat unresolved cluster state as an execution error or routing miss",
+          "detail": "The normal successful path should no longer rely on unresolved_clusters as a stable degraded outcome."
+        }
+      ],
+      "tasks": [
+        {
+          "task_id": "W14-T1",
+          "title": "Rewrite cluster synthesis prompt for advisory-only or closure-routing semantics",
+          "status": "completed",
+          "target_files": [
+            "tools/config/phase2-cluster-synthesis-prompt-template.md",
+            "contracts/phase2-cluster-output.schema.json"
+          ]
+        },
+        {
+          "task_id": "W14-T2",
+          "title": "Rewrite cluster challenge prompt to refute or confirm closure need, not preserve ambiguity",
+          "status": "completed",
+          "target_files": [
+            "tools/config/phase2-cluster-challenge-prompt-template.md",
+            "contracts/phase2-cluster-output.schema.json"
+          ]
+        },
+        {
+          "task_id": "W14-T3",
+          "title": "Teach cluster runtime materializers and consensus writer to consume cluster closure packets",
+          "status": "completed",
+          "target_files": [
+            "tools/bin/run-phase2-clusters.py",
+            "tools/bin/orchestrate-agents.sh",
+            "tools/bin/write_phase2_consensus.py"
+          ]
+        }
+      ],
+      "validation_plan": [
+        {
+          "validation_id": "W14-V1",
+          "title": "Cluster contract replay validation",
+          "status": "completed",
+          "purpose": "Prove that synth/challenge outputs no longer leave open_questions as a terminal blocker when a closure packet can be emitted."
+        },
+        {
+          "validation_id": "W14-V2",
+          "title": "Representative unresolved-cluster replay",
+          "status": "completed",
+          "purpose": "Prove via consensus replays shaped like the litespeed-cache cluster-c01 case that a needs_followup/mixed cluster must emit closure_packets or remain unresolved, while advisory-only cluster notes no longer degrade trust."
+        }
+      ],
+      "reverification_checks": [
+        "Can consensus still succeed while unresolved_cluster_ids remains non-empty in the nominal success path?",
+        "Do cluster outputs still describe missing_evidence/open_questions without either generating a closure packet or downgrading to non-blocking advisory metadata?",
+        "Can a canonical Phase 2 artifact still contain REVIEW findings whose only surviving justification is cluster ambiguity?"
+      ],
+      "wave_exit_criteria": [
+        "Clusters no longer act as a terminal carrier of unresolved ambiguity.",
+        "Any material ambiguity discovered by clusters is either refuted or routed back into closure processing before canonical publication.",
+        "The normal successful consensus path no longer requires unresolved_clusters or cluster_challenge_incomplete degradation signals."
+      ]
+    },
+    {
+      "wave_id": "wave_15_consensus_trust_policy_realignment",
+      "title": "Consensus Trust Policy Realignment",
+      "goal": "Redefine Phase 2 trust so success means 'structurally valid and fully closed for downstream use', while degraded_success is reserved for true structural/provenance/runtime defects rather than advisory uncertainty that should already have been closed earlier.",
+      "priority": "high",
+      "status": "completed_with_nonheavy_validation",
+      "last_reviewed_at": "2026-04-14",
+      "status_summary": "Wave 15 is complete with non-heavy validation. Consensus now records closure_complete explicitly and downgrades trust only for structural defects or true closure incompleteness. Advisory cluster notes remain visible in metadata, but they do not downgrade trust by themselves. artifact_freshness and run-phase2 trust summarization now also treat trust_state=success as downstream-safe only when closure_complete is not false.",
+      "design_objectives": [
+        "trust_state=success should mean downstream-safe canonical Phase 2, not merely a file that exists.",
+        "degraded_success should only represent structural or provenance issues, not advisory uncertainty that should have been closed in earlier waves.",
+        "Phase 2 admission to Phase 3 should remain fail-closed, but on the correct signals."
+      ],
+      "implementation_plan": [
+        {
+          "step_id": "W15-S1",
+          "title": "Separate structural degradation from advisory metadata",
+          "detail": "Keep notes about open questions or closure history, but do not let them drive trust_state after closure is complete."
+        },
+        {
+          "step_id": "W15-S2",
+          "title": "Promote success only when closure completeness is achieved",
+          "detail": "Make needs_review=0, completed closure flow, and structurally clean cluster/consensus outputs the real requirements for trust_state=success."
+        },
+        {
+          "step_id": "W15-S3",
+          "title": "Reserve degraded_success for structural defects",
+          "detail": "Examples include schema invalidity, missing required cluster artifacts, provenance mismatch, or publish-path inconsistency."
+        }
+      ],
+      "tasks": [
+        {
+          "task_id": "W15-T1",
+          "title": "Refactor trust computation in write_phase2_consensus.py",
+          "status": "completed",
+          "target_files": [
+            "tools/bin/write_phase2_consensus.py"
+          ]
+        },
+        {
+          "task_id": "W15-T2",
+          "title": "Align artifact freshness helpers with the new trust semantics",
+          "status": "completed",
+          "target_files": [
+            "tools/bin/artifact_freshness.py"
+          ]
+        },
+        {
+          "task_id": "W15-T3",
+          "title": "Preserve advisory metadata without letting it downgrade trust by itself",
+          "status": "completed",
+          "target_files": [
+            "tools/bin/write_phase2_consensus.py",
+            "tools/bin/run-phase2.sh"
+          ]
+        }
+      ],
+      "validation_plan": [
+        {
+          "validation_id": "W15-V1",
+          "title": "Consensus trust-state replay validation",
+          "status": "completed",
+          "purpose": "Prove that a fully closed canonical Phase 2 artifact with advisory notes but no structural defect can still reach trust_state=success."
+        },
+        {
+          "validation_id": "W15-V2",
+          "title": "Structural degradation regression validation",
+          "status": "completed",
+          "purpose": "Prove that missing challenge/synth artifacts, schema failure, or provenance mismatches still downgrade trust_state appropriately."
+        }
+      ],
+      "reverification_checks": [
+        "Can trust_state still degrade to degraded_success solely because open_questions_present or missing_evidence_present exists after all packets are closed?",
+        "Can a structurally broken consensus artifact accidentally be labeled success just because REVIEW count is zero?",
+        "Does artifact_freshness still equate 'trusted' with the new success semantics instead of stale historical rules?"
+      ],
+      "wave_exit_criteria": [
+        "trust_state=success implies closure completeness plus structural integrity.",
+        "degraded_success is no longer triggered by advisory ambiguity alone.",
+        "The trust gate used by downstream stages matches the new consensus semantics."
+      ]
+    },
+    {
+      "wave_id": "wave_16_phase3_admission_and_full_pipeline_completion",
+      "title": "Phase 3 Admission And Full-Pipeline Completion",
+      "goal": "Make full-pipeline single-plugin execution complete end-to-end once Phase 2 is truly closed, without requiring operators to reason about internal trust edge cases or distinguish between 'canonical exists' and 'canonical is actually admitted'.",
+      "priority": "high",
+      "status": "partially_completed_with_nonheavy_validation",
+      "last_reviewed_at": "2026-04-14",
+      "status_summary": "Wave 16 is partially complete with non-heavy validation. Phase 3 admission now follows the refined trust semantics from Waves 13-15, deterministic markdown materialization also writes a final report artifact under reports/final, Phase 3 freshness now treats that final report as part of completion, and run-single-plugin.sh will not claim full completion unless the final report exists. The remaining open item is a live end-to-end acceptance replay on litespeed-cache rather than another code-path change.",
+      "design_objectives": [
+        "run-single-plugin.sh should be sufficient for end-to-end completion once Phase 2 canonical is properly closed and trusted.",
+        "Phase 3 should remain fail-closed, but only on true admission failures.",
+        "Operator-visible outcomes should make it obvious whether the plugin completed full pipeline or stopped before reporting."
+      ],
+      "implementation_plan": [
+        {
+          "step_id": "W16-S1",
+          "title": "Rebind Phase 3 admission to the refined trust semantics",
+          "detail": "Keep the trust gate strict, but ensure it admits fully closed success artifacts produced by the updated Phase 2 flow."
+        },
+        {
+          "step_id": "W16-S2",
+          "title": "Audit single-plugin wrapper flow after successful Phase 2 closure",
+          "detail": "Confirm the wrapper does not stall after a good canonical and that it emits truthful status/logging when Phase 3 runs or is skipped."
+        },
+        {
+          "step_id": "W16-S3",
+          "title": "Prove end-to-end completion on litespeed-cache",
+          "detail": "Use the previously blocked plugin as the acceptance case for full pipeline completion through Phase 3/report artifacts."
+        }
+      ],
+      "tasks": [
+        {
+          "task_id": "W16-T1",
+          "title": "Align run-phase3.sh admission with Waves 13-15 semantics",
+          "status": "completed",
+          "target_files": [
+            "tools/bin/run-phase3.sh",
+            "tools/bin/artifact_freshness.py"
+          ]
+        },
+        {
+          "task_id": "W16-T2",
+          "title": "Review wrapper-level completion messaging and status transitions",
+          "status": "completed",
+          "target_files": [
+            "tools/bin/run-single-plugin.sh",
+            "tools/bin/run-pipeline.sh"
+          ]
+        },
+        {
+          "task_id": "W16-T3",
+          "title": "Run end-to-end acceptance replay on litespeed-cache",
+          "status": "planned",
+          "target_files": [
+            "reports/phase2/litespeed-cache-phase2.json",
+            "reports/phase3/litespeed-cache-phase3.json",
+            "reports/final"
+          ]
+        }
+      ],
+      "validation_plan": [
+        {
+          "validation_id": "W16-V1",
+          "title": "Phase 3 admission regression validation",
+          "status": "completed",
+          "purpose": "Prove that a fully closed trusted Phase 2 artifact is admitted to Phase 3 without special-case operator intervention."
+        },
+        {
+          "validation_id": "W16-V2",
+          "title": "Single-plugin end-to-end acceptance validation",
+          "status": "planned",
+          "purpose": "Prove that run-single-plugin.sh <slug> --resume can complete the remaining pipeline for litespeed-cache once closure and trust semantics are repaired."
+        }
+      ],
+      "reverification_checks": [
+        "Can run-single-plugin.sh still stop after Phase 2 even when the canonical artifact is fully closed and trusted?",
+        "Can Phase 3 still reject a canonical artifact for historical degraded_success reasons that should no longer apply after Waves 13-15?",
+        "After a nominally successful full pipeline run, do the expected Phase 3 and final-report artifacts actually exist on disk?"
+      ],
+      "wave_exit_criteria": [
+        "A fully closed, trusted Phase 2 canonical is admitted to Phase 3.",
+        "Single-plugin end-to-end execution reaches Phase 3 outputs and final report artifacts without manual phase switching.",
+        "Operator-visible status now distinguishes true full-pipeline completion from Phase-2-only completion."
+      ]
+    }
+  ],
+  "wave_4_input_risks": [
+    {
+      "id": "R-201",
+      "state": "risk_note",
+      "title": "Phase 3 and downstream coordinators trusted phase2.json presence more than trust_state",
+      "why_it_matters": "A degraded Phase 2 canonical could still be consumed by Phase 3 or batch wrappers unless downstream stages enforce trust_state=success."
+    },
+    {
+      "id": "R-202",
+      "state": "risk_note",
+      "title": "Batch control-plane logic still relied on file presence in key places",
+      "why_it_matters": "Interactive batch UX and downstream selection could misclassify degraded canonicals as ready merely because the files existed."
+    },
+    {
+      "id": "R-203",
+      "state": "risk_note",
+      "title": "Consensus writer could re-bless a stale canonical when phase2.local.json was missing",
+      "why_it_matters": "Manual or recovery invocations could republish stale canonical truth without a current local merge artifact."
+    },
+    {
+      "id": "R-204",
+      "state": "risk_note",
+      "title": "Cluster runner bypassed configured provider binary provenance",
+      "why_it_matters": "Hardcoded claude/codex binaries weakened stubbing, wrapper controls, and provenance guarantees for the cluster stage."
+    },
+    {
+      "id": "R-205",
+      "state": "risk_note",
+      "title": "Audit agents still execute with write-capable provider surfaces inside the workspace",
+      "why_it_matters": "Prompt-injected or off-task model behavior can still write within the workspace because core worker/reviewer prompts rely on provider-side file writes."
+    },
+    {
+      "id": "R-206",
+      "state": "risk_note",
+      "title": "run-pipeline --multi-agent remains a secondary Phase 2 authority",
+      "why_it_matters": "The repository still exposes two orchestration semantics for Phase 2, even after fail-closed hardening of the standalone path."
+    }
+  ],
+  "wave_5_input_risks": [
+    {
+      "id": "R-401",
+      "state": "risk_note",
+      "title": "Direct Phase 3 helper scripts could still consume degraded phase2.json outside the canonical runner",
+      "why_it_matters": "Manual or scripted helper invocation could bypass the trust-aware shell coordinators and operate on a degraded Phase 2 canonical."
+    },
+    {
+      "id": "R-402",
+      "state": "risk_note",
+      "title": "run-pipeline --multi-agent still represented a secondary Phase 2 authority",
+      "why_it_matters": "The wrapper could bypass canonical run-phase2.sh semantics and drift away from the authority the rest of the workspace now trusts."
+    },
+    {
+      "id": "R-403",
+      "state": "risk_note",
+      "title": "Manual utilities could still default to canonical phase2.json mutation or consumption",
+      "why_it_matters": "Recovery or ad-hoc helper runs could rewrite or consume canonical Phase 2 outside the consensus and trust-aware contracts."
+    }
+  ],
+  "wave_6_input_risks": [
+    {
+      "id": "R-501",
+      "state": "risk_note",
+      "title": "Provider selection is not yet tied to a formal high-value potential policy",
+      "why_it_matters": "Claude can still be used too broadly, even when Phase 1 only indicates generic surface complexity instead of reportable exploit potential."
+    },
+    {
+      "id": "R-502",
+      "state": "risk_note",
+      "title": "Threat context currently influences prompts more than provider-routing decisions",
+      "why_it_matters": "The pipeline already knows matched_categories and priority_vulns, but it does not yet use them to decide when a second model is worth the cost."
+    },
+    {
+      "id": "R-503",
+      "state": "risk_note",
+      "title": "sensitive_sinks is still too coarse for cost-aware escalation",
+      "why_it_matters": "High-impact families such as file write, deserialization, include, and remote_request are currently folded into one aggregate, which weakens stage-specific provider choices."
+    },
+    {
+      "id": "R-504",
+      "state": "risk_note",
+      "title": "Claude is most expensive when used for broad worker search instead of narrow contradiction work",
+      "why_it_matters": "Without an explicit policy, expensive provider diversity can be spent on volume-heavy exploration instead of ambiguity resolution, challenge, and high-impact confirmation."
+    },
+    {
+      "id": "R-505",
+      "state": "risk_note",
+      "title": "The pipeline lacks decision telemetry for why a premium provider was invoked",
+      "why_it_matters": "Operators can measure cost after the fact, but cannot yet answer which signals or review outcomes justified Claude usage on a specific run."
+    },
+    {
+      "id": "R-506",
+      "state": "risk_note",
+      "title": "There is no formal mid-Phase-2 escalation policy from worker/reviewer evidence to selective Claude challenge",
+      "why_it_matters": "Potentially high-value findings can remain on a single-model path even after reviewer output shows material ambiguity, missed findings, or unresolved impact."
+    }
+  ],
+  "wave_7_input_risks": [
+    {
+      "id": "R-701",
+      "state": "risk_note",
+      "title": "Provider transition metadata does not yet distinguish reviewer_core from reviewer_explore in all artifacts",
+      "why_it_matters": "Wave 6 split Codex and Claude into different reviewer roles more often, but summaries and resume paths can still blur which provider actually produced which reviewer artifact."
+    },
+    {
+      "id": "R-702",
+      "state": "risk_note",
+      "title": "Resolver failure can erase provider-strategy provenance for Phase 3 and cost summaries",
+      "why_it_matters": "If provider-policy resolution fails and no fallback artifact is written, downstream stages lose the reasoned stage mapping and silently degrade to generic defaults."
+    },
+    {
+      "id": "R-703",
+      "state": "risk_note",
+      "title": "Operator intent for --with-claude is ambiguous relative to Wave 6 auto-routing",
+      "why_it_matters": "A convenience flag that can still be treated like a weak hint makes provider transitions harder to predict and harder to explain during troubleshooting."
+    }
+  ],
+  "wave_8_input_risks": [
+    {
+      "risk_id": "R-801",
+      "title": "Failure records use misleading field names and hide runtime meaning",
+      "detail": "chunked failures.json currently stores agent/runtime exit codes under preflight_exit_code, which makes post-run triage look like a preflight problem instead of a worker/runtime problem."
+    },
+    {
+      "risk_id": "R-802",
+      "title": "Provider-pressure and interruption signals are collapsed into generic missing_output outcomes",
+      "detail": "capacity, HTTP 503, interrupted turns, quota exhaustion, and truly missing output currently look too similar in failures.json, which weakens operator decisions and AppSec-style incident review."
+    },
+    {
+      "risk_id": "R-803",
+      "title": "Transient failures are not reconciled against final agent success",
+      "detail": "operators can read failures.json and conclude an agent failed terminally even when a later retry or resume produced a valid canonical bundle output."
+    },
+    {
+      "risk_id": "R-804",
+      "title": "Quota retry wording is accurate but too ambiguous for operators",
+      "detail": "messages like (3/3) followed by attempt=4 reflect the intended retry model, but they are easy to misread as an orchestration bug."
+    },
+    {
+      "risk_id": "R-805",
+      "title": "Chunked runs lack a concise final summary artifact",
+      "detail": "post-run operators must manually correlate failures.json, run.live.log, state, and merged outputs to answer basic questions about completed agents, superseded failures, and provider-pressure impact."
+    }
+  ],
+  "wave_9_input_risks": [
+    {
+      "risk_id": "R-901",
+      "title": "Standalone chunked orchestration still builds cluster plans against canonical phase2.json instead of phase2.local.json",
+      "detail": "The standalone orchestrate-agents.sh path currently calls build_candidate_clusters.py without --phase2-json, so cluster planning can fail before consensus even though the correct authority at that moment is phase2.local.json."
+    },
+    {
+      "risk_id": "R-902",
+      "title": "Resume output summaries still blur newly completed work with reused outputs",
+      "detail": "Logs such as Successful agents: 8/26 can be read as a low merge count even when 17 canonical bundle outputs were intentionally reused by --resume-missing-only and 25 of 26 bundles are actually usable."
+    },
+    {
+      "risk_id": "R-903",
+      "title": "Top-level resume UX is fragmented across multiple flags and environment mappings",
+      "detail": "Operators currently need to remember --resume-existing, --resume-missing-only, and PHASE2_CHUNKED_RESUME_MISSING_ONLY semantics, which makes incident recovery harder than necessary."
+    }
+  ],
+  "current_known_residual_risks": [
+    {
+      "id": "R-301",
+      "state": "risk_note",
+      "title": "Core worker and reviewer automation still require write-capable provider execution",
+      "why_it_matters": "Wave 4 hardened downstream trust and provenance, but the main Phase 2 worker/reviewer paths still depend on model-directed file writes and therefore cannot yet run under a truly read-only provider profile."
+    },
+    {
+      "id": "R-303",
+      "state": "risk_note",
+      "title": "Dispatch and prep artifacts remain a strong trust boundary",
+      "why_it_matters": "Runtime prompts and scope now honor dispatch/prep artifacts more faithfully, so upstream tampering could still steer audit scope if prep integrity is compromised."
+    },
+    {
+      "id": "R-304",
+      "state": "uncertain",
+      "title": "Local provider CLIs remain an external execution boundary",
+      "why_it_matters": "Even with tighter trust gating and provenance capture, the pipeline still relies on local Claude/Codex binaries to honor their contracts correctly."
+    },
+    {
+      "id": "R-305",
+      "state": "uncertain",
+      "title": "Wave 6 provider strategy still lacks heavy-plugin runtime proof",
+      "why_it_matters": "The provider tier resolver and selective-Claude routing now exist, but they are only validated by unit and synthetic checks until a heavy canonical rerun confirms the same behavior under real provider load."
+    }
+  ],
+  "wave_plan": [
+    {
+      "wave_id": "wave_1_integrity_hardening",
+      "title": "Integrity Hardening",
+      "goal": "Make Phase 2 outputs trustworthy by construction, not just resilient to known crashes.",
+      "priority": "highest",
+      "status": "completed",
+      "last_reviewed_at": "2026-04-08",
+      "status_summary": "Wave 1 integrity hardening is now validated. Canonical publish fail-closed behavior, empty-dispatch fail-closed behavior, resume non-mutation, and a one-bundle chunked runtime smoke all completed successfully. The remaining chunked scheduler envelope log gap belongs to Wave 2 observability scope, not Wave 1 integrity scope.",
+      "validation_plan": [
+        {
+          "validation_id": "W1-V1",
+          "title": "Synthetic empty-dispatch integrity validation",
+          "status": "completed",
+          "purpose": "Prove that a broken zero-runnable dispatch fails closed, while a prep-declared zero-bundle workload remains a justified no-op.",
+          "maps_to_tasks": [
+            "W1-T5"
+          ]
+        },
+        {
+          "validation_id": "W1-V2",
+          "title": "Resume-missing-only non-mutation validation",
+          "status": "completed",
+          "purpose": "Prove that resume checks do not rewrite canonical per-agent outputs during simple validity checks.",
+          "maps_to_tasks": [
+            "W1-T4"
+          ]
+        },
+        {
+          "validation_id": "W1-V3",
+          "title": "Consensus failure-path fail-closed validation",
+          "status": "completed",
+          "purpose": "Prove that consensus-authoritative publication refuses to publish phase2.json when the consensus writer fails, including deterministic low-surface paths.",
+          "maps_to_tasks": [
+            "W1-T1"
+          ]
+        },
+        {
+          "validation_id": "W1-V4",
+          "title": "Isolated chunked runtime smoke validation",
+          "status": "completed",
+          "purpose": "Run a minimal one-bundle chunked orchestration smoke test to confirm the post-patch worker lifecycle completes without premature promotion or hung completion handling.",
+          "maps_to_tasks": [
+            "W1-T3"
+          ]
+        }
+      ],
+      "validation_history": [
+        {
+          "validation_id": "W1-V1",
+          "executed_at": "2026-04-08",
+          "result": "passed",
+          "summary": "Synthetic empty-dispatch validation now distinguishes broken zero-runnable dispatches from explicitly justified zero-bundle workloads.",
+          "evidence": [
+            "Broken dispatch with agents=[] + inputs={} + total_bundles=1 returned rc=2 and logged empty_execution_surface.",
+            "Explicit empty dispatch with agents=[] + inputs={} + total_bundles=0 returned rc=0 as a justified no-op."
+          ]
+        },
+        {
+          "validation_id": "W1-V2",
+          "executed_at": "2026-04-08",
+          "result": "passed",
+          "summary": "Resume-missing-only validation no longer rewrites canonical per-agent outputs during validity checks or merge replay.",
+          "evidence": [
+            "reports/phase2/agents/backwpup/agent-w05.output.json kept the same SHA-256 before and after --resume-missing-only.",
+            "mtime for reports/phase2/agents/backwpup/agent-w05.output.json remained unchanged after the rerun once merge normalization stopped writing in place."
+          ]
+        },
+        {
+          "validation_id": "W1-V3",
+          "executed_at": "2026-04-08",
+          "result": "passed",
+          "summary": "Consensus failure-path validation now fails closed even on deterministic phase2-lite paths.",
+          "evidence": [
+            "Synthetic slug wave1-consensus-fail-validation returned rc=1 when PHASE2_CONSENSUS_WRITER was overridden with a failing script.",
+            "reports/phase2/wave1-consensus-fail-validation-phase2.json remained absent while the local artifact was preserved.",
+            "Cluster err/live logs were created and recorded the blocked canonical publish."
+          ]
+        },
+        {
+          "validation_id": "W1-V4",
+          "executed_at": "2026-04-08",
+          "result": "passed_with_observability_note",
+          "summary": "A one-bundle chunked smoke run completed the worker lifecycle end-to-end without premature promotion or retry corruption.",
+          "evidence": [
+            "Synthetic slug wave1-runtime-smoke completed with rc=0 and merged exactly one agent.",
+            "reports/phase2/agents/wave1-runtime-smoke/attempts/agent-w07.attempt-01.output.json and reports/phase2/agents/wave1-runtime-smoke/attempts/agent-w07.attempt-01.normalized.json were both created before canonical promotion.",
+            "reports/phase2/agents/wave1-runtime-smoke/agent-w07.output.json and reports/phase2/wave1-runtime-smoke-phase2.local.json were produced successfully with zero schema errors.",
+            "reports/logs/wave1-runtime-smoke/phase2/chunked/agents/agent-w07/attempt-01/provider.raw.log captured a full Claude result-success event."
+          ],
+          "notes": [
+            "reports/logs/wave1-runtime-smoke/phase2/chunked/run.err and run.live.log were absent in the smoke run. This remains a Wave 2 observability task, not a Wave 1 integrity blocker."
+          ]
+        }
+      ],
+      "must_finish_before": [
+        "wide rerun validation",
+        "full benchmark rollout",
+        "quota hard-gate enforcement"
+      ],
+      "tasks": [
+        {
+          "task_id": "W1-T1",
+          "title": "Lock canonical publish to consensus completion",
+          "status": "completed",
+          "status_notes": [
+            "run-phase2.sh no longer publishes canonical directly from local merge or worker output.",
+            "merge_agent_outputs.py no longer allows canonical publication; --write-canonical is now a hard error.",
+            "Cluster-enabled and local-only canonical publication both route through write_phase2_consensus.py.",
+            "Synthetic consensus failure validation now proves the deterministic phase2-lite path fails closed and leaves canonical absent."
+          ],
+          "status_evidence": [
+            "Deterministic replay: local merge leaves reports/phase2/backwpup-phase2.json absent.",
+            "Temp reports-dir replay confirms write_phase2_consensus.py writes canonical exactly once on success.",
+            "Pipeline code scan confirms no remaining direct canonical publish path inside run-phase2.sh or merge_agent_outputs.py.",
+            "Synthetic fail-closed run for wave1-consensus-fail-validation returned rc=1 with reports/phase2/wave1-consensus-fail-validation-phase2.json absent."
+          ],
+          "problem": "phase2.json can still be written from local/worker output before cluster and consensus finish cleanly.",
+          "target_files": [
+            "tools/bin/run-phase2.sh",
+            "tools/bin/write_phase2_consensus.py",
+            "tools/bin/merge_agent_outputs.py"
+          ],
+          "required_changes": [
+            "Only write reports/phase2/<slug>-phase2.json from the consensus writer or an explicitly equivalent authoritative step.",
+            "Ensure local merge writes only archive and local artifacts.",
+            "If consensus fails, leave canonical missing or mark it incomplete rather than silently preserving local output as canonical."
+          ],
+          "validation": [
+            "Deterministic replay: local merge leaves no canonical phase2.json behind.",
+            "Consensus success path writes canonical phase2.json exactly once.",
+            "Consensus failure path does not publish canonical phase2.json."
+          ],
+          "exit_criteria": [
+            "No code path other than consensus-authoritative publication can create reports/phase2/<slug>-phase2.json."
+          ]
+        },
+        {
+          "task_id": "W1-T2",
+          "title": "Upgrade normalizer from repair layer to policy layer",
+          "status": "completed",
+          "status_notes": [
+            "Normalizer now downgrades TP to REVIEW when required exploit-path evidence remains missing after normalization.",
+            "Path fields are normalized toward plugin-relative paths and rejected when they escape plugin scope.",
+            "Normalization notes are emitted on findings to preserve repair provenance."
+          ],
+          "status_evidence": [
+            "Unit tests cover invalid-escape repair, plugin-relative path normalization, and TP-to-REVIEW downgrade.",
+            "Artifact replay on historical backwpup failures now loads 54/54 agent outputs with schema_errors = 0."
+          ],
+          "problem": "Current normalization repairs schema drift but can preserve over-strong verdicts.",
+          "target_files": [
+            "tools/bin/normalize_agent_output.py",
+            "contracts/agent-output.schema.json",
+            "tools/tests/test_normalize_agent_output.py"
+          ],
+          "required_changes": [
+            "Downgrade TP to REVIEW when required evidence fields remain absent after normalization.",
+            "Normalize and constrain path fields to plugin-relative paths.",
+            "Emit normalization notes that explain what was repaired or downgraded.",
+            "Keep raw output separate from normalized output."
+          ],
+          "validation": [
+            "Unit tests for verdict downgrade, path normalization, and evidence-preserving repairs.",
+            "Artifact replay against historical revision failures from backwpup."
+          ],
+          "exit_criteria": [
+            "Normalizer never upgrades confidence.",
+            "Normalizer either preserves valid evidence, downgrades to REVIEW, or rejects the artifact."
+          ]
+        },
+        {
+          "task_id": "W1-T3",
+          "title": "Refactor chunked worker completion into an explicit state machine",
+          "status": "completed",
+          "status_notes": [
+            "Chunked promotion no longer happens simply because an attempt output file appears while the process is still running.",
+            "Promotion now happens only after process exit is observed or after timeout cleanup completes and salvage succeeds.",
+            "A one-bundle runtime smoke completed cleanly from attempt-local output through canonical promotion and deterministic local merge.",
+            "Chunked scheduler envelope logs were still absent in the smoke run; that gap is retained for Wave 2 observability hardening."
+          ],
+          "status_evidence": [
+            "orchestrate-agents.sh now checks process exit before normal completion promotion.",
+            "Timeout salvage path promotes only after kill_process_tree completes.",
+            "Synthetic slug wave1-runtime-smoke completed with rc=0, produced attempt-local raw/normalized artifacts, then promoted reports/phase2/agents/wave1-runtime-smoke/agent-w07.output.json and merged reports/phase2/wave1-runtime-smoke-phase2.local.json."
+          ],
+          "problem": "Promotion can still happen based on output appearance before process lifecycle is fully settled.",
+          "target_files": [
+            "tools/bin/orchestrate-agents.sh"
+          ],
+          "required_changes": [
+            "Track attempt states explicitly: launched, running, exited, timed_out, salvaged, failed, done.",
+            "Promote bundle output only after process exit is observed and normalized output passes validation.",
+            "Timeout salvage must happen only after kill/cleanup has completed for the attempt process group.",
+            "Retry must never reuse old canonical output as proof that a fresh attempt succeeded."
+          ],
+          "validation": [
+            "Synthetic tests or replay scaffolding for success, timeout+salvage, malformed output, and retry exhaustion.",
+            "Runtime smoke test on a chunked plugin to confirm no duplicate completion or hung retry branch."
+          ],
+          "exit_criteria": [
+            "Every attempt has a single terminal state.",
+            "No bundle can be marked done without both process completion and normalized output acceptance."
+          ]
+        },
+        {
+          "task_id": "W1-T4",
+          "title": "Separate raw, normalized, and canonical bundle artifacts",
+          "status": "completed",
+          "status_notes": [
+            "Attempt-local raw output, attempt-local normalized output, and canonical per-agent output are now separate paths.",
+            "Revision artifacts also keep raw and normalized forms separate before applying to canonical worker output.",
+            "Resume mode now validates canonical outputs through a temp normalized artifact instead of mutating them in place.",
+            "merge_agent_outputs.py now normalizes agent payloads in memory during merge replay instead of rewriting canonical agent outputs."
+          ],
+          "status_evidence": [
+            "report_paths.py and report-paths.sh now expose attempt normalized and revision normalized paths.",
+            "Unit path tests cover raw/normalized/canonical separation.",
+            "Resume validation confirmed that reports/phase2/agents/backwpup/agent-w05.output.json kept identical SHA-256 and mtime across --resume-missing-only."
+          ],
+          "problem": "Resume and validation currently mutate canonical outputs in place, weakening provenance.",
+          "target_files": [
+            "tools/bin/orchestrate-agents.sh",
+            "tools/bin/report_paths.py",
+            "tools/bin/report-paths.sh",
+            "tools/bin/merge_agent_outputs.py"
+          ],
+          "required_changes": [
+            "Write attempt-local raw outputs and normalized outputs separately.",
+            "Promote to canonical per-agent output only after normalization succeeds.",
+            "Resume mode must validate existing canonical output in memory without mutating it unless an explicit repair action is chosen."
+          ],
+          "validation": [
+            "Path tests for raw/normalized/canonical separation.",
+            "Resume-missing-only test confirming canonical outputs are not rewritten during simple validity checks."
+          ],
+          "exit_criteria": [
+            "A session can always inspect the original model artifact, the normalized artifact, and the canonical promoted artifact separately."
+          ]
+        },
+        {
+          "task_id": "W1-T5",
+          "title": "Fail closed on empty execution surfaces where appropriate",
+          "status": "completed",
+          "status_notes": [
+            "orchestrate-agents.sh now aborts on empty runnable input surfaces by default.",
+            "A justified no-op remains allowed only when dispatch metadata and bundle inventory explicitly declare zero bundles.",
+            "Synthetic validation now proves the broken and justified-empty branches diverge correctly under Bash 3 + set -u."
+          ],
+          "status_evidence": [
+            "The zero-runnable branch now emits empty_execution_surface failure instead of exit 0.",
+            "A dedicated helper checks dispatch + candidate inventory metadata for an explicit zero-bundle workload.",
+            "Broken empty dispatch returned rc=2 while an explicitly empty workload returned rc=0."
+          ],
+          "problem": "The orchestrator can currently exit 0 when no valid inputs are available for any agent.",
+          "target_files": [
+            "tools/bin/orchestrate-agents.sh",
+            "docs/FAILURE-MODES.md"
+          ],
+          "required_changes": [
+            "Differentiate between a genuinely empty workload and a prep/dispatch integrity failure.",
+            "Return a non-success state if a plugin expected chunked bundles but none were runnable."
+          ],
+          "validation": [
+            "Simulated missing-input dispatch returns an explicit degraded/failure state.",
+            "Legitimate empty workload remains non-error only when clearly justified by prep metadata."
+          ],
+          "exit_criteria": [
+            "The coordinator cannot silently report success on a broken or empty dispatch."
+          ]
+        }
+      ],
+      "wave_exit_criteria": [
+        "Canonical Phase 2 publish is integrity-safe.",
+        "Bundle outputs cannot silently bypass validation semantics.",
+        "Resume and retry preserve provenance.",
+        "Known backwpup integrity failures are no longer reproducible in artifact replay."
+      ]
+    },
+    {
+      "wave_id": "wave_2_observability_and_cost_hardening",
+      "title": "Observability and Cost Hardening",
+      "goal": "Make failures, degraded states, and cost hotspots diagnosable without re-reading the entire pipeline or guessing from the terminal.",
+      "priority": "high",
+      "depends_on": [
+        "wave_1_integrity_hardening"
+      ],
+      "status": "completed",
+      "last_reviewed_at": "2026-04-08",
+      "status_summary": "Wave 2 observability and cost hardening is now complete. Phase state writes are structured, chunked scheduler and per-attempt assistant/provider/stderr logs are separated, degraded-state signaling is present in merge and consensus artifacts, and per-run quota reporting can attribute cost by phase, model, role, component, provider, and agent.",
+      "validation_plan": [
+        {
+          "validation_id": "W2-V1",
+          "title": "Structured state durability validation",
+          "status": "completed",
+          "purpose": "Prove that phase2.state.json remains valid and does not rely on fragile shell-JSON interpolation during a normal run.",
+          "maps_to_tasks": [
+            "W2-T1"
+          ]
+        },
+        {
+          "validation_id": "W2-V2",
+          "title": "Chunked log-layering runtime validation",
+          "status": "completed",
+          "purpose": "Prove that chunked scheduler logs, assistant live logs, provider raw logs, and stderr logs are materially separated during a real orchestration smoke run.",
+          "maps_to_tasks": [
+            "W2-T2"
+          ]
+        },
+        {
+          "validation_id": "W2-V3",
+          "title": "Per-run cost accountability validation",
+          "status": "completed",
+          "purpose": "Prove that a single run_id can be audited by phase, model, role, component, provider, and agent without relying on the interactive dashboard.",
+          "maps_to_tasks": [
+            "W2-T3"
+          ]
+        },
+        {
+          "validation_id": "W2-V4",
+          "title": "Degraded-state signaling replay validation",
+          "status": "completed",
+          "purpose": "Prove that missing-bundle or incomplete-merge conditions surface trust_state and degradation_signals directly in merged artifacts.",
+          "maps_to_tasks": [
+            "W2-T4"
+          ]
+        },
+        {
+          "validation_id": "W2-V5",
+          "title": "Documentation/runtime contract alignment validation",
+          "status": "completed",
+          "purpose": "Prove that roadmap, orchestration, workflow, and failure-mode docs point to the same runtime paths and trust/cost semantics implemented by the tools.",
+          "maps_to_tasks": [
+            "W2-T5"
+          ]
+        }
+      ],
+      "validation_history": [
+        {
+          "validation_id": "W2-V1",
+          "executed_at": "2026-04-08",
+          "result": "passed",
+          "summary": "Deterministic phase2-lite execution produced a durable state file with no shell-JSON parse drift.",
+          "evidence": [
+            "bash tools/bin/run-phase2.sh --slug wave1-consensus-fail-validation --force completed successfully.",
+            "reports/phase2/wave1-consensus-fail-validation-phase2.state.json recorded stage=done, status=success, trust_state=success, and no details_parse_error field.",
+            "reports/phase2/wave1-consensus-fail-validation-phase2.loop-summary.json recorded trust_state=success and degradation_signals=[]."
+          ]
+        },
+        {
+          "validation_id": "W2-V2",
+          "executed_at": "2026-04-08",
+          "result": "passed",
+          "summary": "A one-bundle chunked smoke run proved scheduler, assistant, provider-raw, and stderr log families are now distinct runtime artifacts.",
+          "evidence": [
+            "SKIP_QUOTA_PROBE=1 bash tools/bin/orchestrate-agents.sh wave1-runtime-smoke --parallel-limit 1 --stop-after-merge completed with rc=0.",
+            "reports/logs/wave1-runtime-smoke/phase2/chunked/run.live.log contains scheduler progress events.",
+            "reports/logs/wave1-runtime-smoke/phase2/chunked/agents/agent-w07/attempt-01/assistant.live.log contains parsed assistant text rather than scheduler status.",
+            "reports/logs/wave1-runtime-smoke/phase2/chunked/agents/agent-w07/attempt-01/provider.raw.log captured raw Claude stream events.",
+            "reports/logs/wave1-runtime-smoke/phase2/chunked/agents/agent-w07/attempt-01/stderr.err remained separate and empty on a clean run."
+          ]
+        },
+        {
+          "validation_id": "W2-V3",
+          "executed_at": "2026-04-08",
+          "result": "passed",
+          "summary": "Per-run quota reporting now attributes cost and token usage across the full Phase 2 run surface.",
+          "evidence": [
+            "python3 tools/bin/quota-report.py --run-id backwpup-audit-20260407T100527Z-50195 --days 30 produced accountability tables by phase, model, role, component, provider, agent, cluster, and usage source.",
+            "reports/cost/backwpup/backwpup-audit-20260407T100527Z-50195.cost.json contains by_agent, by_cluster, by_usage_source, and usage_availability sections.",
+            "Unavailable usage is surfaced explicitly as usage_source=unavailable rather than implied zero cost."
+          ]
+        },
+        {
+          "validation_id": "W2-V4",
+          "executed_at": "2026-04-08",
+          "result": "passed",
+          "summary": "Synthetic merge replay now surfaces degraded trust without requiring operators to infer it from warning text.",
+          "evidence": [
+            "A temp reports-dir replay with one valid bundle output and one expected missing bundle produced merge_stats.trust_state=degraded_success.",
+            "The same replay emitted merge_stats.degradation_signals=['agents_missing'] via merge_agent_outputs.py.",
+            "Consensus writer now propagates trust_state and degradation_signals into root, consensus, and merge_stats containers."
+          ]
+        },
+        {
+          "validation_id": "W2-V5",
+          "executed_at": "2026-04-08",
+          "result": "passed",
+          "summary": "Wave 2 docs were aligned to the hardened runtime contract, including state semantics, log layering, failure log paths, and per-run cost reporting.",
+          "evidence": [
+            "docs/FAILURE-MODES.md now points to reports/logs/<slug>/phase2/chunked/failures.json and the per-attempt log families.",
+            "docs/ORCHESTRATION.md and WORKFLOW-GUIDE.md now document trust_state, phase2.state.json, chunked run logs, and reports/cost/<slug>/<run_id>.cost.json.",
+            "docs/PHASE2-HARDENING-ROADMAP.json now records concrete Wave 2 status and validation evidence."
+          ]
+        }
+      ],
+      "tasks": [
+        {
+          "task_id": "W2-T1",
+          "title": "Replace shell-string details with structured state writes",
+          "status": "completed",
+          "status_notes": [
+            "run-phase2.sh now writes phase state through a structured key/value interface instead of passing raw JSON detail strings.",
+            "State files now carry trust_state at the root and stable detail fields for stop_reason, canonical_source, mode, and degradation_signals."
+          ],
+          "status_evidence": [
+            "reports/phase2/wave1-consensus-fail-validation-phase2.state.json remained valid JSON and included trust_state=success with no details_parse_error.",
+            "run-phase2.sh callsites for bootstrap, worker, reviewer, cluster, and done states now pass structured detail key/value pairs."
+          ],
+          "problem": "phase2.state.json still relies on stringly-typed JSON fragments that can drift or parse incorrectly.",
+          "target_files": [
+            "tools/bin/run-phase2.sh"
+          ],
+          "required_changes": [
+            "Introduce a structured state writer interface that accepts stable fields instead of raw JSON strings.",
+            "Ensure every state write records stage, role, round, provider, output path, errlog path, and live log path in a schema-stable form."
+          ],
+          "validation": [
+            "Unit or integration tests for bootstrap, worker, reviewer, cluster, and done state transitions.",
+            "No details_parse_error under normal execution."
+          ],
+          "exit_criteria": [
+            "phase2.state.json remains valid JSON throughout the full run lifecycle."
+          ]
+        },
+        {
+          "task_id": "W2-T2",
+          "title": "Formalize log layering",
+          "status": "completed",
+          "status_notes": [
+            "Chunked scheduler logs now have first-class run.err and run.live.log files.",
+            "Per-attempt assistant.live.log, provider.raw.log, stderr.err, and last-message.txt artifacts are emitted separately.",
+            "console-ui.sh no longer mixes stderr into assistant live logs."
+          ],
+          "status_evidence": [
+            "reports/logs/wave1-runtime-smoke/phase2/chunked/run.live.log captured scheduler events.",
+            "reports/logs/wave1-runtime-smoke/phase2/chunked/agents/agent-w07/attempt-01/assistant.live.log contained assistant text output.",
+            "reports/logs/wave1-runtime-smoke/phase2/chunked/agents/agent-w07/attempt-01/provider.raw.log contained raw provider events.",
+            "reports/logs/wave1-runtime-smoke/phase2/chunked/run.err existed separately and stayed empty on a clean run."
+          ],
+          "problem": "Scheduler progress, provider raw stream, and assistant live text can still blur together conceptually.",
+          "target_files": [
+            "tools/bin/console-ui.sh",
+            "tools/bin/orchestrate-agents.sh",
+            "tools/bin/run-phase2.sh",
+            "tools/bin/run-phase3.sh"
+          ],
+          "required_changes": [
+            "Define envelope/scheduler logs, provider raw logs, assistant live logs, stderr logs, and last-message artifacts as separate first-class log types.",
+            "Ensure each stage writes to the correct log family consistently."
+          ],
+          "validation": [
+            "Spot-check a real chunked run and confirm each log type contains the expected class of information.",
+            "No placeholder log should masquerade as a real-time assistant stream."
+          ],
+          "exit_criteria": [
+            "Operators can identify stage, agent, provider, and message class from file paths alone."
+          ]
+        },
+        {
+          "task_id": "W2-T3",
+          "title": "Expand cost telemetry into per-run accountability",
+          "status": "completed",
+          "status_notes": [
+            "cost_telemetry.py now summarizes usage by agent, cluster, and usage_source in addition to phase/model/provider totals.",
+            "quota-report.py now supports run_id-centered accountability tables across phase, role, component, provider, model, agent, cluster, and usage source."
+          ],
+          "status_evidence": [
+            "reports/cost/backwpup/backwpup-audit-20260407T100527Z-50195.cost.json contains usage_availability and by_agent sections.",
+            "python3 tools/bin/quota-report.py --run-id backwpup-audit-20260407T100527Z-50195 --days 30 returned ranked cost tables by model, role, component, provider, and agent."
+          ],
+          "problem": "Claude usage is visible, but pipeline-wide per-stage and per-model cost visibility is still incomplete.",
+          "target_files": [
+            "tools/bin/cost_telemetry.py",
+            "tools/bin/quota-report.py",
+            "tools/bin/run-single-plugin.sh",
+            "tools/bin/run-phase2.sh",
+            "tools/bin/run-phase2-clusters.py",
+            "tools/bin/run-phase3.sh"
+          ],
+          "required_changes": [
+            "Report cost and token summaries by plugin, phase, role, model, and agent/cluster when available.",
+            "Clearly mark unavailable usage rather than implying zero cost.",
+            "Keep run_id-centered cost snapshots for later debugging and comparison."
+          ],
+          "validation": [
+            "A completed run produces one summary file under reports/cost/<slug>/.",
+            "quota-report.py can answer which stage/model consumed the most cost for a run."
+          ],
+          "exit_criteria": [
+            "A single plugin run can be cost-audited without manual dashboard inspection."
+          ]
+        },
+        {
+          "task_id": "W2-T4",
+          "title": "Add explicit degraded-state signaling",
+          "status": "completed",
+          "status_notes": [
+            "merge_agent_outputs.py now computes merge_stats.trust_state and merge_stats.degradation_signals.",
+            "write_phase2_consensus.py now propagates trust_state and degradation_signals into root, consensus, and merge_stats payloads.",
+            "run-phase2.sh now derives and records trust_state for loop summaries and final state."
+          ],
+          "status_evidence": [
+            "Synthetic merge replay produced merge_stats.trust_state=degraded_success and degradation_signals=['agents_missing'].",
+            "reports/phase2/wave1-consensus-fail-validation-phase2.json records trust_state=success and consensus.trust_state=success on a clean deterministic path."
+          ],
+          "problem": "Warnings currently exist, but downstream operators may not know whether the final output is fully trusted or only partially recovered.",
+          "target_files": [
+            "tools/bin/run-phase2.sh",
+            "tools/bin/orchestrate-agents.sh",
+            "tools/bin/merge_agent_outputs.py",
+            "tools/bin/write_phase2_consensus.py"
+          ],
+          "required_changes": [
+            "Emit explicit degraded/incomplete markers into summaries and state files when salvage, missing bundles, or skipped validation layers occur.",
+            "Differentiate success, partial_success, degraded_success, and failed outcomes."
+          ],
+          "validation": [
+            "Replay a historical failure artifact and verify that summaries surface degraded state without reading raw logs."
+          ],
+          "exit_criteria": [
+            "No operator should need to infer trust level from log tone alone."
+          ]
+        },
+        {
+          "task_id": "W2-T5",
+          "title": "Sync documentation to the hardened runtime contracts",
+          "status": "completed",
+          "status_notes": [
+            "Workflow, orchestration, failure-mode, and roadmap docs now point to the Wave 2 runtime contract.",
+            "Docs now describe trust_state semantics, log layering, per-run cost reports, and the current Phase 2 artifact layout."
+          ],
+          "status_evidence": [
+            "WORKFLOW-GUIDE.md now documents phase2.state.json, trust_state, chunked log families, and reports/cost/<slug>/<run_id>.cost.json.",
+            "docs/ORCHESTRATION.md now documents state/trust/cost artifacts and updated monitoring commands.",
+            "docs/FAILURE-MODES.md now documents the correct failures log path and log families."
+          ],
+          "problem": "Workflow docs drift quickly when runtime behavior changes but artifacts and trust boundaries are not re-documented.",
+          "target_files": [
+            "WORKFLOW-GUIDE.md",
+            "docs/ORCHESTRATION.md",
+            "docs/FAILURE-MODES.md",
+            "docs/PHASE2-HARDENING-ROADMAP.json"
+          ],
+          "required_changes": [
+            "Document final artifact ownership, canonical publish rules, log layering, state semantics, and cost measurement outputs.",
+            "Document how to distinguish local Phase 2, consensus Phase 2, and incomplete/degraded runs."
+          ],
+          "validation": [
+            "Docs match actual filesystem layout and runtime behavior after Wave 1 and Wave 2 complete."
+          ],
+          "exit_criteria": [
+            "A new session can follow docs and understand the runtime contract without reconstructing it from code."
+          ]
+        }
+      ],
+      "wave_exit_criteria": [
+        "Phase-level state is structured and durable.",
+        "Logs are semantically separated and traceable.",
+        "Cost reports are attributable by run, stage, and model.",
+        "Degraded runs surface their trust level clearly."
+      ]
+    },
+    {
+      "wave_id": "wave_3_appsec_hardening",
+      "title": "Application Security Hardening",
+      "goal": "Reduce fail-open orchestration behavior, tighten runtime trust boundaries, and make prep/provider provenance explicit before any future heavy rerun.",
+      "priority": "high",
+      "depends_on": [
+        "wave_1_integrity_hardening",
+        "wave_2_observability_and_cost_hardening"
+      ],
+      "addresses_risks": [
+        "R-001",
+        "R-002",
+        "R-003",
+        "R-004",
+        "R-005"
+      ],
+      "status": "completed",
+      "last_reviewed_at": "2026-04-08",
+      "status_summary": "Wave 3 AppSec hardening is complete. Standalone multi-agent orchestration now fails closed on consensus failure, freshness skip requires trust_state=success, provider launches no longer use dangerously-* flags in canonical paths, runtime prompts honor dispatch.source_dir, and canonical agent outputs now preserve model slug provenance while trusting the orchestrator slug.",
+      "validation_plan": [
+        {
+          "validation_id": "W3-V1",
+          "title": "Standalone resume plus consensus fail-closed validation",
+          "status": "completed",
+          "purpose": "Prove that resume-missing-only no longer exits early before merge/consensus, and that standalone orchestrate-agents.sh refuses to emit merge-ready or canonical outputs when the consensus writer fails.",
+          "maps_to_tasks": [
+            "W3-T1"
+          ]
+        },
+        {
+          "validation_id": "W3-V2",
+          "title": "Trust-aware freshness validation",
+          "status": "completed",
+          "purpose": "Prove that a fresh but degraded canonical phase2.json is not silently reused by run-phase2.sh.",
+          "maps_to_tasks": [
+            "W3-T2"
+          ]
+        },
+        {
+          "validation_id": "W3-V3",
+          "title": "Claude provider least-privilege and source_dir validation",
+          "status": "completed",
+          "purpose": "Prove that the Claude launch path uses the narrowed CLI contract and that the runtime prompt reflects dispatch.source_dir instead of a hardcoded plugins/<slug> path.",
+          "maps_to_tasks": [
+            "W3-T3",
+            "W3-T4",
+            "W3-T5"
+          ]
+        },
+        {
+          "validation_id": "W3-V4",
+          "title": "Codex provider least-privilege and source_dir validation",
+          "status": "completed",
+          "purpose": "Prove that the Codex launch path uses workspace-write sandboxing and that the runtime prompt also reflects dispatch.source_dir for non-Claude worker runs.",
+          "maps_to_tasks": [
+            "W3-T3",
+            "W3-T4",
+            "W3-T5"
+          ]
+        },
+        {
+          "validation_id": "W3-V5",
+          "title": "Slug provenance override regression validation",
+          "status": "completed",
+          "purpose": "Prove that model-supplied plugin_slug values cannot override orchestrator truth while still preserving raw provenance for inspection.",
+          "maps_to_tasks": [
+            "W3-T5"
+          ]
+        }
+      ],
+      "validation_history": [
+        {
+          "validation_id": "W3-V1",
+          "executed_at": "2026-04-08",
+          "result": "passed_after_resume_bug_fix",
+          "summary": "Standalone orchestration now continues through merge and consensus on resume-only runs, and it aborts cleanly when the consensus writer fails.",
+          "evidence": [
+            "Synthetic slug wave3-consensus-fail-standalone2 returned rc=1 under --resume-missing-only with PHASE2_CONSENSUS_WRITER forced to fail.",
+            "reports/phase2/agents/wave3-consensus-fail-standalone2/merge-ready remained absent and reports/phase2/wave3-consensus-fail-standalone2-phase2.json remained absent.",
+            "reports/logs/wave3-consensus-fail-standalone2/phase2/chunked/failures.json recorded failure_type=consensus_write_failed with resolution=aborted.",
+            "Validation uncovered and fixed a set -u bug in the resume-all-present launch path before the final pass."
+          ]
+        },
+        {
+          "validation_id": "W3-V2",
+          "executed_at": "2026-04-08",
+          "result": "passed",
+          "summary": "Freshness skip now requires trust_state=success; degraded canonical outputs are rebuilt instead of being silently reused.",
+          "evidence": [
+            "Synthetic slug wave3-freshness-trust-validation started from a fresh canonical artifact with trust_state=degraded_success.",
+            "bash tools/bin/run-phase2.sh --slug wave3-freshness-trust-validation reran deterministic phase2-lite instead of skipping.",
+            "The rebuilt reports/phase2/wave3-freshness-trust-validation-phase2.json finished with trust_state=success and degradation_signals=[]."
+          ]
+        },
+        {
+          "validation_id": "W3-V3",
+          "executed_at": "2026-04-08",
+          "result": "passed",
+          "summary": "The Claude worker launch path now uses the narrowed CLI contract and preserves orchestrator-controlled slug provenance.",
+          "evidence": [
+            "Synthetic slug wave3-claude-sandbox-validation completed with a fake Claude binary and rc=0.",
+            "Captured Claude args showed --bare, --permission-mode bypassPermissions, and --tools Read,Grep,Glob,Write, with no dangerously-skip-permissions flag.",
+            "The captured prompt contained Source directory: /tmp/wave3-claude-alt-source.",
+            "Canonical output recorded plugin_slug=wave3-claude-sandbox-validation while preserving original_plugin_slug from the model artifact."
+          ]
+        },
+        {
+          "validation_id": "W3-V4",
+          "executed_at": "2026-04-08",
+          "result": "passed",
+          "summary": "The Codex worker launch path now uses workspace-write sandboxing and respects dispatch.source_dir in runtime prompts.",
+          "evidence": [
+            "Synthetic slug wave3-codex-sandbox-validation completed with a fake Codex binary and rc=0.",
+            "Captured Codex args showed exec --full-auto --sandbox workspace-write, with no dangerously-bypass-approvals-and-sandbox flag.",
+            "The captured prompt contained Source directory: /tmp/wave3-codex-alt-source.",
+            "Canonical output recorded plugin_slug=wave3-codex-sandbox-validation while preserving original_plugin_slug from the model artifact."
+          ]
+        },
+        {
+          "validation_id": "W3-V5",
+          "executed_at": "2026-04-08",
+          "result": "passed",
+          "summary": "Slug provenance override behavior is now protected at both unit and synthetic runtime levels.",
+          "evidence": [
+            "tools.tests.test_normalize_agent_output.test_expected_plugin_slug_overrides_model_slug_and_preserves_provenance passed.",
+            "Both wave3-claude-sandbox-validation and wave3-codex-sandbox-validation produced canonical outputs with orchestrator slug truth and preserved original_plugin_slug."
+          ]
+        }
+      ],
+      "tasks": [
+        {
+          "task_id": "W3-T1",
+          "title": "Fail closed in standalone multi-agent orchestration",
+          "status": "completed",
+          "status_notes": [
+            "orchestrate-agents.sh no longer warns-and-continues after consensus writer failure.",
+            "merge-ready is no longer touched when standalone consensus publication fails.",
+            "The resume-missing-only path now proceeds through merge and consensus instead of exiting early once all canonical agent outputs are already present.",
+            "Validation exposed and fixed an unbound PENDING_AGENTS expansion in the resume-all-present branch."
+          ],
+          "status_evidence": [
+            "Consensus failure now exits non-zero and records consensus_write_failed in failures.json.",
+            "Synthetic slug wave3-consensus-fail-standalone2 returned rc=1 with merge-ready and canonical outputs absent."
+          ],
+          "problem": "Direct orchestrate-agents.sh usage could still report success or emit merge-ready after consensus failure, especially across resume paths.",
+          "target_files": [
+            "tools/bin/orchestrate-agents.sh"
+          ],
+          "required_changes": [
+            "Abort standalone orchestration when consensus publication fails or the consensus script is missing.",
+            "Do not emit merge-ready when authoritative publication has not succeeded.",
+            "Make resume-only paths continue through merge and consensus instead of exiting early."
+          ],
+          "validation": [
+            "Synthetic resume-only run with a forced-failing consensus writer exits non-zero and leaves merge-ready absent."
+          ],
+          "exit_criteria": [
+            "Standalone orchestration cannot fail open after consensus failure."
+          ]
+        },
+        {
+          "task_id": "W3-T2",
+          "title": "Make freshness skip trust-aware",
+          "status": "completed",
+          "status_notes": [
+            "phase2_output_is_fresh now requires trust_state=success in addition to filesystem freshness.",
+            "Fresh degraded canonical artifacts are rebuilt instead of silently reused."
+          ],
+          "status_evidence": [
+            "Synthetic slug wave3-freshness-trust-validation reran deterministic phase2-lite even though the seeded canonical output was newer than its inputs.",
+            "The regenerated canonical artifact finished with trust_state=success."
+          ],
+          "problem": "Freshness skip could reuse degraded canonical outputs without checking whether the artifact was still fully trusted.",
+          "target_files": [
+            "tools/bin/run-phase2.sh"
+          ],
+          "required_changes": [
+            "Require trust_state=success before treating reports/phase2/<slug>-phase2.json as reusable freshness output.",
+            "Force a rerun whenever canonical trust is degraded, partial, or absent."
+          ],
+          "validation": [
+            "A fresh degraded canonical artifact triggers a rebuild rather than a skip."
+          ],
+          "exit_criteria": [
+            "Freshness skips only occur for authoritative canonical outputs."
+          ]
+        },
+        {
+          "task_id": "W3-T3",
+          "title": "Reduce provider runtime privileges in canonical paths",
+          "status": "completed",
+          "status_notes": [
+            "Canonical Phase 2, cluster, and Phase 3 paths no longer use dangerously-* provider flags.",
+            "Codex launches now use workspace-write sandboxing.",
+            "Claude launches now use bare mode plus an explicit limited tool list."
+          ],
+          "status_evidence": [
+            "Captured Claude args showed no dangerously-skip-permissions flag.",
+            "Captured Codex args showed no dangerously-bypass-approvals-and-sandbox flag.",
+            "Code scan across the hardened runner files no longer finds those dangerous flags."
+          ],
+          "problem": "Audit agents previously ran with provider-level dangerous bypass flags that exceeded the minimum needed for this pipeline.",
+          "target_files": [
+            "tools/bin/orchestrate-agents.sh",
+            "tools/bin/run-phase2.sh",
+            "tools/bin/run-phase2-clusters.py",
+            "tools/bin/phase3_llm_review.py"
+          ],
+          "required_changes": [
+            "Replace dangerous provider launch flags with the narrowest non-interactive settings the CLIs support.",
+            "Keep Codex inside workspace-write sandboxing in canonical automation paths.",
+            "Constrain Claude to a declared tool list during automated audit runs."
+          ],
+          "validation": [
+            "Synthetic Claude and Codex runs capture the new CLI argument contracts without invoking real models."
+          ],
+          "exit_criteria": [
+            "Canonical automation paths no longer rely on dangerously-* launch flags."
+          ]
+        },
+        {
+          "task_id": "W3-T4",
+          "title": "Use dispatch.source_dir as runtime prompt truth",
+          "status": "completed",
+          "status_notes": [
+            "Chunked worker prompts now inject SOURCE_DIR_ABS derived from dispatch.source_dir instead of hardcoding plugins/<slug>/.",
+            "The same behavior is visible across both Claude and Codex synthetic worker runs."
+          ],
+          "status_evidence": [
+            "Synthetic Claude prompt captured Source directory: /tmp/wave3-claude-alt-source.",
+            "Synthetic Codex prompt captured Source directory: /tmp/wave3-codex-alt-source."
+          ],
+          "problem": "A dispatch could target one source tree while the runtime prompt still told agents to inspect plugins/<slug>/, creating a hidden scope mismatch.",
+          "target_files": [
+            "tools/bin/orchestrate-agents.sh"
+          ],
+          "required_changes": [
+            "Resolve dispatch.source_dir into an absolute runtime path and inject that into worker prompts.",
+            "Preserve repo-default behavior only when dispatch.source_dir is absent."
+          ],
+          "validation": [
+            "Synthetic runs with nonstandard absolute source_dir values show the prompt using those values verbatim."
+          ],
+          "exit_criteria": [
+            "Runtime prompts no longer hardcode the plugin source path when dispatch provides a different source_dir."
+          ]
+        },
+        {
+          "task_id": "W3-T5",
+          "title": "Make orchestrator slug authoritative while preserving model provenance",
+          "status": "completed",
+          "status_notes": [
+            "normalize_agent_output.py now prefers expected_plugin_slug over any model-supplied plugin_slug.",
+            "When the model slug differs, the original value is preserved under original_plugin_slug."
+          ],
+          "status_evidence": [
+            "Unit test coverage now checks expected slug override plus provenance preservation.",
+            "Synthetic Claude and Codex runs produced canonical outputs with the orchestrator slug while retaining original_plugin_slug from the copied model artifact."
+          ],
+          "problem": "Model-supplied plugin_slug values could distort path normalization and provenance if they differed from orchestration truth.",
+          "target_files": [
+            "tools/bin/normalize_agent_output.py",
+            "tools/tests/test_normalize_agent_output.py"
+          ],
+          "required_changes": [
+            "Make expected_plugin_slug authoritative for normalized outputs.",
+            "Preserve the model-provided slug separately for audit provenance."
+          ],
+          "validation": [
+            "Unit test and synthetic worker runs both confirm override-plus-preservation behavior."
+          ],
+          "exit_criteria": [
+            "Canonical outputs always reflect orchestrator slug truth without losing visibility into model-originated slug drift."
+          ]
+        }
+      ],
+      "wave_exit_criteria": [
+        "Standalone orchestration does not fail open on consensus failure.",
+        "Freshness skip is trust-aware.",
+        "Canonical worker paths no longer use dangerous provider flags.",
+        "Runtime prompts honor dispatch source_dir.",
+        "Canonical normalized outputs preserve slug provenance without trusting model slug truth."
+      ]
+    },
+    {
+      "wave_id": "wave_4_downstream_trust_and_provenance_hardening",
+      "title": "Downstream Trust And Provenance Hardening",
+      "goal": "Ensure downstream stages consume only authoritative Phase 2 canonicals, remove stale canonical fallback paths, and align control-plane provenance across Phase 2 and Phase 3.",
+      "priority": "high",
+      "depends_on": [
+        "wave_1_integrity_hardening",
+        "wave_2_observability_and_cost_hardening",
+        "wave_3_appsec_hardening"
+      ],
+      "addresses_risks": [
+        "R-201",
+        "R-202",
+        "R-203",
+        "R-204"
+      ],
+      "status": "completed_with_documented_residuals",
+      "last_reviewed_at": "2026-04-08",
+      "status_summary": "Wave 4 is complete for downstream trust enforcement, trust-aware batch control, consensus source integrity, and cluster binary provenance. Phase 3 and its wrappers now reject degraded Phase 2 canonicals, batch selectors consult trust_state instead of raw file presence, the consensus writer refuses canonical-only fallback, and the cluster runner honors configured provider binaries. Write-capable provider execution in core worker/reviewer paths and the dual-authority run-pipeline --multi-agent path remain explicit residual risks.",
+      "validation_plan": [
+        {
+          "validation_id": "W4-V1",
+          "title": "Phase 3 trust gate validation",
+          "status": "completed",
+          "purpose": "Prove that run-phase3.sh and phase3_gate.py both refuse degraded Phase 2 canonicals before doing any deterministic or LLM review work.",
+          "maps_to_tasks": [
+            "W4-T1"
+          ]
+        },
+        {
+          "validation_id": "W4-V2",
+          "title": "Trust-aware batch selector validation",
+          "status": "completed",
+          "purpose": "Prove that batch-oriented control-plane paths now consult trust_state helpers instead of raw file presence for Phase 2 readiness decisions.",
+          "maps_to_tasks": [
+            "W4-T1",
+            "W4-T2"
+          ]
+        },
+        {
+          "validation_id": "W4-V3",
+          "title": "Local-only consensus source validation",
+          "status": "completed",
+          "purpose": "Prove that write_phase2_consensus.py refuses to republish from canonical-only state when phase2.local.json is missing.",
+          "maps_to_tasks": [
+            "W4-T3"
+          ]
+        },
+        {
+          "validation_id": "W4-V4",
+          "title": "Cluster binary provenance validation",
+          "status": "completed",
+          "purpose": "Prove that run-phase2-clusters.py honors configured Claude/Codex binaries and keeps the cluster stage inside the same provenance contract as other runners.",
+          "maps_to_tasks": [
+            "W4-T4"
+          ]
+        }
+      ],
+      "validation_history": [
+        {
+          "validation_id": "W4-V1",
+          "executed_at": "2026-04-08",
+          "result": "passed",
+          "summary": "Phase 3 now blocks degraded Phase 2 canonicals in both the shell runner and the deterministic gate script.",
+          "evidence": [
+            "Synthetic slug wave4-phase3-trust-gate returned rc=1 from bash tools/bin/run-phase3.sh --slug wave4-phase3-trust-gate with trust_state=degraded_success.",
+            "Direct invocation of python3 tools/bin/phase3_gate.py wave4-phase3-trust-gate --reports-dir reports --plugins-dir plugins also returned rc=1 with the same trust-state error."
+          ]
+        },
+        {
+          "validation_id": "W4-V2",
+          "executed_at": "2026-04-08",
+          "result": "passed_static_and_helper_backed",
+          "summary": "Batch selectors and coordinators now call shared trust helpers instead of relying on raw file presence alone.",
+          "evidence": [
+            "tools.tests.test_artifact_freshness now covers resolve_phase2_trust_state() and is_trusted_phase2_output().",
+            "Code scan confirms phase2-is-trusted/phase2-trust-state are now used by run-phase2.sh, run-phase3.sh, run-pipeline.sh, and run-single-plugin.sh.",
+            "Batch UX strings now distinguish trusted outputs from degraded/untrusted outputs."
+          ]
+        },
+        {
+          "validation_id": "W4-V3",
+          "executed_at": "2026-04-08",
+          "result": "passed",
+          "summary": "Consensus publication now fails closed when only canonical state exists and phase2.local.json is absent.",
+          "evidence": [
+            "Unit coverage now asserts resolve_local_phase2_source() refuses canonical-only fallback.",
+            "Synthetic slug wave4-consensus-local-only returned rc=1 from python3 tools/bin/write_phase2_consensus.py wave4-consensus-local-only --reports-dir reports with the error No local Phase 2 file found for slug: wave4-consensus-local-only."
+          ]
+        },
+        {
+          "validation_id": "W4-V4",
+          "executed_at": "2026-04-08",
+          "result": "passed",
+          "summary": "Cluster synth/challenge now honor configured provider binaries, enabling provenance capture and stubbing in the cluster stage.",
+          "evidence": [
+            "Synthetic slug wave4-cluster-bin-provenance returned rc=0 from run-phase2-clusters.py using fake Claude and Codex binaries.",
+            "Captured cluster synth args showed the configured Claude binary receiving the expected non-interactive flags.",
+            "Captured cluster challenge args showed the configured Codex wrapper receiving exec --full-auto --sandbox workspace-write and the expected output-last-message path."
+          ]
+        }
+      ],
+      "tasks": [
+        {
+          "task_id": "W4-T1",
+          "title": "Enforce trusted Phase 2 canonicals before any Phase 3 or downstream consumption",
+          "status": "completed",
+          "status_notes": [
+            "run-phase3.sh now rejects non-success trust_state canonicals before gate execution or review reuse decisions.",
+            "phase3_gate.py now performs the same trust check for direct/scripted invocation.",
+            "run-single-plugin.sh and run-pipeline.sh now treat an untrusted Phase 2 canonical as a blocker for Phase 3 rather than mere file presence success."
+          ],
+          "status_evidence": [
+            "Synthetic slug wave4-phase3-trust-gate failed closed in both run-phase3.sh and phase3_gate.py.",
+            "Code scan confirms shared phase2 trust helpers are now used in all downstream shell coordinators."
+          ],
+          "problem": "Downstream stages and wrappers could consume a degraded Phase 2 canonical because they trusted file existence more than trust_state.",
+          "target_files": [
+            "tools/bin/run-phase3.sh",
+            "tools/bin/phase3_gate.py",
+            "tools/bin/run-single-plugin.sh",
+            "tools/bin/run-pipeline.sh",
+            "tools/bin/artifact_freshness.py"
+          ],
+          "required_changes": [
+            "Add shared helpers to resolve and enforce Phase 2 trust_state.",
+            "Fail closed when trust_state is absent or not success before running Phase 3.",
+            "Use the same trust contract in both direct phase3_gate.py invocation and shell coordinators."
+          ],
+          "validation": [
+            "Synthetic degraded canonical blocks both run-phase3.sh and phase3_gate.py."
+          ],
+          "exit_criteria": [
+            "Phase 3 and its coordinators never treat a degraded Phase 2 canonical as ready merely because the file exists."
+          ]
+        },
+        {
+          "task_id": "W4-T2",
+          "title": "Make batch control-plane selectors trust-aware",
+          "status": "completed",
+          "status_notes": [
+            "run-phase2.sh batch UX now separates trusted outputs from degraded/untrusted outputs in its control-plane summary.",
+            "run-phase3.sh batch selection now filters out untrusted Phase 2 canonicals before building the interactive index set."
+          ],
+          "status_evidence": [
+            "Code scan shows phase2-is-trusted helper usage in run-phase2.sh and run-phase3.sh batch selectors.",
+            "Unit coverage for artifact_freshness trust helpers backs the shared trust contract."
+          ],
+          "problem": "Batch-facing control-plane logic still treated file presence as readiness in key places, which could surface degraded canonicals as done/available.",
+          "target_files": [
+            "tools/bin/run-phase2.sh",
+            "tools/bin/run-phase3.sh",
+            "tools/bin/artifact_freshness.py",
+            "tools/tests/test_artifact_freshness.py"
+          ],
+          "required_changes": [
+            "Replace file-presence checks with trust-aware helpers in batch selectors and readiness summaries.",
+            "Expose degraded/untrusted outputs explicitly instead of folding them into done counts."
+          ],
+          "validation": [
+            "Static code scan plus helper-backed tests confirm trust-aware selector usage and messaging."
+          ],
+          "exit_criteria": [
+            "Interactive batch views no longer imply that degraded Phase 2 outputs are ready for reuse."
+          ]
+        },
+        {
+          "task_id": "W4-T3",
+          "title": "Require phase2.local.json as the only consensus source of truth",
+          "status": "completed",
+          "status_notes": [
+            "write_phase2_consensus.py now refuses canonical-only fallback and requires phase2.local.json to exist.",
+            "Unit coverage now isolates the source-resolution contract rather than relying only on build_consensus aggregation tests."
+          ],
+          "status_evidence": [
+            "resolve_local_phase2_source() now raises FileNotFoundError when only canonical exists.",
+            "Synthetic canonical-only invocation returned rc=1 with the expected no-local error."
+          ],
+          "problem": "Consensus publication could re-bless a stale canonical artifact when the authoritative local merge artifact was missing.",
+          "target_files": [
+            "tools/bin/write_phase2_consensus.py",
+            "tools/tests/test_write_phase2_consensus.py"
+          ],
+          "required_changes": [
+            "Remove implicit canonical fallback from consensus publication.",
+            "Add explicit tests for local-only source resolution."
+          ],
+          "validation": [
+            "Canonical-only synthetic run fails closed and unit tests cover the source resolver."
+          ],
+          "exit_criteria": [
+            "Consensus writer never republishes from canonical-only state without a current local artifact."
+          ]
+        },
+        {
+          "task_id": "W4-T4",
+          "title": "Align cluster runner binary provenance with the rest of the pipeline",
+          "status": "completed",
+          "status_notes": [
+            "run-phase2-clusters.py now honors configured Claude/Codex binaries and Claude tool lists instead of hardcoding provider binary names.",
+            "run-phase2.sh now passes the active provider binaries into the cluster runner explicitly."
+          ],
+          "status_evidence": [
+            "Synthetic cluster runner validation passed with fake configured binaries and captured their argv contracts.",
+            "Cluster synth and challenge artifacts were produced successfully under the fake-binary harness."
+          ],
+          "problem": "The cluster stage bypassed configured provider binaries, weakening provenance, stubbing, and wrapper-based controls.",
+          "target_files": [
+            "tools/bin/run-phase2-clusters.py",
+            "tools/bin/run-phase2.sh"
+          ],
+          "required_changes": [
+            "Honor configured Claude/Codex binaries in the cluster runner.",
+            "Thread those binaries explicitly from the canonical Phase 2 coordinator into the cluster stage."
+          ],
+          "validation": [
+            "Synthetic cluster run with fake binaries captures expected argv while still producing valid synth/challenge outputs."
+          ],
+          "exit_criteria": [
+            "Cluster synth/challenge no longer silently bypass configured provider binary provenance."
+          ]
+        }
+      ],
+      "wave_exit_criteria": [
+        "Phase 3 and its coordinators fail closed on degraded or missing Phase 2 trust.",
+        "Batch-facing control-plane summaries and selectors are trust-aware.",
+        "Consensus publication requires a current local Phase 2 artifact.",
+        "Cluster synth/challenge honor configured provider binaries."
+      ]
+    },
+    {
+      "wave_id": "wave_5_manual_path_and_authority_closure",
+      "title": "Manual Path And Authority Closure",
+      "goal": "Close the remaining helper/manual trust gaps and remove the last public Phase 2 authority drift visible before a rerun.",
+      "priority": "high",
+      "depends_on": [
+        "wave_1_integrity_hardening",
+        "wave_2_observability_and_cost_hardening",
+        "wave_3_appsec_hardening",
+        "wave_4_downstream_trust_and_provenance_hardening"
+      ],
+      "addresses_risks": [
+        "R-401",
+        "R-402",
+        "R-403"
+      ],
+      "status": "completed_with_documented_residuals",
+      "last_reviewed_at": "2026-04-09",
+      "status_summary": "Wave 5 is complete for manual/helper trust enforcement, canonical-default utility guardrails, and wrapper authority closure. Direct Phase 3 helper scripts now reject degraded Phase 2 canonicals, manual cluster planning refuses unsafe canonical inputs, phase2_postprocess blocks implicit canonical mutation unless explicitly approved, and run-pipeline --multi-agent now routes through canonical run-phase2.sh in forced chunked mode instead of invoking standalone orchestrate-agents.sh directly. Write-capable provider execution in the core worker/reviewer flows remains an explicit residual risk.",
+      "validation_plan": [
+        {
+          "validation_id": "W5-V1",
+          "title": "Manual helper trust-gate validation",
+          "status": "completed",
+          "purpose": "Prove that direct Phase 3 helper/manual scripts fail closed on degraded Phase 2 canonicals before provider execution or canonical mutation.",
+          "maps_to_tasks": [
+            "W5-T1",
+            "W5-T2"
+          ]
+        },
+        {
+          "validation_id": "W5-V2",
+          "title": "Canonical utility guardrail validation",
+          "status": "completed",
+          "purpose": "Prove that manual cluster planning and postprocess utilities do not silently trust or overwrite canonical Phase 2 artifacts by default.",
+          "maps_to_tasks": [
+            "W5-T2"
+          ]
+        },
+        {
+          "validation_id": "W5-V3",
+          "title": "Wrapper authority closure validation",
+          "status": "completed",
+          "purpose": "Prove that run-pipeline --multi-agent no longer invokes standalone orchestrate-agents.sh as a separate public Phase 2 authority.",
+          "maps_to_tasks": [
+            "W5-T3"
+          ]
+        }
+      ],
+      "validation_history": [
+        {
+          "validation_id": "W5-V1",
+          "executed_at": "2026-04-09",
+          "result": "passed",
+          "summary": "Direct Phase 3 helper scripts now reject degraded Phase 2 canonicals before doing review or validation work.",
+          "evidence": [
+            "tools.tests.test_phase3_manual_guardrails covers phase3_apply_review.py, phase3_llm_review.py, and phase3-validate.py rejecting trust_state=degraded_success.",
+            "These checks execute before provider launch, review bundle construction, or canonical mutation."
+          ]
+        },
+        {
+          "validation_id": "W5-V2",
+          "executed_at": "2026-04-09",
+          "result": "passed",
+          "summary": "Manual cluster planning and postprocess utilities now fail closed on unsafe canonical-default usage.",
+          "evidence": [
+            "tools.tests.test_phase3_manual_guardrails covers build_candidate_clusters.py rejecting an untrusted canonical path.",
+            "The same suite confirms phase2_postprocess.py refuses canonical overwrite without --allow-canonical-phase2.",
+            "Canonical run-phase2.sh remains unaffected because it passes explicit local/intermediate output paths to these utilities."
+          ]
+        },
+        {
+          "validation_id": "W5-V3",
+          "executed_at": "2026-04-09",
+          "result": "passed_static_and_shell_checked",
+          "summary": "run-pipeline --multi-agent is now a wrapper over canonical run-phase2.sh forced chunked mode instead of a direct standalone orchestrator entrypoint.",
+          "evidence": [
+            "Shell syntax validation passed for tools/bin/run-pipeline.sh and tools/bin/run-phase2.sh after the wrapper change.",
+            "Code scan confirms run_multi_agent_pipeline_for_slug now calls run-phase2.sh and no longer shells into orchestrate-agents.sh directly.",
+            "The wrapper forwards chunked parallelism, timeout, and resume semantics through canonical Phase 2 flags/env mappings."
+          ]
+        }
+      ],
+      "tasks": [
+        {
+          "task_id": "W5-T1",
+          "title": "Enforce trust_state in direct Phase 3 helper scripts",
+          "status": "completed",
+          "status_notes": [
+            "phase3_apply_review.py, phase3_llm_review.py, and phase3-validate.py now reject Phase 2 canonicals whose trust_state is absent or not success.",
+            "These checks run before helper logic mutates canonical artifacts or launches provider work."
+          ],
+          "target_files": [
+            "tools/bin/phase3_apply_review.py",
+            "tools/bin/phase3_llm_review.py",
+            "tools/bin/phase3-validate.py"
+          ]
+        },
+        {
+          "task_id": "W5-T2",
+          "title": "Guard canonical-default manual utilities",
+          "status": "completed",
+          "status_notes": [
+            "build_candidate_clusters.py now refuses untrusted canonical Phase 2 inputs when operating on canonical paths.",
+            "phase2_postprocess.py now blocks implicit canonical mutation unless --allow-canonical-phase2 is explicitly provided."
+          ],
+          "target_files": [
+            "tools/bin/build_candidate_clusters.py",
+            "tools/bin/phase2_postprocess.py"
+          ]
+        },
+        {
+          "task_id": "W5-T3",
+          "title": "Collapse run-pipeline --multi-agent onto canonical Phase 2 authority",
+          "status": "completed",
+          "status_notes": [
+            "run-pipeline --multi-agent now calls canonical run-phase2.sh in forced chunked worker mode.",
+            "Legacy wrapper knobs are mapped into canonical Phase 2 flags/env instead of invoking orchestrate-agents.sh directly."
+          ],
+          "target_files": [
+            "tools/bin/run-pipeline.sh",
+            "tools/bin/run-phase2.sh"
+          ]
+        },
+        {
+          "task_id": "W5-T4",
+          "title": "Validate helper/manual guardrails with synthetic tests",
+          "status": "completed",
+          "status_notes": [
+            "A new synthetic test suite now covers helper/manual trust guard behavior without requiring a heavy rerun."
+          ],
+          "target_files": [
+            "tools/tests/test_phase3_manual_guardrails.py"
+          ]
+        }
+      ],
+      "wave_exit_criteria": [
+        "Direct/manual Phase 3 helper paths fail closed on degraded Phase 2 canonicals.",
+        "Manual canonical-default utilities require explicit trust-aware intent.",
+        "run-pipeline --multi-agent no longer acts as a separate public Phase 2 authority."
+      ]
+    },
+    {
+      "wave_id": "wave_6_cost_aware_provider_strategy",
+      "title": "Cost-Aware Provider Strategy And Selective Claude Escalation",
+      "goal": "Keep Codex as the default execution baseline while only invoking Claude when Phase 1 and Phase 2 evidence indicate high-value exploit potential or high-value ambiguity.",
+      "priority": "high",
+      "depends_on": [
+        "wave_1_integrity_hardening",
+        "wave_2_observability_and_cost_hardening",
+        "wave_3_appsec_hardening",
+        "wave_4_downstream_trust_and_provenance_hardening",
+        "wave_5_manual_path_and_authority_closure"
+      ],
+      "addresses_risks": [
+        "R-501",
+        "R-502",
+        "R-503",
+        "R-504",
+        "R-505",
+        "R-506",
+        "R-305"
+      ],
+      "status": "completed_with_nonheavy_validation",
+      "last_reviewed_at": "2026-04-09",
+      "status_summary": "Wave 6 is implemented and validated without a heavy rerun. The pipeline now resolves a provider tier before Phase 2, upgrades selective stages after reviewer_core when evidence justifies it, keeps Codex as the baseline worker/reviewer_core provider, routes Claude only into contradiction-heavy stages, and records provider-strategy decisions into Phase 2 artifacts and per-run cost summaries.",
+      "design_objectives": [
+        "Codex remains the default provider for broad worker search and routine reviewer_core work.",
+        "Claude is only used when the pipeline can explain why the run or finding has high-value potential.",
+        "Provider choice must be reproducible from stored signals, not from operator intuition.",
+        "The policy must distinguish pre-Phase-2 potential from post-worker evidence quality.",
+        "Decision logs must explain both why Claude was used and why it was not used."
+      ],
+      "decision_policy": {
+        "pre_phase2_signal_inputs": [
+          "entry_points",
+          "anomalies",
+          "unauth_ep",
+          "sensitive_sinks",
+          "sql_sinks",
+          "rest_json_sources",
+          "coverage_gaps",
+          "output_sinks",
+          "threat_context.matched_categories",
+          "threat_context.priority_vulns"
+        ],
+        "pre_phase2_tiers": [
+          {
+            "tier_id": "A0",
+            "label": "codex_only_low_signal",
+            "intent": "Do not spend Claude on plugins that only show low-signal or generic complexity.",
+            "default_conditions": [
+              "quick-triage mode",
+              "unauth_ep = 0",
+              "sql_sinks = 0",
+              "coverage_gaps = 0",
+              "anomalies < 4"
+            ],
+            "provider_mapping": {
+              "worker": "codex",
+              "reviewer_core": "codex",
+              "reviewer_explore": "codex_or_skip",
+              "cluster_synth": "codex",
+              "cluster_challenger": "codex",
+              "phase3_primary": "codex",
+              "phase3_skeptic": "disabled"
+            }
+          },
+          {
+            "tier_id": "A1",
+            "label": "codex_deep_default",
+            "intent": "Allow deep Codex-only analysis when the surface is non-trivial but not yet high-value enough for premium contradiction.",
+            "default_conditions": [
+              "deep-elevated profile",
+              "no hard trigger combination for high-impact exploitation"
+            ],
+            "provider_mapping": {
+              "worker": "codex",
+              "reviewer_core": "codex",
+              "reviewer_explore": "codex",
+              "cluster_synth": "codex",
+              "cluster_challenger": "codex",
+              "phase3_primary": "codex",
+              "phase3_skeptic": "disabled"
+            }
+          },
+          {
+            "tier_id": "A2",
+            "label": "claude_selective_high_value_potential",
+            "intent": "Use Claude only for narrow contradiction and ambiguity-heavy stages once Phase 1 indicates likely reportable surface.",
+            "default_conditions": [
+              "deep-extended profile",
+              "or unauth_ep >= 1 and sql_sinks >= 1",
+              "or unauth_ep >= 1 and coverage_gaps >= 2",
+              "or sql_sinks >= 2",
+              "or coverage_gaps >= 4",
+              "or anomalies >= 8",
+              "or signal_score >= 18"
+            ],
+            "provider_mapping": {
+              "worker": "codex",
+              "reviewer_core": "codex",
+              "reviewer_explore": "claude",
+              "cluster_synth": "codex",
+              "cluster_challenger": "claude",
+              "phase3_primary": "codex",
+              "phase3_skeptic": "disabled"
+            }
+          },
+          {
+            "tier_id": "A3",
+            "label": "claude_escalated_high_value_target",
+            "intent": "Spend Claude only when both surface and business context imply a realistic high-impact finding set.",
+            "default_conditions": [
+              "A2 conditions plus threat_context.priority_vulns intersects high-impact families",
+              "or deep-extended with unauth_ep and sql_sinks or coverage_gaps both present",
+              "or threat_context suggests account_takeover, privilege_escalation, auth_bypass, arbitrary_file_upload, file_deletion, ssrf, local_file_inclusion, or remote_file_inclusion"
+            ],
+            "provider_mapping": {
+              "worker": "codex",
+              "reviewer_core": "codex",
+              "reviewer_explore": "claude",
+              "cluster_synth": "codex",
+              "cluster_challenger": "claude",
+              "phase3_primary": "codex",
+              "phase3_skeptic": "claude"
+            }
+          }
+        ],
+        "post_worker_escalation_triggers": [
+          "worker output contains TP or REVIEW findings in auth bypass, privilege escalation, SQLi, SSRF, deserialization, file write/delete, include/LFI/RFI, or account takeover families",
+          "reviewer_core returns needs_revision with material issues",
+          "reviewer_core reports missed_findings > 0 on high-impact families",
+          "forced exploration or cluster stages leave unresolved open questions or missing evidence on a potentially reportable path",
+          "stored or second-order patterns exist with real storage keys or plausible persistence paths"
+        ],
+        "non_goals": [
+          "Do not use Claude as the default worker for all plugins.",
+          "Do not spend Claude on low-signal quick-triage runs.",
+          "Do not use provider diversity as a substitute for deterministic postprocess, cluster consensus, or trust gating."
+        ]
+      },
+      "implementation_plan": [
+        {
+          "step_id": "W6-S1",
+          "title": "Codify provider tiers and defaults",
+          "detail": "Add a provider-policy resolver that turns Phase 1 signals and threat context into a provider tier (A0-A3) before Phase 2 starts."
+        },
+        {
+          "step_id": "W6-S2",
+          "title": "Make threat context a first-class escalation signal",
+          "detail": "Use matched_categories and priority_vulns to bump plugins into selective-Claude tiers when the category-to-impact mapping suggests likely reportable findings."
+        },
+        {
+          "step_id": "W6-S3",
+          "title": "Split sensitive sinks into category-aware buckets",
+          "detail": "Break the current aggregate into file_write, file_delete, deserialization, include, remote_request, option_update, meta_update, and similar families so escalation decisions can prioritize truly expensive/high-impact review."
+        },
+        {
+          "step_id": "W6-S4",
+          "title": "Add mid-Phase-2 escalation based on worker/reviewer evidence",
+          "detail": "Upgrade from pre-run potential only to evidence-aware escalation after worker round 1 and reviewer_core output."
+        },
+        {
+          "step_id": "W6-S5",
+          "title": "Restrict Claude to contradiction-heavy stages",
+          "detail": "Use Claude only for reviewer_explore, cluster_challenger, and optional Phase 3 skeptic under the provider-policy resolver."
+        },
+        {
+          "step_id": "W6-S6",
+          "title": "Emit decision telemetry and cost attribution",
+          "detail": "Record why a provider tier was selected, which signals triggered it, and which stages actually consumed Claude."
+        },
+        {
+          "step_id": "W6-S7",
+          "title": "Add operator-facing explainability",
+          "detail": "Surface the provider tier, trigger reasons, and selected stage providers in run-single-plugin.sh and Phase 2 summaries so operators can see why Claude was or was not used."
+        }
+      ],
+      "tasks": [
+        {
+          "task_id": "W6-T1",
+          "title": "Define a formal provider policy contract",
+          "status": "completed",
+          "status_notes": [
+            "Create a stable contract for provider tiers A0-A3 and their stage-by-stage provider mappings.",
+            "Keep Codex as the default baseline for worker and reviewer_core."
+          ],
+          "target_files": [
+            "tools/bin/run-single-plugin.sh",
+            "tools/bin/run-phase2.sh",
+            "docs/PHASE2-HARDENING-ROADMAP.json"
+          ]
+        },
+        {
+          "task_id": "W6-T2",
+          "title": "Promote threat context into provider-routing decisions",
+          "status": "completed",
+          "status_notes": [
+            "Use matched_categories and priority_vulns as escalation signals, not only prompt hints."
+          ],
+          "target_files": [
+            "tools/bin/run-phase2.sh",
+            "tools/bin/generate_threat_context.py",
+            "tools/data/threat-profiles.json"
+          ]
+        },
+        {
+          "task_id": "W6-T3",
+          "title": "Decompose sensitive sink metrics by impact family",
+          "status": "completed",
+          "status_notes": [
+            "Add category-aware counters so file write, file delete, deserialization, include, and remote_request can drive escalation more precisely than one aggregate sensitive_sinks counter."
+          ],
+          "target_files": [
+            "tools/bin/run-phase2.sh",
+            "reports/phase1/*-ir.json"
+          ]
+        },
+        {
+          "task_id": "W6-T4",
+          "title": "Implement pre-Phase-2 high-value potential classifier",
+          "status": "completed",
+          "status_notes": [
+            "Turn existing adaptive signals plus threat context into a provider tier decision before launching worker round 1."
+          ],
+          "target_files": [
+            "tools/bin/run-phase2.sh"
+          ]
+        },
+        {
+          "task_id": "W6-T5",
+          "title": "Implement post-worker escalation rules",
+          "status": "completed",
+          "status_notes": [
+            "Escalate to Claude only when worker/reviewer evidence indicates high-value ambiguity, missed findings, or impact-rich TP/REVIEW clusters."
+          ],
+          "target_files": [
+            "tools/bin/run-phase2.sh",
+            "tools/bin/orchestrate-agents.sh",
+            "tools/bin/run-phase2-clusters.py"
+          ]
+        },
+        {
+          "task_id": "W6-T6",
+          "title": "Constrain Claude usage to selective stages",
+          "status": "completed",
+          "status_notes": [
+            "Default Claude targets should be reviewer_explore, cluster_challenger, and optional Phase 3 skeptic, not broad worker search."
+          ],
+          "target_files": [
+            "tools/bin/run-phase2.sh",
+            "tools/bin/run-phase2-clusters.py",
+            "tools/bin/run-phase3.sh"
+          ]
+        },
+        {
+          "task_id": "W6-T7",
+          "title": "Write provider-decision telemetry and summaries",
+          "status": "completed",
+          "status_notes": [
+            "Store provider tier, trigger reasons, stage mapping, and actual Claude-consuming stages in per-run summaries and cost reports."
+          ],
+          "target_files": [
+            "tools/bin/cost_telemetry.py",
+            "tools/bin/quota-report.py",
+            "tools/bin/run-single-plugin.sh",
+            "tools/bin/run-phase2.sh"
+          ]
+        },
+        {
+          "task_id": "W6-T8",
+          "title": "Expose explainability in operator-facing output",
+          "status": "completed",
+          "status_notes": [
+            "Print the selected provider tier, trigger reasons, and stage-specific provider mapping at run start."
+          ],
+          "target_files": [
+            "tools/bin/run-single-plugin.sh",
+            "tools/bin/run-phase2.sh"
+          ]
+        },
+        {
+          "task_id": "W6-T9",
+          "title": "Document provider strategy and escalation rules",
+          "status": "completed",
+          "status_notes": [
+            "Sync the policy into workflow docs so later sessions can reason about provider use without re-deriving thresholds."
+          ],
+          "target_files": [
+            "WORKFLOW-GUIDE.md",
+            "docs/ORCHESTRATION.md",
+            "docs/PHASE2-HARDENING-ROADMAP.json"
+          ]
+        }
+      ],
+      "validation_plan": [
+        {
+          "validation_id": "W6-V1",
+          "title": "Pre-Phase-2 provider-tier resolution validation",
+          "status": "completed",
+          "purpose": "Prove that known low-signal plugins resolve to Codex-only and known heavy/high-value plugins resolve to selective-Claude tiers with deterministic reasons."
+        },
+        {
+          "validation_id": "W6-V2",
+          "title": "Threat-context-aware escalation validation",
+          "status": "completed",
+          "purpose": "Prove that matched_categories and priority_vulns can upgrade a plugin into a selective-Claude tier even when generic complexity metrics alone are borderline."
+        },
+        {
+          "validation_id": "W6-V3",
+          "title": "Post-worker escalation validation",
+          "status": "completed",
+          "purpose": "Prove that high-impact TP/REVIEW findings or reviewer-core missed_findings can trigger Claude only for narrow contradiction-heavy stages."
+        },
+        {
+          "validation_id": "W6-V4",
+          "title": "Cost and explainability validation",
+          "status": "completed",
+          "purpose": "Prove that each run records why Claude was selected and which exact stages consumed it."
+        }
+      ],
+      "wave_exit_criteria": [
+        "Low-signal plugins default to Codex-only without manual tuning.",
+        "Claude is no longer the default worker for broad search stages.",
+        "Threat context affects provider choice as well as prompt prioritization.",
+        "Stage-specific provider choices are visible in operator output and per-run summaries.",
+        "Mid-Phase-2 escalation can be explained from stored worker/reviewer evidence."
+      ]
+    },
+    {
+      "wave_id": "wave_7_provider_transition_integrity",
+      "title": "Provider Transition Integrity And Compatibility",
+      "goal": "Make Claude <-> Codex handoff explainable, resume-safe, and operator-predictable without changing the core selective-provider strategy.",
+      "priority": "high",
+      "depends_on": [
+        "wave_6_cost_aware_provider_strategy"
+      ],
+      "addresses_risks": [
+        "R-701",
+        "R-702",
+        "R-703",
+        "R-305"
+      ],
+      "status": "completed_with_nonheavy_validation",
+      "last_reviewed_at": "2026-04-09",
+      "status_summary": "Wave 7A was re-checked from an AppSec perspective and did not expose a new blocker large enough to stop Wave 7B. Wave 7B now binds dispatch prep with a verification manifest, including threat_context_path consistency. Wave 7C then moved cluster and Phase 3 provider paths away from provider-side file writes by switching to deterministic response materialization and reduced read-only tool/sandbox surfaces. A follow-up AppSec pass then closed the remaining Phase 3 fallback/selection gaps by aligning the built-in fallback template with the no-write tagged-envelope contract and making canonical phase3-review selection validate contract shape instead of trusting file presence alone. Remaining write-capable worker/reviewer sessions are documented as a later hardening concern outside Wave 7 exit scope.",
+      "design_objectives": [
+        "Fresh runs and resumed runs should tell the same truth about which provider handled reviewer_core versus reviewer_explore.",
+        "Provider-policy fallback paths must preserve provenance instead of silently dropping Phase 3 routing context.",
+        "Operator-facing provider flags should have predictable semantics that do not surprise later stages.",
+        "Compatibility improvements should preserve the Wave 6 selective-Claude strategy instead of broadening provider spend."
+      ],
+      "implementation_plan": [
+        {
+          "step_id": "W7-S1",
+          "title": "Separate reviewer_core and reviewer_explore metadata",
+          "detail": "Persist distinct reviewer_core/reviewer_explore providers and models into Phase 2 summaries, annotations, and review artifacts so transitions remain visible."
+        },
+        {
+          "step_id": "W7-S2",
+          "title": "Persist fallback provider-policy artifacts",
+          "detail": "Write a deterministic fallback provider-policy.json when the resolver fails so Phase 3 routing and cost summaries still have a provenance artifact."
+        },
+        {
+          "step_id": "W7-S3",
+          "title": "Stabilize operator override semantics",
+          "detail": "Treat --with-claude as an explicit provider-set shorthand and make the resulting semantics visible in docs and help text."
+        },
+        {
+          "step_id": "W7-S4",
+          "title": "Bind dispatch/provenance more tightly",
+          "detail": "Add dispatch manifest/hash verification so provider transitions cannot be explained correctly while prep inputs remain unbound.",
+          "status": "completed"
+        },
+        {
+          "step_id": "W7-S5",
+          "title": "Harden provider write surface further",
+          "detail": "Reduce write-capable provider sessions and move more stages toward deterministic writers after output parsing.",
+          "status": "completed"
+        }
+      ],
+      "tasks": [
+        {
+          "task_id": "W7-T1",
+          "title": "Annotate reviewer outputs with runtime provider metadata",
+          "status": "completed",
+          "status_notes": [
+            "Review artifacts now record reviewer_provider, reviewer_model, review_mode, and round so resumed runs can recover the original provider attribution."
+          ],
+          "target_files": [
+            "tools/bin/run-phase2.sh"
+          ]
+        },
+        {
+          "task_id": "W7-T2",
+          "title": "Split reviewer summary metadata into core and explore roles",
+          "status": "completed",
+          "status_notes": [
+            "Phase 2 loop summary and phase2_loop annotation now keep legacy reviewer_provider fields for compatibility while adding reviewer_core_* and reviewer_explore_* fields."
+          ],
+          "target_files": [
+            "tools/bin/run-phase2.sh"
+          ]
+        },
+        {
+          "task_id": "W7-T3",
+          "title": "Persist fallback provider-policy artifacts",
+          "status": "completed",
+          "status_notes": [
+            "Fallback routing now produces a provider-policy artifact instead of leaving Phase 3 and cost summary with no provider provenance."
+          ],
+          "target_files": [
+            "tools/bin/provider_strategy.py",
+            "tools/bin/run-phase2.sh"
+          ]
+        },
+        {
+          "task_id": "W7-T4",
+          "title": "Make --with-claude an explicit provider-set shorthand",
+          "status": "completed",
+          "status_notes": [
+            "run-single-plugin.sh and run-phase2.sh now treat --with-claude as an explicit codex,claude provider set instead of a weak convenience hint."
+          ],
+          "target_files": [
+            "tools/bin/run-single-plugin.sh",
+            "tools/bin/run-phase2.sh"
+          ]
+        },
+        {
+          "task_id": "W7-T5",
+          "title": "Add dispatch manifest and hash verification",
+          "status": "completed",
+          "status_notes": [
+            "prepare_agent_inputs.py now emits reports/phase2/prep/<slug>/dispatch.manifest.json binding dispatch, candidate inventory, IR, semgrep, optional Psalm/threat-context/provider-policy, and every dispatch input path.",
+            "orchestrate-agents.sh now verifies the manifest fail-closed before trusting dispatch.json, including slug/source_dir consistency and per-agent input hashes."
+          ],
+          "target_files": [
+            "tools/bin/phase2_dispatch_manifest.py",
+            "tools/bin/prepare_agent_inputs.py",
+            "tools/bin/orchestrate-agents.sh",
+            "tools/bin/report_paths.py",
+            "tools/bin/report-paths.sh"
+          ]
+        },
+        {
+          "task_id": "W7-T6",
+          "title": "Reduce write-capable provider execution surfaces",
+          "status": "completed",
+          "status_notes": [
+            "Cluster synthesis/challenge and Phase 3 skeptic review now materialize artifacts from provider final responses instead of relying on provider-side file writes.",
+            "Canonical cluster runner and standalone orchestrator cluster stage now use read-only Codex sandbox plus Claude tool lists without Write.",
+            "Phase 3 skeptical review now uses response tagging plus deterministic writers before markdown/JSON validation."
+          ],
+          "target_files": [
+            "tools/bin/run-phase2-clusters.py",
+            "tools/bin/phase3_llm_review.py",
+            "tools/bin/orchestrate-agents.sh"
+          ]
+        },
+        {
+          "task_id": "W7-T7",
+          "title": "Close residual Phase 3 contract and canonical-selection gaps",
+          "status": "completed",
+          "status_notes": [
+            "phase3_llm_review.py built-in fallback template now matches the no-write tagged-envelope contract used by the canonical prompt template.",
+            "run-phase3.sh now validates phase3-review JSON artifacts before freshness reuse or canonical selection, so file presence alone is no longer authoritative.",
+            "phase3_apply_review.py now rejects review JSON that fails the Phase 3 review contract instead of relying on loose object-shape checks."
+          ],
+          "target_files": [
+            "tools/bin/phase3_review_contract.py",
+            "tools/bin/phase3_llm_review.py",
+            "tools/bin/run-phase3.sh",
+            "tools/bin/phase3_apply_review.py"
+          ]
+        }
+      ],
+      "validation_plan": [
+        {
+          "validation_id": "W7-V1",
+          "title": "Fallback provider-policy persistence validation",
+          "status": "completed",
+          "purpose": "Prove that a resolver failure still emits a provider-policy artifact with stable Phase 3 routing metadata."
+        },
+        {
+          "validation_id": "W7-V2",
+          "title": "Review artifact metadata validation",
+          "status": "completed",
+          "purpose": "Prove that phase2 review outputs carry enough runtime metadata for resumed runs and summaries to distinguish reviewer_core from reviewer_explore."
+        },
+        {
+          "validation_id": "W7-V3",
+          "title": "Operator override semantics validation",
+          "status": "completed",
+          "purpose": "Prove that --with-claude behaves as an explicit provider-set shorthand rather than a silently overridable hint."
+        },
+        {
+          "validation_id": "W7-V4",
+          "title": "Dispatch manifest validation",
+          "status": "completed",
+          "purpose": "Prove that stale or hand-edited dispatch inputs fail closed before orchestrator launch."
+        },
+        {
+          "validation_id": "W7-V5",
+          "title": "Phase 3 contract and canonical review selection validation",
+          "status": "completed",
+          "purpose": "Prove that fallback Phase 3 prompt material and selected canonical phase3-review artifacts both obey the deterministic review contract instead of relying on file presence alone."
+        }
+      ],
+      "wave_exit_criteria": [
+        "Resumed reviewer artifacts no longer blur reviewer_core and reviewer_explore provider attribution.",
+        "Fallback provider-strategy paths still produce a durable provider-policy artifact.",
+        "Operator-facing --with-claude semantics are explicit and documented.",
+        "Dispatch prep and orchestration are bound by a verification manifest before chunked execution starts.",
+        "Cluster and Phase 3 provider paths no longer depend on provider-side file writes to persist canonical artifacts.",
+        "Phase 3 fallback templates and canonical review selection enforce the deterministic review contract instead of trusting file presence alone."
+      ]
+    },
+    {
+      "wave_id": "wave_8_runtime_failure_semantics_and_reconciliation",
+      "title": "Runtime Failure Semantics And Reconciliation",
+      "goal": "Make chunked Phase 2 runs easier to trust and debug by turning raw worker failure events into semantically correct, provider-aware, and final-outcome-aware telemetry.",
+      "priority": "high",
+      "depends_on": [
+        "wave_7_provider_transition_integrity"
+      ],
+      "addresses_risks": [
+        "R-801",
+        "R-802",
+        "R-803",
+        "R-804",
+        "R-805"
+      ],
+      "status": "completed_with_nonheavy_validation",
+      "last_reviewed_at": "2026-04-10",
+      "status_summary": "Wave 8 hardens chunked runtime observability instead of changing orchestration topology. failures.json now writes semantically correct process_exit_code fields, adds failure_stage/provider_signal/attempt metadata, and classifies provider-pressure signals more precisely. Retry wording now explains retry index versus next attempt explicitly, and chunked runs now emit run.summary.json so transient failures can be reconciled against final agent success or resume-skipped output. The implementation was validated with unit tests plus artifact-driven classification assumptions rather than a new heavy rerun.",
+      "design_objectives": [
+        "Failure artifacts should say what actually happened at runtime, not use leftover names from older control-plane assumptions.",
+        "Provider-pressure, provider-capacity, interrupted sessions, invalid output contracts, and true missing output should be distinguishable in post-run telemetry.",
+        "Transient failures should not look terminal after an agent later succeeds or a resume path produces a valid canonical bundle.",
+        "Console/log wording should reduce operator ambiguity without flooding inline output.",
+        "Chunked runs should emit a concise summary artifact so post-run triage does not require manual log stitching."
+      ],
+      "implementation_plan": [
+        {
+          "step_id": "W8-S1",
+          "title": "Correct failure record schema",
+          "detail": "Replace misleading field names, preserve compatibility where needed, and add stage/retry/provider metadata that reflects runtime semantics."
+        },
+        {
+          "step_id": "W8-S2",
+          "title": "Classify provider failures more precisely",
+          "detail": "Separate quota exhaustion, HTTP 503 transport failures, model-at-capacity, interrupted turns, invalid output contracts, and truly missing output."
+        },
+        {
+          "step_id": "W8-S3",
+          "title": "Clarify retry semantics for operators",
+          "detail": "Log retry progression as retry N of limit with explicit next-attempt numbering instead of relying on terse shorthand."
+        },
+        {
+          "step_id": "W8-S4",
+          "title": "Reconcile transient failures against final agent states",
+          "detail": "Track final agent status separately from raw failure events so later success or resume-skipped outputs can supersede earlier noise."
+        },
+        {
+          "step_id": "W8-S5",
+          "title": "Emit concise chunked run summary artifacts",
+          "detail": "Write a run.summary.json artifact that aggregates failure counts, superseded failures, final statuses, and bundle-review activity."
+        }
+      ],
+      "tasks": [
+        {
+          "task_id": "W8-T1",
+          "title": "Add failure semantics helper module",
+          "status": "completed",
+          "status_notes": [
+            "tools/bin/phase2_failure_semantics.py now centralizes provider-failure classification, failure-stage inference, and chunked summary payload construction."
+          ],
+          "target_files": [
+            "tools/bin/phase2_failure_semantics.py"
+          ]
+        },
+        {
+          "task_id": "W8-T2",
+          "title": "Upgrade failures.json schema and worker failure classification",
+          "status": "completed",
+          "status_notes": [
+            "orchestrate-agents.sh now records process_exit_code instead of preflight_exit_code for worker/runtime failures and annotates failure_stage, provider_signal, attempt, retry_index, and retry_limit.",
+            "Missing-output worker failures now classify model capacity, interrupted turns, HTTP 503 transport failures, and quota exhaustion before falling back to generic missing_output.",
+            "Final invalid worker artifacts are now labeled invalid_output_contract instead of invalid_json to reflect normalization/schema failure rather than just JSON parsing."
+          ],
+          "target_files": [
+            "tools/bin/orchestrate-agents.sh",
+            "tools/bin/phase2_failure_semantics.py"
+          ]
+        },
+        {
+          "task_id": "W8-T3",
+          "title": "Make retry wording explicit and operator-readable",
+          "status": "completed",
+          "status_notes": [
+            "Chunked retry messages now say retry N of limit with next attempt numbering, reducing the previous (3/3) versus attempt=4 ambiguity."
+          ],
+          "target_files": [
+            "tools/bin/orchestrate-agents.sh"
+          ]
+        },
+        {
+          "task_id": "W8-T4",
+          "title": "Reconcile transient failures with final agent states",
+          "status": "completed",
+          "status_notes": [
+            "orchestrate-agents.sh now persists richer per-agent final status in state files, and run.summary.json marks failures as superseded when an agent later finishes successfully or is cleanly resume-skipped."
+          ],
+          "target_files": [
+            "tools/bin/orchestrate-agents.sh",
+            "tools/bin/phase2_failure_semantics.py"
+          ]
+        },
+        {
+          "task_id": "W8-T5",
+          "title": "Add chunked run summary artifact pathing and tests",
+          "status": "completed",
+          "status_notes": [
+            "report_paths helpers and tests now include reports/logs/<slug>/phase2/chunked/run.summary.json, and dedicated unit tests cover failure classification plus superseded-failure reconciliation."
+          ],
+          "target_files": [
+            "tools/bin/report_paths.py",
+            "tools/bin/report-paths.sh",
+            "tools/tests/test_report_paths.py",
+            "tools/tests/test_phase2_failure_semantics.py"
+          ]
+        }
+      ],
+      "validation_plan": [
+        {
+          "validation_id": "W8-V1",
+          "title": "Failure classification unit validation",
+          "status": "completed",
+          "purpose": "Prove that model-capacity, interrupted-turn, HTTP 503, and generic quota signals map to distinct failure types and provider signals."
+        },
+        {
+          "validation_id": "W8-V2",
+          "title": "Failure entry schema validation",
+          "status": "completed",
+          "purpose": "Prove that new failure records write process_exit_code and failure_stage metadata without reintroducing misleading preflight naming."
+        },
+        {
+          "validation_id": "W8-V3",
+          "title": "Summary reconciliation validation",
+          "status": "completed",
+          "purpose": "Prove that a later successful agent outcome supersedes earlier transient failures inside run.summary.json instead of looking terminal."
+        },
+        {
+          "validation_id": "W8-V4",
+          "title": "Path and syntax validation",
+          "status": "completed",
+          "purpose": "Prove that the new run.summary.json path is part of the shared layout helpers and that updated shell/Python code is syntactically valid."
+        }
+      ],
+      "wave_exit_criteria": [
+        "New chunked failures.json records no longer write worker/runtime exit codes under preflight_exit_code.",
+        "Provider-pressure and interruption modes are distinguishable from true missing-output failures.",
+        "Retry logs explain retry index and next attempt clearly enough for operators to follow without reading code.",
+        "Chunked runs emit a run.summary.json artifact that reconciles superseded versus unresolved failures.",
+        "Unit and syntax checks cover the new helper, report paths, and updated orchestrator semantics."
+      ]
+    },
+    {
+      "wave_id": "wave_9_resume_execution_clarity",
+      "title": "Resume Execution Clarity And Authority Alignment",
+      "goal": "Make standalone chunked resume runs use the same phase2.local authority as canonical Phase 2, explain clearly how much work was newly completed versus reused, and only then unify top-level resume UX behind one public flag.",
+      "priority": "high",
+      "depends_on": [
+        "wave_8_runtime_failure_semantics_and_reconciliation"
+      ],
+      "addresses_risks": [
+        "R-901",
+        "R-902",
+        "R-903"
+      ],
+      "status": "completed_with_nonheavy_validation",
+      "last_reviewed_at": "2026-04-13",
+      "status_summary": "Mini-wave 1 remains complete: standalone orchestrate-agents.sh now feeds cluster planning from phase2.local.json instead of looking for canonical phase2.json too early, and resume summaries distinguish newly completed agents from reused outputs. Mini-wave 2 remains complete: public --resume on the top-level wrappers now maps internally to legacy resume controls without forcing serial debug mode, bypassing quota preflight, wiping existing chunked bundle artifacts, or rerunning Phase 1 collection when core Phase 1 artifacts already exist. Follow-up observability fixes also completed: resumed reviewer-core runs now print concise batch progress inline, and worker revision failures now update phase2.state.json plus resolved-provider log markers so operator-visible status matches the real failing stage.",
+      "design_objectives": [
+        "Standalone chunked orchestration must use the same Phase 2 local merge authority as canonical run-phase2.sh before consensus publication.",
+        "Resume logs and summary artifacts must distinguish work completed in the current run from outputs intentionally reused from prior runs.",
+        "Operator-facing resume UX should only be simplified after underlying execution and summary semantics are correct.",
+        "Backward compatibility for older resume flags should be preserved while the new public entrypoint is introduced."
+      ],
+      "implementation_plan": [
+        {
+          "step_id": "W9-S1",
+          "title": "Mini-wave 1: fix standalone cluster authority and resume summaries",
+          "detail": "Route standalone cluster planning through phase2.local.json, add explicit completed/reused/usable counts to run summaries, and validate both behaviors with deterministic tests."
+        },
+        {
+          "step_id": "W9-S2",
+          "title": "Mini-wave 2: unify top-level resume UX",
+          "detail": "Add a single public --resume flag to run-single-plugin.sh and run-pipeline.sh that maps internally to the existing resume controls without changing provider strategy or parallelism semantics. Keep direct orchestrate-agents.sh resume controls available only for manual/debug paths."
+        },
+        {
+          "step_id": "W9-S3",
+          "title": "Follow-up: restore reviewer batch visibility during resume",
+          "detail": "Emit a small inline reviewer-core batch progress surface during resume and fresh runs so operators can tell which review batch is active without tailing file logs or exposing raw provider chatter."
+        },
+        {
+          "step_id": "W9-S4",
+          "title": "Avoid unnecessary Phase 1 reruns during top-level resume",
+          "detail": "When operators invoke --resume from top-level wrappers, reuse existing Phase 1 surface/semgrep/IR artifacts if they already exist, and refresh only the lighter threat-context artifact as needed."
+        },
+        {
+          "step_id": "W9-S5",
+          "title": "Keep state and provider markers truthful during revision failures",
+          "detail": "When resume enters worker revision rounds, phase2.state.json and run err/live markers should describe the resolved provider and failing revision stage instead of leaving bootstrap or base-provider metadata behind."
+        }
+      ],
+      "tasks": [
+        {
+          "task_id": "W9-T1",
+          "title": "Align standalone cluster planning with phase2.local.json authority",
+          "status": "completed",
+          "status_notes": [
+            "orchestrate-agents.sh now resolves reports/phase2/<slug>-phase2.local.json explicitly and passes it to build_candidate_clusters.py via --phase2-json, matching the canonical run-phase2.sh authority path.",
+            "If the local Phase 2 merge artifact is missing after merge, standalone orchestration now records a continued cluster_build_failed event instead of silently falling back to a canonical lookup that should not exist yet."
+          ],
+          "target_files": [
+            "tools/bin/orchestrate-agents.sh",
+            "tools/bin/report-paths.sh",
+            "tools/bin/report_paths.py"
+          ]
+        },
+        {
+          "task_id": "W9-T2",
+          "title": "Make resume summaries explicitly distinguish newly completed and reused outputs",
+          "status": "completed",
+          "status_notes": [
+            "Chunked completion logs now say Completed this run, Failed this run, and Reused existing outputs where applicable.",
+            "The final orchestration summary now reports usable outputs total with newly completed and reused counts, so resume runs no longer read like partial merge failures.",
+            "run.summary.json now records completed_this_run_count, resume_skipped_count, usable_outputs_total, and expected_agents_total."
+          ],
+          "target_files": [
+            "tools/bin/orchestrate-agents.sh",
+            "tools/bin/phase2_failure_semantics.py"
+          ]
+        },
+        {
+          "task_id": "W9-T3",
+          "title": "Validate mini-wave 1 with deterministic subprocess coverage",
+          "status": "completed",
+          "status_notes": [
+            "Added a subprocess test that exercises --resume-missing-only with one reused output and one new output, and verifies that standalone cluster planning receives phase2.local.json.",
+            "Added summary payload assertions for usable output counts and shared report path coverage for phase2.local.json."
+          ],
+          "target_files": [
+            "tools/tests/test_orchestrate_agents_resume_cluster.py",
+            "tools/tests/test_phase2_failure_semantics.py",
+            "tools/tests/test_report_paths.py"
+          ]
+        },
+        {
+          "task_id": "W9-T4",
+          "title": "Introduce a single public --resume flag at top-level wrappers",
+          "status": "completed",
+          "status_notes": [
+            "run-single-plugin.sh and run-pipeline.sh now expose --resume as the preferred public flag while preserving backward compatibility for existing internal flags.",
+            "run-single-plugin.sh --resume maps internally to run-phase2.sh --resume-existing and exports PHASE2_CHUNKED_RESUME_MISSING_ONLY=true so adaptive chunked runs still rerun only missing worker bundles when Phase 2 goes chunked.",
+            "run-pipeline.sh --resume maps internally to run-phase2.sh --resume-existing and preserves adaptive chunked parallelism by leaving PHASE2_WORKER_CHUNK_PARALLEL_LIMIT untouched unless the operator explicitly overrides it.",
+            "run-phase2.sh now preserves existing chunked prep/agent artifacts during public resume even when no phase2.worker.rN artifacts exist, which closes the litespeed-cache runtime regression where public --resume wiped chunked state before orchestrate-agents.sh could skip completed bundles."
+          ],
+          "target_files": [
+            "tools/bin/run-single-plugin.sh",
+            "tools/bin/run-pipeline.sh",
+            "tools/bin/run-phase2.sh"
+          ]
+        },
+        {
+          "task_id": "W9-T5",
+          "title": "Document and deprecate fragmented resume flag semantics",
+          "status": "completed",
+          "status_notes": [
+            "Help text and workflow docs now make --resume the primary operator-facing recovery flag on top-level wrappers and explain the remaining internal mappings only for debugging.",
+            "Older flags such as --resume-existing and --resume-missing-only remain accepted during the transition but are no longer the main documented UX for top-level orchestration."
+          ],
+          "target_files": [
+            "tools/bin/run-single-plugin.sh",
+            "tools/bin/run-pipeline.sh",
+            "tools/bin/run-phase2.sh",
+            "WORKFLOW-GUIDE.md",
+            "docs/ORCHESTRATION.md",
+            "docs/PHASE2-HARDENING-ROADMAP.json"
+          ]
+        },
+        {
+          "task_id": "W9-T6",
+          "title": "Restore concise inline reviewer-core progress during resume and fresh runs",
+          "status": "completed",
+          "status_notes": [
+            "run-phase2.sh now prints a short reviewer-core plan line with total batches and a single concise batch-progress line for each active batch, which keeps terminal output alive during long reviewer runs without dumping provider transcripts.",
+            "The new inline surface stays bounded to control-plane progress such as Reviewer core batch 1/47 rather than echoing raw LLM chatter, reconnect loops, or provider stderr.",
+            "A deterministic subprocess test now proves that run-phase2.sh --resume emits reviewer-core batch progress while reusing an existing worker artifact."
+          ],
+          "target_files": [
+            "tools/bin/run-phase2.sh",
+            "tools/tests/test_resume_wrappers.py",
+            "docs/PHASE2-HARDENING-ROADMAP.json"
+          ]
+        },
+        {
+          "task_id": "W9-T7",
+          "title": "Reuse existing Phase 1 artifacts during top-level resume",
+          "status": "completed",
+          "status_notes": [
+            "run-single-plugin.sh now skips scan-all.sh during --resume when core Phase 1 artifacts (surface map, semgrep, IR) already exist, which avoids wasting time before Phase 2 recovery.",
+            "run-pipeline.sh now applies the same optimization for --multi-agent --slug <slug> --resume, while still calling the lighter threat-context refresh path so downstream prioritization data is not left missing."
+          ],
+          "target_files": [
+            "tools/bin/run-single-plugin.sh",
+            "tools/bin/run-pipeline.sh",
+            "tools/tests/test_resume_wrappers.py",
+            "docs/PHASE2-HARDENING-ROADMAP.json"
+          ]
+        },
+        {
+          "task_id": "W9-T8",
+          "title": "Update worker revision state and resolved-provider markers on failure",
+          "status": "completed",
+          "status_notes": [
+            "run-phase2.sh now updates phase2.state.json to worker/running and worker/failed for resume and normal worker revision rounds, so timeout/failure no longer leaves bootstrap or reviewer state behind.",
+            "Phase 2 run err/live logs now record a resolved-provider marker after provider strategy application, avoiding misleading bootstrap provider labels when adaptive policy overrides the base worker provider."
+          ],
+          "target_files": [
+            "tools/bin/run-phase2.sh",
+            "tools/tests/test_resume_wrappers.py",
+            "docs/PHASE2-HARDENING-ROADMAP.json"
+          ]
+        }
+      ],
+      "validation_plan": [
+        {
+          "validation_id": "W9-V1",
+          "title": "Standalone cluster authority validation",
+          "status": "completed",
+          "purpose": "Prove that standalone orchestrate-agents.sh passes phase2.local.json to build_candidate_clusters.py instead of relying on a canonical phase2.json that should not exist yet."
+        },
+        {
+          "validation_id": "W9-V2",
+          "title": "Resume summary clarity validation",
+          "status": "completed",
+          "purpose": "Prove that resume runs report newly completed outputs, reused existing outputs, and usable outputs total distinctly in both console-facing logs and run.summary.json."
+        },
+        {
+          "validation_id": "W9-V3",
+          "title": "Top-level --resume UX validation",
+          "status": "completed",
+          "purpose": "Prove that run-single-plugin.sh --resume and run-pipeline.sh --resume preserve existing adaptive parallelism, quota preflight, and internal resume mappings without widening operator confusion, and that run-phase2.sh public resume preserves existing chunked bundle artifacts before orchestrate-agents.sh runs."
+        },
+        {
+          "validation_id": "W9-V4",
+          "title": "Reviewer inline progress validation",
+          "status": "completed",
+          "purpose": "Prove that resumed reviewer-core execution emits concise batch plan and batch-progress lines inline while keeping raw provider output in file logs only."
+        },
+        {
+          "validation_id": "W9-V5",
+          "title": "Top-level resume Phase 1 reuse validation",
+          "status": "completed",
+          "purpose": "Prove that run-single-plugin.sh --resume and run-pipeline.sh --resume skip scan-all.sh when core Phase 1 artifacts already exist, while still allowing threat-context regeneration."
+        },
+        {
+          "validation_id": "W9-V6",
+          "title": "Worker revision state and resolved-provider observability validation",
+          "status": "completed",
+          "purpose": "Prove that a resumed worker revision failure records worker/failed state for the failing round and logs the resolved provider set instead of stale bootstrap provider metadata."
+        }
+      ],
+      "wave_exit_criteria": [
+        "Standalone chunked cluster planning no longer looks for canonical phase2.json before consensus publication.",
+        "Resume logs and summary artifacts distinguish newly completed work from reused outputs clearly enough that operators do not misread healthy resume runs as degraded merge counts.",
+        "A single public --resume flag exists on top-level wrappers without changing the underlying execution semantics or parallelism policy.",
+        "Reviewer-core resume and fresh runs show enough inline progress to reveal the active batch without flooding the console with provider chatter.",
+        "Top-level --resume does not rerun Phase 1 collection when core Phase 1 artifacts already exist and remain usable for recovery.",
+        "Worker revision failures update phase2.state.json and err/live markers to the failing worker round with the resolved provider set, rather than leaving bootstrap or stale base-provider metadata behind."
+      ]
+    },
+    {
+      "wave_id": "wave_17_terminal_alignment_and_cluster_challenge_fail_closed",
+      "title": "Terminal Alignment And Cluster Challenge Fail-Closed",
+      "goal": "Eliminate the last live mismatch seen on litespeed-cache by forcing terminal_core to close the current REVIEW findings rather than stale prior-round packets, and by refusing cluster success when any challenge artifact is missing or timed out.",
+      "priority": "highest",
+      "status": "completed_with_nonheavy_validation",
+      "last_reviewed_at": "2026-04-14",
+      "status_summary": "Wave 17 completed with non-heavy validation. Terminal review input now targets the worker artifact's current REVIEW findings, terminal closure fails if any current REVIEW finding is not covered or if stale closure targets are supplied, and cluster runner now fails closed when any challenge stage fails or times out. Live replay validation on litespeed-cache artifacts confirmed the new target set and demonstrated that the old stale review.r3 artifact is now rejected instead of silently producing a no-op closure.",
+      "design_objectives": [
+        "Terminal closure must act on the current worker artifact truth, not on stale unresolved packet IDs from an older review round.",
+        "Terminal closure must fail closed if it cannot eliminate every current REVIEW finding.",
+        "Cluster success must require clean synth and challenge artifacts for every selected cluster so canonical publish cannot proceed on partial cluster execution."
+      ],
+      "implementation_plan": [
+        {
+          "step_id": "W17-S1",
+          "title": "Retarget terminal_core to current REVIEW findings",
+          "detail": "Build terminal reviewer input from the worker artifact's current REVIEW findings, falling back to old unresolved packet IDs only if no current REVIEW findings exist."
+        },
+        {
+          "step_id": "W17-S2",
+          "title": "Add terminal closure completeness guards",
+          "detail": "Reject terminal review artifacts that reference stale findings, omit any current REVIEW finding, or otherwise leave terminal closure as a no-op."
+        },
+        {
+          "step_id": "W17-S3",
+          "title": "Make cluster challenge failure block success",
+          "detail": "Return non-zero when any challenge artifact fails so Phase 2 cluster consensus no longer publishes degraded canonicals after partial cluster execution."
+        }
+      ],
+      "tasks": [
+        {
+          "task_id": "W17-T1",
+          "title": "Retarget terminal_core reviewer input to current REVIEW findings",
+          "status": "completed",
+          "target_files": [
+            "tools/bin/build_phase2_reviewer_input.py",
+            "tools/tests/test_build_phase2_reviewer_input.py"
+          ]
+        },
+        {
+          "task_id": "W17-T2",
+          "title": "Fail terminal closure when stale or incomplete closure targets are supplied",
+          "status": "completed",
+          "target_files": [
+            "tools/bin/phase2_terminal_closure.py",
+            "tools/bin/run-phase2.sh",
+            "tools/tests/test_phase2_terminal_closure.py"
+          ]
+        },
+        {
+          "task_id": "W17-T3",
+          "title": "Require cluster challenge success for cluster-stage success",
+          "status": "completed",
+          "target_files": [
+            "tools/bin/run-phase2-clusters.py",
+            "tools/tests/test_run_phase2_clusters_materialization.py"
+          ]
+        }
+      ],
+      "validation_plan": [
+        {
+          "validation_id": "W17-V1",
+          "title": "Terminal reviewer target-selection regression validation",
+          "status": "completed",
+          "purpose": "Prove terminal_core targets the current REVIEW findings even when source review unresolved packet IDs are stale."
+        },
+        {
+          "validation_id": "W17-V2",
+          "title": "Terminal closure fail-closed regression validation",
+          "status": "completed",
+          "purpose": "Prove stale or partial terminal review artifacts are rejected instead of silently preserving REVIEW findings."
+        },
+        {
+          "validation_id": "W17-V3",
+          "title": "Cluster challenge fail-closed regression validation",
+          "status": "completed",
+          "purpose": "Prove a cluster stage with challenge failure returns non-zero and cannot be treated as a clean cluster run."
+        },
+        {
+          "validation_id": "W17-V4",
+          "title": "Litespeed-cache live-artifact replay validation",
+          "status": "completed",
+          "purpose": "Prove the new terminal target-selection logic chooses the current REVIEW findings on the existing litespeed-cache artifacts and rejects the stale review.r3 closure artifact."
+        }
+      ],
+      "reverification_checks": [
+        "Can terminal_core still be built against stale unresolved packet IDs while current worker REVIEW findings differ?",
+        "Can terminal closure still return success without reducing needs_review to zero when terminal mode is used?",
+        "Can run-phase2-clusters.py still return success when any selected cluster has challenge_ok=false or a missing challenge artifact?",
+        "On litespeed-cache, does terminal replay now target adj-src-import-preset-cls-php-backup-path-write and cand-sg-src-router-cls-php-generic rather than the old cand-ep/cand-psalm packet IDs?"
+      ],
+      "wave_exit_criteria": [
+        "Terminal reviewer input is aligned to current REVIEW findings on the active worker artifact.",
+        "Terminal closure cannot silently no-op against stale targets.",
+        "Partial cluster challenge execution no longer counts as cluster success."
+      ]
+    },
+    {
+      "wave_id": "wave_18_selective_claude_prompt_bounding",
+      "title": "Selective Claude Prompt Bounding For Explore And Challenge",
+      "goal": "Constrain Claude-driven explore and cluster-challenge rounds to bounded blind-spot verification based on existing Codex coverage, instead of allowing broad re-audit behavior that burns time without producing closure artifacts.",
+      "priority": "high",
+      "status": "completed_with_nonheavy_validation",
+      "last_reviewed_at": "2026-04-14",
+      "status_summary": "The Phase 2 explore and cluster challenge prompts now explicitly frame Claude as a bounded second-pass verifier of Codex blind spots such as activation gates, hidden guards, second-order/deferred sinks, or nearby evidence omitted by existing coverage. Prompt text now forbids broad plugin-wide hunting and requires every extra file open to be tied to an existing lead, closure packet, objection, or missing-evidence question.",
+      "tasks": [
+        {
+          "task_id": "W18-T1",
+          "title": "Bound reviewer explore to existing coverage gaps",
+          "status": "completed",
+          "status_notes": [
+            "phase2-exploration-prompt-template.md now states this stage is a bounded second-pass over Codex coverage gaps, not a fresh audit.",
+            "system-prompt-phase2-review-explore.md now restricts expansion to concrete blind spots derived from current findings, anomalies, hooks, open questions, or missing-evidence notes."
+          ]
+        },
+        {
+          "task_id": "W18-T2",
+          "title": "Bound cluster challenge to synth objections and closure packets",
+          "status": "completed",
+          "status_notes": [
+            "phase2-cluster-challenge-prompt-template.md now frames the challenger as verifying exactly what synth/worker may have missed.",
+            "Out-of-band file reads now require a direct tie to an existing synth objection, closure packet, open question, or missing-evidence note."
+          ]
+        },
+        {
+          "task_id": "W18-T3",
+          "title": "Add prompt-boundary regression tests",
+          "status": "completed",
+          "status_notes": [
+            "Added text-level tests to lock the new bounded-exploration and bounded-challenge instructions in place."
+          ]
+        }
+      ],
+      "validation_plan": [
+        {
+          "validation_id": "W18-V1",
+          "title": "Prompt-boundary regression validation",
+          "status": "completed",
+          "purpose": "Prove the key anti-drift guardrails remain present in the reviewer explore, system explore, and cluster challenge prompts."
+        }
+      ],
+      "reverification_checks": [
+        "Can reviewer explore still be read as permission to restart whole-plugin hunting from raw IR/AST/SAST signals?",
+        "Can cluster challenge still justify out-of-band file opens without tying them to an existing synth objection, closure packet, open question, or missing-evidence item?",
+        "Do the prompts still make Claude's role a bounded second-pass verifier of Codex blind spots rather than a parallel re-auditor?"
+      ],
+      "wave_exit_criteria": [
+        "Claude explore prompts are explicitly bounded to existing coverage gaps and blind-spot verification.",
+        "Claude cluster challenge prompts are explicitly bounded to synth objections, closure packets, and other existing evidence questions.",
+        "Prompt text regressions are covered by automated tests."
+      ]
+    },
+    {
+      "wave_id": "wave_19_prompt_language_normalization",
+      "title": "Prompt Language Normalization To English",
+      "goal": "Normalize project prompt and system-prompt files to English so provider behavior is not influenced by legacy Vietnamese no-diacritic phrasing and prompt maintenance stays consistent across the pipeline.",
+      "priority": "medium",
+      "status": "completed_with_nonheavy_validation",
+      "last_reviewed_at": "2026-04-14",
+      "status_summary": "All active Phase 2 and Phase 3 system-prompt files under tools/config have been rewritten in English while preserving their behavioral constraints. Regression tests now assert the prompt-boundary semantics in English and verify that the targeted prompt set no longer contains the legacy Vietnamese markers.",
+      "tasks": [
+        {
+          "task_id": "W19-T1",
+          "title": "Rewrite active Phase 2 and Phase 3 system prompts in English",
+          "status": "completed",
+          "status_notes": [
+            "Rewrote the Phase 2 worker, reviewer, terminal reviewer, explore reviewer, and Phase 3 skeptic system prompts in English.",
+            "Behavioral constraints were preserved while removing the legacy Vietnamese no-diacritic wording."
+          ]
+        },
+        {
+          "task_id": "W19-T2",
+          "title": "Align prompt-boundary regression tests with English wording",
+          "status": "completed",
+          "status_notes": [
+            "Updated prompt-boundary tests to assert the new English explore instructions.",
+            "Added a regression check that the targeted system-prompt set no longer contains legacy Vietnamese prompt markers."
+          ]
+        },
+        {
+          "task_id": "W19-T3",
+          "title": "Normalize runtime fallback prompt strings in active tools",
+          "status": "completed",
+          "status_notes": [
+            "Updated English fallback prompt strings in run-phase2.sh, phase3-validate.py, and phase3_llm_review.py.",
+            "Added regression coverage to ensure these active runtime files do not reintroduce the legacy Vietnamese markers."
+          ]
+        }
+      ],
+      "validation_plan": [
+        {
+          "validation_id": "W19-V1",
+          "title": "Prompt language normalization validation",
+          "status": "completed",
+          "purpose": "Prove the targeted prompt set is in English and still preserves the intended bounded-review semantics."
+        }
+      ],
+      "reverification_checks": [
+        "Do any active Phase 2 or Phase 3 system prompts still contain the legacy Vietnamese markers such as `Ban la`, `Khong duoc`, or `Yeu cau output`?",
+        "Do the English rewrites still preserve the intended prompt boundaries for core review, explore review, terminal review, revision, and Phase 3 skeptic review?"
+      ],
+      "wave_exit_criteria": [
+        "The targeted active system-prompt set is fully normalized to English.",
+        "Prompt-boundary tests still pass after the language rewrite."
+      ]
+    },
+    {
+      "wave_id": "wave_20_cluster_challenge_schema_hardening",
+      "title": "Cluster Challenge Schema Hardening",
+      "goal": "Prevent canonical Phase 2 publish from failing when cluster challenge reasoning is substantively correct but advisory fields drift slightly from the cluster output schema.",
+      "priority": "high",
+      "status": "completed_with_nonheavy_validation",
+      "last_reviewed_at": "2026-04-15",
+      "status_summary": "Cluster synthesis/challenge prompts now spell out the exact advisory field names required by the schema, and run-phase2-clusters.py deterministically normalizes legacy advisory shapes such as `severity/blocking/description/impact` into the schema-compliant `why_it_matters`, `evidence_needed`, and `reason` fields before validation. Validation failures now log the first-line schema error for faster diagnosis.",
+      "tasks": [
+        {
+          "task_id": "W20-T1",
+          "title": "Spell out exact advisory field names in cluster prompts",
+          "status": "completed",
+          "status_notes": [
+            "Both synthesis and challenge prompts now explicitly require `open_questions[].question + why_it_matters` and `missing_evidence[].evidence_needed + reason`.",
+            "Legacy keys such as `severity`, `blocking`, `description`, and `impact` are now explicitly disallowed in prompt guidance."
+          ]
+        },
+        {
+          "task_id": "W20-T2",
+          "title": "Normalize legacy advisory shapes before cluster schema validation",
+          "status": "completed",
+          "status_notes": [
+            "run-phase2-clusters.py now maps advisory legacy shapes into schema-compliant `open_questions` and `missing_evidence` entries before validation.",
+            "Normalization also fills default `target_finding_ids` from cluster member findings when the provider omits them."
+          ]
+        },
+        {
+          "task_id": "W20-T3",
+          "title": "Emit precise validation error context for cluster challenge failures",
+          "status": "completed",
+          "status_notes": [
+            "Cluster challenge validation failures now record a compact first-line validation error into the challenge status/log path so operators can see the schema mismatch directly."
+          ]
+        }
+      ],
+      "validation_plan": [
+        {
+          "validation_id": "W20-V1",
+          "title": "Legacy advisory-shape normalization validation",
+          "status": "completed",
+          "purpose": "Prove that a challenge output using `severity/blocking/description/impact` is normalized into schema-compliant advisory objects and validates successfully."
+        }
+      ],
+      "reverification_checks": [
+        "Can a cluster challenge still fail validation solely because `open_questions[]` omitted `why_it_matters` but otherwise expressed the advisory point clearly?",
+        "Can `missing_evidence[]` still fail validation solely because the provider used `description/impact` instead of `evidence_needed/reason`?",
+        "If a cluster challenge fails validation after normalization, does the log now expose the concrete schema error instead of only `validated=False`?"
+      ],
+      "wave_exit_criteria": [
+        "Legacy advisory field drift no longer blocks cluster challenge validation on its own.",
+        "Cluster prompt text and runner normalization agree on the exact advisory schema contract.",
+        "Validation-failure logs expose the concrete schema mismatch when one still occurs."
+      ]
+    },
+    {
+      "wave_id": "wave_21_reviewer_core_batch_resume_and_retry_hardening",
+      "title": "Reviewer Core Batch Resume And Retry Hardening",
+      "goal": "Make reviewer-core batch execution resilient to transient Codex rate-limit failures and make `--resume` reuse already validated reviewer batch outputs instead of redoing completed batch work.",
+      "priority": "high",
+      "status": "completed_with_nonheavy_validation",
+      "last_reviewed_at": "2026-04-15",
+      "status_summary": "run-phase2.sh now retries Codex reviewer-core batches on rate-limit/usage-limit failures with bounded backoff, and `--resume` reuses existing validated reviewer batch outputs before rerunning the batch. Reviewer round errlogs now record the concrete failed batch reason and errlog path instead of only the generic batch-start line.",
+      "tasks": [
+        {
+          "task_id": "W21-T1",
+          "title": "Add reviewer-core batch retry for transient Codex quota/rate-limit failures",
+          "status": "completed",
+          "status_notes": [
+            "Reviewer core batches now retry on `provider_usage_limit` and `provider_rate_limit` for Codex with bounded backoff.",
+            "The retry path logs inline progress so operator output shows retry counts instead of failing immediately at batch b01."
+          ]
+        },
+        {
+          "task_id": "W21-T2",
+          "title": "Reuse validated reviewer batch outputs on Phase 2 resume",
+          "status": "completed",
+          "status_notes": [
+            "When `--resume` is active and a reviewer batch output already exists and validates against the current worker artifact, the batch is reused instead of being deleted and rerun.",
+            "This reduces repeated quota burn when a reviewer round previously failed after some batches had already completed."
+          ]
+        },
+        {
+          "task_id": "W21-T3",
+          "title": "Expose concrete reviewer batch failure reasons in round errlogs",
+          "status": "completed",
+          "status_notes": [
+            "Reviewer round errlogs now record the failing batch id, summarized provider failure reason, and batch errlog path.",
+            "This avoids top-level failure messages that only surface the `[INFO] reviewer core batch ...` start line."
+          ]
+        }
+      ],
+      "validation_plan": [
+        {
+          "validation_id": "W21-V1",
+          "title": "Reviewer batch retry regression validation",
+          "status": "completed",
+          "purpose": "Prove a Codex reviewer-core batch that hits rate-limit twice can retry and succeed on the third attempt without failing the whole round."
+        },
+        {
+          "validation_id": "W21-V2",
+          "title": "Reviewer batch resume reuse validation",
+          "status": "completed",
+          "purpose": "Prove `run-phase2.sh --resume` reuses an existing validated reviewer batch output and does not rerun the provider for that batch."
+        }
+      ],
+      "reverification_checks": [
+        "Can a Codex reviewer-core batch still fail immediately on `provider_rate_limit` without any bounded retry?",
+        "Does `--resume` still delete and rerun an already validated reviewer batch output instead of reusing it?",
+        "When a reviewer-core batch fails, does the reviewer round errlog now expose the failing batch id and concrete summarized reason?"
+      ],
+      "wave_exit_criteria": [
+        "Transient Codex rate-limit failures no longer immediately kill reviewer core batch execution.",
+        "`--resume` reuses validated reviewer batch outputs for the current worker artifact.",
+        "Reviewer round errlogs expose concrete batch failure reasons rather than only the batch-start line."
+      ]
+    },
+    {
+      "wave_id": "wave_22_single_plugin_pipeline_progress_model",
+      "title": "Single Plugin Pipeline Progress Model",
+      "goal": "Expose an operator-friendly completion percentage for `run-single-plugin.sh` and have Phase 2 and Phase 3 inline logs inherit the same weighted progress model during long-running resume and review loops.",
+      "priority": "medium",
+      "status": "completed_with_nonheavy_validation",
+      "last_reviewed_at": "2026-04-15",
+      "status_summary": "`run-single-plugin.sh` now accepts public progress options, exports effective Phase 1/2/3 progress weights plus a pipeline start timestamp to downstream phases, and `run-phase2.sh`/`run-phase3.sh` emit concise inline progress hints with continuously refreshed ETA estimates that reflect the whole single-plugin pipeline instead of only local batch counters.",
+      "tasks": [
+        {
+          "task_id": "W22-T1",
+          "title": "Add public single-plugin progress options and effective phase weighting",
+          "status": "completed",
+          "status_notes": [
+            "`run-single-plugin.sh` now accepts `--progress-mode weighted|phases|off` and `--progress-weights a,b,c`.",
+            "The wrapper normalizes effective Phase 1/2/3 weights, including renormalizing Phase 1/2 to 100% when `--phase2-only` is requested."
+          ]
+        },
+        {
+          "task_id": "W22-T2",
+          "title": "Project single-plugin progress into live Phase 2 reviewer and cluster output",
+          "status": "completed",
+          "status_notes": [
+            "Phase 2 inline messages for reviewer-core batches, worker revision milestones, terminal closure, and cluster publication now append concise `Phase 2 ~X% | Pipeline ~Y%` hints when the wrapper enables pipeline progress.",
+            "The progress hints stay bounded and do not stream raw provider chatter."
+          ]
+        },
+        {
+          "task_id": "W22-T3",
+          "title": "Project single-plugin progress into Phase 3 gate and skeptic output",
+          "status": "completed",
+          "status_notes": [
+            "Phase 3 gate and skeptic stages now append concise `Phase 3 ~X% | Pipeline ~Y%` hints, and the final Phase 3 summary emits a 100% completion line.",
+            "This keeps the public single-plugin entrypoint authoritative for long-running end-to-end progress without changing Phase 3 admission semantics."
+          ]
+        },
+        {
+          "task_id": "W22-T4",
+          "title": "Refresh ETA continuously whenever pipeline progress advances",
+          "status": "completed",
+          "status_notes": [
+            "The single-plugin wrapper now exports a pipeline start timestamp so downstream phases can recompute ETA from real elapsed runtime each time progress changes.",
+            "Phase 2 and Phase 3 inline progress suffixes now append `ETA ~...` dynamically, and the wrapper emits `ETA 0s` when the pipeline reaches 100%."
+          ]
+        }
+      ],
+      "validation_plan": [
+        {
+          "validation_id": "W22-V1",
+          "title": "Single-plugin progress option export validation",
+          "status": "completed",
+          "purpose": "Prove `run-single-plugin.sh` exports the chosen progress mode and effective phase weights to Phase 2 under both full-pipeline and `--phase2-only` execution."
+        },
+        {
+          "validation_id": "W22-V2",
+          "title": "Phase 2 inline pipeline progress validation",
+          "status": "completed",
+          "purpose": "Prove Phase 2 reviewer-core inline messages append the expected pipeline progress suffix when the wrapper supplies progress weights."
+        },
+        {
+          "validation_id": "W22-V3",
+          "title": "Dynamic ETA propagation validation",
+          "status": "completed",
+          "purpose": "Prove the single-plugin wrapper exports a pipeline start timestamp to Phase 2 and that completion output reflects the ETA-aware progress format."
+        }
+      ],
+      "reverification_checks": [
+        "Can `run-single-plugin.sh --phase2-only` still end at less than 100% because Phase 3 weight was not renormalized away?",
+        "Do Phase 2 reviewer-core inline messages still show only local batch counters without any whole-pipeline progress hint when wrapper progress is enabled?",
+        "Can the new public progress options change resume or provider semantics instead of only display semantics?",
+        "When pipeline progress changes during a long run, does the displayed ETA recalculate from real elapsed time rather than staying frozen from an initial estimate?"
+      ],
+      "wave_exit_criteria": [
+        "`run-single-plugin.sh` exposes stable public progress options with predictable effective phase weights.",
+        "Long Phase 2 reviewer output includes concise whole-pipeline progress hints when launched from the single-plugin wrapper.",
+        "Phase 3 output can surface a final 100% completion signal for the single-plugin pipeline.",
+        "ETA is recalculated continuously from runtime progress rather than emitted as a one-shot estimate."
+      ]
+    }
+  ],
+  "validation_matrix_after_waves": [
+    {
+      "slug": "backwpup",
+      "purpose": "heavy high-signal canonical stress test",
+      "must_validate": [
+        "chunked worker lifecycle",
+        "bundle review/revision normalization",
+        "reviewer core recovery",
+        "state/log clarity",
+        "per-run cost reporting",
+        "trust-aware freshness reuse",
+        "provider launch boundary hardening",
+        "phase3 only consumes trusted phase2 canonicals",
+        "batch control-plane distinguishes trusted and degraded outputs",
+        "manual/helper Phase 3 scripts reject degraded phase2 canonicals",
+        "provider-tier resolver chooses selective Claude only for high-value potential or high-value ambiguity"
+      ]
+    },
+    {
+      "slug": "hostinger-reach",
+      "purpose": "reviewer packetization and consensus stability regression check",
+      "must_validate": [
+        "reviewer core/explore progression",
+        "cluster/consensus publication integrity"
+      ]
+    },
+    {
+      "slug": "cartflows",
+      "purpose": "cross-bundle cluster synthesis challenge path",
+      "must_validate": [
+        "cluster plan/pack/synth/challenge flow",
+        "consensus writer remains canonical publisher",
+        "cluster runner honors configured provider binaries",
+        "consensus publication requires local artifact truth",
+        "cluster challenger provider follows selective-Claude tiering instead of broad default dual-provider use"
+      ]
+    },
+    {
+      "slug": "duplicator",
+      "purpose": "negative-control and low-noise path",
+      "must_validate": [
+        "no false inflation from normalizer",
+        "degraded-state signaling stays quiet on clean runs",
+        "low-signal provider-tier resolution remains Codex-only"
+      ]
+    },
+    {
+      "slug": "provider-transition",
+      "purpose": "resume and metadata compatibility regression checks",
+      "must_validate": [
+        "reviewer_core and reviewer_explore providers remain distinguishable in summaries and output metadata",
+        "fallback provider-policy artifacts preserve Phase 3 routing context",
+        "--with-claude behaves as an explicit provider-set shorthand"
+      ]
+    },
+    {
+      "slug": "litespeed-cache-resume",
+      "purpose": "standalone chunked resume authority and summary regression checks",
+      "must_validate": [
+        "no-output provider failures retry and terminate cleanly without shell crashes",
+        "standalone cluster planning consumes phase2.local.json before consensus",
+        "resume summaries distinguish newly completed outputs from reused outputs",
+        "public --resume preserves existing chunked bundle artifacts even when no phase2.worker.rN artifacts exist",
+        "reviewer core emits concise batch progress inline during resume without streaming raw provider output"
+      ]
+    },
+    {
+      "slug": "litespeed-cache-full-pipeline-closure",
+      "purpose": "terminal closure, cluster authority, trust, and full-pipeline completion acceptance case",
+      "must_validate": [
+        "terminal core review closes every surviving packet as TP or FP",
+        "cluster synth/challenge no longer leaves unresolved cluster blockers in the success path",
+        "consensus trust reaches success only after structural integrity plus closure completeness",
+        "phase3 admission accepts the refined trusted Phase 2 canonical",
+        "run-single-plugin.sh completes Phase 3 and produces final report artifacts"
+      ]
+    }
+  ],
+  "execution_rules": {
+    "implementation_order": [
+      "Complete Wave 1 tasks in order.",
+      "Only after Wave 1 validation passes should Wave 2 begin.",
+      "Only after Wave 2 validation passes should Wave 3 begin.",
+      "Only after Wave 3 validation passes should Wave 4 begin.",
+      "Do not broaden scope into quota hard-gates until measurement and degraded-state semantics are stable.",
+      "Do not trust standalone helper scripts as authoritative publishers unless their Wave 3 fail-closed semantics remain intact.",
+      "Only after Wave 4 validation passes should Wave 5 begin.",
+      "Only after Wave 5 validation passes should Wave 6 begin.",
+      "Only after Wave 6 validation passes should Wave 7 begin.",
+      "Only after Wave 8 validation passes should Wave 9 mini-wave 1 begin.",
+      "Within Wave 9, finish mini-wave 1 execution/summary fixes before exposing a top-level public --resume flag.",
+      "Only after Wave 9 validation passes should Wave 10 forced-exploration boundary fixes begin.",
+      "Only after Wave 10 validation passes should Wave 11 single-plugin entrypoint convergence begin.",
+      "Only after Wave 11 validation passes should Wave 12 terminal core closure begin.",
+      "Only after Wave 12 validation passes should Wave 13 terminal core reviewer contract begin.",
+      "Only after Wave 13 validation passes should Wave 14 cluster authority realignment begin.",
+      "Only after Wave 14 validation passes should Wave 15 consensus trust policy realignment begin.",
+      "Only after Wave 15 validation passes should Wave 16 Phase 3 admission and full-pipeline completion begin.",
+      "Only after Wave 17 validation passes should Wave 18 selective Claude prompt bounding begin.",
+      "Only after Wave 21 validation passes should Wave 22 single-plugin pipeline progress modeling begin."
+    ],
+    "evidence_rules": [
+      "Code changes alone are not enough for closure; each wave needs artifact replay and at least one clean runtime validation.",
+      "A known failure is only considered closed when both the original artifact replay and a fresh run stop reproducing it."
+    ],
+    "artifact_rules": [
+      "Keep raw model artifacts when performing repairs or normalization.",
+      "Do not overwrite canonical outputs as part of local merge-only stages.",
+      "Do not treat phase2.local.json as downstream truth.",
+      "Treat dispatch.json and prep artifacts as a trust boundary; prompt scope now follows dispatch.source_dir more faithfully.",
+      "Downstream Phase 3 and batch coordinators may only consume Phase 2 canonicals whose trust_state is success.",
+      "Consensus publication requires phase2.local.json as authoritative source; canonical-only fallback is forbidden.",
+      "Cluster synth/challenge must honor configured provider binaries for provenance and stubbing.",
+      "Claude should be treated as a selective contradiction/challenge provider unless Wave 6 explicitly proves a broader role is cost-justified."
+    ]
+  }
+}

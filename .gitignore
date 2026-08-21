@@ -4,9 +4,21 @@
 
 # Generated databases (rebuild from Phase 1)
 /data/audit.db
+/data/audit.db-shm
+/data/audit.db-wal
 
 # Plugin source code (sync separately)
 /plugins/
+
+# Local scratch
+/_/
+
+# Git worktrees
+.claude/worktrees/
+
+# Pipeline outputs (regenerated per run)
+/reports/
+/testing/reports/
 
 # macOS artifacts
 .DS_Store

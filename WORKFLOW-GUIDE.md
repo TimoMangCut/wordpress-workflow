@@ -9,6 +9,8 @@ Mục tiêu:
 Nguyên tắc đọc tài liệu này:
 - Đường vận hành chuẩn hằng ngày:
   - `bash tools/bin/run-single-plugin.sh <slug>`
+  - nếu chỉ cần recover/debug tới hết Phase 2:
+    - `bash tools/bin/run-single-plugin.sh <slug> --resume --phase2-only`
 - `run-phase2.sh` và `run-phase3.sh` là **scoped rerun runners**
 - `run-pipeline.sh`, `scan-all.sh`, `prepare_agent_inputs.py`, `orchestrate-agents.sh`, `write_phase2_consensus.py` là **wrapper/component scripts**, chỉ dùng khi debug, validate, batch orchestration, hoặc repair từng stage
 
@@ -51,6 +53,14 @@ run-single-plugin.sh
   -> Phase 3 gate
   -> optional Phase 3 skeptic review
 ```
+
+Ghi chú vận hành:
+- `run-single-plugin.sh` là **single-plugin entrypoint canonical**
+- `run-phase2.sh` vẫn là authority engine của Phase 2, nhưng khi vận hành thường ngày bạn có thể dùng `run-single-plugin.sh` cho cả:
+  - full pipeline
+  - `--resume`
+  - `--phase2-only`
+  - `--no-clusters` / `--clusters`
 
 ## 2) Chuẩn bị môi trường
 
@@ -150,7 +160,7 @@ Ví dụ cấu hình dùng chung:
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "env": {
     "LLM_PROVIDERS": "codex",
-    "PHASE2_WORKER_PROVIDER": "claude",
+    "PHASE2_WORKER_PROVIDER": "codex",
     "PHASE2_REVIEWER_PROVIDER": "codex",
     "PHASE2_PROVIDER_TIMEOUT_SECONDS": "600",
     "PHASE2_WORKER_TIMEOUT_SECONDS": "900",
@@ -180,7 +190,7 @@ Ví dụ local override:
 ```
 
 Ý nghĩa:
-- `PHASE2_WORKER_PROVIDER=claude`: Phase 2 worker mặc định là Claude.
+- `PHASE2_WORKER_PROVIDER=codex`: Phase 2 worker mặc định là Codex.
 - `PHASE2_REVIEWER_PROVIDER=codex`: reviewer mặc định của Phase 2 là Codex.
 - `PHASE2_WORKER_CLAUDE_MODEL=claude-sonnet-4.6`: model worker chính cho Claude ở Phase 2.
 - `PHASE2_REVIEWER_CODEX_MODEL=gpt-5.4`: model reviewer chính cho Codex ở Phase 2.
@@ -212,8 +222,12 @@ bash tools/bin/run-phase3.sh --with-claude --slug <slug> --llm-mode auto
 
 Ghi chú:
 - Phase 2 mới là role-based loop: worker và reviewer là hai role tách biệt, không còn chọn canonical theo provider list nữa.
-- Default topology hiện tại là `Claude Sonnet worker -> Codex GPT-5.4 reviewer`.
+- Default topology hiện tại là `Codex baseline -> Claude selective contradiction`.
+- Wave 6 thêm `reports/phase2/<slug>-provider-policy.json` làm artifact giải thích provider tier (`A0`..`A3`), trigger reasons, stage providers, và Phase 3 recommendation.
+- `run-phase2.sh` sẽ tự resolve tier trước worker round 1 và có thể nâng tier sau `reviewer_core` nếu evidence cho thấy ambiguity/finding có giá trị cao.
 - Sau `reviewer_core`, Phase 2 còn có một `reviewer_explore` stage riêng để tìm blind spots. Flag CLI vẫn mang tên legacy `forced-exploration`, nhưng về mặt workflow đây là một stage chính thức chứ không phải “force brute-search”.
+- `reviewer_explore`, `cluster_challenger`, và `phase3 skeptic` là các stage duy nhất nên dùng Claude theo policy; worker broad search không còn là nơi mặc định để tiêu premium provider.
+- `--with-claude` giờ được hiểu là shorthand explicit cho `--providers codex,claude`; nó không còn chỉ là hint yếu có thể bị Wave 6 policy âm thầm nuốt mất.
 - `--provider` / `--providers` vẫn còn để tương thích ngược, nhưng abstraction đúng cho Phase 2 là `worker` và `reviewer`.
 - Artifact canonical vẫn giữ tên cũ để không phá pipeline. Phase 2 loop artifacts được lưu sidecar theo round.
 - Kiến trúc stabilization mục tiêu cho Phase 2 được chốt tại `7-workflow-wp/PHASE2-ARCHITECTURE-SPEC.md`.
@@ -477,6 +491,7 @@ Full audit 1 plugin, đường chuẩn đơn giản nhất:
 
 ```bash
 bash tools/bin/run-single-plugin.sh <slug>
+bash tools/bin/run-single-plugin.sh <slug> --resume
 ```
 
 Full audit nhiều plugin / batch orchestration:
@@ -484,17 +499,23 @@ Full audit nhiều plugin / batch orchestration:
 ```bash
 bash tools/bin/run-pipeline.sh
 bash tools/bin/run-pipeline.sh --multi-agent
+bash tools/bin/run-pipeline.sh --multi-agent --resume
 ```
 
 Lưu ý rất quan trọng:
 - `run-single-plugin.sh` là **public full-audit entrypoint** cho 1 plugin
+- Resume public cho full-audit 1 plugin là:
+  - `bash tools/bin/run-single-plugin.sh <slug> --resume`
 - `run-single-plugin.sh` luôn chạy:
   - `Phase 1`
   - `Phase 2 canonical local loop`
   - `cluster/consensus`
   - `Phase 3`
 - `run-pipeline.sh` là **wrapper batch/internal orchestration**
-- `run-pipeline.sh --multi-agent` là backend orchestration path, **không phải full-audit path public mặc định**
+- `run-pipeline.sh --multi-agent` giờ chỉ là wrapper ép `run-phase2.sh` chạy **chunked worker mode**; nó **không còn** gọi `orchestrate-agents.sh` như một authority Phase 2 public riêng
+- Resume public cho batch/internal wrapper là:
+  - `bash tools/bin/run-pipeline.sh --multi-agent --resume`
+- `--resume` là public UX flag; các cờ cũ như `--resume-existing` và `--resume-missing-only` vẫn còn cho debug/internal paths nhưng không còn là UX chính
 
 ### 3.5 Script thành phần
 
@@ -512,19 +533,35 @@ Layout chuẩn của `reports/`:
 - `reports/phase1` chứa toàn bộ artifact Phase 1
 - `reports/phase2` chứa toàn bộ artifact Phase 2
 - `reports/phase3` chứa toàn bộ artifact Phase 3
+- `reports/context` chứa deterministic context dùng xuyên phase
 - `reports/logs` chứa log và quota ledger
+- `reports/cost` chứa summary chi phí theo từng `run_id`
 
-Ngoài ba thư mục phase, `reports/context/` và top-level `reports/` còn có các artifact deterministic dùng để nối giữa các stage, ví dụ:
+Artifact prep/runtime quan trọng của Phase 2 giờ có chỗ riêng:
 - `reports/context/<slug>-threat-context.json`
-- `reports/<slug>-dispatch.json`
-- `reports/<slug>-candidate-inventory.json`
+- `reports/phase2/prep/<slug>/dispatch.json`
+- `reports/phase2/prep/<slug>/candidate-inventory.json`
+- `reports/phase2/prep/<slug>/candidate-bundles/agent-wNN.input.json`
+- `reports/phase2/agents/<slug>/agent-wNN.output.json`
+- `reports/phase2/agents/<slug>/attempts/<agent>.attempt-XX.output.json`
+- `reports/phase2/agents/<slug>/attempts/<agent>.attempt-XX.normalized.json`
 
-Các file này không phải canonical findings output, nhưng là context/prep artifact cho Phase 2 multi-agent path.
+Các file này không phải canonical findings output, nhưng là context/prep/runtime artifact cho Phase 2 chunked path.
 
 Nếu chưa có thư mục, các script sẽ tự tạo trước khi ghi output.
 
 Ledger nằm tại:
 - `reports/logs/quota-ledger.jsonl`
+- `reports/cost/<slug>/<run_id>.cost.json`
+
+Log tree của chunked Phase 2:
+- `reports/logs/<slug>/phase2/run.err`
+- `reports/logs/<slug>/phase2/run.live.log`
+- `reports/logs/<slug>/phase2/chunked/run.err`
+- `reports/logs/<slug>/phase2/chunked/run.live.log`
+- `reports/logs/<slug>/phase2/chunked/agents/<agent>/attempt-XX/assistant.live.log`
+- `reports/logs/<slug>/phase2/chunked/agents/<agent>/attempt-XX/provider.raw.log`
+- `reports/logs/<slug>/phase2/chunked/agents/<agent>/attempt-XX/stderr.err`
 
 Xem thống kê:
 
@@ -532,7 +569,25 @@ Xem thống kê:
 python3 tools/bin/quota-report.py --reports-dir reports --phase phase2 --days 1
 python3 tools/bin/quota-report.py --reports-dir reports --phase phase3 --days 1
 python3 tools/bin/quota-report.py --reports-dir reports --phase all --days 7
+python3 tools/bin/quota-report.py --run-id <run_id> --days 30
 ```
+
+Phase 2 giờ có `trust_state` rõ ràng trong:
+- `reports/phase2/<slug>-phase2.state.json`
+- `reports/phase2/<slug>-phase2.local.json`
+- `reports/phase2/<slug>-phase2.consensus.json`
+- `reports/phase2/<slug>-phase2.json`
+
+Giá trị chính:
+- `success`
+- `degraded_success`
+- `partial_success`
+- `failed`
+- `in_progress` (chỉ ở state runtime)
+
+Quy ước đọc:
+- `phase2.local.json` = local merge, không phải downstream truth
+- `phase2.json` = canonical Phase 2, chỉ hợp lệ sau consensus-authoritative publish
 
 ## 5) File output chính
 
@@ -545,14 +600,22 @@ python3 tools/bin/quota-report.py --reports-dir reports --phase all --days 7
 - `reports/phase1/<slug>-ir.json`
 
 ### 5.2 Phase 2
-- `reports/phase2/<slug>-phase2.raw.json`
+- `reports/phase2/<slug>-phase2.state.json`
+- `reports/phase2/<slug>-phase2.local.json`
+- `reports/phase2/<slug>-phase2.consensus.json`
 - `reports/phase2/<slug>-phase2.json`
-- `reports/phase2/<slug>-phase2.before_review.json` (nếu apply review)
-- `reports/phase2/<slug>-phase2.after_review.json` (nếu apply review)
+- `reports/phase2/<slug>-phase2.loop-summary.json`
+- `reports/phase2/<slug>-phase2.worker.r1.json`
+- `reports/phase2/<slug>-phase2.review.r1.core.input.json` (nếu reviewer core đã build input)
 
 Runner Phase 2 dùng freshness-aware skip:
 - chỉ skip khi `phase2.json` mới hơn IR, source tree plugin, prompt/system prompt trực tiếp, và script Phase 2 liên quan
 - `--force` sẽ bỏ qua freshness check
+
+Ghi chú:
+- `phase2.state.json` là source of truth cho stage/status/provider/log path khi run đang chạy
+- `phase2.local.json` có thể tồn tại ngay cả khi Phase 2 cuối chưa được publish canonical
+- `phase2.json` chỉ được coi là authoritative khi consensus writer hoàn tất
 
 ### 5.3 Phase 3
 - `reports/phase3/<slug>-phase3.json`
@@ -720,6 +783,7 @@ rm -f reports/logs/*.log \
 ```bash
 # 1) Full audit 1 plugin
 bash tools/bin/run-single-plugin.sh <slug>
+bash tools/bin/run-single-plugin.sh <slug> --resume
 
 # 2) Phase 1 batch
 cd tools && bash bin/batch.sh ../plugins 4 81 100 && cd ..
@@ -731,7 +795,8 @@ bash tools/bin/run-phase2.sh --start-index 81 --end-index 100 --threads 3
 bash tools/bin/run-phase3.sh --llm-mode auto
 
 # 5) Batch/internal orchestration wrapper
-bash tools/bin/run-pipeline.sh --multi-agent
+bash tools/bin/run-pipeline.sh --multi-agent   # wrapper ép canonical chunked Phase 2
+bash tools/bin/run-pipeline.sh --multi-agent --resume
 
 # 6) Xem quota
 python3 tools/bin/quota-report.py --reports-dir reports --phase all --days 1
