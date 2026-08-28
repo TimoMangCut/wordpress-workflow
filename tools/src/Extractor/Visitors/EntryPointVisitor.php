@@ -12,6 +12,7 @@ class EntryPointVisitor extends NodeVisitorAbstract
     private SymbolTable $symbols;
     private string $currentFile;
     private ?string $currentClass = null;
+    private ?string $currentMethod = null;
     private array $entryPoints = [];
     private array $unresolvedHooks = [];
 
@@ -70,12 +71,27 @@ class EntryPointVisitor extends NodeVisitorAbstract
 
     public function enterNode(Node $node)
     {
+        if ($node instanceof Node\Stmt\ClassMethod) {
+            $this->currentMethod = $node->name->toString();
+        }
+
         if ($node instanceof Node\Stmt\Class_) {
             // php-parser v5: namespacedName is typed (Name), not nullable.
             // isset() returns false for uninitialized typed props without throwing.
             $this->currentClass = isset($node->namespacedName)
                 ? $node->namespacedName->toString()
                 : ($node->name !== null ? $node->name->toString() : null);
+        }
+
+        // Plugins increasingly register REST routes through WP_REST_Server::register_route()
+        // instead of the register_rest_route() function. Google Listings & Ads routes all 85 of
+        // its registrations through such a wrapper, so keying only on the function call left its
+        // entire REST surface -- 55 controllers -- absent from the IR.
+        if ($node instanceof Node\Expr\MethodCall
+            && $node->name instanceof Node\Identifier
+            && $node->name->toString() === 'register_route') {
+            $this->handleWrappedRestRoute($node);
+            return null;
         }
 
         if (!($node instanceof Node\Expr\FuncCall)) return null;
@@ -157,6 +173,81 @@ class EntryPointVisitor extends NodeVisitorAbstract
         ];
     }
 
+    /**
+     * REST route registered via a wrapper method rather than register_rest_route().
+     *
+     * Two shapes are common:
+     *   $server->register_route($namespace, $route, $args)   (WP_REST_Server proxy)
+     *   $this->register_route($route, $args)                 (controller base class)
+     */
+    private function handleWrappedRestRoute(Node\Expr\MethodCall $node): void
+    {
+        // A register_route() call *inside* a method of the same name is the wrapper delegating
+        // to the next layer, not a route registration. Counting it produced phantom entry points
+        // at BaseController::register_route and RESTServer::register_route.
+        if ($this->currentMethod === 'register_route') return;
+
+        $args = $node->args;
+        $count = count($args);
+        if ($count < 2) return;
+
+        if ($count >= 3) {
+            $namespace = $this->resolveStringArg($args[0]);
+            $route     = $this->resolveStringArg($args[1]);
+            $argsNode  = $args[2]->value ?? null;
+        } else {
+            $namespace = null;
+            $route     = $this->resolveStringArg($args[0]);
+            $argsNode  = $args[1]->value ?? null;
+        }
+
+        $routeInfo = $this->parseRestRouteArgs($argsNode);
+        $identity = ($namespace !== null || $route !== null)
+            ? $this->sanitizeId(($namespace ?? '') . '_' . ($route ?? ''))
+            : $this->locationSuffix($node->getStartLine());
+
+        // Controllers usually pass a list of per-method configs:
+        //   [ [ 'methods' => ..., 'callback' => ..., 'permission_callback' => ... ], 'schema' => ... ]
+        // The permission_callback lives inside the nested config, so the flat read below would
+        // miss it and every route would look unauthenticated.
+        if (!empty($routeInfo['routes'])) {
+            foreach ($routeInfo['routes'] as $i => $ri) {
+                $this->entryPoints[] = [
+                    'id' => "ep_rest_{$identity}_{$i}",
+                    'type' => 'rest_route',
+                    'hook_name' => ($namespace ?? '?') . '/' . ($route ?? '?'),
+                    'callback' => $ri['callback'] ?? ['type' => 'unresolved'],
+                    'auth_level' => $this->inferRestAuth($ri),
+                    'rest_namespace' => $namespace,
+                    'rest_route' => $route,
+                    'rest_methods' => $ri['methods'] ?? [],
+                    'permission_callback' => $ri['permission_callback'] ?? null,
+                    'permission_callback_ref' => $ri['permission_callback_ref'] ?? null,
+                    'registered_via' => 'wrapper_method',
+                    'file' => $this->currentFile,
+                    'line' => $node->getStartLine(),
+                ];
+            }
+            return;
+        }
+
+        $this->entryPoints[] = [
+            'id' => "ep_rest_{$identity}",
+            'type' => 'rest_route',
+            'hook_name' => ($namespace ?? '?') . '/' . ($route ?? '?'),
+            'callback' => $routeInfo['callback'] ?? ['type' => 'unresolved'],
+            'auth_level' => $this->inferRestAuth($routeInfo),
+            'rest_namespace' => $namespace,
+            'rest_route' => $route,
+            'rest_methods' => $routeInfo['methods'] ?? [],
+            'permission_callback' => $routeInfo['permission_callback'] ?? null,
+            'permission_callback_ref' => $routeInfo['permission_callback_ref'] ?? null,
+            'registered_via' => 'wrapper_method',
+            'file' => $this->currentFile,
+            'line' => $node->getStartLine(),
+        ];
+    }
+
     private function handleRestRoute(Node\Expr\FuncCall $node): void
     {
         if (count($node->args) < 3) return;
@@ -170,7 +261,9 @@ class EntryPointVisitor extends NodeVisitorAbstract
         if (!empty($routeInfo['routes'])) {
             foreach ($routeInfo['routes'] as $i => $ri) {
                 $this->entryPoints[] = [
-                    'id' => "ep_rest_{$this->sanitizeId(($namespace ?? '') . '_' . ($route ?? '') . '_' . $i)}",
+                    'id' => ($namespace === null && $route === null)
+                        ? "ep_rest_{$this->locationSuffix($node->getStartLine())}_{$i}"
+                        : "ep_rest_{$this->sanitizeId(($namespace ?? '') . '_' . ($route ?? '') . '_' . $i)}",
                     'type' => 'rest_route',
                     'hook_name' => ($namespace ?? '?') . ($route ?? '?'),
                     'callback' => $ri['callback'] ?? ['type' => 'unresolved'],
@@ -186,7 +279,9 @@ class EntryPointVisitor extends NodeVisitorAbstract
             }
         } else {
             $this->entryPoints[] = [
-                'id' => "ep_rest_{$this->sanitizeId(($namespace ?? '') . '_' . ($route ?? ''))}",
+                'id' => ($namespace === null && $route === null)
+                    ? "ep_rest_{$this->locationSuffix($node->getStartLine())}"
+                    : "ep_rest_{$this->sanitizeId(($namespace ?? '') . '_' . ($route ?? ''))}",
                 'type' => 'rest_route',
                 'hook_name' => ($namespace ?? '?') . ($route ?? '?'),
                 'callback' => $routeInfo['callback'] ?? ['type' => 'unresolved'],
@@ -210,7 +305,9 @@ class EntryPointVisitor extends NodeVisitorAbstract
         $callback = $this->resolveCallback($node->args[1]);
 
         $this->entryPoints[] = [
-            'id' => "ep_shortcode_{$this->sanitizeId($tag ?? 'unknown')}",
+            'id' => ($tag === null)
+                ? "ep_shortcode_{$this->locationSuffix($node->getStartLine())}"
+                : "ep_shortcode_{$this->sanitizeId($tag)}",
             'type' => 'shortcode',
             'hook_name' => $tag ?? 'unknown',
             'callback' => $callback,
@@ -238,7 +335,9 @@ class EntryPointVisitor extends NodeVisitorAbstract
         }
 
         $this->entryPoints[] = [
-            'id' => "ep_block_{$this->sanitizeId($blockName ?? 'unknown')}",
+            'id' => ($blockName === null)
+                ? "ep_block_{$this->locationSuffix($node->getStartLine())}"
+                : "ep_block_{$this->sanitizeId($blockName)}",
             'type' => 'block',
             'hook_name' => $blockName ?? 'unknown',
             'callback' => $callback,
@@ -256,7 +355,9 @@ class EntryPointVisitor extends NodeVisitorAbstract
         $hookName = $this->resolveStringArg($node->args[$hookArgIdx]);
 
         $this->entryPoints[] = [
-            'id' => "ep_cron_{$this->sanitizeId($hookName ?? 'unknown')}",
+            'id' => ($hookName === null)
+                ? "ep_cron_{$this->locationSuffix($node->getStartLine())}"
+                : "ep_cron_{$this->sanitizeId($hookName)}",
             'type' => 'cron',
             'hook_name' => $hookName ?? 'unknown',
             'callback' => ['type' => 'unresolved'],
@@ -369,6 +470,14 @@ class EntryPointVisitor extends NodeVisitorAbstract
         }
 
         if ($value instanceof Node\Expr\Closure || $value instanceof Node\Expr\ArrowFunction) {
+            // A closure that only delegates -- fn($r) => $this->handle_submit($r) -- used to be
+            // recorded as a one-line closure, so SourceSinkVisitor analysed an empty body and the
+            // real handler stayed invisible. Elementor registers 50 of its 136 entry points this
+            // way, including the public feedback REST route. Follow the delegation.
+            $delegated = $this->resolveDelegatedCallback($value);
+            if ($delegated !== null) {
+                return $delegated;
+            }
             return [
                 'type' => 'closure', 'name' => null, 'class' => null,
                 'file' => $this->currentFile,
@@ -421,6 +530,9 @@ class EntryPointVisitor extends NodeVisitorAbstract
                 // DI-26-01: also store resolved callback array for IRBuilder to run GuardVisitor on.
                 $config['permission_callback']     = $this->resolvePermissionCallback($item->value);
                 $config['permission_callback_ast'] = $this->resolvePermissionCallbackAst($item->value);
+                // Record that the key exists even when its value cannot be resolved, so
+                // inferRestAuth() can tell "no permission callback" from "one I could not read".
+                $config['permission_callback_present'] = true;
                 // For array callables: store the resolved callback (class+method) so IRBuilder
                 // can locate and scan the permission_callback method body for guards.
                 if ($item->value instanceof Node\Expr\Array_) {
@@ -467,7 +579,17 @@ class EntryPointVisitor extends NodeVisitorAbstract
     private function inferRestAuth(array $routeInfo): string
     {
         $pc = $routeInfo['permission_callback'] ?? null;
-        if ($pc === null) return 'none';
+        if ($pc === null) {
+            // Unresolved is not absent. A permission_callback supplied as a method call
+            // ($this->get_permission_callback()) resolves to null, and mapping that to 'none'
+            // labelled all 85 of Google Listings & Ads' capability-gated REST routes as public.
+            if (!empty($routeInfo['permission_callback_present'])
+                || !empty($routeInfo['permission_callback_ref'])
+                || !empty($routeInfo['permission_callback_ast'])) {
+                return 'unknown';
+            }
+            return 'none';
+        }
         if ($pc === '__return_true') return 'none';
         if ($pc === 'is_user_logged_in') return 'subscriber';
 
@@ -655,6 +777,83 @@ class EntryPointVisitor extends NodeVisitorAbstract
             }
         }
         return null;
+    }
+
+    /**
+     * Discriminator for entry points whose semantic identity cannot be resolved statically.
+     *
+     * register_rest_route() calls that build namespace/route from class properties resolve to
+     * null, so the id template collapsed to "ep_rest___0" for every such call in the plugin --
+     * Gravity Forms had 18 distinct REST v2 controllers sharing one id. Anything keyed by
+     * entry_point_id (candidate dedup, cluster grouping, the Phase 3 claimed-vs-resolved check)
+     * then treated them as a single surface. Registration site is unique, so fall back to it.
+     */
+    /**
+     * If a closure body is a single delegation to a named callable, return that callable.
+     * Returns null for closures with real logic, which keep the existing 'closure' shape.
+     */
+    private function resolveDelegatedCallback(Node $fn): ?array
+    {
+        $expr = null;
+        if ($fn instanceof Node\Expr\ArrowFunction) {
+            $expr = $fn->expr;
+        } elseif ($fn instanceof Node\Expr\Closure) {
+            if (count($fn->stmts) !== 1) return null;
+            $only = $fn->stmts[0];
+            if ($only instanceof Node\Stmt\Return_) {
+                $expr = $only->expr;
+            } elseif ($only instanceof Node\Stmt\Expression) {
+                $expr = $only->expr;
+            }
+        }
+        if ($expr === null) return null;
+
+        if ($expr instanceof Node\Expr\MethodCall && $expr->name instanceof Node\Identifier) {
+            $method = $expr->name->toString();
+            $className = $this->currentClass;
+            $info = $className ? $this->symbols->findMethod($className, $method) : null;
+            if ($info === null) {
+                $candidates = $this->symbols->findMethodInAllClasses($method);
+                if (count($candidates) >= 1) {
+                    return [
+                        'type' => 'method', 'name' => $method, 'class' => $candidates[0]['class'],
+                        'file' => $candidates[0]['file'],
+                        'line_start' => $candidates[0]['line_start'],
+                        'line_end' => $candidates[0]['line_end'],
+                    ];
+                }
+            }
+            return [
+                'type' => 'method', 'name' => $method, 'class' => $className,
+                'file' => $info['file'] ?? null,
+                'line_start' => $info['line_start'] ?? null,
+                'line_end' => $info['line_end'] ?? null,
+            ];
+        }
+        if ($expr instanceof Node\Expr\StaticCall && $expr->name instanceof Node\Identifier) {
+            $method = $expr->name->toString();
+            $class = $expr->class instanceof Node\Name ? $expr->class->toString() : null;
+            if ($class === 'self' || $class === 'static' || $class === null) {
+                $class = $this->currentClass;
+            }
+            $info = $class ? $this->symbols->findMethod($class, $method) : null;
+            return [
+                'type' => 'static_method', 'name' => $method, 'class' => $class,
+                'file' => $info['file'] ?? null,
+                'line_start' => $info['line_start'] ?? null,
+                'line_end' => $info['line_end'] ?? null,
+            ];
+        }
+        if ($expr instanceof Node\Expr\FuncCall && $expr->name instanceof Node\Name) {
+            return ['type' => 'function', 'name' => $expr->name->toString(), 'class' => null,
+                    'file' => null, 'line_start' => null, 'line_end' => null];
+        }
+        return null;
+    }
+
+    private function locationSuffix(int $line): string
+    {
+        return $this->sanitizeId(($this->currentFile ?? 'unknown') . '_' . $line);
     }
 
     private function sanitizeId(?string $input): string

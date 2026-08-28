@@ -47,6 +47,9 @@ LLM_PROVIDERS="${LLM_PROVIDERS:-${LLM_PROVIDER:-codex}}"
 CODEX_BIN="${CODEX_BIN:-codex}"
 CODEX_MODEL="${CODEX_MODEL:-${LLM_MODEL:-}}"
 CLAUDE_BIN="${CLAUDE_BIN:-claude}"
+# Reasoning effort for every claude CLI call (low|medium|high|xhigh|max).
+CLAUDE_EFFORT="${CLAUDE_EFFORT:-xhigh}"
+export CLAUDE_EFFORT
 CLAUDE_MODEL="${CLAUDE_MODEL:-${LLM_MODEL:-}}"
 PHASE3_PRIMARY_PROVIDER="${PHASE3_PRIMARY_PROVIDER:-codex}"
 

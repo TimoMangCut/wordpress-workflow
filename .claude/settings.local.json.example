@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "_comment": [
+    "Copy to .claude/settings.local.json and adjust for this machine.",
+    "This file is gitignored: it holds per-machine paths, not shared policy.",
+    "Shared provider/model policy lives in .claude/settings.json.",
+    "CLAUDE_BIN must point at the claude CLI. The pipeline shells out to it and uses",
+    "its logged-in subscription; no ANTHROPIC_API_KEY is involved. Verify with:",
+    "  claude -p \"say OK\"",
+    "Never add --bare to the pipeline's claude calls: that flag forces API-key-only auth",
+    "and never reads the OAuth/keychain session."
+  ],
+  "env": {
+    "CLAUDE_BIN": "/opt/homebrew/bin/claude",
+    "CLAUDE_MODEL": "claude-opus-4-7"
+  }
+}

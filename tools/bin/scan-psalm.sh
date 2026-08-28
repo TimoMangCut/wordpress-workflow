@@ -199,6 +199,19 @@ if is_slug_skipped "$SLUG" "$PSALM_SKIP_SLUGS"; then
     exit 0
 fi
 
+# Stub classes the plugin references but does not define. Psalm 6.x aborts with an uncaught
+# InvalidArgumentException ("Could not get class storage for <x>") when instanceof narrows a
+# value to an unresolvable class and a method is then called on it -- suppressing UndefinedClass
+# does not prevent it. Gravity Forms died this way on `instanceof GFPayPal` and produced 0 results.
+STUB_GENERATOR="${SCRIPT_DIR}/bin/generate_missing_class_stubs.py"
+GENERATED_STUBS="${SCRIPT_DIR}/config/psalm-generated-stubs.php"
+if [ -f "$STUB_GENERATOR" ]; then
+    python3 "$STUB_GENERATOR" "$PLUGIN_DIR" --output "$GENERATED_STUBS" || \
+        printf '<?php\n' > "$GENERATED_STUBS"
+else
+    printf '<?php\n' > "$GENERATED_STUBS"
+fi
+
 # Check psalm command
 if [ -f "${SCRIPT_DIR}/vendor/bin/psalm" ]; then
     PHP_RUNTIME="$(resolve_php_bin || true)"

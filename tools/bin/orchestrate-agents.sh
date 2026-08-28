@@ -56,6 +56,9 @@ ensure_report_dirs
 COST_TELEMETRY_BIN="$SCRIPT_DIR/cost_telemetry.py"
 CODEX_BIN="${CODEX_BIN:-codex}"
 CLAUDE_BIN="${CLAUDE_BIN:-claude}"
+# Reasoning effort for every claude CLI call (low|medium|high|xhigh|max).
+CLAUDE_EFFORT="${CLAUDE_EFFORT:-xhigh}"
+export CLAUDE_EFFORT
 CLAUDE_SAFE_TOOLS="${CLAUDE_SAFE_TOOLS:-Read,Grep,Glob,Write}"
 CLAUDE_READONLY_TOOLS="${CLAUDE_READONLY_TOOLS:-Read,Grep,Glob}"
 
@@ -623,10 +626,10 @@ print(d.get('threat_context_path', f'reports/context/{sys.argv[2]}-threat-contex
 # ---------------------------------------------------------------------------
 # model_for_agent — reads agent-level model override from dispatch model_map
 # Dispatch format:
-#   "model_map": { "agent-c": "claude-sonnet-4.6", "agent-d": "claude-sonnet-4.6" }
+#   "model_map": { "agent-c": "claude-opus-4-7", "agent-d": "claude-opus-4-7" }
 # Returns empty string if not set (caller uses provider CLI default).
 # Only meaningful for provider="claude".
-# Source of truth: .claude/settings.local.json CLAUDE_MODEL = "claude-sonnet-4.6"
+# Source of truth: .claude/settings.local.json CLAUDE_MODEL = "claude-opus-4-7"
 # ---------------------------------------------------------------------------
 model_for_agent() {
   local agent="$1"
@@ -1132,7 +1135,7 @@ if [[ "${SKIP_QUOTA_PROBE:-0}" != "1" ]] && [[ "$NEEDS_CLAUDE" -eq 1 ]]; then
   _CLAUDE_PROBE_ERR="$(mktemp /tmp/orchestrate-claude-probe-err.XXXXXX)"
   _CLAUDE_PROBE_OUT="$(mktemp /tmp/orchestrate-claude-probe.XXXXXX)"
   _CLAUDE_PROBE_EXIT=0
-  _CLAUDE_PROBE_CMD=("$CLAUDE_BIN" -p --bare --disable-slash-commands --permission-mode bypassPermissions --tools "$CLAUDE_SAFE_TOOLS" --verbose --output-format stream-json)
+  _CLAUDE_PROBE_CMD=("$CLAUDE_BIN" -p --disable-slash-commands --permission-mode bypassPermissions --tools "$CLAUDE_SAFE_TOOLS" --effort "$CLAUDE_EFFORT" --verbose --output-format stream-json)
   if [[ -n "$CLAUDE_PROBE_MODEL" ]]; then
     _CLAUDE_PROBE_CMD+=(--model "$CLAUDE_PROBE_MODEL")
   fi
@@ -1280,7 +1283,7 @@ run_provider_prompt_sync() {
     if [[ "$mode" == "analysis-readonly" ]]; then
       tools_list="$CLAUDE_READONLY_TOOLS"
     fi
-    claude_cmd=("$CLAUDE_BIN" -p --bare --disable-slash-commands --permission-mode bypassPermissions --tools "$tools_list" --verbose --output-format stream-json)
+    claude_cmd=("$CLAUDE_BIN" -p --disable-slash-commands --permission-mode bypassPermissions --tools "$tools_list" --effort "$CLAUDE_EFFORT" --verbose --output-format stream-json)
     if [[ -n "$model" ]]; then
       claude_cmd+=(--model "$model")
     fi
@@ -1436,7 +1439,7 @@ run_cluster_llm_stage() {
     synth_provider="$(python3 -c "import json; d=json.load(open('$cluster_path')); print(d.get('recommended_models',{}).get('synthesizer',{}).get('provider','codex'))" 2>/dev/null || echo codex)"
     synth_model="$(python3 -c "import json; d=json.load(open('$cluster_path')); print(d.get('recommended_models',{}).get('synthesizer',{}).get('model','gpt-5.4'))" 2>/dev/null || echo gpt-5.4)"
     challenge_provider="$(python3 -c "import json; d=json.load(open('$cluster_path')); print(d.get('recommended_models',{}).get('challenger',{}).get('provider','claude'))" 2>/dev/null || echo claude)"
-    challenge_model="$(python3 -c "import json; d=json.load(open('$cluster_path')); print(d.get('recommended_models',{}).get('challenger',{}).get('model','claude-sonnet-4.6'))" 2>/dev/null || echo claude-sonnet-4.6)"
+    challenge_model="$(python3 -c "import json; d=json.load(open('$cluster_path')); print(d.get('recommended_models',{}).get('challenger',{}).get('model','claude-opus-4-7'))" 2>/dev/null || echo claude-opus-4-7)"
 
     local synth_path challenge_path synth_log synth_live_log synth_raw_log synth_last_message
     local challenge_log challenge_live_log challenge_raw_log challenge_last_message prompt_file rc
@@ -1595,7 +1598,7 @@ print(d.get('inputs',{}).get(sys.argv[2],''))
     # stdout is streamed through Python to extract final text content,
     # matching the pattern established in run-phase2.sh:477-499.
     local claude_cmd
-    claude_cmd=("$CLAUDE_BIN" -p --bare --disable-slash-commands --permission-mode bypassPermissions --tools "$CLAUDE_SAFE_TOOLS" --verbose --output-format stream-json)
+    claude_cmd=("$CLAUDE_BIN" -p --disable-slash-commands --permission-mode bypassPermissions --tools "$CLAUDE_SAFE_TOOLS" --effort "$CLAUDE_EFFORT" --verbose --output-format stream-json)
     if [[ -n "$agent_model" ]]; then
       claude_cmd+=(--model "$agent_model")
     fi

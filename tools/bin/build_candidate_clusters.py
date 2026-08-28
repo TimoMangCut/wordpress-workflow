@@ -392,12 +392,12 @@ def resolve_model(provider: str, role: str, dispatch: dict | None = None) -> str
     if provider == "codex":
         dispatch_model = dispatch.get(f"cluster_{role.lower()}_model", "")
         return dispatch_model or os.environ.get(f"PHASE2_CLUSTER_{role}_CODEX_MODEL", "gpt-5.4")
-    requested = os.environ.get(f"PHASE2_CLUSTER_{role}_CLAUDE_MODEL", "claude-sonnet-4.6")
+    requested = os.environ.get(f"PHASE2_CLUSTER_{role}_CLAUDE_MODEL", "claude-opus-4-7")
     dispatch_model = dispatch.get(f"cluster_{role.lower()}_model", "")
     if dispatch_model:
         requested = dispatch_model
     if "opus" in requested.lower():
-        return "claude-sonnet-4.6"
+        return "claude-opus-4-7"
     return requested
 
 

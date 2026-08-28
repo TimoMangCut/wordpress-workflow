@@ -995,6 +995,32 @@ class SemanticValidator:
 
         return 0.25, f"auth mismatch [{ep_source}]: EP type={ep_type} expects {expected}, finding claims {claimed}"
 
+    def _asserts_authz_gap(self, finding: dict) -> bool:
+        """Does this finding assert that an auth/authz gate is absent?
+
+        The prose test alone missed real findings: a BAC report worded
+        "without any capability check, nonce check, or authentication" matched none of the
+        four hardcoded substrings, so the gate treated "no guard detected" as a penalty
+        against the very finding that guard-absence corroborates. Structured fields state
+        the same claim unambiguously, so consult them first.
+        """
+        cwe = str(finding.get("cwe_id") or "").upper().strip()
+        if cwe in {"CWE-862", "CWE-863", "CWE-306", "CWE-352"}:
+            return True
+        vuln_type = str(finding.get("vuln_type") or "").lower()
+        if any(key in vuln_type for key in (
+            "broken_access_control", "missing_capability", "missing_nonce", "auth_bypass",
+            "authorization_bypass", "privilege_escalation", "csrf", "unauthenticated",
+        )):
+            return True
+        reasoning = text_from_any(finding.get("reasoning")).lower()
+        return any(phrase in reasoning for phrase in (
+            "no nonce", "missing nonce", "without nonce", "without any nonce",
+            "no capability", "missing capability", "without capability", "without any capability",
+            "no permission callback", "__return_true", "no authentication", "no authorization",
+            "missing authorization", "without any auth", "no auth gate",
+        ))
+
     def _check_guard_consistency(self, finding: dict, resolution: EPResolution) -> Tuple[Optional[float], str]:
         """If finding claims missing guards, but IR sees effective guard, that's a contradiction.
 
@@ -1019,8 +1045,12 @@ class SemanticValidator:
             return 0.6, "EP has no id"
 
         reasoning = text_from_any(finding.get("reasoning")).lower()
-        claims_no_nonce = ("no nonce" in reasoning) or ("missing nonce" in reasoning)
-        claims_no_cap = ("no capability" in reasoning) or ("missing capability" in reasoning)
+        claims_no_nonce = any(p in reasoning for p in (
+            "no nonce", "missing nonce", "without nonce", "without any nonce"))
+        claims_no_cap = any(p in reasoning for p in (
+            "no capability", "missing capability", "without capability", "without any capability",
+            "no permission callback", "no authentication", "no authorization"))
+        asserts_authz_gap = self._asserts_authz_gap(finding)
 
         # G-01: Three-state guard classification — is True / is None / is False (E4)
         # NEVER use truthy check: None and False are both falsy but have different semantics.
@@ -1065,6 +1095,10 @@ class SemanticValidator:
                 return 0.6, f"[{leg_label}] potential custom guard (is_effective=null): {funcs}"
             if all_broken:
                 return 0.2, f"[{leg_label}] guard detected but confirmed ineffective"
+            if asserts_authz_gap:
+                # The absence of a guard IS the finding for this class. Scoring it 0.1 penalised
+                # every broken-access-control report for being what it claims to be.
+                return 0.9, f"[{leg_label}] no guard detected — corroborates the missing-authz claim"
             return 0.1, f"[{leg_label}] no guard detected"
 
         # G-05: if store_ep resolved, check BOTH legs; take the minimum score
@@ -1117,6 +1151,8 @@ class SemanticValidator:
             return 0.6, f"potential custom guard detected (is_effective=null): {funcs}"
         if all_broken:
             return 0.2, "guard detected but confirmed ineffective"
+        if asserts_authz_gap:
+            return 0.9, "no guard detected — corroborates the missing-authz claim"
         return 0.1, "no guard detected"
 
     def _check_sanitizer_claim(self, finding: dict) -> Tuple[Optional[float], str]:
@@ -1240,6 +1276,29 @@ class SemanticValidator:
             return candidates[0]
         return None
 
+    @staticmethod
+    def _enclosing_function_line(lines: list, func_name: str, target_line: int):
+        """Line where `func_name` is declared, if `target_line` falls inside its body.
+
+        Body extent is bounded by the next function declaration, so this cannot match a
+        function that ends before the sink line.
+        """
+        if not func_name:
+            return None
+        decl = re.compile(r"\bfunction\s+&?" + re.escape(func_name) + r"\s*\(", re.IGNORECASE)
+        any_decl = re.compile(r"\bfunction\s+&?\w+\s*\(", re.IGNORECASE)
+        start = None
+        for idx, raw in enumerate(lines, start=1):
+            if decl.search(raw):
+                start = idx
+                break
+        if start is None or target_line < start:
+            return None
+        for idx in range(start + 1, len(lines) + 1):
+            if any_decl.search(lines[idx - 1]):
+                return start if target_line < idx else None
+        return start
+
     def _check_code_evidence(self, finding: dict) -> Tuple[Optional[float], str]:
         """Verify that claimed sink/source appear near claimed lines.
 
@@ -1283,6 +1342,16 @@ class SemanticValidator:
                 # Sometimes sinks are language constructs (echo/include/require)
                 constructs = {"echo", "include", "require", "include_once", "require_once", "print"}
                 if sink_short not in constructs:
+                    # sink_function is often the *enclosing* function while sink_line_number points
+                    # at the call site inside it. Elementor's feedback BAC declared handle_submit()
+                    # at line 33 with the sink call at 43 -- ten lines apart, so the +/-6 window
+                    # missed it and a fully accurate finding was scored as unverifiable.
+                    enclosing_line = self._enclosing_function_line(lines, sink_short, sink_line)
+                    if enclosing_line is not None:
+                        return 0.85, (
+                            f"sink function '{sink_short}' declared at line {enclosing_line}; "
+                            f"line {sink_line} lies inside its body"
+                        )
                     return 0.25, f"sink function '{sink_short}' not found near line {sink_line}"
 
         # Optional: source location check

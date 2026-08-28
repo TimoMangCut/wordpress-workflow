@@ -711,7 +711,38 @@ def pack_candidate_bundles(candidates: list[dict]) -> list[dict]:
     return bundles
 
 
-def build_bundle_document(bundle: dict, ir: dict, semgrep_hits: list[dict], psalm_hits: list[dict]) -> dict:
+def select_blind_spots(ir: dict, focus_files: set, bundle_index: int, bundle_total: int) -> tuple[list[dict], list[dict]]:
+    """Pick the coverage gaps and unresolved hooks this bundle should be told about.
+
+    Phase 1 computes both, the tier policy escalates on their counts, but every bundle used to
+    receive an empty list -- so the analysts never saw the pipeline's own list of what it could
+    not resolve. File-matched entries go to the bundle that owns the file. The rest matter more,
+    not less: a coverage gap means "security code with no resolvable entry point", so by
+    definition it belongs to no bundle's focus files and would otherwise reach nobody. Those are
+    sharded deterministically so each lands with exactly one agent instead of being dropped.
+    """
+    total = max(int(bundle_total or 1), 1)
+    index = max(int(bundle_index or 0), 0)
+
+    def split(items: object) -> list[dict]:
+        entries = [item for item in (items or []) if isinstance(item, dict)]
+        matched, unmatched = [], []
+        for item in entries:
+            if item.get("file") in focus_files:
+                matched.append({**item, "selection": "file_match"})
+            else:
+                unmatched.append(item)
+        sharded = [
+            {**item, "selection": "sharded_blind_spot"}
+            for position, item in enumerate(unmatched)
+            if position % total == index % total
+        ]
+        return matched + sharded
+
+    return split(ir.get("coverage_gaps")), split(ir.get("unresolved_hooks"))
+
+
+def build_bundle_document(bundle: dict, ir: dict, semgrep_hits: list[dict], psalm_hits: list[dict], bundle_index: int = 0, bundle_total: int = 1) -> dict:
     semgrep_by_key = {hit["key"]: hit for hit in semgrep_hits}
     psalm_by_key = {hit["key"]: hit for hit in psalm_hits}
     ep_ids = {ep_id for candidate in bundle["candidates"] for ep_id in candidate.get("entry_point_ids", [])}
@@ -735,6 +766,10 @@ def build_bundle_document(bundle: dict, ir: dict, semgrep_hits: list[dict], psal
         if anomaly.get("entry_point_id") in ep_ids or anomaly.get("id") in anomaly_ids
     ]
 
+    bundle_coverage_gaps, bundle_unresolved_hooks = select_blind_spots(
+        ir, set(source_focus_files), bundle_index, bundle_total
+    )
+
     return {
         "metadata": ir.get("metadata", {}),
         "bundle": {
@@ -754,8 +789,8 @@ def build_bundle_document(bundle: dict, ir: dict, semgrep_hits: list[dict], psal
         "sinks": sinks,
         "guards": guards,
         "anomalies": anomalies,
-        "unresolved_hooks": [],
-        "coverage_gaps": [],
+        "unresolved_hooks": bundle_unresolved_hooks,
+        "coverage_gaps": bundle_coverage_gaps,
         "semgrep_results": [semgrep_by_key[key] for key in sorted(semgrep_keys) if key in semgrep_by_key],
         "psalm_results": [psalm_by_key[key] for key in sorted(psalm_keys) if key in psalm_by_key],
         "source_focus_files": source_focus_files,
@@ -900,8 +935,10 @@ def main() -> None:
 
     remove_stale_candidate_bundles(bundle_dir)
     worker_agent_ids = []
-    for bundle in bundles:
-        bundle_doc = build_bundle_document(bundle, ir, normalized_semgrep, normalized_psalm)
+    for bundle_index, bundle in enumerate(bundles):
+        bundle_doc = build_bundle_document(
+            bundle, ir, normalized_semgrep, normalized_psalm, bundle_index, len(bundles)
+        )
         validate_bundle(bundle_doc, bundle_schema, bundle["bundle_id"])
         bundle_out = layout.phase2_candidate_bundle(slug, bundle["agent_id"])
         write_json(str(bundle_out), bundle_doc)
@@ -922,27 +959,27 @@ def main() -> None:
     if worker_provider == "codex":
         worker_model = os.environ.get("PHASE2_WORKER_CODEX_MODEL", "gpt-5.4")
     else:
-        worker_model = os.environ.get("PHASE2_WORKER_CLAUDE_MODEL", "claude-sonnet-4.6")
+        worker_model = os.environ.get("PHASE2_WORKER_CLAUDE_MODEL", "claude-opus-4-7")
     reviewer_provider = os.environ.get("PHASE2_REVIEWER_PROVIDER", "codex")
     reviewer_model = ""
     if reviewer_provider == "codex":
         reviewer_model = os.environ.get("PHASE2_REVIEWER_CODEX_MODEL", "gpt-5.4")
     elif reviewer_provider == "claude":
-        reviewer_model = os.environ.get("PHASE2_REVIEWER_CLAUDE_MODEL", "claude-opus-4.6")
+        reviewer_model = os.environ.get("PHASE2_REVIEWER_CLAUDE_MODEL", "claude-opus-4-7")
     cluster_synth_provider = os.environ.get("PHASE2_CLUSTER_SYNTH_PROVIDER", "codex")
     if cluster_synth_provider == "codex":
         cluster_synth_model = os.environ.get("PHASE2_CLUSTER_SYNTH_CODEX_MODEL", "gpt-5.4")
     else:
-        cluster_synth_model = os.environ.get("PHASE2_CLUSTER_SYNTH_CLAUDE_MODEL", "claude-sonnet-4.6")
+        cluster_synth_model = os.environ.get("PHASE2_CLUSTER_SYNTH_CLAUDE_MODEL", "claude-opus-4-7")
         if "opus" in cluster_synth_model.lower():
-            cluster_synth_model = "claude-sonnet-4.6"
+            cluster_synth_model = "claude-opus-4-7"
     cluster_challenger_provider = os.environ.get("PHASE2_CLUSTER_CHALLENGER_PROVIDER", "codex")
     if cluster_challenger_provider == "codex":
         cluster_challenger_model = os.environ.get("PHASE2_CLUSTER_CHALLENGER_CODEX_MODEL", "gpt-5.4")
     else:
-        cluster_challenger_model = os.environ.get("PHASE2_CLUSTER_CHALLENGER_CLAUDE_MODEL", "claude-sonnet-4.6")
+        cluster_challenger_model = os.environ.get("PHASE2_CLUSTER_CHALLENGER_CLAUDE_MODEL", "claude-opus-4-7")
         if "opus" in cluster_challenger_model.lower():
-            cluster_challenger_model = "claude-sonnet-4.6"
+            cluster_challenger_model = "claude-opus-4-7"
     default_provider = os.environ.get("PHASE2_PRIMARY_PROVIDER", "codex")
     timeout_seconds = int(os.environ.get("PHASE2_PROVIDER_TIMEOUT_SECONDS", "600"))
     bundle_review_enabled = env_bool("PHASE2_BUNDLE_REVIEW_ENABLED", True)

@@ -34,6 +34,8 @@ except ImportError:  # pragma: no cover - direct script execution
 _SCRIPT_DIR = Path(__file__).resolve().parent
 _ROOT_DIR = _SCRIPT_DIR.parent.parent  # tools/bin -> tools -> root
 CLAUDE_SAFE_TOOLS = os.environ.get("PHASE3_CLAUDE_SAFE_TOOLS", "Read,Grep,Glob")
+# Reasoning effort for every claude CLI call (low|medium|high|xhigh|max).
+CLAUDE_EFFORT = os.environ.get("CLAUDE_EFFORT", "xhigh")
 PHASE3_JSON_TAG = "PHASE3_REVIEW_JSON"
 PHASE3_MARKDOWN_TAG = "PHASE3_REVIEW_MARKDOWN"
 
@@ -600,12 +602,13 @@ def main() -> int:
                     cmd = [
                         claude_bin,
                         "-p",
-                        "--bare",
                         "--disable-slash-commands",
                         "--permission-mode",
                         "bypassPermissions",
                         "--tools",
                         CLAUDE_SAFE_TOOLS,
+                        "--effort",
+                        CLAUDE_EFFORT,
                         "--verbose",
                         "--output-format",
                         "stream-json",

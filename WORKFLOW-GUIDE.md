@@ -139,6 +139,32 @@ Ghi chú:
 
 Trước khi chạy Phase 2/3, kiểm tra session Codex còn quota.
 
+### 2.5 Claude Auth — subscription, không dùng API key
+
+Pipeline không bao giờ gọi Anthropic API trực tiếp. Mọi lượt Claude đều shell ra `claude` CLI,
+nên auth chính là session đang login của CLI (subscription).
+
+Điều kiện đủ:
+
+```bash
+claude -p "say OK"     # phải in ra OK; nếu báo "Not logged in" thì chạy claude rồi /login
+```
+
+Ghi chú quan trọng — **không thêm lại cờ `--bare`** vào bất kỳ lệnh `claude` nào trong `tools/bin/`.
+Theo `claude --help` (CLI 2.1.118), `--bare` ép auth **chỉ** qua `ANTHROPIC_API_KEY` hoặc `apiKeyHelper`
+và **không bao giờ đọc OAuth/keychain**. Trước đây pipeline gắn `--bare` trên mọi call, nên toàn bộ
+provider `claude` chết với `Not logged in` khi không có API key. Cờ này đã được gỡ ở:
+`run-phase2.sh`, `orchestrate-agents.sh`, `run-phase2-clusters.py`, `phase3_llm_review.py`.
+
+Đánh đổi khi bỏ `--bare`: CLI quay lại auto-discovery `CLAUDE.md` (project + global), hooks, LSP,
+plugin sync. Repo này không cấu hình hook nào, nên tác động thực tế chỉ là context của worker/reviewer
+có thêm `CLAUDE.md`. Nếu sửa `CLAUDE.md` thì output Phase 2 có thể đổi — đây là input của pipeline,
+không còn là file tài liệu thuần túy.
+
+Model id: CLI hiện chỉ resolve `claude-sonnet-5` / `claude-opus-5` (hoặc alias `sonnet` / `opus`).
+`claude-sonnet-4.6` và `claude-opus-4.6` đã bị retire — gọi vào sẽ nhận
+`There's an issue with the selected model`.
+
 ### 2.6 Claude Config + Multi-Provider Mode
 
 Pipeline hiện đọc cấu hình LLM từ:

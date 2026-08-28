@@ -44,6 +44,8 @@ CHALLENGE_TIMEOUT_SECONDS = int(os.environ.get("PHASE2_CLUSTER_CHALLENGE_TIMEOUT
 CODEX_BIN = os.environ.get("CODEX_BIN", "codex")
 CLAUDE_BIN = os.environ.get("CLAUDE_BIN", "claude")
 CLAUDE_SAFE_TOOLS = os.environ.get("PHASE2_CLUSTER_CLAUDE_SAFE_TOOLS", "Read,Grep,Glob")
+# Reasoning effort for every claude CLI call (low|medium|high|xhigh|max).
+CLAUDE_EFFORT = os.environ.get("CLAUDE_EFFORT", "xhigh")
 
 
 def load_json(path: Path) -> dict:
@@ -184,8 +186,40 @@ def normalize_cluster_output(path: Path, stage: str, cluster_pack: dict) -> None
     for key in ("suggested_actions", "proposed_links", "objections", "closure_packets", "open_questions", "missing_evidence", "expansion_attempts"):
         if not isinstance(data.get(key), list):
             data[key] = []
+    def normalize_expansion_attempts(items: object) -> list[dict]:
+        # Models reliably report what they probed and what came of it, but often label the
+        # "why" as `note`/`target` instead of the schema's required `reason`. Recover it
+        # rather than discarding an otherwise complete synthesis.
+        if not isinstance(items, list):
+            return []
+        normalized: list[dict] = []
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            entry = dict(item)
+            reason = entry.get("reason")
+            if not isinstance(reason, str) or not reason.strip():
+                for fallback_key in ("note", "rationale", "description", "target"):
+                    value = entry.get(fallback_key)
+                    if isinstance(value, str) and value.strip():
+                        reason = value.strip()
+                        break
+            if not isinstance(reason, str) or not reason.strip():
+                reason = "No reason recorded by the synthesis stage."
+            entry["reason"] = reason
+            result = entry.get("result")
+            if not isinstance(result, str) or not result.strip():
+                result = "unspecified"
+            entry["result"] = result
+            opened_files = entry.get("opened_files")
+            if opened_files is not None and not isinstance(opened_files, list):
+                entry.pop("opened_files", None)
+            normalized.append(entry)
+        return normalized
+
     data["open_questions"] = normalize_open_questions(data.get("open_questions"))
     data["missing_evidence"] = normalize_missing_evidence(data.get("missing_evidence"))
+    data["expansion_attempts"] = normalize_expansion_attempts(data.get("expansion_attempts"))
     data["summary"]["open_questions_count"] = len(data["open_questions"])
     data["summary"]["closure_packets_count"] = len(data.get("closure_packets", []))
     data["summary"]["material_links_found"] = len(data.get("proposed_links", []))
@@ -450,12 +484,13 @@ def run_claude(prompt: str, model: str, log_path: Path, raw_log_path: Path, last
     cmd = [
         CLAUDE_BIN,
         "-p",
-        "--bare",
         "--disable-slash-commands",
         "--permission-mode",
         "bypassPermissions",
         "--tools",
         CLAUDE_SAFE_TOOLS,
+        "--effort",
+        CLAUDE_EFFORT,
         "--verbose",
         "--output-format",
         "stream-json",
@@ -554,9 +589,9 @@ def cluster_models(cluster_doc: dict) -> tuple[tuple[str, str], tuple[str, str]]
     challenge_provider = (challenger.get("provider") or "codex").lower()
     challenge_model = challenger.get("model") or "gpt-5.4"
     if synth_provider == "claude" and "opus" in synth_model.lower():
-        synth_model = "claude-sonnet-4.6"
+        synth_model = "claude-opus-4-7"
     if challenge_provider == "claude" and "opus" in challenge_model.lower():
-        challenge_model = "claude-sonnet-4.6"
+        challenge_model = "claude-opus-4-7"
     return (synth_provider, synth_model), (challenge_provider, challenge_model)
 
 

@@ -29,3 +29,19 @@
 .claude/settings.local.json
 *.local.toml
 *.local.json
+
+# Python bytecode
+__pycache__/
+*.pyc
+
+# Generated per Psalm run by tools/bin/generate_missing_class_stubs.py
+/tools/config/psalm-generated-stubs.php
+
+# Local backups taken before a forced overwrite
+*.serial-backup
+
+# Local python venv
+/pyenv-codex-lb/
+
+# Scratch
+/zz.php

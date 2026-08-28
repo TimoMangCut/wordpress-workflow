@@ -55,6 +55,9 @@ LLM_PROVIDERS="${LLM_PROVIDERS:-${LLM_PROVIDER:-}}"
 CODEX_BIN="${CODEX_BIN:-codex}"
 CODEX_MODEL="${CODEX_MODEL:-${LLM_MODEL:-}}"
 CLAUDE_BIN="${CLAUDE_BIN:-claude}"
+# Reasoning effort for every claude CLI call (low|medium|high|xhigh|max).
+CLAUDE_EFFORT="${CLAUDE_EFFORT:-xhigh}"
+export CLAUDE_EFFORT
 CLAUDE_MODEL="${CLAUDE_MODEL:-${LLM_MODEL:-}}"
 CLAUDE_SAFE_TOOLS="${CLAUDE_SAFE_TOOLS:-Read,Grep,Glob,Write}"
 PHASE2_PRIMARY_PROVIDER="${PHASE2_PRIMARY_PROVIDER:-}"
@@ -67,6 +70,21 @@ PHASE2_REVIEWER_BATCH_RETRY_LIMIT="${PHASE2_REVIEWER_BATCH_RETRY_LIMIT:-3}"
 PHASE2_REVIEWER_BATCH_RETRY_BACKOFF_SECONDS="${PHASE2_REVIEWER_BATCH_RETRY_BACKOFF_SECONDS:-3}"
 PHASE2_ENABLE_CLUSTER_CONSENSUS="${PHASE2_ENABLE_CLUSTER_CONSENSUS:-true}"
 PHASE2_CLUSTER_LIMIT="${PHASE2_CLUSTER_LIMIT:-}"
+# Provider precedence: CLI flag > operator env (.claude/settings*.json) > Wave 6 tier policy > default.
+# The default expansions below erase the difference between "operator set this" and "script defaulted it",
+# so record the origin first. These snapshots are read-only after this point; the per-plugin resolver
+# must never write back into them or provider N-1 leaks into plugin N in batch loops.
+PHASE2_WORKER_PROVIDER_FROM_ENV=false
+PHASE2_REVIEWER_PROVIDER_FROM_ENV=false
+PHASE2_EXPLORE_PROVIDER_FROM_ENV=false
+PHASE2_CLUSTER_SYNTH_PROVIDER_FROM_ENV=false
+PHASE2_CLUSTER_CHALLENGER_PROVIDER_FROM_ENV=false
+if [ -n "${PHASE2_WORKER_PROVIDER:-}" ]; then PHASE2_WORKER_PROVIDER_FROM_ENV=true; fi
+if [ -n "${PHASE2_REVIEWER_PROVIDER:-}" ]; then PHASE2_REVIEWER_PROVIDER_FROM_ENV=true; fi
+if [ -n "${PHASE2_EXPLORE_PROVIDER:-}" ]; then PHASE2_EXPLORE_PROVIDER_FROM_ENV=true; fi
+if [ -n "${PHASE2_CLUSTER_SYNTH_PROVIDER:-}" ]; then PHASE2_CLUSTER_SYNTH_PROVIDER_FROM_ENV=true; fi
+if [ -n "${PHASE2_CLUSTER_CHALLENGER_PROVIDER:-}" ]; then PHASE2_CLUSTER_CHALLENGER_PROVIDER_FROM_ENV=true; fi
+
 PHASE2_WORKER_PROVIDER="${PHASE2_WORKER_PROVIDER:-codex}"
 PHASE2_REVIEWER_PROVIDER="${PHASE2_REVIEWER_PROVIDER:-codex}"
 PHASE2_EXPLORE_PROVIDER="${PHASE2_EXPLORE_PROVIDER:-}"
@@ -76,13 +94,13 @@ PHASE2_WORKER_EXECUTION_MODE="${PHASE2_WORKER_EXECUTION_MODE:-adaptive}"
 PHASE2_WORKER_CHUNK_PARALLEL_LIMIT="${PHASE2_WORKER_CHUNK_PARALLEL_LIMIT:-4}"
 PHASE2_CHUNKED_RESUME_MISSING_ONLY="${PHASE2_CHUNKED_RESUME_MISSING_ONLY:-false}"
 PHASE2_WORKER_CODEX_MODEL="${PHASE2_WORKER_CODEX_MODEL:-gpt-5.4}"
-PHASE2_WORKER_CLAUDE_MODEL="${PHASE2_WORKER_CLAUDE_MODEL:-${CLAUDE_MODEL:-claude-sonnet-4.6}}"
+PHASE2_WORKER_CLAUDE_MODEL="${PHASE2_WORKER_CLAUDE_MODEL:-${CLAUDE_MODEL:-claude-opus-4-7}}"
 PHASE2_REVIEWER_CODEX_MODEL="${PHASE2_REVIEWER_CODEX_MODEL:-gpt-5.4}"
-PHASE2_REVIEWER_CLAUDE_MODEL="${PHASE2_REVIEWER_CLAUDE_MODEL:-claude-opus-4.6}"
+PHASE2_REVIEWER_CLAUDE_MODEL="${PHASE2_REVIEWER_CLAUDE_MODEL:-claude-opus-4-7}"
 PHASE2_CLUSTER_SYNTH_CODEX_MODEL="${PHASE2_CLUSTER_SYNTH_CODEX_MODEL:-gpt-5.4}"
-PHASE2_CLUSTER_SYNTH_CLAUDE_MODEL="${PHASE2_CLUSTER_SYNTH_CLAUDE_MODEL:-${CLAUDE_MODEL:-claude-sonnet-4.6}}"
+PHASE2_CLUSTER_SYNTH_CLAUDE_MODEL="${PHASE2_CLUSTER_SYNTH_CLAUDE_MODEL:-${CLAUDE_MODEL:-claude-opus-4-7}}"
 PHASE2_CLUSTER_CHALLENGER_CODEX_MODEL="${PHASE2_CLUSTER_CHALLENGER_CODEX_MODEL:-gpt-5.4}"
-PHASE2_CLUSTER_CHALLENGER_CLAUDE_MODEL="${PHASE2_CLUSTER_CHALLENGER_CLAUDE_MODEL:-${CLAUDE_MODEL:-claude-sonnet-4.6}}"
+PHASE2_CLUSTER_CHALLENGER_CLAUDE_MODEL="${PHASE2_CLUSTER_CHALLENGER_CLAUDE_MODEL:-${CLAUDE_MODEL:-claude-opus-4-7}}"
 PHASE2_MAX_REVIEW_ROUNDS="${PHASE2_MAX_REVIEW_ROUNDS:-1}"
 PHASE2_ENABLE_FORCED_EXPLORATION="${PHASE2_ENABLE_FORCED_EXPLORATION:-true}"
 PHASE2_MAX_EXPLORATION_CANDIDATES="${PHASE2_MAX_EXPLORATION_CANDIDATES:-3}"
@@ -145,7 +163,7 @@ Options:
   --worker-codex-model <name>   Codex model for worker role (default: gpt-5.4).
   --worker-claude-model <name>  Claude model for worker role.
   --reviewer-codex-model <name> Codex model for reviewer role.
-  --reviewer-claude-model <name> Claude model for reviewer role (default: claude-opus-4.6).
+  --reviewer-claude-model <name> Claude model for reviewer role (default: claude-opus-4-7).
   --max-review-rounds <N> Worker/reviewer loop rounds (default: 1).
   --forced-exploration         Run one final reviewer-driven expansion round (default: on).
   --no-forced-exploration      Skip the final expansion round.
@@ -706,6 +724,27 @@ if [ "$PROVIDERS_EXPLICIT" != true ] && [ "$WITH_CLAUDE" != true ]; then
     fi
     LLM_PROVIDERS="$(normalize_providers "$local_provider_list")"
     IFS=',' read -r -a LLM_PROVIDER_ARRAY <<< "$LLM_PROVIDERS"
+fi
+
+# Frozen provider baseline: CLI flags have been applied, no plugin has been resolved yet.
+# phase2_resolve_stage_providers reads these instead of the mutable PHASE2_*_PROVIDER globals,
+# which it rewrites per plugin.
+PHASE2_BASELINE_WORKER_PROVIDER="$PHASE2_WORKER_PROVIDER"
+PHASE2_BASELINE_REVIEWER_PROVIDER="$PHASE2_REVIEWER_PROVIDER"
+PHASE2_BASELINE_EXPLORE_PROVIDER="$PHASE2_EXPLORE_PROVIDER"
+PHASE2_BASELINE_CLUSTER_SYNTH_PROVIDER="$PHASE2_CLUSTER_SYNTH_PROVIDER"
+PHASE2_BASELINE_CLUSTER_CHALLENGER_PROVIDER="$PHASE2_CLUSTER_CHALLENGER_PROVIDER"
+
+# A role is operator-pinned when the operator named it: a role flag, an explicit provider list
+# (--provider/--providers/--with-claude), or an env value from .claude/settings*.json.
+# Pinned roles are exempt from Wave 6 tier reassignment.
+PHASE2_WORKER_PROVIDER_PINNED=false
+PHASE2_REVIEWER_PROVIDER_PINNED=false
+if [ "$WORKER_PROVIDER_EXPLICIT" = true ] || [ "$PROVIDERS_EXPLICIT" = true ] || [ "$WITH_CLAUDE" = true ] || [ "$PHASE2_WORKER_PROVIDER_FROM_ENV" = true ]; then
+    PHASE2_WORKER_PROVIDER_PINNED=true
+fi
+if [ "$REVIEWER_PROVIDER_EXPLICIT" = true ] || [ "$PROVIDERS_EXPLICIT" = true ] || [ "$WITH_CLAUDE" = true ] || [ "$PHASE2_REVIEWER_PROVIDER_FROM_ENV" = true ]; then
+    PHASE2_REVIEWER_PROVIDER_PINNED=true
 fi
 
 provider_in_list() {
@@ -2364,6 +2403,7 @@ tail_lower = tail_text.lower()
 patterns = [
     ("provider timed out", "provider_timeout"),
     ("timed out", "provider_timeout"),
+    ("hit your limit", "provider_usage_limit"),
     ("usage limit", "provider_usage_limit"),
     ("rate limit", "provider_rate_limit"),
     ("not found", "provider_binary_not_found"),
@@ -2400,14 +2440,108 @@ else:
 PY
 }
 
+# --- Reviewer batch concurrency (bash 3.2: no `wait -n`, no associative arrays) ---
+PHASE2_REVIEWER_BATCH_PIDS=""
+PHASE2_REVIEWER_RUNNING_COUNT=0
+
+phase2_reviewer_prune_pids() {
+    local pid alive=0 remaining=""
+    for pid in $PHASE2_REVIEWER_BATCH_PIDS; do
+        [ -n "$pid" ] || continue
+        if kill -0 "$pid" 2>/dev/null; then
+            alive=$((alive + 1))
+            remaining="${remaining} ${pid}"
+        fi
+    done
+    PHASE2_REVIEWER_BATCH_PIDS="$remaining"
+    PHASE2_REVIEWER_RUNNING_COUNT="$alive"
+}
+
+phase2_reviewer_throttle() {
+    local limit="$1"
+    phase2_reviewer_prune_pids
+    while [ "$PHASE2_REVIEWER_RUNNING_COUNT" -ge "$limit" ]; do
+        sleep 2
+        phase2_reviewer_prune_pids
+    done
+}
+
+phase2_reviewer_parallel_limit() {
+    local limit="${PHASE2_REVIEWER_BATCH_PARALLEL_LIMIT:-${PHASE2_WORKER_CHUNK_PARALLEL_LIMIT:-4}}"
+    case "$limit" in
+        ''|*[!0-9]*) limit=4 ;;
+    esac
+    [ "$limit" -lt 1 ] && limit=1
+    printf '%s' "$limit"
+}
+
+# Runs one reviewer batch to completion (including retries) and records the outcome in a
+# status file, because a background subshell cannot hand state back to the caller.
+# Status format: <ok|fail>|<duration_seconds>|<reason>
+phase2_run_reviewer_batch() {
+    local slug="$1" round="$2" review_mode="$3" provider="$4" system_prompt="$5" batch_prompt="$6"
+    local batch_errlog="$7" model="$8" timeout_seconds="$9" batch_output_path="${10}"
+    local worker_output_path="${11}" batch_id="${12}" status_file="${13}"
+    local retry_count=0 duration=0 rc=0 reason=""
+    local retry_limit="${PHASE2_REVIEWER_BATCH_RETRY_LIMIT:-3}"
+
+    while true; do
+        rm -f "$batch_output_path"
+        rc=0
+        run_llm_prompt "$slug" "review-r${round}-${review_mode}-${batch_id}" "$provider" \
+            "$system_prompt" "$batch_prompt" "$batch_errlog" "$model" "$timeout_seconds" || rc=$?
+        duration=$((duration + ${PHASE2_LAST_DURATION_SECONDS:-0}))
+
+        if [ "$rc" -eq 0 ]; then
+            # A successful provider call can still emit a schema-invalid batch (e.g. a complete
+            # review that omits review_status). Re-prompt instead of losing the whole round.
+            if validate_phase2_review_output "$batch_output_path" "$review_mode" "$batch_errlog" "$worker_output_path"; then
+                printf 'ok|%s|\n' "$duration" > "$status_file"
+                return 0
+            fi
+            if [ "$retry_count" -lt "$retry_limit" ]; then
+                retry_count=$((retry_count + 1))
+                printf '[WARN] reviewer %s batch %s schema_invalid; retry %s/%s\n' \
+                    "$review_mode" "$batch_id" "$retry_count" "$retry_limit" >> "$batch_errlog"
+                phase2_sleep_if_positive "${PHASE2_REVIEWER_BATCH_RETRY_BACKOFF_SECONDS:-3}"
+                continue
+            fi
+            printf 'fail|%s|schema_invalid_after_%s_retries\n' "$duration" "$retry_limit" > "$status_file"
+            return 1
+        fi
+
+        if accept_phase2_review_output_after_failure "$batch_output_path" "$review_mode" "$batch_errlog" "$rc" "$worker_output_path"; then
+            printf 'ok|%s|\n' "$duration" > "$status_file"
+            return 0
+        fi
+        reason="$(summarize_provider_errlog "$batch_errlog")"
+        if phase2_reviewer_batch_retryable_failure "$provider" "$batch_errlog" && [ "$retry_count" -lt "$retry_limit" ]; then
+            retry_count=$((retry_count + 1))
+            printf '[WARN] reviewer %s batch %s %s; retry %s/%s\n' \
+                "$review_mode" "$batch_id" "$reason" "$retry_count" "$retry_limit" >> "$batch_errlog"
+            phase2_sleep_if_positive "${PHASE2_REVIEWER_BATCH_RETRY_BACKOFF_SECONDS:-3}"
+            continue
+        fi
+        printf 'fail|%s|%s\n' "$duration" "$reason" > "$status_file"
+        if [ "$reason" = "provider_usage_limit" ]; then
+            : > "${PHASE2_QUOTA_SENTINEL:-/dev/null}"
+        fi
+        return 1
+    done
+}
+
 phase2_reviewer_batch_retryable_failure() {
     local provider="$1"
     local errlog="$2"
     local failure_reason
     failure_reason="$(summarize_provider_errlog "$errlog")"
-    if [ "$provider" = "codex" ] && { [ "$failure_reason" = "provider_usage_limit" ] || [ "$failure_reason" = "provider_rate_limit" ]; }; then
-        return 0
-    fi
+    # Transient provider conditions, not provider-specific. This used to be gated on
+    # provider=codex, which meant an all-Claude topology never retried a single batch.
+    case "$failure_reason" in
+        provider_usage_limit|provider_rate_limit|provider_timeout)
+            return 0
+            ;;
+    esac
     return 1
 }
 
@@ -2877,8 +3011,9 @@ run_llm_prompt() {
         printf '%s\n' "$system_prompt" > "$system_prompt_file"
         (
             cd "$ROOT_DIR"
-            local cmd=("$bin" -p --bare --disable-slash-commands --permission-mode bypassPermissions --tools "$CLAUDE_SAFE_TOOLS"
+            local cmd=("$bin" -p --disable-slash-commands --permission-mode bypassPermissions --tools "$CLAUDE_SAFE_TOOLS"
                        --verbose
+                       --effort "$CLAUDE_EFFORT"
                        --output-format stream-json
                        --include-partial-messages)
             if [ -n "$model" ]; then
@@ -3266,6 +3401,10 @@ run_phase2_review_round() {
     local batch_plan_path batch_plan_rel batch_id batch_input_rel batch_output_rel batch_packet_count batch_load
     local batch_errlog batch_prompt batch_output_path total_reviewer_duration batch_total batch_index batch_failure_reason
     local batch_retry_count batch_retry_limit
+    local reviewer_parallel_limit reviewer_batch_failures status_file status_entry
+    local status_path status_rest status_batch_id status_index status_line
+    local status_state status_tail status_duration status_reason
+    local -a reviewer_batch_status_files
 
     review_output_path="$(phase2_review_output_path "$slug" "$round")"
     review_output_rel="$(phase2_review_output_rel "$slug" "$round")"
@@ -3295,6 +3434,13 @@ run_phase2_review_round() {
         log_info "Reviewer core round ${round} plan: ${batch_total} batch(es)$(phase2_progress_suffix 40)"
         total_reviewer_duration=0
         batch_index=0
+        reviewer_parallel_limit="$(phase2_reviewer_parallel_limit)"
+        reviewer_batch_status_files=()
+        PHASE2_REVIEWER_BATCH_PIDS=""
+        PHASE2_QUOTA_SENTINEL="$(phase2_loop_errlog_path "$slug" reviewer "$provider" "$round" "${review_mode}.quota-exhausted")"
+        rm -f "$PHASE2_QUOTA_SENTINEL"
+        export PHASE2_QUOTA_SENTINEL
+        log_info "Reviewer core round ${round}: fan-out parallel_limit=${reviewer_parallel_limit}"
         while IFS='|' read -r batch_id batch_input_rel batch_output_rel batch_packet_count batch_load; do
             [ -n "$batch_id" ] || continue
             batch_index=$((batch_index + 1))
@@ -3315,41 +3461,59 @@ run_phase2_review_round() {
                 printf '[WARN] reviewer core batch %s existing output invalid; rerunning output=%s\n' \
                     "$batch_id" "$batch_output_rel" >> "$errlog"
             fi
-            batch_retry_count=0
-            batch_retry_limit="${PHASE2_REVIEWER_BATCH_RETRY_LIMIT:-3}"
-            while true; do
-                rm -f "$batch_output_path"
-                if run_llm_prompt "$slug" "review-r${round}-${review_mode}-${batch_id}" "$provider" "$system_prompt" "$batch_prompt" "$batch_errlog" "$model" "$timeout_seconds"; then
-                    break
-                else
-                    local batch_rc=$?
-                    if accept_phase2_review_output_after_failure "$batch_output_path" "$review_mode" "$batch_errlog" "$batch_rc" "$worker_output_path"; then
-                        break
-                    fi
-                    batch_failure_reason="$(summarize_provider_errlog "$batch_errlog")"
-                    if phase2_reviewer_batch_retryable_failure "$provider" "$batch_errlog" && [ "$batch_retry_count" -lt "$batch_retry_limit" ]; then
-                        batch_retry_count=$((batch_retry_count + 1))
-                        printf '[WARN] reviewer core batch %s retrying reason=%s retry=%s/%s errlog=%s\n' \
-                            "$batch_id" "$batch_failure_reason" "$batch_retry_count" "$batch_retry_limit" "$batch_errlog" >> "$errlog"
-                        log_warn "Reviewer core batch ${batch_index}/${batch_total} hit ${batch_failure_reason}; retry ${batch_retry_count}/${batch_retry_limit}$(phase2_progress_suffix "$(phase2_progress_for_review_batch "$review_mode" "$batch_index" "$batch_total")")"
-                        phase2_sleep_if_positive "${PHASE2_REVIEWER_BATCH_RETRY_BACKOFF_SECONDS:-3}"
-                        continue
-                    fi
-                    printf '[ERROR] reviewer core batch %s failed reason=%s errlog=%s\n' \
-                        "$batch_id" "$batch_failure_reason" "$batch_errlog" >> "$errlog"
-                    log_warn "Reviewer core batch ${batch_index}/${batch_total} failed: ${batch_failure_reason}$(phase2_progress_suffix "$(phase2_progress_for_review_batch "$review_mode" "$batch_index" "$batch_total")")"
-                    return 1
-                fi
-            done
-            total_reviewer_duration=$((total_reviewer_duration + ${PHASE2_LAST_DURATION_SECONDS:-0}))
-            if ! validate_phase2_review_output "$batch_output_path" "$review_mode" "$batch_errlog" "$worker_output_path"; then
-                batch_failure_reason="$(summarize_provider_errlog "$batch_errlog")"
-                printf '[ERROR] reviewer core batch %s invalid reason=%s errlog=%s\n' \
-                    "$batch_id" "$batch_failure_reason" "$batch_errlog" >> "$errlog"
-                log_warn "Reviewer core batch ${batch_index}/${batch_total} invalid: ${batch_failure_reason}$(phase2_progress_suffix "$(phase2_progress_for_review_batch "$review_mode" "$batch_index" "$batch_total")")"
-                return 1
+            if [ -n "${PHASE2_QUOTA_SENTINEL:-}" ] && [ -f "$PHASE2_QUOTA_SENTINEL" ]; then
+                printf '[ERROR] reviewer %s: subscription quota exhausted; not launching batch %s\n' \
+                    "$review_mode" "$batch_id" >> "$errlog"
+                continue
             fi
+            status_file="${batch_errlog}.status"
+            rm -f "$status_file"
+            reviewer_batch_status_files+=("${status_file}|${batch_id}|${batch_index}")
+            phase2_reviewer_throttle "$reviewer_parallel_limit"
+            phase2_run_reviewer_batch "$slug" "$round" "$review_mode" "$provider" "$system_prompt" \
+                "$batch_prompt" "$batch_errlog" "$model" "$timeout_seconds" "$batch_output_path" \
+                "$worker_output_path" "$batch_id" "$status_file" &
+            PHASE2_REVIEWER_BATCH_PIDS="${PHASE2_REVIEWER_BATCH_PIDS} $!"
         done < <(phase2_review_batch_entries "$batch_plan_path")
+
+        wait || true
+        PHASE2_REVIEWER_BATCH_PIDS=""
+
+        reviewer_batch_failures=0
+        for status_entry in "${reviewer_batch_status_files[@]}"; do
+            [ -n "$status_entry" ] || continue
+            status_path="${status_entry%%|*}"
+            status_rest="${status_entry#*|}"
+            status_batch_id="${status_rest%%|*}"
+            status_index="${status_rest#*|}"
+            if [ ! -f "$status_path" ]; then
+                printf '[ERROR] reviewer %s batch %s produced no status file\n' "$review_mode" "$status_batch_id" >> "$errlog"
+                log_warn "Reviewer ${review_mode} batch ${status_index}/${batch_total} (${status_batch_id}) produced no status file"
+                reviewer_batch_failures=$((reviewer_batch_failures + 1))
+                continue
+            fi
+            status_line="$(cat "$status_path" 2>/dev/null)"
+            status_state="${status_line%%|*}"
+            status_tail="${status_line#*|}"
+            status_duration="${status_tail%%|*}"
+            status_reason="${status_tail#*|}"
+            case "$status_duration" in
+                ''|*[!0-9]*) status_duration=0 ;;
+            esac
+            total_reviewer_duration=$((total_reviewer_duration + status_duration))
+            if [ "$status_state" = "ok" ]; then
+                log_info "Reviewer ${review_mode} batch ${status_index}/${batch_total}: ${status_batch_id} done (${status_duration}s)$(phase2_progress_suffix "$(phase2_progress_for_review_batch "$review_mode" "$status_index" "$batch_total")")"
+            else
+                printf '[ERROR] reviewer %s batch %s failed reason=%s errlog=%s\n' \
+                    "$review_mode" "$status_batch_id" "$status_reason" "${status_path%.status}" >> "$errlog"
+                log_warn "Reviewer ${review_mode} batch ${status_index}/${batch_total} failed: ${status_reason}"
+                reviewer_batch_failures=$((reviewer_batch_failures + 1))
+            fi
+        done
+        if [ "$reviewer_batch_failures" -gt 0 ]; then
+            log_error "Reviewer ${review_mode} round ${round}: ${reviewer_batch_failures}/${batch_total} batch(es) failed"
+            return 1
+        fi
         if ! merge_phase2_reviewer_batches "$batch_plan_path" "$review_output_path" "$errlog"; then
             return 1
         fi
@@ -3790,12 +3954,12 @@ run_one() {
     local errlog_deep errlog_quick live_log_deep live_log_quick
     local state_path
     local provider_policy_path threat_context_file
-    local worker_provider="$PHASE2_WORKER_PROVIDER"
-    local reviewer_provider="$PHASE2_REVIEWER_PROVIDER"
-    local explore_reviewer_provider="$PHASE2_EXPLORE_PROVIDER"
+    local worker_provider="$PHASE2_BASELINE_WORKER_PROVIDER"
+    local reviewer_provider="$PHASE2_BASELINE_REVIEWER_PROVIDER"
+    local explore_reviewer_provider="$PHASE2_BASELINE_EXPLORE_PROVIDER"
     local worker_model reviewer_model explore_reviewer_model
-    local cluster_synth_provider="$PHASE2_CLUSTER_SYNTH_PROVIDER"
-    local cluster_challenger_provider="$PHASE2_CLUSTER_CHALLENGER_PROVIDER"
+    local cluster_synth_provider="$PHASE2_BASELINE_CLUSTER_SYNTH_PROVIDER"
+    local cluster_challenger_provider="$PHASE2_BASELINE_CLUSTER_CHALLENGER_PROVIDER"
     local cluster_synth_model cluster_challenger_model
     local final_review_status="not_reviewed"
     local last_review_rel=""
@@ -4041,17 +4205,21 @@ run_one() {
         fi
     fi
 
-    if [ "$WORKER_PROVIDER_EXPLICIT" != true ] && [ -n "${PHASE2_PROVIDER_POLICY_WORKER:-}" ]; then
+    if [ "$PHASE2_WORKER_PROVIDER_PINNED" != true ] && [ -n "${PHASE2_PROVIDER_POLICY_WORKER:-}" ]; then
         worker_provider="$PHASE2_PROVIDER_POLICY_WORKER"
     fi
-    if [ "$REVIEWER_PROVIDER_EXPLICIT" != true ] && [ -n "${PHASE2_PROVIDER_POLICY_REVIEWER_CORE:-}" ]; then
+    if [ "$PHASE2_REVIEWER_PROVIDER_PINNED" != true ] && [ -n "${PHASE2_PROVIDER_POLICY_REVIEWER_CORE:-}" ]; then
         reviewer_provider="$PHASE2_PROVIDER_POLICY_REVIEWER_CORE"
     fi
-    if [ -z "${explore_reviewer_provider:-}" ]; then
+    if [ "$PHASE2_EXPLORE_PROVIDER_FROM_ENV" != true ] || [ -z "${explore_reviewer_provider:-}" ]; then
         explore_reviewer_provider="${PHASE2_PROVIDER_POLICY_REVIEWER_EXPLORE:-$reviewer_provider}"
     fi
-    cluster_synth_provider="${PHASE2_PROVIDER_POLICY_CLUSTER_SYNTH:-$cluster_synth_provider}"
-    cluster_challenger_provider="${PHASE2_PROVIDER_POLICY_CLUSTER_CHALLENGER:-$cluster_challenger_provider}"
+    if [ "$PHASE2_CLUSTER_SYNTH_PROVIDER_FROM_ENV" != true ] && [ -n "${PHASE2_PROVIDER_POLICY_CLUSTER_SYNTH:-}" ]; then
+        cluster_synth_provider="$PHASE2_PROVIDER_POLICY_CLUSTER_SYNTH"
+    fi
+    if [ "$PHASE2_CLUSTER_CHALLENGER_PROVIDER_FROM_ENV" != true ] && [ -n "${PHASE2_PROVIDER_POLICY_CLUSTER_CHALLENGER:-}" ]; then
+        cluster_challenger_provider="$PHASE2_PROVIDER_POLICY_CLUSTER_CHALLENGER"
+    fi
     PHASE2_CLUSTER_SYNTH_PROVIDER="$cluster_synth_provider"
     PHASE2_CLUSTER_CHALLENGER_PROVIDER="$cluster_challenger_provider"
     PHASE2_EXPLORE_PROVIDER="$explore_reviewer_provider"
@@ -4398,9 +4566,15 @@ run_one() {
         dispatch_path="$(phase2_dispatch_path "$slug")"
         if phase2_provider_policy_apply_postreview "$provider_policy_path" "$current_worker_path" "$last_review_path"; then
             eval "$(phase2_provider_policy_export_assignments "$provider_policy_path")"
-            explore_reviewer_provider="${PHASE2_PROVIDER_POLICY_REVIEWER_EXPLORE:-$explore_reviewer_provider}"
-            cluster_synth_provider="${PHASE2_PROVIDER_POLICY_CLUSTER_SYNTH:-$cluster_synth_provider}"
-            cluster_challenger_provider="${PHASE2_PROVIDER_POLICY_CLUSTER_CHALLENGER:-$cluster_challenger_provider}"
+            if [ "$PHASE2_EXPLORE_PROVIDER_FROM_ENV" != true ]; then
+                explore_reviewer_provider="${PHASE2_PROVIDER_POLICY_REVIEWER_EXPLORE:-$explore_reviewer_provider}"
+            fi
+            if [ "$PHASE2_CLUSTER_SYNTH_PROVIDER_FROM_ENV" != true ]; then
+                cluster_synth_provider="${PHASE2_PROVIDER_POLICY_CLUSTER_SYNTH:-$cluster_synth_provider}"
+            fi
+            if [ "$PHASE2_CLUSTER_CHALLENGER_PROVIDER_FROM_ENV" != true ]; then
+                cluster_challenger_provider="${PHASE2_PROVIDER_POLICY_CLUSTER_CHALLENGER:-$cluster_challenger_provider}"
+            fi
             PHASE2_EXPLORE_PROVIDER="$explore_reviewer_provider"
             PHASE2_CLUSTER_SYNTH_PROVIDER="$cluster_synth_provider"
             PHASE2_CLUSTER_CHALLENGER_PROVIDER="$cluster_challenger_provider"

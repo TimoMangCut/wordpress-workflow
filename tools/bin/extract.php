@@ -71,7 +71,10 @@ try {
     $store = new SQLiteStore($dbPath);
 
     // Compute file hash for cache
-    $fileHash = computePluginHash($pluginDir);
+    // Cache key must cover the extractor too. Hashing only plugin source meant a fix to
+    // EntryPointVisitor (e.g. the ep_rest___0 id collapse) left every existing IR stale while
+    // the pipeline reported "Cache hit (hash unchanged), skipping".
+    $fileHash = computePluginHash($pluginDir) . '-' . computeExtractorHash();
 
     // Check cache: skip if hash unchanged
     $existingHash = $store->getPluginHash($slug);
@@ -140,6 +143,21 @@ file_put_contents("{$reportsDir}/{$slug}-ir.json",
 exit(0);
 
 // --- Helper functions ---
+
+function computeExtractorHash(): string
+{
+    $root = dirname(__DIR__) . '/src/Extractor';
+    if (!is_dir($root)) return 'noextractor';
+    $parts = [];
+    $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS));
+    foreach ($it as $file) {
+        if ($file->isFile() && str_ends_with($file->getFilename(), '.php')) {
+            $parts[] = $file->getPathname() . ':' . md5_file($file->getPathname());
+        }
+    }
+    sort($parts);
+    return substr(md5(implode('|', $parts)), 0, 12);
+}
 
 function parseArgs(array $argv): array
 {
