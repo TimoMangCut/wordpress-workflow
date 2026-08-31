@@ -102,6 +102,15 @@ class must be read: resolve the real permission (follow the method, including in
 read the callback body for internal capability checks, before it is dispositioned. Do not skip a
 surface class because the tool could not label it.
 
+**WooCommerce `wc_ajax_` is unauth surface.** WooCommerce's `?wc-ajax=<action>` front controller
+dispatches `wc_ajax_<action>` for both logged-in and logged-out visitors, so its auth floor is
+`none`. The IR extractor models it as `type: wc_ajax, auth_level: none`, including the common
+`add_action('wc_ajax_' . SomeClass::ENDPOINT, …)` dynamic form (surfaced with
+`resolution_confidence: low` and the `Class::CONST` in the hook name). Treat every `wc_ajax`
+entry point as an anonymous-reachable endpoint whose only barrier is whatever the callback checks
+itself (a page-scoped nonce is a CSRF token any visitor can fetch, not authorization). This is
+usually the primary attack surface of a WooCommerce extension — trace it first.
+
 For each entry point, hold its IR slice + the referenced source + relevant tool hits + threat
 context together, then trace `registration → callback → attacker control → transformations →
 guards → sink → impact`. **Refute before confirming.** Finish one trace to a verdict before

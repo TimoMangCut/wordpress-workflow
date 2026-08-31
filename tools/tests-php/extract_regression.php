@@ -48,14 +48,27 @@ function first(array $items, callable $pred): ?array
     return null;
 }
 
-// IR-01: dynamic hook name is surfaced as an unresolved hook, not silently dropped.
+// IR-01 / wc_ajax blind spot: dynamic hook names with a known action prefix become entry
+// points (low confidence); only prefix-less dynamic names stay in unresolved_hooks.
 $ir = build("$FIX/dynamic-hook");
-check('IR-01 dynamic hook -> unresolved_hooks',
+$dynAjax = first($ir['entry_points'],
+    fn($e) => ($e['type'] ?? '') === 'ajax_priv' && ($e['dynamic_hook'] ?? false) === true);
+check('IR-01 dynamic wp_ajax_ hook -> entry point (low confidence)',
+    $dynAjax !== null && ($dynAjax['resolution_confidence'] ?? '') === 'low',
+    'expected a dynamic ajax_priv entry point with resolution_confidence=low');
+$dynWc = first($ir['entry_points'],
+    fn($e) => ($e['type'] ?? '') === 'wc_ajax' && ($e['dynamic_hook'] ?? false) === true);
+check('wc_ajax dynamic hook -> entry point with auth_level=none',
+    $dynWc !== null && ($dynWc['auth_level'] ?? '') === 'none',
+    "expected 'wc_ajax_' . CONST to resolve to a wc_ajax entry point, auth none");
+$litWc = first($ir['entry_points'],
+    fn($e) => ($e['hook_name'] ?? '') === 'wc_ajax_literal_thing');
+check('wc_ajax literal hook -> entry point with auth_level=none',
+    $litWc !== null && ($litWc['type'] ?? '') === 'wc_ajax' && ($litWc['auth_level'] ?? '') === 'none',
+    'expected literal wc_ajax_ hook as a wc_ajax entry point with auth none');
+check('IR-01 prefix-less dynamic hook still -> unresolved_hooks (no silent drop)',
     (bool) first($ir['unresolved_hooks'], fn($h) => ($h['hook_arg_type'] ?? '') === 'concatenation'),
-    'expected an unresolved hook with hook_arg_type=concatenation');
-check('IR-01 dynamic hook is not a resolved entry point',
-    count($ir['entry_points']) === 0,
-    'a non-literal hook must not become a concrete entry point');
+    'expected an unresolved hook with hook_arg_type=concatenation for an unknown prefix');
 
 // nopriv AJAX surface + unsanitized SQL sink detection.
 $ir = build("$FIX/nopriv-ajax");

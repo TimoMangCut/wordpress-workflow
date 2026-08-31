@@ -19,6 +19,12 @@ class EntryPointVisitor extends NodeVisitorAbstract
     private const HOOK_TYPE_MAP = [
         'wp_ajax_nopriv_' => 'ajax_nopriv',
         'wp_ajax_' => 'ajax_priv',
+        // WooCommerce's own front controller: `?wc-ajax=<action>` dispatches wc_ajax_<action>
+        // for BOTH logged-in and logged-out visitors, so its auth floor is `none` (unauth).
+        // It is the primary attack surface of WooCommerce extensions and was previously
+        // invisible to the IR because every PPCP endpoint registers it as
+        // add_action('wc_ajax_' . SomeClass::ENDPOINT, ...) (a dynamic hook name).
+        'wc_ajax_' => 'wc_ajax',
         'admin_post_nopriv_' => 'admin_post_nopriv',
         'admin_post_' => 'admin_post',
     ];
@@ -50,6 +56,7 @@ class EntryPointVisitor extends NodeVisitorAbstract
     private const AUTH_LEVELS = [
         'ajax_nopriv' => 'none',
         'ajax_priv' => 'subscriber',
+        'wc_ajax' => 'none',
         'admin_post_nopriv' => 'none',
         'admin_post' => 'subscriber',
         'admin_init' => 'subscriber',
@@ -125,8 +132,34 @@ class EntryPointVisitor extends NodeVisitorAbstract
 
         $hookName = $this->resolveStringArg($node->args[0]);
 
-        // IR-01: capture unresolved (dynamic) hook names instead of silent drop
+        // IR-01 / wc_ajax blind spot: a dynamic hook name is not a silent drop.
+        // When the name is a concatenation whose LEADING LITERAL is a known action
+        // prefix (wp_ajax_ / wc_ajax_ / admin_post_ …) — e.g. 'wc_ajax_' . Foo::ENDPOINT —
+        // classify it by that prefix and surface it as an entry point with low resolution
+        // confidence. Only names with no recognizable literal prefix stay in
+        // unresolved_hooks. Without this, WooCommerce extensions (which register almost
+        // every endpoint as 'wc_ajax_' . CONST) expose an empty AJAX surface in the IR.
         if ($hookName === null) {
+            $prefix = $this->leadingLiteralPrefix($node->args[0]->value);
+            if ($prefix !== null) {
+                foreach (self::HOOK_TYPE_MAP as $p => $type) {
+                    if (str_starts_with($prefix, $p)) {
+                        $dynHook = $prefix . '{' . $this->dynamicSuffixLabel($node->args[0]->value) . '}';
+                        $this->entryPoints[] = [
+                            'id'                    => "ep_{$type}_{$this->sanitizeId($dynHook)}",
+                            'type'                  => $type,
+                            'hook_name'             => $dynHook,
+                            'callback'              => $this->resolveCallback($node->args[1]),
+                            'auth_level'            => self::AUTH_LEVELS[$type],
+                            'resolution_confidence' => 'low',
+                            'dynamic_hook'          => true,
+                            'file'                  => $this->currentFile,
+                            'line'                  => $node->getStartLine(),
+                        ];
+                        return;
+                    }
+                }
+            }
             $this->unresolvedHooks[] = [
                 'file'           => $this->currentFile,
                 'line'           => $node->getStartLine(),
@@ -873,6 +906,26 @@ class EntryPointVisitor extends NodeVisitorAbstract
             $expr instanceof Node\Expr\Variable         => 'variable',
             default                                     => 'other',
         };
+    }
+
+    /** Leftmost string-literal of a (possibly nested) concatenation, or null. */
+    private function leadingLiteralPrefix(Node $expr): ?string
+    {
+        if ($expr instanceof Node\Scalar\String_) return $expr->value;
+        if ($expr instanceof Node\Expr\BinaryOp\Concat) return $this->leadingLiteralPrefix($expr->left);
+        return null;
+    }
+
+    /** Readable label for the dynamic (non-literal) tail of a hook name, e.g. Foo::ENDPOINT. */
+    private function dynamicSuffixLabel(Node $expr): string
+    {
+        $right = $expr instanceof Node\Expr\BinaryOp\Concat ? $expr->right : $expr;
+        if ($right instanceof Node\Expr\ClassConstFetch) {
+            $class = $right->class instanceof Node\Name ? $right->class->toString() : '?';
+            $const = $right->name instanceof Node\Identifier ? $right->name->toString() : '?';
+            return $class . '::' . $const;
+        }
+        return $this->classifyExpression($right);
     }
 
     public function getEntryPoints(): array { return $this->entryPoints; }

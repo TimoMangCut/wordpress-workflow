@@ -55,7 +55,9 @@ def _unauth(auth: str | None) -> bool:
 def bucket_of(ep: dict) -> int:
     t = (ep.get("type") or "").lower()
     unauth = _unauth(ep.get("auth_level"))
-    if t in ("ajax_nopriv", "admin_post_nopriv"):
+    # wc_ajax is WooCommerce's ?wc-ajax= front controller: reachable unauthenticated,
+    # so it belongs in the highest-priority unauth-ajax bucket alongside ajax_nopriv.
+    if t in ("ajax_nopriv", "admin_post_nopriv", "wc_ajax"):
         return 0
     if t in ("rest_route", "rest_api_init"):
         return 1 if unauth else 3
