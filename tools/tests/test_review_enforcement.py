@@ -103,5 +103,47 @@ class TestMetricsRun(unittest.TestCase):
         self.assertEqual(m["ir_unresolved_hooks_accounted_pct"], 0.0)
 
 
+SYNTH_IR = {
+    "metadata": {"plugin_slug": "t"},
+    "entry_points": [
+        {"id": "e4", "type": "admin_init", "hook_name": "admin_init", "auth_level": "unknown", "file": "d.php", "line": 1, "callback": {"type": "function", "name": "g"}},
+        {"id": "e3", "type": "ajax_priv", "hook_name": "wp_ajax_c", "auth_level": "subscriber", "file": "c.php", "line": 1, "callback": {"type": "method", "name": "c", "class": "C", "file": "c.php", "line_start": 1, "line_end": 2}},
+        {"id": "e2", "type": "rest_route", "hook_name": "rest_x", "auth_level": "unknown", "file": "b.php", "line": 1, "callback": {"type": "function", "name": "f"}},
+        {"id": "e1", "type": "ajax_nopriv", "hook_name": "wp_ajax_nopriv_a", "auth_level": "none", "file": "a.php", "line": 1, "callback": {"type": "method", "name": "a", "class": "C", "file": "a.php", "line_start": 1, "line_end": 2}},
+    ],
+    "sources": [{"id": "s1", "entry_point_id": "e1", "type": "superglobal_post", "variable": "$_POST", "key": "q", "file": "a.php", "line": 2}],
+    "sinks": [{"id": "k1", "entry_point_id": "e1", "category": "sql", "function_called": "query", "uses_prepared_statement": False, "file": "a.php", "line": 2}],
+    "guards": [], "anomalies": [],
+    "unresolved_hooks": [{"file": "z.php", "line": 1}],
+    "coverage_gaps": [{"file": "y.php", "signals": ["x"], "reason": "r"}],
+}
+
+
+class TestSlicer(unittest.TestCase):
+    def test_priority_order_and_linkage(self):
+        from tools.bin import slice_ir  # noqa: PLC0415
+        batches = slice_ir.order_and_batch(SYNTH_IR, batch_size=12)
+        buckets = [b for b, _eps in batches]
+        # unauth-ajax(0) before unauth-rest(1) before auth-ajax(2) before bootstrap(5)
+        self.assertEqual(buckets, sorted(buckets))
+        self.assertEqual(batches[0][0], 0)
+        self.assertEqual(batches[0][1][0]["id"], "e1")
+        sl = slice_ir.build_slice(SYNTH_IR, batches[0][1])
+        self.assertEqual([s["id"] for s in sl["sinks"]], ["k1"])  # linked by entry_point_id
+        self.assertEqual(sl["unresolved_hooks"], [])  # backstop stays with full IR
+        self.assertEqual(sl["coverage_gaps"], [])
+
+    @unittest.skipUnless(HAS_JSONSCHEMA, "jsonschema not installed")
+    def test_cli_slices_validate(self):
+        import tempfile as _tf
+        ir_path = write_tmp(SYNTH_IR)
+        out = _tf.mkdtemp()
+        r = run("slice_ir.py", ir_path, "--out", out, "--slug", "t", "--batch-size", "12", "--validate")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        plan = json.loads((Path(out) / "slice-plan.json").read_text())
+        self.assertEqual(plan["total_entry_points"], 4)
+        self.assertEqual(plan["batches"][0]["bucket_label"], "unauth-ajax")
+
+
 if __name__ == "__main__":
     unittest.main()

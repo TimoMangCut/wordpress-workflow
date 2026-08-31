@@ -201,7 +201,12 @@ every path. Scale without spawning agents:
 
 1. **Slice the inventory, batch sequentially.** Partition entry points by type; for each batch
    load only the sources/sinks/guards/anomalies whose `entry_point_id` is in that set, and only
-   the files they reference. Process in priority order.
+   the files they reference. Process in priority order. After the IR baseline exists, do this
+   deterministically with `python3 tools/bin/slice_ir.py <ir.json> --out <dir> --batch-size N`:
+   it emits priority-ordered slices (unauth first) each conforming to `contracts/ir-slice.schema.json`,
+   plus a `slice-plan.json` manifest you work batch by batch — the coverage record that proves no
+   surface was skipped. `unresolved_hooks`/`coverage_gaps` stay with the full IR for the Pass-4
+   backstop.
 2. **Batch by work budget, not just by surface type.** Turn raw signals into explicitly-scoped
    trace hypotheses classified by bug family / sink family / trust boundary / complexity, and
    size batches to a budget so none overloads context.
