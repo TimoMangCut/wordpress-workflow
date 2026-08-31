@@ -1,8 +1,11 @@
-# contracts/ — Schema Versioning Rules
+# contracts/ — Review and Legacy Schema Versioning
 
-Contracts in this directory define the data interfaces between pipeline stages.
-All pipeline scripts validate against these schemas before passing data downstream.
-Schema mismatch is a hard error — silent degradation is prohibited.
+Contracts in this directory now cover two authorities:
+
+- `methodology-review.schema.json` is the canonical output contract for the source-first IDE review.
+- Phase/agent schemas are legacy interfaces retained for historical pipeline reproduction.
+
+A consumer must validate the contract it explicitly uses. File presence or a legacy phase schema does not make an artifact authoritative for the methodology workflow.
 
 ---
 
@@ -10,7 +13,8 @@ Schema mismatch is a hard error — silent degradation is prohibited.
 
 | File | Version | Produced by | Consumed by |
 |------|---------|-------------|-------------|
-| `ir-output.schema.json` | 2.3.0 | `tools/bin/extract.php` | `tools/bin/prepare_agent_inputs.py`, agents |
+| `methodology-review.schema.json` | 1.0.0 | Kiro/Codex methodology review | IDE report, optional persistence/resume |
+| `ir-output.schema.json` | 2.3.0 | `tools/bin/extract.php` | legacy prep, required structural evidence for methodology reconciliation |
 | `ir-slice.schema.json` | 1.3.0 | `tools/bin/prepare_agent_inputs.py` | Agents A1–A5 |
 | `agent-output.schema.json` | 1.0.0 | Agents A1–A5, B, C, D | merge script |
 | `phase2-finding.schema.json` | 1.1.0 | Phase 2 agents (item schema) | merge script, gate |
@@ -104,6 +108,15 @@ not via this schema library. IR schema is the ground-truth reference.
 ---
 
 ## Migration Log
+
+### Methodology review 1.0.0
+
+Date: 2026-08-28
+Added: `methodology-review.schema.json` as the canonical unified review contract.
+- Replaces Phase 2 `TP|FP|REVIEW` and Phase 3 gate translation in the default IDE workflow.
+- Uses `CONFIRMED|UNCERTAIN|RISK_NOTE|REJECTED` directly.
+- Keeps coverage, refutations, tool diagnostics, and post-verdict reportability explicit.
+- Legacy schemas remain unchanged for historical pipeline reproduction.
 
 ### ir-output.schema.json 2.2.0 → 2.3.0
 

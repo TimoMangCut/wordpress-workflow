@@ -1,0 +1,15 @@
+.git
+.gitignore
+.DS_Store
+plugins
+reports
+testing/reports
+tmmc
+tools/vendor
+data/audit.db*
+.claude/worktrees
+pyenv-codex-lb
+__pycache__
+*.pyc
+*.local.json
+*.local.toml

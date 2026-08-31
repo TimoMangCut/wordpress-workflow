@@ -1,0 +1,192 @@
+{
+  "$id": "methodology-review.schema.json",
+  "version": "1.0.0",
+  "title": "WordPress Methodology Review",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "target", "lifecycle", "scope", "architecture", "trust_boundaries", "coverage", "findings", "tool_diagnostics", "limitations"],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["slug", "path"],
+      "properties": {
+        "slug": { "type": "string", "minLength": 1 },
+        "path": { "type": "string", "minLength": 1 },
+        "version": { "type": ["string", "null"] }
+      }
+    },
+    "lifecycle": { "enum": ["DISCOVERING", "TRACING", "ADJUDICATING", "COMPLETE"] },
+    "scope": {
+      "type": "object",
+      "required": ["included", "excluded", "assumptions"],
+      "properties": {
+        "included": { "type": "array", "items": { "type": "string" } },
+        "excluded": { "type": "array", "items": { "type": "string" } },
+        "assumptions": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "architecture": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/evidenceNote" } },
+    "trust_boundaries": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/evidenceNote" } },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["surfaces", "secure_areas", "gaps"],
+      "properties": {
+        "files_reviewed": { "type": "array", "items": { "type": "string" } },
+        "surfaces": { "type": "array", "items": { "$ref": "#/definitions/surface" } },
+        "secure_areas": { "type": "array", "items": { "$ref": "#/definitions/evidenceNote" } },
+        "gaps": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "findings": { "type": "array", "items": { "$ref": "#/definitions/finding" } },
+    "tool_diagnostics": { "type": "array", "items": { "$ref": "#/definitions/toolDiagnostic" } },
+    "limitations": { "type": "array", "items": { "type": "string" } }
+  },
+  "definitions": {
+    "location": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "line"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "line": { "type": "integer", "minimum": 1 },
+        "symbol": { "type": ["string", "null"] }
+      }
+    },
+    "evidenceNote": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["description", "locations"],
+      "properties": {
+        "description": { "type": "string", "minLength": 1 },
+        "locations": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/location" } }
+      }
+    },
+    "surface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["surface_id", "kind", "registration", "status"],
+      "properties": {
+        "surface_id": { "type": "string", "pattern": "^SURF-[0-9]+$" },
+        "kind": { "type": "string" },
+        "registration": { "$ref": "#/definitions/location" },
+        "callback": { "type": ["string", "null"] },
+        "attacker_role": { "type": ["string", "null"] },
+        "status": { "enum": ["MAPPED", "TRACED", "UNRESOLVED", "OUT_OF_SCOPE"] },
+        "notes": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "traceStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "location", "description"],
+      "properties": {
+        "kind": { "enum": ["REGISTRATION", "SOURCE", "PROPAGATION", "TRANSFORM", "GUARD", "SINK", "IMPACT"] },
+        "location": { "$ref": "#/definitions/location" },
+        "description": { "type": "string", "minLength": 1 }
+      }
+    },
+    "reportability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["eligible", "ineligible", "unknown", "not_requested"] },
+        "program": { "type": ["string", "null"] },
+        "policy_date": { "type": ["string", "null"], "format": "date" },
+        "reason": { "type": ["string", "null"] }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["finding_id", "verdict", "title", "severity", "confidence", "hypothesis", "attacker_prerequisites", "trace", "defenses", "refutations", "impact", "assumptions", "reportability"],
+      "properties": {
+        "finding_id": { "type": "string", "pattern": "^F-[0-9]+$" },
+        "surface_ids": { "type": "array", "items": { "type": "string", "pattern": "^SURF-[0-9]+$" } },
+        "verdict": { "enum": ["CONFIRMED", "UNCERTAIN", "RISK_NOTE", "REJECTED"] },
+        "title": { "type": "string", "minLength": 1 },
+        "vulnerability_class": { "type": ["string", "null"] },
+        "severity": { "enum": ["critical", "high", "medium", "low", "informational"] },
+        "confidence": { "enum": ["high", "medium", "low"] },
+        "hypothesis": { "type": "string", "minLength": 1 },
+        "attacker_prerequisites": { "type": "array", "items": { "type": "string" } },
+        "trace": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/traceStep" } },
+        "defenses": { "type": "array", "items": { "$ref": "#/definitions/evidenceNote" } },
+        "refutations": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/evidenceNote" } },
+        "impact": { "type": "string", "minLength": 1 },
+        "assumptions": { "type": "array", "items": { "type": "string" } },
+        "missing_evidence": { "type": "array", "items": { "type": "string" } },
+        "reopening_conditions": { "type": "array", "items": { "type": "string" } },
+        "reportability": { "$ref": "#/definitions/reportability" }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "verdict": { "const": "CONFIRMED" } },
+            "required": ["verdict"]
+          },
+          "then": {
+            "properties": {
+              "attacker_prerequisites": { "minItems": 1 },
+              "trace": {
+                "minItems": 4,
+                "allOf": [
+                  { "contains": { "type": "object", "properties": { "kind": { "const": "REGISTRATION" } }, "required": ["kind"] } },
+                  { "contains": { "type": "object", "properties": { "kind": { "const": "SOURCE" } }, "required": ["kind"] } },
+                  { "contains": { "type": "object", "properties": { "kind": { "const": "SINK" } }, "required": ["kind"] } },
+                  { "contains": { "type": "object", "properties": { "kind": { "const": "IMPACT" } }, "required": ["kind"] } }
+                ]
+              },
+              "defenses": { "minItems": 1 },
+              "refutations": {
+                "contains": {
+                  "type": "object",
+                  "properties": { "locations": { "minItems": 1 } },
+                  "required": ["locations"]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "verdict": { "const": "UNCERTAIN" } },
+            "required": ["verdict"]
+          },
+          "then": {
+            "required": ["missing_evidence", "reopening_conditions"],
+            "properties": {
+              "missing_evidence": { "minItems": 1 },
+              "reopening_conditions": { "minItems": 1 }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "verdict": { "const": "REJECTED" } },
+            "required": ["verdict"]
+          },
+          "then": {
+            "required": ["reopening_conditions"],
+            "properties": { "reopening_conditions": { "minItems": 1 } }
+          }
+        }
+      ]
+    },
+    "toolDiagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["question", "static_gap", "tool", "command", "result"],
+      "properties": {
+        "question": { "type": "string" },
+        "static_gap": { "type": "string" },
+        "tool": { "enum": ["inventory", "search", "ast", "semgrep", "psalm"] },
+        "command": { "type": "string" },
+        "result": { "type": "string" }
+      }
+    }
+  }
+}

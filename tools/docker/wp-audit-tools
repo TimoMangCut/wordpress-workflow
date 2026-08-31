@@ -1,0 +1,155 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT=/opt/wp-audit
+PLUGIN=${PLUGIN_DIR:-/workspace/plugin}
+OUTPUT=${OUTPUT_DIR:-/workspace/output}
+export HOME=/tmp
+export XDG_CACHE_HOME=/tmp/.cache
+export SEMGREP_SETTINGS_FILE=/tmp/semgrep-settings.yml
+
+usage() {
+  cat <<'EOF'
+WordPress audit helper image
+
+Usage:
+  wp-audit-tools inventory
+  wp-audit-tools search <ripgrep-pattern>
+  wp-audit-tools ast
+  wp-audit-tools semgrep
+  wp-audit-tools psalm
+  wp-audit-tools versions
+
+Mount one plugin read-only at /workspace/plugin and an output directory at
+/workspace/output. There is intentionally no command that runs every tool.
+EOF
+}
+
+require_plugin() {
+  if [[ ! -d "$PLUGIN" ]]; then
+    echo "plugin directory not mounted at $PLUGIN" >&2
+    exit 2
+  fi
+  mkdir -p "$OUTPUT"
+}
+
+run_psalm_config() {
+  local source_config=$1
+  local temp_config=$2
+  sed \
+    -e "s|__PLUGIN_DIR__|$PLUGIN|g" \
+    -e 's|config/psalm-generated-stubs.php|/tmp/psalm-generated-stubs.php|g' \
+    "$source_config" > "$temp_config"
+
+  set +e
+  timeout "${PSALM_TIMEOUT_SECONDS:-480}" php "$ROOT/tools/vendor/bin/psalm" \
+    --taint-analysis \
+    --config="$temp_config" \
+    --report="$OUTPUT/psalm.sarif" \
+    --threads=1 \
+    --no-cache \
+    --no-progress
+  local status=$?
+  set -e
+  [[ $status -eq 0 || $status -eq 2 ]] && [[ -s "$OUTPUT/psalm.sarif" ]]
+}
+
+command=${1:-help}
+case "$command" in
+  help|-h|--help)
+    usage
+    ;;
+  versions)
+    php --version | head -1
+    composer --version
+    semgrep --version
+    rg --version | head -1
+    "$ROOT/tools/vendor/bin/psalm" --version
+    ;;
+  inventory)
+    require_plugin
+    {
+      echo "# PHP files"
+      find "$PLUGIN" -type f -name '*.php' -not -path '*/vendor/*' -not -path '*/node_modules/*' -print | sort
+      echo
+      echo "# Composer metadata"
+      find "$PLUGIN" -maxdepth 2 -type f \( -name composer.json -o -name composer.lock \) -print | sort
+    } | tee "$OUTPUT/inventory.txt"
+    ;;
+  search)
+    require_plugin
+    pattern=${2:-}
+    if [[ -z "$pattern" ]]; then
+      echo "search requires one ripgrep pattern" >&2
+      exit 2
+    fi
+    set +e
+    rg --line-number --with-filename --glob '*.php' --glob '!vendor/**' --glob '!node_modules/**' -- "$pattern" "$PLUGIN" \
+      | tee "$OUTPUT/search.txt"
+    status=${PIPESTATUS[0]}
+    set -e
+    [[ $status -eq 0 || $status -eq 1 ]] || exit "$status"
+    ;;
+  ast)
+    require_plugin
+    php -d "memory_limit=${PHP_MEMORY_LIMIT:-1024M}" "$ROOT/tools/bin/extract.php" "$PLUGIN" \
+      --db=/tmp/wp-audit.db --json --quiet --force > "$OUTPUT/ir.json"
+    python3 - "$OUTPUT/ir.json" <<'PY'
+import json
+import sys
+
+path = sys.argv[1]
+with open(path, encoding="utf-8") as handle:
+    document = json.load(handle)
+
+required_arrays = {
+    "entry_points",
+    "guards",
+    "sources",
+    "sinks",
+    "anomalies",
+    "unresolved_hooks",
+    "coverage_gaps",
+}
+missing = sorted({"metadata", *required_arrays} - document.keys())
+wrong_types = sorted(key for key in required_arrays if key in document and not isinstance(document[key], list))
+if missing or wrong_types or not isinstance(document.get("metadata"), dict):
+    raise SystemExit(
+        f"invalid IR shape: missing={missing}, wrong_array_types={wrong_types}, "
+        f"metadata_is_object={isinstance(document.get('metadata'), dict)}"
+    )
+PY
+    echo "$OUTPUT/ir.json"
+    ;;
+  semgrep)
+    require_plugin
+    semgrep \
+      --config "$ROOT/tools/config/semgrep-wp-rules" \
+      --json \
+      --no-git-ignore \
+      --timeout 60 \
+      --max-target-bytes 2000000 \
+      --exclude vendor \
+      --exclude node_modules \
+      --exclude .git \
+      "$PLUGIN" > "$OUTPUT/semgrep.json"
+    echo "$OUTPUT/semgrep.json"
+    ;;
+  psalm)
+    require_plugin
+    python3 "$ROOT/tools/bin/generate_missing_class_stubs.py" "$PLUGIN" \
+      --output /tmp/psalm-generated-stubs.php || printf '<?php\n' > /tmp/psalm-generated-stubs.php
+    rm -f "$OUTPUT/psalm.sarif"
+    if ! run_psalm_config "$ROOT/tools/config/psalm-wp.xml" /tmp/psalm-primary.xml; then
+      echo "primary Psalm configuration failed; trying fallback without WordPress plugin" >&2
+      rm -f "$OUTPUT/psalm.sarif"
+      run_psalm_config "$ROOT/tools/config/psalm-wp-fallback.xml" /tmp/psalm-fallback.xml
+    fi
+    echo "$OUTPUT/psalm.sarif"
+    ;;
+  *)
+    echo "unknown command: $command" >&2
+    usage >&2
+    exit 2
+    ;;
+esac

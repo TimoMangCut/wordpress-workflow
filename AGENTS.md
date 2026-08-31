@@ -1,48 +1,61 @@
 # AGENTS.md - WordPress Audit Workspace
 
-> This file contains project-local routing for this workspace.
-> Reusable AppSec identity and workflow belong in the home configuration and skills.
-> Project docs in `./docs` are shared with both Codex and Claude and should be treated as ground truth.
+> Project-local routing for methodology-first WordPress review. Reusable AppSec identity belongs in skills; project semantics and policy snapshots live under `docs/`.
 
-## Read First
+## Default entrypoint
 
-- `docs/wp-context.md`
-- `docs/bug-bounty-rules-summary.md`
+Use the workspace skill:
 
-If project docs conflict with generic assumptions, project docs win.
+```text
+/wp-security-audit <plugin-path-or-slug>
+```
 
-## Workspace Purpose
+The skill reviews source directly. After source-led mapping is sealed, read-only inventory plus AST/IR extraction and source reconciliation are required coverage evidence. Semgrep, Psalm, legacy Phase 1/2/3 scripts, and scanner artifacts remain optional diagnostics, not prerequisites or default context.
 
-- This workspace is used for WordPress security review and audit work.
-- The main subjects are plugins and adjacent WordPress components inside this repository.
-- Reviews may be full-source audits or targeted component reviews.
+## Active context
 
-## Local Review Focus
+Read first:
 
-Prioritize:
+- `docs/wp-context.md` — stable WordPress semantics, not a vulnerability catalogue
+- `docs/review-methodology.md` — source-first tracing, refutation, coverage, and adjudication
 
-- unauthenticated entry points
-- AJAX and REST routes
-- nonce and capability enforcement
-- privilege escalation and authorization gaps
-- file upload, download, delete, and path construction
-- SQL, option/meta updates, and deserialization paths
-- SSRF, RCE, arbitrary write, arbitrary delete, and account takeover impact
+Do not load these during initial discovery:
 
-## Local Rules
+- `docs/wordpress-pattern-catalogue.md` — late recall/on-demand only
+- `docs/reportability-policy.md` and bounty rules — post-verdict and only when requested
+- `docs/archive/wp-context-full-legacy.md` — historical research only
+- scanner or legacy phase outputs — only for a written, bounded evidence question
 
-- Ground all exploitability judgments in WordPress behavior and the docs in this repo.
-- Separate exploitability from reportability; bounty rules may narrow what is actionable.
-- When reviewing a plugin or component, identify the relevant trust boundary before rating severity.
-- Note secure areas reviewed so coverage is visible.
+If project semantics conflict with generic assumptions, verify against current WordPress behavior and observed source rather than silently choosing either claim.
 
-## Output Expectations
+## Workspace purpose
 
-- Use exactly one of `CONFIRMED`, `UNCERTAIN`, `RISK_NOTE`, or `REJECTED` for each issue.
-- Every mature conclusion must include code references and at least one refutation attempt.
-- If context is missing and cannot be inferred safely, state assumptions explicitly.
+- Full-source or targeted security review of WordPress plugins and adjacent components.
+- Source-led architecture understanding, attack-surface mapping, trust-boundary analysis, tracing, refutation, and evidence-bound reporting.
+- Tooling may support a concrete investigation question but must not define the review agenda.
 
-## Keep This File Local
+## Local rules
 
-This file should stay focused on project-specific context.
-Do not duplicate the global identity, reusable AppSec workflow, or long generic methodology here.
+- Derive priorities from the selected plugin's behavior and assets, not a finite bug taxonomy.
+- Identify the relevant trust boundary before rating severity.
+- Authentication, intent/nonce, authorization, validation, and output encoding are distinct properties.
+- Ground exploitability in a complete reachable trace with exact code evidence.
+- Attempt at least one concrete refutation for every mature issue.
+- Separate technical exploitability, severity, confidence, and reportability.
+- Record secure areas reviewed and material coverage gaps.
+- Seal the source-derived ledger before loading inventory/AST artifacts; reconcile every parser-only/source-only surface, parse gap, and unresolved dynamic edge before `COMPLETE`.
+- Treat AST/IR as independent coverage evidence, never as a finding or verdict authority.
+- Keep Semgrep and Psalm optional and non-blocking; no authentication or Pro engine is required.
+- Never modify the selected plugin during an audit unless the user later requests remediation as a separate task.
+
+## Output contract
+
+- Use exactly one of `CONFIRMED`, `UNCERTAIN`, `RISK_NOTE`, or `REJECTED` per issue.
+- Every mature conclusion includes `path:line`, attacker prerequisites, defenses considered, refutation result, impact, and assumptions.
+- Missing context stays explicit; do not force a conclusion.
+- Follow `contracts/methodology-review.schema.json` for the current machine-readable finding/review shape.
+- Until the pending v2 contract migration, encode the sealed source-ledger summary in `coverage.files_reviewed`/`coverage.surfaces`, inventory and AST records in `tool_diagnostics`, and every unresolved reconciliation obligation in `coverage.gaps`. Do not add schema-v1 fields that `additionalProperties: false` rejects.
+
+## Legacy compatibility
+
+The shell pipeline under `tools/bin/` remains available for historical reproduction and optional corroboration. It is documented in `WORKFLOW-GUIDE.md` but is no longer the canonical audit workflow.
