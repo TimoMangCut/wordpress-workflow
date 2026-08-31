@@ -10,7 +10,7 @@ Use the workspace skill:
 /wp-security-audit <plugin-path-or-slug>
 ```
 
-The skill reviews source directly. After source-led mapping is sealed, read-only inventory plus AST/IR extraction and source reconciliation are required coverage evidence. Semgrep, Psalm, legacy Phase 1/2/3 scripts, and scanner artifacts remain optional diagnostics, not prerequisites or default context.
+The skill reviews source directly. One model performs the whole review in one session: it first self-parses the source into its own IR/AST/SAST-style understanding by reasoning alone (no tools), seals that source-led ledger, then runs the required read-only inventory + AST/IR extraction and reconciles the machine parse against its own. Semgrep and Psalm are corroboration; the legacy Phase 1/2/3 scripts and scanner artifacts are never a review path. This project never spawns Worker/Reviewer sub-agents, mappers, investigators, validators, or parallel sessions — that only wastes quota.
 
 ## Active context
 
@@ -18,6 +18,10 @@ Read first:
 
 - `docs/wp-context.md` — stable WordPress semantics, not a vulnerability catalogue
 - `docs/review-methodology.md` — source-first tracing, refutation, coverage, and adjudication
+
+Consult on-demand (not during initial discovery, but during the tracing passes or a late audit):
+
+- `docs/review-techniques.md` — single-agent detection/precision technique catalogue (five analysis passes, recall blind spots, guard three-state discipline, threat-profile weighting, large-target chunking)
 
 Do not load these during initial discovery:
 
@@ -54,8 +58,8 @@ If project semantics conflict with generic assumptions, verify against current W
 - Every mature conclusion includes `path:line`, attacker prerequisites, defenses considered, refutation result, impact, and assumptions.
 - Missing context stays explicit; do not force a conclusion.
 - Follow `contracts/methodology-review.schema.json` for the current machine-readable finding/review shape.
-- Until the pending v2 contract migration, encode the sealed source-ledger summary in `coverage.files_reviewed`/`coverage.surfaces`, inventory and AST records in `tool_diagnostics`, and every unresolved reconciliation obligation in `coverage.gaps`. Do not add schema-v1 fields that `additionalProperties: false` rejects.
+- Encode the sealed source-ledger summary in `coverage.files_reviewed`/`coverage.surfaces`, inventory and AST records in `tool_diagnostics`, and every unresolved reconciliation obligation in `coverage.gaps`. For WordPress-specific classes, the v1.1 contract adds `finding.storage_link` (two-hop stored flows), `surface.auth_required` (normalized privilege enum), and `surface.resolution_confidence`. Do not emit fields the schema's `additionalProperties: false` rejects.
 
 ## Legacy compatibility
 
-The shell pipeline under `tools/bin/` remains available for historical reproduction and optional corroboration. It is documented in `WORKFLOW-GUIDE.md` but is no longer the canonical audit workflow.
+The shell pipeline under `tools/bin/` is retained only for historical reproduction and is never run as a review path. The single-agent methodology above is the only sanctioned workflow. The Docker helper (`wp-audit-tools.sh`) that packages inventory/AST/Semgrep/Psalm is a required in-session support tool, not a pipeline; see `WORKFLOW-GUIDE.md`.

@@ -1,8 +1,13 @@
 # ORCHESTRATION.md — Multi-Agent Phase 2 Pipeline
 
+> **DEPRECATED / HISTORICAL — DO NOT RUN.** This project runs single-agent, skill-driven
+> review only (`/wp-security-audit <plugin>`); it never executes this Phase 2 multi-agent
+> pipeline, Worker/Reviewer rounds, or cluster consensus. The document is retained as a
+> historical design record. The only sanctioned workflow is `docs/review-methodology.md`.
+>
 > Source authority: `7-workflow-wp/multi-agent-plan.md:400-520`
 > Current stabilization target: `7-workflow-wp/PHASE2-ARCHITECTURE-SPEC.md`
-> This document describes how to run the multi-agent Phase 2 pipeline.
+> This document describes how the retired multi-agent Phase 2 pipeline was run.
 
 ---
 

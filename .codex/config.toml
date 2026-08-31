@@ -16,10 +16,8 @@ enabled = false
 [shell_environment_policy]
 inherit = "core"
 
-[shell_environment_policy.set]
-LLM_PROVIDERS = "codex"
-PHASE2_PRIMARY_PROVIDER = "codex"
-PHASE3_PRIMARY_PROVIDER = "codex"
+# No PHASE2_/PHASE3_ pipeline provider vars: this project runs single-agent, skill-driven
+# review only and never executes the legacy Phase 1/2/3 pipeline.
 
 [model_providers.codex-lb]
 name = "OpenAI"

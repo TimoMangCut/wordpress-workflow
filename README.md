@@ -1,18 +1,28 @@
 # WordPress Security Review Methodology
 
-This workspace performs source-first WordPress plugin security reviews through a Kiro skill. The default workflow does not require local PHP, Composer, Semgrep, Psalm, or a pre-scan.
+This workspace performs source-first WordPress plugin security reviews as a single-agent skill. It runs identically across Kiro, Claude Code, Codex, and Antigravity: one model does the whole review in one session.
 
-## Use in Kiro
+## How it runs
 
-Place or reference a plugin source directory, start a new Kiro session so workspace skills are discovered, then invoke:
+Invoke the skill with a plugin target:
 
 ```text
 /wp-security-audit plugins/<slug>
 ```
 
-You may also pass an absolute plugin path or add a bounded scope after the target. The main agent maps the source, delegates focused sequential tasks when useful, traces and refutes hypotheses, and returns one unified review. It does not use Worker/Reviewer rounds or a separate Phase 3.
+You may also pass an absolute plugin path or add a bounded scope after the target. One model performs the entire review:
 
-The default IDE agentic session can run the skill when sub-agent delegation is available. If the session does not expose delegation, select the workspace agent `wp-security-audit` in Kiro and invoke the skill again. CLI users can start that profile with `kiro-cli chat --agent wp-security-audit`. Do not compensate for a missing delegate capability by running scanners or the legacy pipeline first.
+1. **Self-parse (no tools):** the model reads the source and builds its own IR/AST/SAST-style understanding by reasoning alone, then seals that source ledger.
+2. **Required tools:** it runs the packaged Docker analyzers (inventory + AST/IR, and corroborating Semgrep/Psalm) and reconciles its own parse against the machine parse — the difference is coverage signal.
+3. **Adjudicate:** using both, the same model traces, refutes, and returns one unified verdict.
+
+This project **never** spawns Worker/Reviewer sub-agents, mappers, investigators, or validators, never runs the legacy Phase 1/2/3 pipeline, and never fans out parallel sessions — that only wastes quota. The tools are mandatory support for the model's own parse, not a pipeline.
+
+Per-IDE entry points:
+
+- **Kiro:** start a new session so `.kiro/skills/` is discovered, then invoke the skill; CLI `kiro-cli chat --agent wp-security-audit`.
+- **Claude Code:** the skill lives in `.claude/skills/wp-security-audit/`; invoke `/wp-security-audit <plugin>` in the main session.
+- **Codex / Antigravity:** the same skill is mirrored under `.codex/` and `.agents/`.
 
 Active methodology:
 

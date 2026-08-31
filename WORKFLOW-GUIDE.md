@@ -16,22 +16,19 @@ The review is source-first and has one lifecycle:
 DISCOVERING → TRACING → ADJUDICATING → COMPLETE
 ```
 
-There is no required Phase 1 scan, Worker/Reviewer loop, cluster consensus, or separate Phase 3. The main IDE agent owns authoritative state and final verdicts.
+There is no required Phase 1 scan, Worker/Reviewer loop, cluster consensus, or separate Phase 3, and no sub-agent delegation. One IDE model owns authoritative state and the final verdict, and does the entire review itself.
 
-## Agent execution
+## Single-agent execution
 
-Default economical sequence:
+One model performs the whole review in one session:
 
-1. Main agent establishes scope and active semantics.
-2. `wp-surface-mapper` maps source-led surfaces without machine artifacts.
-3. Main agent seals the source ledger, runs read-only inventory + AST/IR extraction, and reconciles every structural discrepancy or parser gap in source.
-4. Main agent finalizes a bounded, reconciled trace queue and delegates it to `wp-trace-investigator`.
-5. Investigator traces source, transformations, guards, sinks, impact, and refutations.
-6. Main agent re-opens evidence, adjudicates, verifies that no structural obligation remains open, and reports.
+1. Establish scope and active semantics.
+2. **Self-parse (no tools):** the model reads the source and builds its own IR/AST/SAST-style map — surfaces, registrations, resolved callbacks, data-flow, sinks, persistence, trust boundaries — by reasoning alone, then seals the source ledger.
+3. **Run the required tools:** the same model runs read-only inventory + AST/IR extraction (and corroborating Semgrep/Psalm as needed) and reconciles every structural discrepancy or parser gap against source.
+4. **Trace and refute:** the same model finalizes a bounded, reconciled trace queue and traces source → transformations → guards → sinks → impact, with explicit refutations.
+5. **Adjudicate:** the same model re-opens evidence, assigns one verdict, verifies no structural obligation remains open, and reports.
 
-`wp-evidence-validator` is optional. Invoke it only when the user requests independent validation or a high-impact claim has a concrete unresolved contradiction. Do not create repeated review rounds, voting, parallel fan-out, or recursive sub-agents.
-
-For small plugins, the main agent may map and trace directly when delegation would cost more context than it saves.
+Do not spawn mappers, investigators, validators, or any Worker/Reviewer sub-agents; do not use repeated review rounds, voting, parallel fan-out, or recursive delegation. Extra sub-agents and sessions only waste quota without adding evidence. If a single high-impact disputed trace needs an independent double-check, the same model re-derives it from scratch inline rather than delegating.
 
 ## Context loading
 

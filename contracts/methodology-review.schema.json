@@ -1,12 +1,12 @@
 {
   "$id": "methodology-review.schema.json",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "title": "WordPress Methodology Review",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "target", "lifecycle", "scope", "architecture", "trust_boundaries", "coverage", "findings", "tool_diagnostics", "limitations"],
   "properties": {
-    "schema_version": { "const": "1.0.0" },
+    "schema_version": { "enum": ["1.0.0", "1.1.0"] },
     "target": {
       "type": "object",
       "additionalProperties": false,
@@ -45,6 +45,21 @@
     "limitations": { "type": "array", "items": { "type": "string" } }
   },
   "definitions": {
+    "authRequired": {
+      "enum": ["none", "subscriber", "contributor", "author", "editor", "admin", "system", "unknown"]
+    },
+    "storageLink": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["store_surface_id", "load_surface_id", "storage_key"],
+      "properties": {
+        "store_surface_id": { "type": "string", "pattern": "^SURF-[0-9]+$" },
+        "load_surface_id": { "type": "string", "pattern": "^SURF-[0-9]+$" },
+        "storage_key": { "type": ["string", "null"] },
+        "key_resolution": { "enum": ["literal", "dynamic"] },
+        "store_auth_required": { "$ref": "#/definitions/authRequired" }
+      }
+    },
     "location": {
       "type": "object",
       "additionalProperties": false,
@@ -74,6 +89,8 @@
         "registration": { "$ref": "#/definitions/location" },
         "callback": { "type": ["string", "null"] },
         "attacker_role": { "type": ["string", "null"] },
+        "auth_required": { "$ref": "#/definitions/authRequired" },
+        "resolution_confidence": { "enum": ["high", "medium", "low"] },
         "status": { "enum": ["MAPPED", "TRACED", "UNRESOLVED", "OUT_OF_SCOPE"] },
         "notes": { "type": "array", "items": { "type": "string" } }
       }
@@ -106,6 +123,7 @@
       "properties": {
         "finding_id": { "type": "string", "pattern": "^F-[0-9]+$" },
         "surface_ids": { "type": "array", "items": { "type": "string", "pattern": "^SURF-[0-9]+$" } },
+        "storage_link": { "$ref": "#/definitions/storageLink" },
         "verdict": { "enum": ["CONFIRMED", "UNCERTAIN", "RISK_NOTE", "REJECTED"] },
         "title": { "type": "string", "minLength": 1 },
         "vulnerability_class": { "type": ["string", "null"] },

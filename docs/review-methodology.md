@@ -1,17 +1,26 @@
 # Executable WordPress Review Methodology
 
-This is the canonical workflow for IDE-agent review. It replaces the Phase 1 → Phase 2 → Phase 3 runtime as the default. Legacy scripts remain optional diagnostics.
+This is the canonical workflow for IDE-agent review. It replaces the Phase 1 → Phase 2 → Phase 3 runtime as the default and is the only sanctioned way to run a review in this project. The legacy pipeline scripts are never executed as a review path.
+
+## Execution model — single agent, no pipeline
+
+One model performs the entire review in one session. This project **never** spawns Worker/Reviewer sub-agents, never runs the legacy Phase 1/2/3 pipeline, never uses cluster consensus, voting, revisions, or parallel fan-out. Those patterns only burn quota on redundant sub-agents and sessions. The reviewing model does all of the work itself:
+
+1. **Model-native parse first (no tools).** The model reads the plugin source and builds its own IR/AST/SAST-style understanding by reasoning alone — file/load graph, every registration and resolved callback, data-flow edges, sinks, persistence read/write edges, and trust boundaries — with zero tool assistance. This self-parse is sealed as the source-derived ledger.
+2. **Then run the required Docker tools.** Only after the self-parse is sealed does the model run the packaged analyzers (`inventory`, `ast`/IR, and corroborating `semgrep`/`psalm`). These are mandatory support for the model's own parse, not optional extras.
+3. **Reconcile — the difference is the signal.** The model compares its own parse against the tool output. Every parser-only surface, source-only surface, parse gap, and unresolved dynamic edge is an obligation re-opened in source.
+4. **The same model adjudicates.** Using both its own parse and the tool results, the one model traces, refutes, reads everything, and produces a single unified verdict. No proposal from any other agent is involved.
 
 ## Operating principles
 
-1. Source-first: understand plugin behavior before consulting machine extraction, pattern catalogues, or scanner output.
+1. Source-first: the model builds its own structural understanding of plugin behavior before consulting machine extraction, pattern catalogues, or scanner output.
 2. Coverage-accountable: record what was inspected, what remains unresolved, and why.
-3. Independent structural corroboration: seal a source-derived ledger, then compare it with read-only inventory and AST/IR artifacts.
+3. Independent structural corroboration: seal the model's self-parse ledger, then compare it with read-only inventory and AST/IR artifacts — the delta is coverage signal, not a verdict.
 4. Hypothesis-driven: suspicious code becomes a question, not a finding.
 5. Evidence-bound: trace registration → control → transformations → defenses → sensitive effect.
 6. Refute-first: attempt to disprove every mature hypothesis.
-7. Unified adjudication: use one verdict vocabulary; do not translate between phase states.
-8. Optional scanners: Semgrep and Psalm are non-blocking corroboration, never completion prerequisites or verdict authorities.
+7. Unified adjudication: one model, one verdict vocabulary; no phase states, no sub-agent proposals to translate.
+8. Required tools, non-authoritative: inventory and AST/IR are mandatory coverage support; Semgrep and Psalm are corroboration. None of them is ever a completion gate skip, a verdict, or a severity authority.
 9. Technical-first: determine exploitability before external bounty eligibility.
 
 ## Review lifecycle
@@ -64,6 +73,18 @@ Read callees and writers/readers of persistent state as needed. Do not stop at o
 
 Record defenses in context: authentication, nonce/signature, capability, object ownership, type/domain validation, prepared query, path containment, output encoding, framework defaults, and termination behavior.
 
+Run tracing as five sequential passes over the sealed ledger — deep on small slices first, then broad from collected evidence:
+
+1. **Per-surface trace** — group entry points by type in privilege-risk order (unauth AJAX → auth AJAX → REST → shortcode/block → cron/filters) and trace each to a verdict before opening the next.
+2. **Stored / cross-entry-point two-hop sweep** — match storage writes to reads **by key**; score reachability on the write leg; check sanitization at both write and read.
+3. **Signal / anomaly triage** — adjudicate every flagged `file:line`; do not invent new findings here; a rejection names the defense at `file:line`.
+4. **Unresolved-hook & coverage-gap backstop** — resolve dynamic hook names by hand; investigate files that use WP security functions but expose no mapped entry point.
+5. **Self-verify** — re-read the highest-severity chains and confirm each cited `file:line` lands on the claimed source/sink.
+
+The full technique catalogue for each pass — recall blind spots, guard three-state discipline, anti-hallucination anchoring, threat-profile weighting, and large-target chunking for one agent — is in `review-techniques.md` (on-demand reference; consult during these passes or for a late recall/precision audit).
+
+Core invariants: guard effectiveness is three-state (effective / ineffective / **unknown is not safe**); detect guards by structure, not by name; a signal is never a finding; never allow a silent drop — log every unresolved hook or unfollowed call; resolve structure before adjudicating exploitability; watch the hedging trap (`UNCERTAIN` is a backlog with a resolution path, not a wastebasket).
+
 ### 3. ADJUDICATING
 
 Attempt explicit refutations:
@@ -76,7 +97,7 @@ Attempt explicit refutations:
 - Does encoding/validation match the final sink context?
 - Does the claimed impact require absent code, unusual configuration, another vulnerability, or an unsupported runtime assumption?
 
-Assign exactly one verdict from `CONFIRMED`, `UNCERTAIN`, `RISK_NOTE`, `REJECTED`. The main agent owns the final verdict. A sub-agent proposal is advisory.
+Assign exactly one verdict from `CONFIRMED`, `UNCERTAIN`, `RISK_NOTE`, `REJECTED`. The single reviewing model owns the verdict; there is no separate proposer.
 
 ### 4. COMPLETE
 
@@ -93,18 +114,16 @@ Semgrep/Psalm absence, lack of authentication/Pro engine, or diagnostic failure 
 
 Do not claim that a plugin is clean. State that no confirmed finding was identified within the documented scope and limitations.
 
-## Sub-agent economy
+## Single-agent execution
 
-Default sequence:
+The whole review is performed by one model in one session:
 
-1. `wp-surface-mapper` performs bounded source inventory.
-2. The main agent seals the source ledger, runs inventory + AST/IR, and resolves structural discrepancies.
-3. `wp-trace-investigator` traces the reconciled queue and records refutations.
-4. The main agent adjudicates, re-checks evidence, and reports.
+1. The model self-parses the source (IR/AST/SAST by reasoning, no tools) and seals the source ledger.
+2. The same model runs the required inventory + AST/IR baseline and resolves every structural discrepancy against source.
+3. The same model traces the reconciled queue, records refutations, and adjudicates.
+4. The same model re-checks evidence and reports.
 
-Do not create Worker/Reviewer rounds, voting, cluster consensus, or parallel agents reading the same scope. Invoke `wp-evidence-validator` only when the user explicitly asks for independent validation or a high-impact claim has a concrete unresolved contradiction. Never delegate recursively.
-
-For a small plugin, the main agent may perform mapping and tracing directly if delegation would cost more context than it saves. The required structural baseline, reconciliation ledger, and output contract still apply.
+Do not spawn Worker/Reviewer sub-agents, mappers, investigators, or validators; do not use voting, cluster consensus, or parallel agents reading the same scope; do not delegate. Additional sub-agents and sessions only waste quota without adding evidence. If independent double-checking of a single high-impact disputed trace is genuinely needed, the same model re-derives it from scratch and states the second-pass reasoning inline — it does not fan out to another agent. The required structural baseline, reconciliation ledger, and output contract always apply.
 
 ## Tool protocol
 
@@ -146,4 +165,4 @@ Rules:
 9. Optional reportability section, clearly separated and policy-dated.
 10. Optional diagnostics performed, or `None`.
 
-The machine-readable contract is `contracts/methodology-review.schema.json`. While it remains at v1, represent the sealed ledger through `coverage.files_reviewed` and `coverage.surfaces`, record required inventory/AST runs in `tool_diagnostics`, and place any unresolved reconciliation obligation in `coverage.gaps`; do not emit undeclared top-level fields. The lifecycle gate above remains mandatory even though full machine enforcement awaits the v2 contract migration.
+The machine-readable contract is `contracts/methodology-review.schema.json` (v1.1.0). Represent the sealed ledger through `coverage.files_reviewed` and `coverage.surfaces`, record inventory/AST runs in `tool_diagnostics`, and place any unresolved reconciliation obligation in `coverage.gaps`; do not emit undeclared fields. For WordPress-specific finding classes use the v1.1 optional fields: anchor stored/second-order two-hop flows with `finding.storage_link` (write leg + read leg + `storage_key`), record normalized privilege in `surface.auth_required`, and note `surface.resolution_confidence` for dynamically-resolved hooks. The lifecycle gate above remains mandatory even though full machine enforcement awaits the v2 contract migration.

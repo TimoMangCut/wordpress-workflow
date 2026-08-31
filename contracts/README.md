@@ -13,7 +13,7 @@ A consumer must validate the contract it explicitly uses. File presence or a leg
 
 | File | Version | Produced by | Consumed by |
 |------|---------|-------------|-------------|
-| `methodology-review.schema.json` | 1.0.0 | Kiro/Codex methodology review | IDE report, optional persistence/resume |
+| `methodology-review.schema.json` | 1.1.0 | Single-agent methodology review (Kiro/Claude/Codex/Antigravity) | IDE report, optional persistence/resume |
 | `ir-output.schema.json` | 2.3.0 | `tools/bin/extract.php` | legacy prep, required structural evidence for methodology reconciliation |
 | `ir-slice.schema.json` | 1.3.0 | `tools/bin/prepare_agent_inputs.py` | Agents A1–A5 |
 | `agent-output.schema.json` | 1.0.0 | Agents A1–A5, B, C, D | merge script |
@@ -108,6 +108,15 @@ not via this schema library. IR schema is the ground-truth reference.
 ---
 
 ## Migration Log
+
+### Methodology review 1.0.0 → 1.1.0
+
+Date: 2026-09-01
+Minor (additive, backward-compatible — 1.0.0 outputs still validate; `schema_version` accepts `1.0.0` or `1.1.0`).
+Added optional fields for single-agent recall of WordPress-specific finding classes:
+- `finding.storage_link` (`{store_surface_id, load_surface_id, storage_key, key_resolution?, store_auth_required?}`) — first-class anchoring for stored/second-order two-hop flows (stored XSS, second-order SQLi), scoring reachability on the write leg.
+- `surface.auth_required` — normalized privilege enum (`none|subscriber|contributor|author|editor|admin|system|unknown`, same ladder as the legacy pipeline's `normalize_auth`) for comparable severity-by-privilege.
+- `surface.resolution_confidence` (`high|medium|low`) — honesty signal for dynamically-resolved (`UNRESOLVED`→resolved) hooks.
 
 ### Methodology review 1.0.0
 
