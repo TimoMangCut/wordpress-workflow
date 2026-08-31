@@ -81,7 +81,7 @@ class Gate:
             self.failures.append(f"{label}: {detail}")
 
 
-def run_gate(review: dict, ir: dict, inventory_exists: bool, ir_exists: bool) -> Gate:
+def run_gate(review: dict, ir: dict, inventory_exists: bool, ir_exists: bool, min_ep_coverage: float = 0.9) -> Gate:
     g = Gate()
     hay = _review_haystack(review)
 
@@ -122,18 +122,33 @@ def run_gate(review: dict, ir: dict, inventory_exists: bool, ir_exists: bool) ->
         g.check(bool(fileref) and fileref in hay, "IR coverage_gap accounted",
                 f"coverage-gap file {fileref or cg!r} is not referenced anywhere in the review")
 
-    # 6. Every IR entry point is either mapped to a surface or explicitly deferred (warn)
+    # 6. Every IR entry point is either mapped to a surface or explicitly deferred (warn),
+    #    AND the overall accounted fraction must clear the coverage floor (hard fail).
+    #    This is the guard against declaring "no finding / clean" over a sampled surface —
+    #    the review-this-plugin failure mode where ~5% of entry points were read and a
+    #    whole-plugin conclusion was presented. A review is not COMPLETE at 5% coverage.
     surface_files = {
         _basename((s.get("registration") or {}).get("path", "")).lower()
         for s in (review.get("coverage", {}) or {}).get("surfaces", []) or []
     }
-    for ep in ir.get("entry_points", []) or []:
+    eps = ir.get("entry_points", []) or []
+    accounted = 0
+    for ep in eps:
         fileref = _basename(ep.get("file", "")).lower()
         hook = str(ep.get("hook_name", "")).lower()
         mapped = (fileref and (fileref in surface_files or fileref in hay)) or (hook and hook in hay)
-        g.check(bool(mapped), "IR entry_point mapped",
-                f"entry point {hook or fileref or ep.get('id')} has no surface and no mention in the review",
-                warn_only=True)
+        if mapped:
+            accounted += 1
+        else:
+            g.check(False, "IR entry_point mapped",
+                    f"entry point {hook or fileref or ep.get('id')} has no surface and no mention in the review",
+                    warn_only=True)
+    if eps:
+        frac = accounted / len(eps)
+        g.check(frac >= min_ep_coverage, "surface coverage floor",
+                f"only {accounted}/{len(eps)} IR entry points ({frac:.0%}) are accounted for in the review; "
+                f"floor is {min_ep_coverage:.0%}. Read/disposition the remaining surfaces (see slice_ir.py) "
+                f"before claiming COMPLETE — a whole-plugin verdict over a sampled surface is not allowed.")
 
     return g
 
@@ -145,6 +160,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--inventory", type=Path, default=None)
     parser.add_argument("--slug", default=None)
     parser.add_argument("--strict", action="store_true", help="Treat warnings as failures.")
+    parser.add_argument("--min-ep-coverage", type=float, default=0.9,
+                        help="Fraction of IR entry points that must be accounted for in the review (default 0.9). "
+                             "Set to 0 to disable the coverage floor for a deliberately slice-scoped run.")
     args = parser.parse_args(argv)
 
     review = _load_json(args.review, "review")
@@ -157,7 +175,7 @@ def main(argv: list[str] | None = None) -> int:
     inventory_exists = bool(inv_path and Path(inv_path).exists())
     ir = _load_json(Path(ir_path), "ir") if ir_exists else {}
 
-    g = run_gate(review, ir, inventory_exists, ir_exists)
+    g = run_gate(review, ir, inventory_exists, ir_exists, min_ep_coverage=args.min_ep_coverage)
 
     for label in g.passes:
         print(f"PASS  {label}")

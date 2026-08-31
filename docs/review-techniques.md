@@ -12,12 +12,77 @@ model runs over the same source.
 
 ---
 
+## Pass 0 — Trust boundaries & intended flow (do this FIRST, before any vuln-class hunt)
+
+The passes below are organized around where input enters and where it sinks. That framing
+finds injection and access-control bugs but **systematically misses the highest-value class:
+a broken trust boundary or a corrupted execution flow.** Do this pass first, and do not let it
+collapse into "look for IDOR/BOLA/BAC" — **breaking a trust boundary is not necessarily an
+access-control bug.**
+
+### Step A — Map the trust boundaries
+List every boundary the plugin's data crosses, not just user↔user:
+
+- **client ↔ store** (browser/shopper to WordPress)
+- **store ↔ external platform** (payment processor, SaaS, webhook sender)
+- **role ↔ role** (unauth → customer → shop-manager → admin)
+- **step ↔ step within one flow** (the order of operations in checkout, payment, onboarding,
+  session establishment — a boundary in *time*, not identity)
+
+### Step B — For each crossing, ask the only two questions that matter
+1. **What proves this crossing is legitimate?** (a signature, a nonce, a capability, a secret
+   token, a server-authoritative fetch, a required prior step)
+2. **Can that proof be forged, replayed, confused, or skipped?** — regardless of vuln class.
+
+### Step C — The break is any of these, not just access control
+A trust-boundary break / flow corruption can be:
+
+- **Data-authenticity trust** — acting on data whose origin/integrity was never verified
+  (a webhook/event body processed without a signature check; trusting a value because it
+  "arrived", not because it was proven).
+- **Origin trust** — treating a client-controllable signal as proof of origin
+  (`User-Agent`, a header, an IP, a referrer as "this came from the trusted platform").
+- **Value trust** — trusting a client-supplied value that must be server-authoritative
+  (amount, price, currency, payment status, quantity, discount, "already paid").
+- **Control-disabling** — turning off a security control for a request
+  (nonce/CSRF check disabled, email/identity verification skipped, validation bypassed).
+- **Invariant / flow-sequencing violation** — reaching a state out of order, skipping a
+  required step, replaying a step, or a race that breaks an atomicity assumption
+  (mark an order paid without the payment step; reuse a one-time token; TOCTOU).
+- **Second-order trust** — a lower-privileged actor *writes* data in one step (order/user
+  meta, session, an option, a stored field) that is *trusted* in a security decision in a
+  later step or request.
+
+### Step D — Name the invariant each core flow assumes, then hunt its violation
+For every core flow, write the security invariant in one line, then look for the path that
+violates it:
+
+- **Payment:** an order becomes "paid" *only* when a real payment for the correct amount
+  succeeded, proven server-side.
+- **Checkout:** the charged amount equals the server-computed cart total; the payer owns the
+  payment instrument.
+- **Session / identity:** the current user is established *only* from a credential the requester
+  provably holds.
+- **Onboarding / config:** account/security settings change *only* on an authorized,
+  authenticated action.
+
+A finding here does not need a sink. "The store believes X because the client said X, and X
+drives a security-relevant decision" is already the finding.
+
+### Do NOT anchor on known CVEs or model priors
+Check the plugin **version** and reason from the current source. A remembered CVE or "this
+looks like CVE-XXXX" is Tier-5 evidence — a SIGNAL to investigate, never a conclusion, and often
+already patched in the version in front of you. Chasing old vulnerabilities is how you miss the
+new one.
+
+---
+
 ## The five analysis passes
 
-Run these in order over the sealed self-parse ledger. Discovery depth and synthesis breadth
-are deliberately separated: trace deep on small slices first, then reason across the whole
-plugin from what you already collected — never one giant sweep that is broad and deep and
-therefore shallow everywhere.
+Run these after Pass 0, in order, over the sealed self-parse ledger. Discovery depth and
+synthesis breadth are deliberately separated: trace deep on small slices first, then reason
+across the whole plugin from what you already collected — never one giant sweep that is broad and
+deep and therefore shallow everywhere.
 
 ### Pass 1 — Per-surface entry-point trace
 Group surfaces by **entry-point type** and work them in privilege-risk order, not in file order
@@ -28,6 +93,14 @@ and not grouped by function:
 3. REST routes — classified by `permission_callback`.
 4. Shortcodes and blocks — contributor+.
 5. Cron, `init`/`template_redirect`, security-sensitive filters.
+
+**IR labels are navigation, not verdicts.** The IR `auth_level` is set at registration and does
+not see a `current_user_can()` enforced *inside* the callback, nor can it resolve
+`[$this,'check_permission']` to its (possibly inherited) definition. So `auth_level: unknown`
+means **UNAUDITED, read it** — never "probably fine, low priority". Every entry point in the
+class must be read: resolve the real permission (follow the method, including inheritance) and
+read the callback body for internal capability checks, before it is dispositioned. Do not skip a
+surface class because the tool could not label it.
 
 For each entry point, hold its IR slice + the referenced source + relevant tool hits + threat
 context together, then trace `registration → callback → attacker control → transformations →
@@ -176,6 +249,13 @@ False positives destroy trust in every future report. Refute with these:
 
 ## Severity in application context
 
+- **Score by least-privilege reachability, and answer "does it grant a capability the actor
+  doesn't already have?"** — before presenting any finding. Determine the *lowest* privilege that
+  can reach it, then ask whether that actor gains something they couldn't already do. A control
+  break reachable only by a role that already holds the impacted power (e.g. a shop-manager
+  forging an event a shop-manager could already trigger) has **no concrete impact** — say so and
+  downgrade. Real impact means a *lower* trust level crosses into a *higher* one, or an outsider
+  corrupts a flow.
 - **Score stored findings on the write leg.** Two surfaces, two auth levels: exploitability is
   driven by who can plant the payload, not only where it detonates.
 - **Weight by plugin purpose.** Read the readme/keywords, pick the category, and front-load its

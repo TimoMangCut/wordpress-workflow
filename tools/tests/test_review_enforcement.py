@@ -78,6 +78,40 @@ class TestGateFailsClosed(unittest.TestCase):
         self.assertEqual(r.returncode, 1)
         self.assertIn("UNRESOLVED disposition", r.stdout)
 
+    def test_sampled_surface_coverage_fails(self):
+        """Guard against the review-this-plugin failure: a whole-plugin verdict over a
+        sampled surface. A review that accounts for far fewer entry points than the IR has
+        must fail the coverage floor."""
+        many_ep_ir = {
+            "metadata": {"plugin_slug": "big"},
+            "entry_points": [
+                {"id": f"EP-{i}", "type": "rest_route", "hook_name": f"r{i}",
+                 "auth_level": "unknown", "file": f"inc/f{i}.php", "line": 1,
+                 "callback": {"type": "function", "name": f"cb{i}"}}
+                for i in range(20)
+            ],
+            "guards": [], "sources": [], "sinks": [], "anomalies": [],
+            "unresolved_hooks": [], "coverage_gaps": [],
+        }
+        review = {
+            "schema_version": "1.1.0", "target": {"slug": "big", "path": "p"},
+            "lifecycle": "COMPLETE",
+            "scope": {"included": [], "excluded": [], "assumptions": []},
+            "architecture": [], "trust_boundaries": [],
+            "coverage": {"surfaces": [
+                {"surface_id": "SURF-1", "kind": "rest", "registration": {"path": "inc/f0.php", "line": 1}, "status": "TRACED", "notes": ["read"]}
+            ], "secure_areas": [], "gaps": []},
+            "findings": [], "tool_diagnostics": [], "limitations": [],
+        }
+        ir_path = write_tmp(many_ep_ir)
+        review_path = write_tmp(review)
+        r = run("complete_gate.py", review_path, "--ir", ir_path, "--inventory", str(INVENTORY))
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("surface coverage floor", r.stdout)
+        # ...but a deliberately slice-scoped run (floor disabled) is allowed to pass that check.
+        r2 = run("complete_gate.py", review_path, "--ir", ir_path, "--inventory", str(INVENTORY), "--min-ep-coverage", "0")
+        self.assertNotIn("FAIL  surface coverage floor", r2.stdout)
+
 
 class TestMetricsRun(unittest.TestCase):
     def test_single_metrics(self):

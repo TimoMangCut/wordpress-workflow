@@ -73,7 +73,7 @@ Read callees and writers/readers of persistent state as needed. Do not stop at o
 
 Record defenses in context: authentication, nonce/signature, capability, object ownership, type/domain validation, prepared query, path containment, output encoding, framework defaults, and termination behavior.
 
-Run tracing as five sequential passes over the sealed ledger — deep on small slices first, then broad from collected evidence:
+**Pass 0 — Trust boundaries & intended flow (do this FIRST).** Before any input→sink hunt, map every trust boundary (client↔store, store↔platform, role↔role, and step↔step within a flow) and for each crossing ask: what proves it legitimate, and can that proof be forged / replayed / confused / skipped? A trust-boundary break is **not necessarily** IDOR/BOLA/BAC — it includes data-authenticity trust (acting on unverified/unsigned data), origin trust (a client header/UA as proof of origin), value trust (a client amount/price/status treated as authoritative), control-disabling (nonce/verification turned off), invariant/flow-sequencing violations (mark paid without paying, reuse a one-time token, out-of-order state, races), and second-order trust (low-priv actor writes data trusted downstream). For each core flow state its security invariant in one line, then hunt the path that violates it. The full method is in `review-techniques.md` → "Pass 0". Then run the five surface passes:
 
 1. **Per-surface trace** — group entry points by type in privilege-risk order (unauth AJAX → auth AJAX → REST → shortcode/block → cron/filters) and trace each to a verdict before opening the next.
 2. **Stored / cross-entry-point two-hop sweep** — match storage writes to reads **by key**; score reachability on the write leg; check sanitization at both write and read.
@@ -84,6 +84,14 @@ Run tracing as five sequential passes over the sealed ledger — deep on small s
 The full technique catalogue for each pass — recall blind spots, guard three-state discipline, anti-hallucination anchoring, threat-profile weighting, and large-target chunking for one agent — is in `review-techniques.md` (on-demand reference; consult during these passes or for a late recall/precision audit).
 
 Core invariants: guard effectiveness is three-state (effective / ineffective / **unknown is not safe**); detect guards by structure, not by name; a signal is never a finding; never allow a silent drop — log every unresolved hook or unfollowed call; resolve structure before adjudicating exploitability; watch the hedging trap (`UNCERTAIN` is a backlog with a resolution path, not a wastebasket).
+
+Coverage & labelling discipline (learned the hard way):
+
+- **IR labels are navigation, not verdicts.** `auth_level: unknown` (or any unresolved `permission_callback`) means **UNAUDITED — read it**; resolve the real permission (follow inherited methods) and read the callback body for internal capability checks. Never treat "unknown" as a priority discount or a clean verdict.
+- **No whole-plugin conclusion over a sampled surface.** Do not say "no finding" / "clean" / "the candidate list is complete" for a surface class until every surface in it is read; a bounded result must be labelled slice-scoped. Work the `slice_ir.py` plan batch by batch — do not cherry-pick.
+- **Finding one issue is not a stopping condition.** Continue until the surface is covered; the output is the full set per verdict, with coverage proof.
+- **Ground severity in least-privilege reachability.** For each finding, state the lowest privilege that can reach it and answer "does it grant a capability the actor does not already have?" A break reachable only at a role that already holds the impacted power has no concrete impact — downgrade and say so.
+- **Do not anchor on known CVEs / model priors.** Check the version, reason from source; a remembered CVE is Tier-5 signal, often already patched.
 
 ### 3. ADJUDICATING
 
@@ -118,7 +126,7 @@ python3 tools/bin/validate_review.py <review.json>          # schema conformance
 python3 tools/bin/complete_gate.py <review.json> --slug <slug>   # reconciliation obligations
 ```
 
-`validate_review.py` must exit 0 (output conforms to `contracts/methodology-review.schema.json`). `complete_gate.py` must exit 0 — it fails closed when a finding lacks an anchored refutation, an `UNRESOLVED` surface lacks a disposition, a required tool artifact is missing, or any IR `unresolved_hook`/`coverage_gap`/`entry_point` is unaccounted for in the review. Do not claim `COMPLETE` while either exits non-zero; resolve the reported obligations and re-run. A conforming golden example lives at `contracts/examples/`.
+`validate_review.py` must exit 0 (output conforms to `contracts/methodology-review.schema.json`). `complete_gate.py` must exit 0 — it fails closed when a finding lacks an anchored refutation, an `UNRESOLVED` surface lacks a disposition, a required tool artifact is missing, any IR `unresolved_hook`/`coverage_gap`/`entry_point` is unaccounted for, or **the accounted fraction of IR entry points is below the coverage floor** (default 90% via `--min-ep-coverage`; the guard against declaring a whole-plugin verdict over a sampled surface). A deliberately partial run must pass `--min-ep-coverage 0` and be reported as slice-scoped, not COMPLETE. Do not claim `COMPLETE` while either exits non-zero; resolve the reported obligations and re-run. A conforming golden example lives at `contracts/examples/`.
 
 For an intrinsic quality read (no external ground truth, so no known-CVE bias), run `python3 tools/bin/review_metrics.py <review.json> --ir <ir.json>` — surface/IR coverage, anchored-refutation rate, and the `UNCERTAIN` rate (a rising rate is the hedging-trap signal). `--compare <review_b.json>` reports run-to-run finding overlap as a reproducibility proxy.
 
