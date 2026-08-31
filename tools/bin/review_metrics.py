@@ -112,19 +112,24 @@ def single_metrics(review: dict, ir: dict | None) -> dict:
 
     if ir is not None:
         hay = _haystack(review)
+
+        def accounted(*tokens: str) -> bool:
+            # A token accounts for an obligation only if it is non-empty AND present in the
+            # review. Guard against the empty string, which is a substring of everything.
+            return any(t and t in hay for t in tokens)
+
         eps = ir.get("entry_points", []) or []
         ep_acc = sum(
             1 for ep in eps
-            if (_basename(ep.get("file", "")).lower() in hay) or (str(ep.get("hook_name", "")).lower() in hay)
+            if accounted(_basename(ep.get("file", "")).lower(), str(ep.get("hook_name", "")).lower())
         )
         uhs = ir.get("unresolved_hooks", []) or []
         uh_acc = sum(
             1 for uh in uhs
-            if str(uh.get("hook_name") or uh.get("name") or "").lower() in hay
-            or _basename(uh.get("file", "")).lower() in hay
+            if accounted(str(uh.get("hook_name") or uh.get("name") or "").lower(), _basename(uh.get("file", "")).lower())
         )
         cgs = ir.get("coverage_gaps", []) or []
-        cg_acc = sum(1 for cg in cgs if _basename(cg.get("file", "")).lower() in hay)
+        cg_acc = sum(1 for cg in cgs if accounted(_basename(cg.get("file", "")).lower()))
         metrics["ir_entry_points_accounted_pct"] = _pct(ep_acc, len(eps))
         metrics["ir_unresolved_hooks_accounted_pct"] = _pct(uh_acc, len(uhs))
         metrics["ir_coverage_gaps_accounted_pct"] = _pct(cg_acc, len(cgs))

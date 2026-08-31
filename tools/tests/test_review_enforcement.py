@@ -92,6 +92,16 @@ class TestMetricsRun(unittest.TestCase):
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertEqual(json.loads(r.stdout)["stability"]["jaccard_overlap_pct"], 100.0)
 
+    def test_empty_hookname_obligation_is_not_falsely_accounted(self):
+        """Regression: an unresolved_hook with an empty hook_name that the review never
+        mentions must NOT count as accounted (the empty string is a substring of everything)."""
+        from tools.bin import review_metrics  # noqa: PLC0415
+        ir = {"unresolved_hooks": [{"file": "includes/unmentioned.php", "line": 1, "hook_arg_type": "constant"}],
+              "coverage_gaps": [], "entry_points": []}
+        review = {"coverage": {"gaps": [], "files_reviewed": [], "surfaces": [], "secure_areas": []}, "findings": []}
+        m = review_metrics.single_metrics(review, ir)
+        self.assertEqual(m["ir_unresolved_hooks_accounted_pct"], 0.0)
+
 
 if __name__ == "__main__":
     unittest.main()
