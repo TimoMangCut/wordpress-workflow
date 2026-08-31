@@ -108,7 +108,19 @@ Do not mark `COMPLETE` until:
 - inventory and AST/IR extraction ran successfully against the selected source, or an extraction failure is explicitly recorded and every affected file is manually covered;
 - every parser-only/source-only discrepancy has a resolved disposition;
 - every parse gap and unresolved dynamic edge is resolved or manually bounded with evidence;
-- no machine-only candidate remains unreviewed in source.
+- no machine-only candidate remains unreviewed in source;
+- the machine-readable review passes both enforcement checks (below).
+
+This gate is enforced by code, not honour system. Produce the review JSON, then run:
+
+```bash
+python3 tools/bin/validate_review.py <review.json>          # schema conformance
+python3 tools/bin/complete_gate.py <review.json> --slug <slug>   # reconciliation obligations
+```
+
+`validate_review.py` must exit 0 (output conforms to `contracts/methodology-review.schema.json`). `complete_gate.py` must exit 0 — it fails closed when a finding lacks an anchored refutation, an `UNRESOLVED` surface lacks a disposition, a required tool artifact is missing, or any IR `unresolved_hook`/`coverage_gap`/`entry_point` is unaccounted for in the review. Do not claim `COMPLETE` while either exits non-zero; resolve the reported obligations and re-run. A conforming golden example lives at `contracts/examples/`.
+
+For an intrinsic quality read (no external ground truth, so no known-CVE bias), run `python3 tools/bin/review_metrics.py <review.json> --ir <ir.json>` — surface/IR coverage, anchored-refutation rate, and the `UNCERTAIN` rate (a rising rate is the hedging-trap signal). `--compare <review_b.json>` reports run-to-run finding overlap as a reproducibility proxy.
 
 Semgrep/Psalm absence, lack of authentication/Pro engine, or diagnostic failure does not block completion. Record it only when relevant.
 

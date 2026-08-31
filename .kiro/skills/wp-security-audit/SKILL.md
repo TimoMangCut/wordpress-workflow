@@ -32,7 +32,7 @@ The method is a strict order: **self-parse first, then run the required tools, t
 ## Default execution
 
 1. Establish target, scope, constraints, available source/dependencies, and whether reportability is requested. Maintain authoritative state using lifecycle `DISCOVERING → TRACING → ADJUDICATING → COMPLETE`.
-2. **Self-parse (no tools).** Read the plugin source and build your own IR/AST/SAST-style understanding by reasoning alone — file/load graph, every registration (hooks, REST, AJAX, shortcodes, cron, CLI) and resolved callback, data-flow edges, sinks, persistence read/write edges, and trust boundaries. Do not run any tool during this step. Seal this as the source-derived coverage ledger and a bounded trace queue of hypotheses (not vulnerabilities).
+2. **Self-parse (no tools).** Read the plugin source and build your own IR/AST/SAST-style understanding by reasoning alone — file/load graph, every registration (hooks, REST, AJAX, shortcodes, cron, CLI) and resolved callback, data-flow edges, sinks, persistence read/write edges, and trust boundaries. Do not run any tool during this step. Seal this as the source-derived coverage ledger and a bounded trace queue of hypotheses (not vulnerabilities). Assign every surface a stable `SURF-NNN` identifier (the output contract requires it).
 3. **Run the required tools.** Only after the self-parse is sealed, run the packaged read-only baseline, then optional corroboration when a concrete question exists:
 
    ```bash
@@ -45,7 +45,14 @@ The method is a strict order: **self-parse first, then run the required tools, t
 
 4. **Reconcile — the difference is the signal.** Compare your own parse against the tool output. Every parser-only surface, source-only surface, parse gap, unresolved callback, and dynamic edge is an obligation re-opened in source. Parser absence is never negative evidence. Unresolved obligations block `COMPLETE`.
 5. **Trace and refute.** Using both your own parse and the tool results, trace each hypothesis `registration → callback → attacker control → propagation/storage → transformations → guards → sensitive operation → impact`, and attempt at least one concrete refutation per mature hypothesis.
-6. **Adjudicate and report.** You own the verdict. Perform final refutation, evidence re-check, unified adjudication, and coverage reconciliation, then return one unified review. Persist a JSON/Markdown report only if requested or needed for resume.
+6. **Adjudicate and report.** You own the verdict. Perform final refutation, evidence re-check, unified adjudication, and coverage reconciliation, then produce the machine-readable review (`contracts/methodology-review.schema.json`; golden example in `contracts/examples/`). Before claiming `COMPLETE`, run the enforcement checks and resolve anything they report — the gate is code, not honour system:
+
+   ```bash
+   python3 tools/bin/validate_review.py <review.json>              # must exit 0 (schema conformance)
+   python3 tools/bin/complete_gate.py <review.json> --slug <slug>  # must exit 0 (reconciliation obligations)
+   ```
+
+   Persist a JSON/Markdown report only if requested or needed for resume.
 
 ## Knowledge disclosure
 

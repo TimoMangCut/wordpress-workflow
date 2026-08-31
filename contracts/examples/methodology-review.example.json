@@ -1,0 +1,105 @@
+{
+  "schema_version": "1.1.0",
+  "target": {
+    "slug": "example-plugin",
+    "path": "plugins/example-plugin",
+    "version": "1.0.0"
+  },
+  "lifecycle": "COMPLETE",
+  "scope": {
+    "included": ["includes/ajax.php", "includes/loader.php", "includes/legacy-form.php"],
+    "excluded": ["assets/", "vendor/"],
+    "assumptions": ["Reviewed at plugin version 1.0.0 as shipped; no external mu-plugins override these hooks."]
+  },
+  "architecture": [
+    {
+      "description": "Single AJAX controller registered from the bootstrap loader; no REST or block surfaces.",
+      "locations": [{ "path": "includes/loader.php", "line": 12, "symbol": "MyPlugin\\Loader::register" }]
+    }
+  ],
+  "trust_boundaries": [
+    {
+      "description": "Unauthenticated network -> wp_ajax_nopriv handler; the AJAX callback is the first trust boundary.",
+      "locations": [{ "path": "includes/ajax.php", "line": 12, "symbol": "MyPlugin\\Ajax::search" }]
+    }
+  ],
+  "coverage": {
+    "files_reviewed": ["includes/ajax.php", "includes/loader.php", "includes/legacy-form.php"],
+    "surfaces": [
+      {
+        "surface_id": "SURF-1",
+        "kind": "ajax_nopriv",
+        "registration": { "path": "includes/ajax.php", "line": 12, "symbol": "wp_ajax_nopriv_myplugin_search" },
+        "callback": "MyPlugin\\Ajax::search",
+        "attacker_role": "unauthenticated visitor",
+        "auth_required": "none",
+        "status": "TRACED",
+        "notes": ["Reachable without authentication or a valid nonce."]
+      },
+      {
+        "surface_id": "SURF-2",
+        "kind": "ajax_dynamic",
+        "registration": { "path": "includes/loader.php", "line": 40, "symbol": "wp_ajax_myplugin_dynamic" },
+        "attacker_role": null,
+        "status": "UNRESOLVED",
+        "resolution_confidence": "low",
+        "notes": ["Hook name wp_ajax_myplugin_dynamic is built from a class property and is not statically resolvable; manually traced the property assignment in Loader::__construct and confirmed the branch is never registered for nopriv, so it is not attacker-reachable at the unauthenticated boundary."]
+      }
+    ],
+    "secure_areas": [
+      {
+        "description": "Settings save handler uses check_admin_referer and current_user_can('manage_options') that both gate the update.",
+        "locations": [{ "path": "includes/loader.php", "line": 88 }]
+      }
+    ],
+    "gaps": [
+      "includes/legacy-form.php uses wp_verify_nonce but registers no entry point (IR coverage_gap); manually reviewed — it is dead code not included in any load path, so no reachable surface.",
+      "includes/loader.php:40 dynamic hook wp_ajax_myplugin_dynamic (SURF-2) is unresolved by static analysis; disposition recorded on SURF-2."
+    ]
+  },
+  "findings": [
+    {
+      "finding_id": "F-1",
+      "surface_ids": ["SURF-1"],
+      "verdict": "CONFIRMED",
+      "title": "Unauthenticated SQL injection in the AJAX search handler",
+      "vulnerability_class": "sql_injection",
+      "severity": "high",
+      "confidence": "high",
+      "hypothesis": "An unauthenticated visitor controls $_POST['q'] via wp_ajax_nopriv_myplugin_search and reaches an unprepared $wpdb->query, allowing SQL injection.",
+      "attacker_prerequisites": ["Network access to admin-ajax.php; no authentication and no nonce required."],
+      "trace": [
+        { "kind": "REGISTRATION", "location": { "path": "includes/ajax.php", "line": 12 }, "description": "add_action('wp_ajax_nopriv_myplugin_search', [MyPlugin\\Ajax::class, 'search'])." },
+        { "kind": "SOURCE", "location": { "path": "includes/ajax.php", "line": 16 }, "description": "$q = $_POST['q']; attacker-controlled string." },
+        { "kind": "GUARD", "location": { "path": "includes/ajax.php", "line": 14 }, "description": "wp_verify_nonce is called but its return value is assigned and never gates execution — ineffective." },
+        { "kind": "SINK", "location": { "path": "includes/ajax.php", "line": 21 }, "description": "$wpdb->query(\"SELECT ... WHERE name LIKE '$q'\") with no prepare/esc_sql." },
+        { "kind": "IMPACT", "location": { "path": "includes/ajax.php", "line": 21 }, "description": "Arbitrary SQL executes with the site's DB privileges." }
+      ],
+      "defenses": [
+        {
+          "description": "A nonce check is present but ineffective: its boolean result is stored and never used to stop the handler.",
+          "locations": [{ "path": "includes/ajax.php", "line": 14 }]
+        }
+      ],
+      "refutations": [
+        {
+          "description": "Tried to refute by checking whether $wpdb->prepare wraps the query within 30 lines and whether esc_sql/intval sanitizes $q — neither is present; the raw value is concatenated into the query.",
+          "locations": [{ "path": "includes/ajax.php", "line": 21 }]
+        }
+      ],
+      "impact": "Unauthenticated attacker can read or modify arbitrary database contents via the search parameter.",
+      "assumptions": ["No web application firewall normalizes or blocks the payload in the target deployment."],
+      "reportability": { "status": "not_requested" }
+    }
+  ],
+  "tool_diagnostics": [
+    {
+      "question": "Does static extraction confirm the nonce guard is ineffective and the sink is unprepared?",
+      "static_gap": "Self-parse read the guard as ineffective; needed independent corroboration of guard effectiveness and prepare usage.",
+      "tool": "ast",
+      "command": "bash tools/bin/wp-audit-tools.sh ast plugins/example-plugin",
+      "result": "IR guards[].is_effective=false for the nonce; sinks[].uses_prepared_statement=false for $wpdb->query — corroborates the self-parse."
+    }
+  ],
+  "limitations": ["Synthetic example used to exercise the output contract and the COMPLETE gate; not a real plugin review."]
+}

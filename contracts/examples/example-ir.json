@@ -1,0 +1,77 @@
+{
+  "metadata": {
+    "plugin": "example-plugin",
+    "extractor_version": "example",
+    "note": "Synthetic IR fixture for the golden example. Not a real plugin."
+  },
+  "entry_points": [
+    {
+      "id": "EP-1",
+      "type": "ajax_nopriv",
+      "hook_name": "wp_ajax_nopriv_myplugin_search",
+      "auth_level": "none",
+      "file": "includes/ajax.php",
+      "line": 12,
+      "callback": "MyPlugin\\Ajax::search"
+    }
+  ],
+  "guards": [
+    {
+      "entry_point_id": "EP-1",
+      "type": "nonce",
+      "function_called": "wp_verify_nonce",
+      "file": "includes/ajax.php",
+      "line": 14,
+      "is_effective": false
+    }
+  ],
+  "sources": [
+    {
+      "id": "SRC-1",
+      "entry_point_id": "EP-1",
+      "type": "http_post",
+      "variable": "$_POST",
+      "key": "q",
+      "file": "includes/ajax.php",
+      "line": 16
+    }
+  ],
+  "sinks": [
+    {
+      "id": "SNK-1",
+      "entry_point_id": "EP-1",
+      "category": "sql",
+      "function_called": "$wpdb->query",
+      "uses_prepared_statement": false,
+      "file": "includes/ajax.php",
+      "line": 21
+    }
+  ],
+  "anomalies": [
+    {
+      "id": "ANOM-1",
+      "rule_id": "01-sqli",
+      "type": "unsanitized_sql",
+      "severity": "high",
+      "cwe_id": "CWE-89",
+      "entry_point_id": "EP-1",
+      "description": "User input reaches an unprepared SQL query.",
+      "evidence": { "file": "includes/ajax.php", "line": 21 }
+    }
+  ],
+  "unresolved_hooks": [
+    {
+      "hook_name": "wp_ajax_myplugin_dynamic",
+      "file": "includes/loader.php",
+      "line": 40,
+      "reason": "hook name built from a class property; not statically resolvable"
+    }
+  ],
+  "coverage_gaps": [
+    {
+      "file": "includes/legacy-form.php",
+      "signals": ["wp_verify_nonce"],
+      "reason": "uses a WP security function but no entry point was mapped to it"
+    }
+  ]
+}

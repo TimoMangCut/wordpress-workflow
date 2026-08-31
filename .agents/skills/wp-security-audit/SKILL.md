@@ -45,7 +45,14 @@ The method is a strict order: **self-parse first, then run the required tools, t
 
 4. **Reconcile — the difference is the signal.** Compare your own parse against the tool output. Every parser-only surface, source-only surface, parse gap, unresolved callback, and dynamic edge is an obligation re-opened in source. Parser absence is never negative evidence. Unresolved obligations block `COMPLETE`.
 5. **Trace and refute.** Using both your own parse and the tool results, trace each hypothesis `registration → callback → attacker control → propagation/storage → transformations → guards → sensitive operation → impact`, evaluate guards in exact WordPress/control-flow context, and attempt at least one concrete refutation per mature hypothesis.
-6. **Adjudicate and report.** You own the verdict. Perform final refutation, evidence re-check, unified adjudication, and coverage reconciliation, then return one unified review matching `../../../contracts/methodology-review.schema.json`. Persist to `reports/methodology/<slug>/` only if requested.
+6. **Adjudicate and report.** You own the verdict. Perform final refutation, evidence re-check, unified adjudication, and coverage reconciliation, then produce the machine-readable review matching `../../../contracts/methodology-review.schema.json` (golden example in `contracts/examples/`). Before claiming `COMPLETE`, run the enforcement checks and resolve anything they report — the gate is code, not honour system:
+
+   ```bash
+   python3 tools/bin/validate_review.py <review.json>              # must exit 0 (schema conformance)
+   python3 tools/bin/complete_gate.py <review.json> --slug <slug>  # must exit 0 (reconciliation obligations)
+   ```
+
+   Persist to `reports/methodology/<slug>/` only if requested.
 
 ## Knowledge disclosure
 

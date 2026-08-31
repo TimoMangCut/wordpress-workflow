@@ -23,6 +23,13 @@ One model does the whole review in one session — no sub-agents, no pipeline. S
 4. **Trace & refute:** trace registration → attacker control → transform/storage → defenses → sensitive operation → impact, with at least one concrete refutation per mature hypothesis.
 5. **Adjudicate:** assign `CONFIRMED`, `UNCERTAIN`, `RISK_NOTE`, or `REJECTED` yourself; re-open cited evidence and reconcile coverage before reporting.
 
+Assign every surface a stable `SURF-NNN` id (the contract requires it). Produce the machine-readable review against `../../../contracts/methodology-review.schema.json` (golden example: `contracts/examples/`), then before claiming `COMPLETE` run the code-enforced gate and fix anything it reports:
+
+```bash
+python3 tools/bin/validate_review.py <review.json>              # must exit 0 (schema)
+python3 tools/bin/complete_gate.py <review.json> --slug <slug>  # must exit 0 (reconciliation obligations)
+```
+
 Do not use Phase 1/2/3, Worker/Reviewer loops, cluster consensus, sub-agent delegation, or scanner severity as review authority. `inventory`/`ast` are required support; `semgrep`/`psalm` are optional corroboration answering a concrete recorded question. No tool is ever a verdict authority.
 
 After source-led discovery, consult `../../../docs/wordpress-pattern-catalogue.md` only for late recall. Consult `../../../docs/reportability-policy.md` and a dated official program policy only after technical verdicts are stable and reportability was requested.
